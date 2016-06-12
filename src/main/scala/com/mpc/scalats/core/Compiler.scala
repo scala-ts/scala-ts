@@ -1,13 +1,15 @@
 package com.mpc.scalats.core
 
+import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter}
+
 /**
   * Created by Milosz on 09.06.2016.
   */
 object Compiler {
 
-  def compile(scalaClasses: List[ScalaModel.CaseClass]): List[TypeScriptModel.InterfaceDeclaration] = {
-    scalaClasses map { scalaClass =>
-      TypeScriptModel.InterfaceDeclaration(
+  def compile(scalaClasses: List[ScalaModel.CaseClass]): List[TypeScriptModel.Declaration] = {
+    scalaClasses flatMap { scalaClass =>
+      val interfaceDecl = TypeScriptModel.InterfaceDeclaration(
         s"I${scalaClass.name}",
         scalaClass.members map { scalaMember =>
           TypeScriptModel.Member(
@@ -16,6 +18,19 @@ object Compiler {
           )
         }
       )
+      val classDecl = TypeScriptModel.ClassDeclaration(
+        scalaClass.name,
+        ClassConstructor(
+          scalaClass.members map { scalaMember =>
+            ClassConstructorParameter(
+              scalaMember.name,
+              compileTypeRef(scalaMember.typeRef),
+              Some(TypeScriptModel.AccessModifier.Public)
+            )
+          }
+        )
+      )
+      List(interfaceDecl, classDecl)
     }
   }
 
