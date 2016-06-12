@@ -5,6 +5,7 @@ import java.net.URLClassLoader
 import com.mpc.scalats.core.TypeScriptGenerator
 import sbt.Keys._
 import sbt._
+import complete.DefaultParsers._
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
 
@@ -16,11 +17,11 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
     generateTypeScript := {
+      val args = spaceDelimited("").parsed
       val cp: Seq[File] = (fullClasspath in Runtime).value.files
       val cpUrls = cp.map(_.asURL).toArray
       val cl = new URLClassLoader(cpUrls, ClassLoader.getSystemClassLoader)
 
-      val args = List("com.example.ExampleDto")
       TypeScriptGenerator.generateFromClassNames(args.toList, System.out, cl)
     }
   )

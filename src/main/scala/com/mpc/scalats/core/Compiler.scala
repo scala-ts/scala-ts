@@ -8,7 +8,7 @@ object Compiler {
   def compile(scalaClasses: List[ScalaModel.CaseClass]): List[TypeScriptModel.InterfaceDeclaration] = {
     scalaClasses map { scalaClass =>
       TypeScriptModel.InterfaceDeclaration(
-        scalaClass.name,
+        s"I${scalaClass.name}",
         scalaClass.members map { scalaMember =>
           TypeScriptModel.Member(
             scalaMember.name,
@@ -27,7 +27,7 @@ object Compiler {
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType))
     case ScalaModel.CaseClassRef(name, _) =>
-      TypeScriptModel.InterfaceRef(name)
+      TypeScriptModel.InterfaceRef(s"I$name")
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
     case ScalaModel.DateTimeRef =>

@@ -11,8 +11,6 @@ object ScalaParser {
 
   import ScalaModel._
 
-  private val seqTypeSymbols = Set(typeOf[List[_]].typeSymbol, typeOf[Seq[_]].typeSymbol)
-
   def parseCaseClasses(caseClassTypes: List[Type]): Map[String, CaseClass] =
     parseCaseClasses(caseClassTypes, Map.empty, Set.empty)
 
@@ -51,16 +49,17 @@ object ScalaParser {
   }
 
   def getTypeRef(scalaType: Type): TypeRef = {
-    if (scalaType =:= typeOf[Int]) {
+    val typeName = scalaType.typeSymbol.name.toString
+    if (typeName == "Int") {
       IntRef
-    } else if (scalaType =:= typeOf[String]) {
+    } else if (typeName == "String") {
       StringRef
-    } else if (seqTypeSymbols.contains(scalaType.typeSymbol)) {
+    } else if (Set("List", "Seq").contains(typeName)) {
       val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
       SeqRef(getTypeRef(innerType))
-    } else if (scalaType =:= typeOf[LocalDate]) {
+    } else if (typeName == "LocalDate") {
       DateRef
-    } else if (scalaType =:= typeOf[Instant]) {
+    } else if (typeName == "Instant") {
       DateTimeRef
     } else {
       val caseClassName = scalaType.typeSymbol.name.toString
