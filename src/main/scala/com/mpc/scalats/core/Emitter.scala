@@ -37,9 +37,11 @@ object Emitter {
 
   def emitTypeRef(typeRef: TypeRef): String = typeRef match {
     case NumberRef => "number"
+    case BooleanRef => "boolean"
     case StringRef | DateRef | DateTimeRef => "string"
     case ArrayRef(innerType) => s"${emitTypeRef(innerType)}[]"
-    case InterfaceRef(name) => name
+    case CustomTypeRef(name) => name
+    case UnknownTypeRef(typeName) => typeName
   }
 
 }

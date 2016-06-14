@@ -3,8 +3,6 @@ package com.mpc.scalats.core
 /**
   * Created by Milosz on 09.06.2016.
   */
-import java.time.{Instant, LocalDate}
-
 import scala.reflect.runtime.universe._
 
 object ScalaParser {
@@ -50,26 +48,31 @@ object ScalaParser {
 
   def getTypeRef(scalaType: Type): TypeRef = {
     val typeName = scalaType.typeSymbol.name.toString
-    if (typeName == "Int") {
-      IntRef
-    } else if (typeName == "String") {
-      StringRef
-    } else if (Set("List", "Seq").contains(typeName)) {
-      val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
-      SeqRef(getTypeRef(innerType))
-    } else if (typeName == "LocalDate") {
-      DateRef
-    } else if (typeName == "Instant") {
-      DateTimeRef
-    } else {
-      val caseClassName = scalaType.typeSymbol.name.toString
-      CaseClassRef(caseClassName, scalaType)
+    typeName match {
+      case "Int" => IntRef
+      case "Double" => DoubleRef
+      case "Boolean" => BooleanRef
+      case "String" => StringRef
+      case "List" | "Seq" =>
+        val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        SeqRef(getTypeRef(innerType))
+      case "Option" =>
+        val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        OptionRef(getTypeRef(innerType))
+      case "LocalDate" => DateRef
+      case "Instant" => DateTimeRef
+      case _ if scalaType.members.collect({ case m: MethodSymbol if m.isCaseAccessor => m }).nonEmpty =>
+        val caseClassName = scalaType.typeSymbol.name.toString
+        CaseClassRef(caseClassName, scalaType)
+      case _ =>
+        UnknownTypeRef(typeName, scalaType)
     }
   }
 
   def getReferencedType(typeRef: TypeRef): Option[Type] = typeRef match {
     case CaseClassRef(name, t) => Some(t)
     case SeqRef(innerType) => getReferencedType(innerType)
+    case OptionRef(innerType) => getReferencedType(innerType)
     case _ => None
   }
 

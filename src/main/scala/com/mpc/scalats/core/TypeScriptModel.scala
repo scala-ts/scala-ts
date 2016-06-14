@@ -6,17 +6,11 @@ object TypeScriptModel {
 
   sealed trait TypeRef
 
-  case object NumberRef extends TypeRef
+  sealed trait AccessModifier
 
-  case object StringRef extends TypeRef
-
-  case class InterfaceRef(name: String) extends TypeRef
+  case class CustomTypeRef(name: String) extends TypeRef
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
-
-  case object DateRef extends TypeRef
-
-  case object DateTimeRef extends TypeRef
 
   case class InterfaceDeclaration(name: String, members: List[Member]) extends Declaration
 
@@ -30,7 +24,17 @@ object TypeScriptModel {
                                        typeRef: TypeRef,
                                        accessModifier: Option[AccessModifier])
 
-  sealed trait AccessModifier
+  case class UnknownTypeRef(name: String) extends TypeRef
+
+  case object NumberRef extends TypeRef
+
+  case object StringRef extends TypeRef
+
+  case object BooleanRef extends TypeRef
+
+  case object DateRef extends TypeRef
+
+  case object DateTimeRef extends TypeRef
 
   case object AccessModifier {
 

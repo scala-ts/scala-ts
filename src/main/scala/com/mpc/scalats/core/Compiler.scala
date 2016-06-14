@@ -14,7 +14,10 @@ object Compiler {
         scalaClass.members map { scalaMember =>
           TypeScriptModel.Member(
             scalaMember.name,
-            compileTypeRef(scalaMember.typeRef)
+            compileTypeRef(scalaMember.typeRef) match {
+              case TypeScriptModel.CustomTypeRef(name) => TypeScriptModel.CustomTypeRef(s"I$name")
+              case typeRef => typeRef
+            }
           )
         }
       )
@@ -37,16 +40,25 @@ object Compiler {
   def compileTypeRef(scalaTypeRef: ScalaModel.TypeRef): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
       TypeScriptModel.NumberRef
+    case ScalaModel.DoubleRef =>
+      TypeScriptModel.NumberRef
+    case ScalaModel.BooleanRef =>
+      TypeScriptModel.BooleanRef
     case ScalaModel.StringRef =>
       TypeScriptModel.StringRef
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType))
     case ScalaModel.CaseClassRef(name, _) =>
-      TypeScriptModel.InterfaceRef(s"I$name")
+      TypeScriptModel.CustomTypeRef(name)
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
     case ScalaModel.DateTimeRef =>
       TypeScriptModel.DateTimeRef
+    case ScalaModel.OptionRef(innerType) =>
+      compileTypeRef(innerType) // TODO
+    case ScalaModel.UnknownTypeRef(_, _) =>
+      TypeScriptModel.StringRef
+
   }
 
 }
