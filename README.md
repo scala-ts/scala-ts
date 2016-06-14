@@ -37,9 +37,8 @@ sbt "generateTypeScript com.example.ExampleDto"
 ## Type support
 
 Currently *scala-ts* supports the following types of case class members:
-* `Int`
-* `String`
+* `Int`, `Double`, `Boolean`, `String`
 * `List` and `Seq`
-* `LocalDate`
-* `Instant`
+* `Option`
+* `LocalDate`, `Instant`
 * References to other case classes
