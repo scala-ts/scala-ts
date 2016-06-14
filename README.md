@@ -21,7 +21,12 @@ java -cp 'scala-ts-assembly-0.1.0.jar' com.mpc.scalats.Main "com.example.Example
 
 Add the following plugin to `plugins.sbt`:
 ```
-addSbtPlugin("com.mpc" % "scala-ts" % "0.1.0")
+addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.1.0")
+```
+
+Additionally, enable the plugin in your project settings:
+```
+enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
 Now you can use the `generateTypeScript` command in SBT. For example:
