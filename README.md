@@ -4,6 +4,8 @@
 
 *scala-ts* is helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
+http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
+
 ## Usage
 
 *scala-ts* can be used either standalone or as a sbt plugin.
