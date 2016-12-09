@@ -3,6 +3,7 @@ package com.mpc.scalats
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
+import com.mpc.scalats.configuration.Config
 import com.mpc.scalats.core.TypeScriptGenerator
 
 case class BookDto(title: String, pageCount: Int)
@@ -12,7 +13,7 @@ case class AddressDto(street: String,
 
 case class AuthorDto(id: UUID,
                      name: String,
-                     age: Int,
+                     age: Option[Int],
                      address: AddressDto,
                      nicknames: List[String],
                      workAddress: Option[AddressDto],
@@ -22,11 +23,10 @@ case class AuthorDto(id: UUID,
                      birthday: LocalDate,
                      isRetired: Boolean)
 
-
 object AuthorExample {
 
   def main(args: Array[String]) {
-    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.AuthorDto"), Console.out)
+    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.AuthorDto"), Console.out)(Config())
   }
 
 }

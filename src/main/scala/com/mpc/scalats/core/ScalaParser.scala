@@ -10,35 +10,47 @@ object ScalaParser {
   import ScalaModel._
 
   def parseCaseClasses(caseClassTypes: List[Type]): Map[String, CaseClass] =
-    parseCaseClasses(caseClassTypes, Map.empty, Set.empty)
+    parseCaseClassesImpl(caseClassTypes, Map.empty, Set.empty)
 
-  def parseCaseClass(caseClassType: Type): Map[String, CaseClass] =
-    parseCaseClass(caseClassType, Map.empty, Set.empty)
-
-  def parseCaseClass(caseClassType: Type,
-                     declarations: Map[String, CaseClass],
-                     typesBeingResolved: Set[String]): Map[String, CaseClass] = {
-    val relevantMembers = caseClassType.members.collect {
+  private def parseCaseClass(
+                              caseClassType: Type,
+                              declarations: Map[String, CaseClass],
+                              typesBeingResolved: Set[String]
+                            ): Map[String, CaseClass] = {
+    val relevantMemberSymbols = caseClassType.members.collect {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
-    val caseClassMembers = relevantMembers map { member =>
+
+    val typeParams = caseClassType.typeConstructor.normalize match {
+      case polyType: PolyTypeApi =>
+        polyType.typeParams.map(_.name.decoded)
+      case _ =>
+        List.empty[String]
+    }
+
+    val members = relevantMemberSymbols map { member =>
       val memberName = member.name.toString
-      val returnType = member.returnType
-      CaseClassMember(memberName, getTypeRef(member.returnType))
+      CaseClassMember(memberName, getTypeRef(member.returnType, typeParams.toSet))
     }
 
-    val referencedTypes = caseClassMembers flatMap { case CaseClassMember(_, typeRef) =>
-      getReferencedType(typeRef)
+    val referencedTypes = members flatMap { case CaseClassMember(_, typeRef) =>
+      getReferencedCaseClasses(typeRef)
     }
 
-    val updatedDeclarations = parseCaseClasses(referencedTypes.toList, declarations, typesBeingResolved)
-    val caseClass = CaseClass(caseClassType.typeSymbol.name.toString, caseClassMembers.toList)
+    val updatedDeclarations = parseCaseClassesImpl(referencedTypes.toList, declarations, typesBeingResolved)
+    val caseClass = CaseClass(
+      caseClassType.typeSymbol.name.toString,
+      members.toList,
+      typeParams
+    )
     Map(caseClassType.typeSymbol.name.toString -> caseClass) ++ updatedDeclarations
   }
 
-  def parseCaseClasses(caseClassTypes: List[Type],
-                       declarations: Map[String, CaseClass],
-                       typesBeingResolved: Set[String]): Map[String, CaseClass] = {
+  private def parseCaseClassesImpl(
+                                    caseClassTypes: List[Type],
+                                    declarations: Map[String, CaseClass],
+                                    typesBeingResolved: Set[String]
+                                  ): Map[String, CaseClass] = {
     caseClassTypes.foldLeft(declarations)({ case (acc, caseClassType) =>
       val referencedTypeName = caseClassType.typeSymbol.name.toString
       if (declarations.contains(referencedTypeName) || typesBeingResolved.contains(referencedTypeName)) acc
@@ -46,8 +58,9 @@ object ScalaParser {
     })
   }
 
-  def getTypeRef(scalaType: Type): TypeRef = {
+  private def getTypeRef(scalaType: Type, typeParams: Set[String]): TypeRef = {
     val typeName = scalaType.typeSymbol.name.toString
+    val isCaseClass = scalaType.members.collect({ case m: MethodSymbol if m.isCaseAccessor => m }).nonEmpty
     typeName match {
       case "Int" => IntRef
       case "Double" => DoubleRef
@@ -55,25 +68,28 @@ object ScalaParser {
       case "String" => StringRef
       case "List" | "Seq" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
-        SeqRef(getTypeRef(innerType))
+        SeqRef(getTypeRef(innerType, typeParams))
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
-        OptionRef(getTypeRef(innerType))
+        OptionRef(getTypeRef(innerType, typeParams))
       case "LocalDate" => DateRef
       case "Instant" => DateTimeRef
-      case _ if scalaType.members.collect({ case m: MethodSymbol if m.isCaseAccessor => m }).nonEmpty =>
+      case typeParam if typeParams.contains(typeParam) => TypeParamRef(typeParam)
+      case _ if isCaseClass =>
         val caseClassName = scalaType.typeSymbol.name.toString
-        CaseClassRef(caseClassName, scalaType)
+        val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
+        val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
+        CaseClassRef(caseClassName, scalaType, typeArgRefs)
       case _ =>
         UnknownTypeRef(typeName, scalaType)
     }
   }
 
-  def getReferencedType(typeRef: TypeRef): Option[Type] = typeRef match {
-    case CaseClassRef(name, t) => Some(t)
-    case SeqRef(innerType) => getReferencedType(innerType)
-    case OptionRef(innerType) => getReferencedType(innerType)
-    case _ => None
+  private def getReferencedCaseClasses(typeRef: TypeRef): List[Type] = typeRef match {
+    case CaseClassRef(name, t, typeArgs) => List(t) ++ typeArgs.flatMap(getReferencedCaseClasses)
+    case SeqRef(innerType) => getReferencedCaseClasses(innerType)
+    case OptionRef(innerType) => getReferencedCaseClasses(innerType)
+    case _ => List.empty
   }
 
 

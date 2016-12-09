@@ -35,7 +35,7 @@ lazy val pomSettings = Seq(
 lazy val root = (project in file(".")).
   settings(
     name := "scala-ts",
-    version := "0.2.0",
+    version := "0.3.0",
     organization := "com.github.miloszpp",
     scalaVersion := "2.10.6",
     mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
@@ -46,5 +46,6 @@ lazy val root = (project in file(".")).
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.6",
-  "ch.qos.logback" % "logback-classic" % "1.1.7"
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )

@@ -1,43 +1,55 @@
 package com.mpc.scalats.core
 
-import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter}
+import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef}
 
 /**
   * Created by Milosz on 09.06.2016.
   */
 object Compiler {
 
-  def compile(scalaClasses: List[ScalaModel.CaseClass]): List[TypeScriptModel.Declaration] = {
+  def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
-      val interfaceDecl = TypeScriptModel.InterfaceDeclaration(
-        s"I${scalaClass.name}",
-        scalaClass.members map { scalaMember =>
-          TypeScriptModel.Member(
-            scalaMember.name,
-            compileTypeRef(scalaMember.typeRef) match {
-              case TypeScriptModel.CustomTypeRef(name) => TypeScriptModel.CustomTypeRef(s"I$name")
-              case typeRef => typeRef
-            }
-          )
-        }
-      )
-      val classDecl = TypeScriptModel.ClassDeclaration(
-        scalaClass.name,
-        ClassConstructor(
-          scalaClass.members map { scalaMember =>
-            ClassConstructorParameter(
-              scalaMember.name,
-              compileTypeRef(scalaMember.typeRef),
-              Some(TypeScriptModel.AccessModifier.Public)
-            )
-          }
-        )
-      )
-      List(interfaceDecl, classDecl)
+      val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
+      val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
+      interface ++ clazz
     }
   }
 
-  def compileTypeRef(scalaTypeRef: ScalaModel.TypeRef): TypeScriptModel.TypeRef = scalaTypeRef match {
+  private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+    TypeScriptModel.InterfaceDeclaration(
+      s"I${scalaClass.name}",
+      scalaClass.members map { scalaMember =>
+        TypeScriptModel.Member(
+          scalaMember.name,
+          compileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
+        )
+      },
+      typeParams = scalaClass.params
+    )
+  }
+
+  private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+    TypeScriptModel.ClassDeclaration(
+      scalaClass.name,
+      ClassConstructor(
+        scalaClass.members map { scalaMember =>
+          ClassConstructorParameter(
+            scalaMember.name,
+            compileTypeRef(scalaMember.typeRef, inInterfaceContext = false),
+            Some(TypeScriptModel.AccessModifier.Public)
+          )
+        }
+      ),
+      typeParams = scalaClass.params
+    )
+  }
+
+  private def compileTypeRef(
+                              scalaTypeRef: ScalaModel.TypeRef,
+                              inInterfaceContext: Boolean
+                            )
+                            (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.DoubleRef =>
@@ -47,18 +59,24 @@ object Compiler {
     case ScalaModel.StringRef =>
       TypeScriptModel.StringRef
     case ScalaModel.SeqRef(innerType) =>
-      TypeScriptModel.ArrayRef(compileTypeRef(innerType))
-    case ScalaModel.CaseClassRef(name, _) =>
-      TypeScriptModel.CustomTypeRef(name)
+      TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
+    case ScalaModel.CaseClassRef(name, _, typeArgs) =>
+      val actualName = if (inInterfaceContext) s"I$name" else name
+      TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
     case ScalaModel.DateTimeRef =>
       TypeScriptModel.DateTimeRef
-    case ScalaModel.OptionRef(innerType) =>
-      compileTypeRef(innerType) // TODO
+    case ScalaModel.TypeParamRef(name) =>
+      TypeScriptModel.TypeParamRef(name)
+    case ScalaModel.OptionRef(innerType) if config.optionToNullable && config.optionToUndefined =>
+      TypeScriptModel.UnionType(TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef), UndefinedRef)
+    case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
+      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
+    case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
+      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), UndefinedRef)
     case ScalaModel.UnknownTypeRef(_, _) =>
       TypeScriptModel.StringRef
-
   }
 
 }

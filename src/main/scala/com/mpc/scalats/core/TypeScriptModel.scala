@@ -8,15 +8,15 @@ object TypeScriptModel {
 
   sealed trait AccessModifier
 
-  case class CustomTypeRef(name: String) extends TypeRef
+  case class CustomTypeRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
 
-  case class InterfaceDeclaration(name: String, members: List[Member]) extends Declaration
+  case class InterfaceDeclaration(name: String, members: List[Member], typeParams: List[String]) extends Declaration
 
   case class Member(name: String, typeRef: TypeRef)
 
-  case class ClassDeclaration(name: String, constructor: ClassConstructor) extends Declaration
+  case class ClassDeclaration(name: String, constructor: ClassConstructor, typeParams: List[String]) extends Declaration
 
   case class ClassConstructor(parameters: List[ClassConstructorParameter])
 
@@ -35,6 +35,14 @@ object TypeScriptModel {
   case object DateRef extends TypeRef
 
   case object DateTimeRef extends TypeRef
+
+  case object NullRef extends TypeRef
+
+  case object UndefinedRef extends TypeRef
+
+  case class TypeParamRef(name: String) extends TypeRef
+
+  case class UnionType(inner1: TypeRef, inner2: TypeRef) extends TypeRef
 
   case object AccessModifier {
 
