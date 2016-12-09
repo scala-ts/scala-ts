@@ -6,6 +6,8 @@
 
 http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
 
+*New version 0.3.0* - added support for generic types, Option type; added some configuration options.
+
 ## Usage
 
 *scala-ts* can be used either standalone or as a sbt plugin.
@@ -23,7 +25,7 @@ java -cp 'scala-ts-assembly-0.1.0.jar' com.mpc.scalats.Main "com.example.Example
 
 Add the following plugin to `plugins.sbt`:
 ```
-addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.2.0")
+addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.3.0")
 ```
 
 Additionally, enable the plugin in your project settings:
@@ -35,6 +37,20 @@ Now you can use the `generateTypeScript` command in SBT. For example:
 ```
 sbt "generateTypeScript com.example.ExampleDto"
 ```
+### Configuration
+
+Starting from release 0.3.0, it's possible to specify some configuration options:
+* `emitInterfaces` - generate interface declarations (`true` by default)
+* `emitClasses` - generate class declarations (`false` by default)
+* `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
+* `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
+
+Usage example in `build.sbt`:
+```
+emitClasses in generateTypeScript := true
+
+enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
+```
 
 ## Type support
 
@@ -43,4 +59,9 @@ Currently *scala-ts* supports the following types of case class members:
 * `List` and `Seq`
 * `Option`
 * `LocalDate`, `Instant`
+* *NEW* generic types
 * References to other case classes
+
+## Credits
+
+Many thanks to https://github.com/nicolasdalsass who forked the project into https://github.com/Elium/scala-ts/tree/master. I incorporated some of his ideas into `scala-ts`.
