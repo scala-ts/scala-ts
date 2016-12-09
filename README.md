@@ -4,6 +4,8 @@
 
 *scala-ts* is helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
+http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
+
 ## Usage
 
 *scala-ts* can be used either standalone or as a sbt plugin.
@@ -21,7 +23,7 @@ java -cp 'scala-ts-assembly-0.1.0.jar' com.mpc.scalats.Main "com.example.Example
 
 Add the following plugin to `plugins.sbt`:
 ```
-addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.1.0")
+addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.2.0")
 ```
 
 Additionally, enable the plugin in your project settings:
@@ -37,9 +39,8 @@ sbt "generateTypeScript com.example.ExampleDto"
 ## Type support
 
 Currently *scala-ts* supports the following types of case class members:
-* `Int`
-* `String`
+* `Int`, `Double`, `Boolean`, `String`
 * `List` and `Seq`
-* `LocalDate`
-* `Instant`
+* `Option`
+* `LocalDate`, `Instant`
 * References to other case classes
