@@ -33,8 +33,7 @@ object ScalaParser {
   }
 
   private def getInvolvedTypes(alreadyExamined: Set[Type])(scalaType: Type): List[Type] = {
-    System.out.println(s"Getting involved types for ${scalaType.typeSymbol.name}")
-    if (!alreadyExamined.contains(scalaType)) {
+    if (!alreadyExamined.contains(scalaType) && !scalaType.typeSymbol.isParameter) {
       val relevantMemberSymbols = scalaType.members.collect {
         case m: MethodSymbol if m.isCaseAccessor => m
       }
@@ -55,26 +54,33 @@ object ScalaParser {
   private def getTypeRef(scalaType: Type, typeParams: Set[String]): TypeRef = {
     val typeName = scalaType.typeSymbol.name.toString
     typeName match {
-      case "Int" => IntRef
-      case "Double" => DoubleRef
-      case "Boolean" => BooleanRef
-      case "String" => StringRef
+      case "Int" =>
+        IntRef
+      case "Double" =>
+        DoubleRef
+      case "Boolean" =>
+        BooleanRef
+      case "String" =>
+        StringRef
       case "List" | "Seq" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         SeqRef(getTypeRef(innerType, typeParams))
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         OptionRef(getTypeRef(innerType, typeParams))
-      case "LocalDate" => DateRef
-      case "Instant" => DateTimeRef
-      case typeParam if typeParams.contains(typeParam) => TypeParamRef(typeParam)
+      case "LocalDate" =>
+        DateRef
+      case "Instant" =>
+        DateTimeRef
+      case typeParam if typeParams.contains(typeParam) =>
+        TypeParamRef(typeParam)
       case _ if isCaseClass(scalaType) =>
         val caseClassName = scalaType.typeSymbol.name.toString
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
-        CaseClassRef(caseClassName, scalaType, typeArgRefs)
+        CaseClassRef(caseClassName, typeArgRefs)
       case _ =>
-        UnknownTypeRef(typeName, scalaType)
+        UnknownTypeRef(typeName)
     }
   }
 

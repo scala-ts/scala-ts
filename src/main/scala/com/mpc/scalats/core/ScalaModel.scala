@@ -6,7 +6,7 @@ object ScalaModel {
 
   case class OptionRef(innerType: TypeRef) extends TypeRef
 
-  case class CaseClassRef(name: String, origin: scala.reflect.runtime.universe.Type, typeArgs: List[TypeRef]) extends TypeRef
+  case class CaseClassRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
 
@@ -14,7 +14,9 @@ object ScalaModel {
 
   case class CaseClassMember(name: String, typeRef: TypeRef)
 
-  case class UnknownTypeRef(name: String, origin: scala.reflect.runtime.universe.Type) extends TypeRef
+  case class UnknownTypeRef(name: String) extends TypeRef
+
+  case class TypeParamRef(name: String) extends TypeRef
 
   case object IntRef extends TypeRef
 
@@ -27,7 +29,5 @@ object ScalaModel {
   case object DateRef extends TypeRef
 
   case object DateTimeRef extends TypeRef
-
-  case class TypeParamRef(name: String) extends TypeRef
 
 }

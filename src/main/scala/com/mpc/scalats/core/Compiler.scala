@@ -60,7 +60,7 @@ object Compiler {
       TypeScriptModel.StringRef
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
-    case ScalaModel.CaseClassRef(name, _, typeArgs) =>
+    case ScalaModel.CaseClassRef(name, typeArgs) =>
       val actualName = if (inInterfaceContext) s"I$name" else name
       TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
@@ -75,7 +75,7 @@ object Compiler {
       TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
       TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), UndefinedRef)
-    case ScalaModel.UnknownTypeRef(_, _) =>
+    case ScalaModel.UnknownTypeRef(_) =>
       TypeScriptModel.StringRef
   }
 

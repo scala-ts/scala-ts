@@ -42,6 +42,11 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(expected)
   }
 
+  it should "correctly detect involved types" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass6Type))
+    parsed should have length 6
+  }
+
 }
 
 object TestTypes {
@@ -52,6 +57,7 @@ object TestTypes {
   val TestClass3Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass3")
   val TestClass4Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass4")
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
+  val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
@@ -64,4 +70,6 @@ object TestTypes {
   case class TestClass4[T](name: TestClass3[T])
 
   case class TestClass5[T](name: Option[T])
+
+  case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
 }
