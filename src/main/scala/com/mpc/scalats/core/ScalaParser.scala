@@ -10,7 +10,7 @@ object ScalaParser {
   import ScalaModel._
 
   def parseCaseClasses(caseClassTypes: List[Type]): List[CaseClass] = {
-    caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass)
+    caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass).distinct
   }
 
   private def parseCaseClass(caseClassType: Type) = {
