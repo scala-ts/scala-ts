@@ -1,6 +1,6 @@
 package com.mpc.scalats.core
 
-import java.io.PrintStream
+import java.io.{File, PrintStream}
 
 import com.mpc.scalats.configuration.Config
 
@@ -13,7 +13,6 @@ object TypeScriptGenerator {
 
   def generateFromClassNames(
                               classNames: List[String],
-                              out: PrintStream,
                               classLoader: ClassLoader = getClass.getClassLoader
                             )
                             (implicit config: Config) = {
@@ -21,13 +20,17 @@ object TypeScriptGenerator {
     val types = classNames map { className =>
       mirror.staticClass(className).toType
     }
-    generate(types, out)
+    generate(types)(config)
   }
 
-  def generate(caseClasses: List[Type], out: PrintStream)(implicit config: Config) = {
+  def generate(caseClasses: List[Type])(implicit config: Config) = {
+    val outputStream = if(config.outputFile.isEmpty)
+      Console.out
+    else
+      new PrintStream(new File (config.outputFile.get))
     val scalaCaseClasses = ScalaParser.parseCaseClasses(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaCaseClasses)
-    TypeScriptEmitter.emit(typeScriptInterfaces, Console.out)
+    TypeScriptEmitter.emit(typeScriptInterfaces,outputStream)
   }
 
 }

@@ -7,5 +7,6 @@ case class Config(
                  emitInterfaces: Boolean = true,
                  emitClasses: Boolean = false,
                  optionToNullable: Boolean = true,
-                 optionToUndefined: Boolean = false
+                 optionToUndefined: Boolean = false,
+                 outputFile : Option[String] = None
                  )

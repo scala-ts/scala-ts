@@ -17,6 +17,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val emitClasses = settingKey[Boolean]("Generate class declarations")
     val optionToNullable = settingKey[Boolean]("Option types will be compiled to 'type | null'")
     val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
+    val outputFile  = settingKey[Option[String]]("File to write")
   }
 
   import autoImport._
@@ -27,7 +28,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         (emitInterfaces in generateTypeScript).value,
         (emitClasses in generateTypeScript).value,
         (optionToNullable in generateTypeScript).value,
-        (optionToUndefined in generateTypeScript).value
+        (optionToUndefined in generateTypeScript).value,
+        (outputFile in generateTypeScript).value
       )
 
       val args = spaceDelimited("").parsed
@@ -35,12 +37,13 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       val cpUrls = cp.map(_.asURL).toArray
       val cl = new URLClassLoader(cpUrls, ClassLoader.getSystemClassLoader)
 
-      TypeScriptGenerator.generateFromClassNames(args.toList, System.out, cl)
+      TypeScriptGenerator.generateFromClassNames(args.toList, cl)
     },
     emitInterfaces in generateTypeScript := true,
     emitClasses in generateTypeScript := false,
     optionToNullable in generateTypeScript := true,
-    optionToUndefined in generateTypeScript := false
+    optionToUndefined in generateTypeScript := false,
+    outputFile in generateTypeScript := None
   )
 
 }

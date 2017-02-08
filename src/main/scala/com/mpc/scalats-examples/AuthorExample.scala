@@ -26,7 +26,7 @@ case class AuthorDto(id: UUID,
 object AuthorExample {
 
   def main(args: Array[String]) {
-    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.AuthorDto"), Console.out)(Config())
+    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.AuthorDto"))(Config())
   }
 
 }
