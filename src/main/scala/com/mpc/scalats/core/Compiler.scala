@@ -52,6 +52,8 @@ object Compiler {
                             (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
       TypeScriptModel.NumberRef
+    case ScalaModel.LongRef =>
+      TypeScriptModel.NumberRef
     case ScalaModel.DoubleRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.BooleanRef =>
