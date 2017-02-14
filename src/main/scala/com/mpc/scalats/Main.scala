@@ -6,7 +6,6 @@ import com.mpc.scalats.core.TypeScriptGenerator
 object Main {
 
   def main(args: Array[String]) {
-    val config = Config()
     TypeScriptGenerator.generateFromClassNames(args.toList)(Config())
   }
 

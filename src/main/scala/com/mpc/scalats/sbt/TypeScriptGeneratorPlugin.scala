@@ -1,5 +1,6 @@
 package com.mpc.scalats.sbt
 
+import java.io.PrintStream
 import java.net.URLClassLoader
 
 import com.mpc.scalats.configuration.Config
@@ -17,7 +18,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val emitClasses = settingKey[Boolean]("Generate class declarations")
     val optionToNullable = settingKey[Boolean]("Option types will be compiled to 'type | null'")
     val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
-    val outputFile  = settingKey[Option[String]]("File to write")
+    val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
   }
 
   import autoImport._

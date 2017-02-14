@@ -1,5 +1,7 @@
 package com.mpc.scalats.configuration
 
+import java.io.PrintStream
+
 /**
   * Created by Milosz on 09.12.2016.
   */
@@ -8,5 +10,5 @@ case class Config(
                  emitClasses: Boolean = false,
                  optionToNullable: Boolean = true,
                  optionToUndefined: Boolean = false,
-                 outputFile : Option[String] = None
+                 outputStream : Option[PrintStream] = None
                  )
