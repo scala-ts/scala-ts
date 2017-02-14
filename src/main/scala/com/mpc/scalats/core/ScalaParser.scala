@@ -56,6 +56,8 @@ object ScalaParser {
     typeName match {
       case "Int" =>
         IntRef
+      case "Long" =>
+        LongRef
       case "Double" =>
         DoubleRef
       case "Boolean" =>

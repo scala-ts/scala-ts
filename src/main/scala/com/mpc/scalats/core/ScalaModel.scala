@@ -20,6 +20,8 @@ object ScalaModel {
 
   case object IntRef extends TypeRef
 
+  case object LongRef extends TypeRef
+
   case object DoubleRef extends TypeRef
 
   case object BooleanRef extends TypeRef
