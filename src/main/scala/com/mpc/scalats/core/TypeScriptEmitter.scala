@@ -3,6 +3,7 @@ package com.mpc.scalats.core
 import java.io.PrintStream
 
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{Private, Public}
+import com.mpc.scalats.core.TypeScriptModel.{DateRef, DateTimeRef}
 
 object TypeScriptEmitter {
 
@@ -59,7 +60,8 @@ object TypeScriptEmitter {
   private def getTypeRefString(typeRef: TypeRef): String = typeRef match {
     case NumberRef => "number"
     case BooleanRef => "boolean"
-    case StringRef | DateRef | DateTimeRef => "string"
+    case StringRef => "string"
+    case DateRef | DateTimeRef => "Date"
     case ArrayRef(innerType) => s"${getTypeRefString(innerType)}[]"
     case CustomTypeRef(name, params) if params.isEmpty => name
     case CustomTypeRef(name, params) if params.nonEmpty =>

@@ -54,7 +54,7 @@ object ScalaParser {
   private def getTypeRef(scalaType: Type, typeParams: Set[String]): TypeRef = {
     val typeName = scalaType.typeSymbol.name.toString
     typeName match {
-      case "Int" =>
+      case "Int" | "Byte" =>
         IntRef
       case "Long" =>
         LongRef
@@ -64,15 +64,15 @@ object ScalaParser {
         BooleanRef
       case "String" =>
         StringRef
-      case "List" | "Seq" =>
+      case "List" | "Seq" | "Set" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         SeqRef(getTypeRef(innerType, typeParams))
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         OptionRef(getTypeRef(innerType, typeParams))
-      case "LocalDate" =>
+      case "LocalDate"  =>
         DateRef
-      case "Instant" =>
+      case "Instant" | "Timestamp" =>
         DateTimeRef
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
