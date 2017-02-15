@@ -6,7 +6,7 @@
 
 http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
 
-*New version 0.3.0* - added support for generic types, Option type; added some configuration options.
+*New version 0.3.2* - added support for more types; added file output support.
 
 ## Usage
 
@@ -44,6 +44,7 @@ Starting from release 0.3.0, it's possible to specify some configuration options
 * `emitClasses` - generate class declarations (`false` by default)
 * `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 * `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
+* `outputStream` - the stream to which the code should be emitted; it defaults to console
 
 Usage example in `build.sbt`:
 ```
@@ -55,11 +56,11 @@ enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
 ## Type support
 
 Currently *scala-ts* supports the following types of case class members:
-* `Int`, `Double`, `Boolean`, `String`
-* `List` and `Seq`
+* `Int`, `Double`, `Boolean`, `String`, `Long`
+* `List`, `Seq`, `Set`
 * `Option`
-* `LocalDate`, `Instant`
-* *NEW* generic types
+* `LocalDate`, `Instant`, `Timestamp`
+* generic types
 * References to other case classes
 
 ## Credits
