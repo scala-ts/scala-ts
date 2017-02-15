@@ -18,7 +18,7 @@ object Compiler {
 
   private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
-      s"I${scalaClass.name}",
+      s"IElium${scalaClass.name}",
       scalaClass.members map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
@@ -63,7 +63,7 @@ object Compiler {
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
     case ScalaModel.CaseClassRef(name, typeArgs) =>
-      val actualName = if (inInterfaceContext) s"I$name" else name
+      val actualName = if (inInterfaceContext) s"IElium$name" else name
       TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef

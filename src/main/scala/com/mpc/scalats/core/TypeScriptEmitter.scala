@@ -16,6 +16,8 @@ object TypeScriptEmitter {
       case decl: ClassDeclaration  =>
         emitClassDeclaration(decl, out)
     }
+    out.flush()
+    out.close()
   }
 
   private def emitInterfaceDeclaration(decl: InterfaceDeclaration, out: PrintStream) = {

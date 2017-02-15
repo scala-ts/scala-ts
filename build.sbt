@@ -1,48 +1,31 @@
 import sbt.Keys._
 
-lazy val pomSettings = Seq(
+lazy val publishSettings = Seq(
   publishMavenStyle := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
+  publishTo <<= version { (v: String) =>
+    val nexus = "https://nexus.elium.io/repository/"
+    if (v.trim.endsWith("SNAPSHOT"))
+      Some("Snapshots" at nexus + "maven-snapshots")
     else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+      Some("Releases" at nexus + "maven-releases")
   },
-  publishArtifact in Test := false,
-  pomExtra :=
-    <url>https://github.com/miloszpp/scala-ts</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>https://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:miloszpp/scala-ts.git</url>
-      <connection>scm:git:git@github.com:miloszpp/scala-ts.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>miloszpp</id>
-        <name>Miłosz Piechocki</name>
-        <url>http://codewithstyle.info</url>
-      </developer>
-    </developers>
+  credentials += Credentials(new File("/root") / ".ivy2" / ".credentials"),
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 )
 
-lazy val root = (project in file(".")).
-  settings(
-    name := "scala-ts",
-    version := "0.3.1",
-    organization := "com.github.miloszpp",
-    scalaVersion := "2.10.6",
-    mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
-    sbtPlugin := true,
-    sbtVersion := "0.13.11"
-  ).
-  settings(pomSettings)
+
+lazy val projectSettings = Seq(
+  name := "scala-ts",
+  version := "0.4.1",
+  organization := "com.github.miloszpp",
+  scalaVersion := "2.10.6",
+  mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
+  sbtPlugin := true,
+  sbtVersion := "0.13.11"
+)
+
+lazy val root = project.in(file("."))
+  .settings(projectSettings, publishSettings)
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.6",
