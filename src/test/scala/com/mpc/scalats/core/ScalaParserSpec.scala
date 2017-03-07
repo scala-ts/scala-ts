@@ -6,27 +6,27 @@ import org.scalatest._
 import scala.reflect.runtime.universe._
 
 /**
-  * Created by Milosz on 06.12.2016.
-  */
+ * Created by Milosz on 06.12.2016.
+ */
 class ScalaParserSpec extends FlatSpec with Matchers {
 
   it should "parse case class with one primitive member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type))
-    val expected = CaseClass("TestClass1", List(CaseClassMember("name", StringRef)), List.empty)
+    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty)
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass2Type))
-    val expected = CaseClass("TestClass2", List(CaseClassMember("name", TypeParamRef("T"))), List("T"))
+    val expected = Entity("TestClass2", List(EntityMember("name", TypeParamRef("T"))), List("T"))
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one member list of type parameter" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass3Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass3",
-      List(CaseClassMember("name", SeqRef(TypeParamRef("T")))),
+      List(EntityMember("name", SeqRef(TypeParamRef("T")))),
       List("T")
     )
     parsed should contain(expected)
@@ -34,9 +34,9 @@ class ScalaParserSpec extends FlatSpec with Matchers {
 
   it should "parse generic case class with one optional member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass5Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass5",
-      List(CaseClassMember("name", OptionRef(TypeParamRef("T")))),
+      List(EntityMember("name", OptionRef(TypeParamRef("T")))),
       List("T")
     )
     parsed should contain(expected)
@@ -72,7 +72,9 @@ object TestTypes {
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
-  case class TestClass1(name: String)
+  trait TestClass1 {
+    val name: String
+  }
 
   case class TestClass1B(foo: String)
 

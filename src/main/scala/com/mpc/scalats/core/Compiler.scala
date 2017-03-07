@@ -8,7 +8,7 @@ import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorP
   */
 object Compiler {
 
-  def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
+  def compile(scalaClasses: List[ScalaModel.Entity])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
       val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
       val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
@@ -16,7 +16,7 @@ object Compiler {
     }
   }
 
-  private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+  private def compileInterface(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
       s"I${scalaClass.name}",
       scalaClass.members map { scalaMember =>
@@ -29,7 +29,7 @@ object Compiler {
     )
   }
 
-  private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+  private def compileClass(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.ClassDeclaration(
       scalaClass.name,
       ClassConstructor(

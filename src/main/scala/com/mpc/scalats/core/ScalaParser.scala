@@ -10,24 +10,26 @@ object ScalaParser {
 
   import ScalaModel._
 
-  def parseCaseClasses(caseClassTypes: List[Type]): List[CaseClass] = {
-    caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass).distinct
+  def parseCaseClasses(classTypes: List[Type]): List[Entity] = {
+    val involvedTypes = classTypes flatMap getInvolvedTypes(Set.empty)
+    val typesToParse = (involvedTypes filter isEntityType).distinct
+    (typesToParse map parseType).distinct
   }
 
-  private def parseCaseClass(caseClassType: Type) = {
-    val relevantMemberSymbols = caseClassType.members.collect {
-      case m: MethodSymbol if m.isCaseAccessor => m
+  private def parseType(aType: Type) = {
+    val relevantMemberSymbols = aType.members.collect {
+      case m: MethodSymbol if m.isAccessor => m
     }
-    val typeParams = caseClassType.typeConstructor.normalize match {
-      case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decoded)
+    val typeParams = aType.typeConstructor.dealias.etaExpand match {
+      case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decodedName.toString)
       case _ => List.empty[String]
     }
     val members = relevantMemberSymbols map { member =>
       val memberName = member.name.toString
-      CaseClassMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
+      EntityMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }
-    CaseClass(
-      caseClassType.typeSymbol.name.toString,
+    Entity(
+      aType.typeSymbol.name.toString,
       members.toList,
       typeParams
     )
@@ -77,7 +79,7 @@ object ScalaParser {
         DateTimeRef
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
-      case _ if isCaseClass(scalaType) =>
+      case _ if isEntityType(scalaType) =>
         val caseClassName = scalaType.typeSymbol.name.toString
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
@@ -98,7 +100,16 @@ object ScalaParser {
     }
   }
 
-  private def isCaseClass(scalaType: Type) =
-    scalaType.members.collect({ case m: MethodSymbol if m.isCaseAccessor => m }).nonEmpty
+  private def isNotScalaCollectionMember(classSymbol: ClassSymbol) =
+    !classSymbol.fullName.startsWith("scala.collection.")
+
+  private def isEntityType(scalaType: Type) = {
+    val typeSymbol = scalaType.typeSymbol
+    if (typeSymbol.isClass) {
+      val classSymbol = typeSymbol.asClass
+      isNotScalaCollectionMember(classSymbol) && (classSymbol.isCaseClass || classSymbol.isTrait)
+    }
+    else false
+  }
 
 }
