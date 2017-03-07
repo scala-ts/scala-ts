@@ -1,3 +1,5 @@
 .idea
 *.class
+*.iml
+*.ipr
 target
