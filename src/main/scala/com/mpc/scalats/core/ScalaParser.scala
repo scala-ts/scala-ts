@@ -81,7 +81,12 @@ object ScalaParser {
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
         CaseClassRef(caseClassName, typeArgRefs)
+      case "Either" =>
+        val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        val innerType2 = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
+        UnionRef(getTypeRef(innerType, typeParams), getTypeRef(innerType2, typeParams))
       case _ =>
+        println(s"type ref $typeName umkow")
         UnknownTypeRef(typeName)
     }
   }

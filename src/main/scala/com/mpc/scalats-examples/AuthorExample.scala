@@ -11,8 +11,11 @@ case class BookDto(title: String, pageCount: Int)
 case class AddressDto(street: String,
                       city: String)
 
+case class Both(s: Either[BookDto, AddressDto])
+
 case class AuthorDto(id: UUID,
-                     name: String,
+  name: String,
+   b: Both,
                      age: Option[Int],
                      address: AddressDto,
                      nicknames: List[String],
