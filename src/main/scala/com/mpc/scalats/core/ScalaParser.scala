@@ -23,7 +23,10 @@ object ScalaParser {
     }
     val members = relevantMemberSymbols map { member =>
       val memberName = member.name.toString
-      CaseClassMember(memberName, getTypeRef(member.returnType, typeParams.toSet))
+      //println(member.returnType.map(_.normalize))
+//      println(member.returnType.baseClasses) // has AnyVal if we iherit that
+//      println(member.typeSignature.)
+      CaseClassMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }
     CaseClass(
       caseClassType.typeSymbol.name.toString,
@@ -37,9 +40,9 @@ object ScalaParser {
       val relevantMemberSymbols = scalaType.members.collect {
         case m: MethodSymbol if m.isCaseAccessor => m
       }
-      val memberTypes = relevantMemberSymbols.map(_.typeSignature match {
+      val memberTypes = relevantMemberSymbols.map(_.typeSignature.map(_.normalize) match {
         case NullaryMethodType(resultType) => resultType
-        case t => t
+        case t => t.map(_.normalize)
       }).flatMap(getInvolvedTypes(alreadyExamined + scalaType))
       val typeArgs = scalaType match {
         case t: scala.reflect.runtime.universe.TypeRef => t.args.flatMap(getInvolvedTypes(alreadyExamined + scalaType))
@@ -81,12 +84,16 @@ object ScalaParser {
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
         CaseClassRef(caseClassName, typeArgRefs)
+      // hack hack
+      case "Githash" => StringRef
       case "Either" =>
+        //println(scalaType)
+        //println(scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef])
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         val innerType2 = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
         UnionRef(getTypeRef(innerType, typeParams), getTypeRef(innerType2, typeParams))
       case _ =>
-        println(s"type ref $typeName umkow")
+        //println(s"type ref $typeName umkow")
         UnknownTypeRef(typeName)
     }
   }
