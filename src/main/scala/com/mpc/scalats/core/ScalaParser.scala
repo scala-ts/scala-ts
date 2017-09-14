@@ -23,9 +23,6 @@ object ScalaParser {
     }
     val members = relevantMemberSymbols map { member =>
       val memberName = member.name.toString
-      //println(member.returnType.map(_.normalize))
-//      println(member.returnType.baseClasses) // has AnyVal if we iherit that
-//      println(member.typeSignature.)
       CaseClassMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }
     CaseClass(
@@ -84,14 +81,10 @@ object ScalaParser {
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
         CaseClassRef(caseClassName, typeArgRefs)
-      // hack hack
-      case "Githash" => StringRef
       case "Either" =>
-        //println(scalaType)
-        //println(scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef])
-        val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
-        val innerType2 = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
-        UnionRef(getTypeRef(innerType, typeParams), getTypeRef(innerType2, typeParams))
+        val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        val innerTypeR = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
+        UnionRef(getTypeRef(innerTypeL, typeParams), getTypeRef(innerTypeR, typeParams))
       case _ =>
         //println(s"type ref $typeName umkow")
         UnknownTypeRef(typeName)
