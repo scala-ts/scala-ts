@@ -68,7 +68,7 @@ object TypeScriptEmitter {
     case UnknownTypeRef(typeName) => typeName
     case TypeParamRef(param) => param
     case UnionType(inner1, inner2) => s"(${getTypeRefString(inner1)} | ${getTypeRefString(inner2)})"
-    case MapType(keyType, valueType) => s"Map<${getTypeRefString(keyType)}, ${getTypeRefString(valueType)}>"
+    case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }"
     case NullRef => "null"
     case UndefinedRef => "undefined"
   }
