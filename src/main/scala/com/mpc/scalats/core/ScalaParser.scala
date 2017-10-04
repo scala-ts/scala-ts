@@ -3,6 +3,7 @@ package com.mpc.scalats.core
 /**
   * Created by Milosz on 09.06.2016.
   */
+
 import scala.reflect.runtime.universe._
 
 object ScalaParser {
@@ -70,7 +71,7 @@ object ScalaParser {
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         OptionRef(getTypeRef(innerType, typeParams))
-      case "LocalDate"  =>
+      case "LocalDate" =>
         DateRef
       case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" =>
         DateTimeRef
@@ -85,8 +86,12 @@ object ScalaParser {
         val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         val innerTypeR = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
         UnionRef(getTypeRef(innerTypeL, typeParams), getTypeRef(innerTypeR, typeParams))
+      case "Map" =>
+        val keyType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        val valueType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
+        MapRef(getTypeRef(keyType, typeParams), getTypeRef(valueType, typeParams))
       case _ =>
-        //println(s"type ref $typeName umkow")
+        println(s"type ref $typeName umkown")
         UnknownTypeRef(typeName)
     }
   }

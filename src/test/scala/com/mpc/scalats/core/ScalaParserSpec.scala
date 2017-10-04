@@ -55,12 +55,12 @@ class ScalaParserSpec extends FlatSpec with Matchers {
       List("T")
     )
 
-#    List(CaseClass(TestClass7,      List(CaseClassMember(name,UnknownTypeRef(Either))),List(T)),
-#      CaseClass(TestClass1,List(CaseClassMember(name,StringRef)),List()), \
-#        CaseClass(TestClass1B,List(CaseClassMember(foo,StringRef)),List()))
+    //    List(CaseClass(TestClass7,      List(CaseClassMember(name,UnknownTypeRef(Either))),List(T)),
+    //      CaseClass(TestClass1,List(CaseClassMember(name,StringRef)),List()), \
+    //       CaseClass(TestClass1B,List(CaseClassMember(foo,StringRef)),List()))
 
-#    println(expected)
-#    parsed should contain(expected)
+    //    println(expected)
+    //    parsed should contain(expected)
 
   }
 
@@ -75,7 +75,7 @@ object TestTypes {
   val TestClass4Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass4")
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
-    val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
+  val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 

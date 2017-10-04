@@ -75,6 +75,8 @@ object Compiler {
       TypeScriptModel.UnionType(TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef), UndefinedRef)
     case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
       TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
+    case ScalaModel.MapRef(kT, vT) =>
+      TypeScriptModel.MapType(compileTypeRef(kT, inInterfaceContext), compileTypeRef(vT, inInterfaceContext))
     case ScalaModel.UnionRef(i, i2) =>
       TypeScriptModel.UnionType(compileTypeRef(i, inInterfaceContext), compileTypeRef(i2, inInterfaceContext))
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
