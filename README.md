@@ -10,6 +10,8 @@ http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
 
 *New version 0.3.2* - added support for more types; added file output support.
 
+*New version 4.0.0* - added support for SBT 1.0, Either and Map.
+
 ## Usage
 
 *scala-ts* can be used either standalone or as a sbt plugin.
