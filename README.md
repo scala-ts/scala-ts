@@ -1,11 +1,6 @@
 # scala-ts
 
-# quickstart for development
-
-    sbt
-    runMain com.mpc.scalats.AuthorExample
-
-# readme
+## Overview
 
 *scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
 
@@ -70,6 +65,16 @@ Currently *scala-ts* supports the following types of case class members:
 * generic types
 * References to other case classes
 
+## Development
+
+### Quickstart
+
+    sbt
+    runMain com.mpc.scalats.AuthorExample
+
 ## Credits
 
-Many thanks to https://github.com/nicolasdalsass who forked the project into https://github.com/Elium/scala-ts/tree/master. I incorporated some of his ideas into `scala-ts`.
+Many thanks to:
+* https://github.com/nicolasdalsass who forked the project into https://github.com/Elium/scala-ts/tree/master. I incorporated some of his ideas into `scala-ts`.
+* https://github.com/returntocorp - for SBT 1.0 support, Either, Map
+
