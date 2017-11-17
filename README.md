@@ -1,5 +1,12 @@
 # scala-ts
 
+# quickstart for development
+
+    sbt
+    runMain com.mpc.scalats.AuthorExample
+
+# readme
+
 *scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
 
 *scala-ts* is helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.

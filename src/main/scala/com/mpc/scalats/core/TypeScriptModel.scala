@@ -44,6 +44,8 @@ object TypeScriptModel {
 
   case class UnionType(inner1: TypeRef, inner2: TypeRef) extends TypeRef
 
+  case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef
+
   case object AccessModifier {
 
     case object Public extends AccessModifier

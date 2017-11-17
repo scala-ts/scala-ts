@@ -6,6 +6,10 @@ object ScalaModel {
 
   case class OptionRef(innerType: TypeRef) extends TypeRef
 
+  case class UnionRef(innerType: TypeRef, innerType2: TypeRef) extends TypeRef
+
+  case class MapRef(keyType: TypeRef, valueType: TypeRef) extends TypeRef
+
   case class CaseClassRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef

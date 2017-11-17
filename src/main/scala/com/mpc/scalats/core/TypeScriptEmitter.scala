@@ -3,7 +3,6 @@ package com.mpc.scalats.core
 import java.io.PrintStream
 
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{Private, Public}
-import com.mpc.scalats.core.TypeScriptModel.{DateRef, DateTimeRef}
 
 object TypeScriptEmitter {
 
@@ -13,7 +12,7 @@ object TypeScriptEmitter {
     declaration foreach {
       case decl: InterfaceDeclaration =>
         emitInterfaceDeclaration(decl, out)
-      case decl: ClassDeclaration  =>
+      case decl: ClassDeclaration =>
         emitClassDeclaration(decl, out)
     }
   }
@@ -24,7 +23,7 @@ object TypeScriptEmitter {
     emitTypeParams(decl.typeParams, out)
     out.println(" {")
     members foreach { member =>
-      out.println(s"\t${member.name}: ${getTypeRefString(member.typeRef)};")
+      out.println(s"  ${member.name}: ${getTypeRefString(member.typeRef)};")
     }
     out.println("}")
     out.println()
@@ -69,6 +68,7 @@ object TypeScriptEmitter {
     case UnknownTypeRef(typeName) => typeName
     case TypeParamRef(param) => param
     case UnionType(inner1, inner2) => s"(${getTypeRefString(inner1)} | ${getTypeRefString(inner2)})"
+    case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }"
     case NullRef => "null"
     case UndefinedRef => "undefined"
   }

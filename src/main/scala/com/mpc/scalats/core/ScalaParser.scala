@@ -3,6 +3,7 @@ package com.mpc.scalats.core
 /**
   * Created by Milosz on 09.06.2016.
   */
+
 import scala.reflect.runtime.universe._
 
 object ScalaParser {
@@ -23,7 +24,7 @@ object ScalaParser {
     }
     val members = relevantMemberSymbols map { member =>
       val memberName = member.name.toString
-      CaseClassMember(memberName, getTypeRef(member.returnType, typeParams.toSet))
+      CaseClassMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }
     CaseClass(
       caseClassType.typeSymbol.name.toString,
@@ -37,9 +38,9 @@ object ScalaParser {
       val relevantMemberSymbols = scalaType.members.collect {
         case m: MethodSymbol if m.isCaseAccessor => m
       }
-      val memberTypes = relevantMemberSymbols.map(_.typeSignature match {
+      val memberTypes = relevantMemberSymbols.map(_.typeSignature.map(_.normalize) match {
         case NullaryMethodType(resultType) => resultType
-        case t => t
+        case t => t.map(_.normalize)
       }).flatMap(getInvolvedTypes(alreadyExamined + scalaType))
       val typeArgs = scalaType match {
         case t: scala.reflect.runtime.universe.TypeRef => t.args.flatMap(getInvolvedTypes(alreadyExamined + scalaType))
@@ -70,7 +71,7 @@ object ScalaParser {
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         OptionRef(getTypeRef(innerType, typeParams))
-      case "LocalDate"  =>
+      case "LocalDate" =>
         DateRef
       case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" =>
         DateTimeRef
@@ -81,7 +82,16 @@ object ScalaParser {
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
         CaseClassRef(caseClassName, typeArgRefs)
+      case "Either" =>
+        val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        val innerTypeR = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
+        UnionRef(getTypeRef(innerTypeL, typeParams), getTypeRef(innerTypeR, typeParams))
+      case "Map" =>
+        val keyType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
+        val valueType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
+        MapRef(getTypeRef(keyType, typeParams), getTypeRef(valueType, typeParams))
       case _ =>
+        //println(s"type ref $typeName umkown")
         UnknownTypeRef(typeName)
     }
   }

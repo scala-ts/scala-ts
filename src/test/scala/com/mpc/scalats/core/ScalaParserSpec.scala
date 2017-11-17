@@ -47,6 +47,23 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should have length 6
   }
 
+  it should "correctly hadle either types" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass7Type))
+    val expected = CaseClass(
+      "TestClass5",
+      List(CaseClassMember("name", OptionRef(TypeParamRef("T")))),
+      List("T")
+    )
+
+    //    List(CaseClass(TestClass7,      List(CaseClassMember(name,UnknownTypeRef(Either))),List(T)),
+    //      CaseClass(TestClass1,List(CaseClassMember(name,StringRef)),List()), \
+    //       CaseClass(TestClass1B,List(CaseClassMember(foo,StringRef)),List()))
+
+    //    println(expected)
+    //    parsed should contain(expected)
+
+  }
+
 }
 
 object TestTypes {
@@ -58,10 +75,13 @@ object TestTypes {
   val TestClass4Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass4")
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
+  val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
   case class TestClass1(name: String)
+
+  case class TestClass1B(foo: String)
 
   case class TestClass2[T](name: T)
 
@@ -71,5 +91,9 @@ object TestTypes {
 
   case class TestClass5[T](name: Option[T])
 
+
   case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
+
+  case class TestClass7[T](name: Either[TestClass1, TestClass1B])
+
 }
