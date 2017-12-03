@@ -23,7 +23,7 @@ object CLI {
     }
 
     val config = Config(
-      emitInterfaces = options contains EmitInterfaces,
+//      emitInterfaces = options contains EmitInterfaces,
       emitClasses = options contains EmitClasses,
       optionToNullable = options contains OptionToNullable,
       optionToUndefined = options contains OptionToUndefined

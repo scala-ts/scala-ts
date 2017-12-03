@@ -1,6 +1,7 @@
 package com.mpc.scalats.core
 
 import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.core.ScalaModel.CaseClassRef
 import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef}
 
 /**
@@ -10,15 +11,15 @@ object Compiler {
 
   def compile(scalaClasses: List[ScalaModel.Entity])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
-      val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
-      val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
-      interface ++ clazz
+      if (scalaClass.isTrait) List(compileInterface(scalaClass))
+      else if (config.emitClasses) List(compileClass(scalaClass))
+      else List.empty
     }
   }
 
   private def compileInterface(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
-      s"I${scalaClass.name}",
+      s"${scalaClass.name}",
       scalaClass.members map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
@@ -41,7 +42,8 @@ object Compiler {
           )
         }
       ),
-      typeParams = scalaClass.params
+      typeParams = scalaClass.params,
+      baseClasses = scalaClass.baseTypes
     )
   }
 

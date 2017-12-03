@@ -16,7 +16,7 @@ object TypeScriptModel {
 
   case class Member(name: String, typeRef: TypeRef)
 
-  case class ClassDeclaration(name: String, constructor: ClassConstructor, typeParams: List[String]) extends Declaration
+  case class ClassDeclaration(name: String, constructor: ClassConstructor, typeParams: List[String], baseClasses: List[String]) extends Declaration
 
   case class ClassConstructor(parameters: List[ClassConstructorParameter])
 

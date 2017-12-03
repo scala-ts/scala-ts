@@ -20,18 +20,28 @@ object ScalaParser {
     val relevantMemberSymbols = aType.members.collect {
       case m: MethodSymbol if m.isAccessor => m
     }
+    val traitDefs = aType.members.collect {
+      case m: MethodSymbol if m.isAbstract => m
+    }
     val typeParams = aType.typeConstructor.dealias.etaExpand match {
       case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decodedName.toString)
       case _ => List.empty[String]
     }
-    val members = relevantMemberSymbols map { member =>
+    val members = (relevantMemberSymbols ++ traitDefs) map { member =>
       val memberName = member.name.toString
       EntityMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }
+    val thisClassName = aType.typeSymbol.name.toString
     Entity(
-      aType.typeSymbol.name.toString,
+      thisClassName,
       members.toList,
-      typeParams
+      typeParams,
+      aType.baseClasses.map(_.name.toString).filter{
+        case "Any" | "Object" | "Product" | "Equals" | "Serializable" => false
+        case other if other == thisClassName => false
+        case _ => true
+      },
+      aType.typeSymbol.asClass.isTrait && aType.typeSymbol.asClass.isSealed
     )
   }
 
@@ -48,7 +58,12 @@ object ScalaParser {
         case t: scala.reflect.runtime.universe.TypeRef => t.args.flatMap(getInvolvedTypes(alreadyExamined + scalaType))
         case _ => List.empty
       }
-      (scalaType.typeConstructor :: typeArgs ::: memberTypes.toList).filter(!_.typeSymbol.isParameter).distinct
+
+      var subClasses = Set.empty[Type]
+      if(scalaType.typeSymbol.asClass.isTrait && scalaType.typeSymbol.asClass.isSealed) {
+        subClasses = scalaType.typeSymbol.asClass.knownDirectSubclasses.map(_.info)
+      }
+      (scalaType.typeConstructor :: typeArgs ::: memberTypes.toList ::: subClasses.toList).filter(!_.typeSymbol.isParameter).distinct
     } else {
       List.empty
     }
@@ -83,6 +98,7 @@ object ScalaParser {
         val caseClassName = scalaType.typeSymbol.name.toString
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
+
         CaseClassRef(caseClassName, typeArgRefs)
       case "Either" =>
         val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head

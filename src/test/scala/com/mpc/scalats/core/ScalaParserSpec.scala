@@ -12,13 +12,13 @@ class ScalaParserSpec extends FlatSpec with Matchers {
 
   it should "parse case class with one primitive member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type))
-    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty)
+    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty, List.empty, false)
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass2Type))
-    val expected = Entity("TestClass2", List(EntityMember("name", TypeParamRef("T"))), List("T"))
+    val expected = Entity("TestClass2", List(EntityMember("name", TypeParamRef("T"))), List("T"), List.empty, false)
     parsed should contain(expected)
   }
 
@@ -27,7 +27,9 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     val expected = Entity(
       "TestClass3",
       List(EntityMember("name", SeqRef(TypeParamRef("T")))),
-      List("T")
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
   }
@@ -37,7 +39,9 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     val expected = Entity(
       "TestClass5",
       List(EntityMember("name", OptionRef(TypeParamRef("T")))),
-      List("T")
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
   }
@@ -55,6 +59,10 @@ class ScalaParserSpec extends FlatSpec with Matchers {
       List("T")
     )
     parsed should contain(expected)
+
+  it should "include base types of traits" in {
+    val parser = ScalaParser.parseCaseClasses(List(TestTypes.TestTrait1Type))
+    parser should have length 3
   }
 
 }
@@ -69,6 +77,7 @@ object TestTypes {
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
   val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
+  val TestTrait1Type = typeFromName("com.mpc.scalats.core.TestTypes.TestTrait1")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
@@ -90,5 +99,13 @@ object TestTypes {
   case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
+
+  sealed trait TestTrait1 {
+    def id: Int
+  }
+
+  case class TestClass7(id: Int, name: String) extends TestTrait1
+
+  case class TestClass8(id: Int, other: String) extends TestTrait1
 
 }
