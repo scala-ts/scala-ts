@@ -34,7 +34,7 @@ object TypeScriptEmitter {
     out.print(s"export class $name")
     emitTypeParams(decl.typeParams, out)
     if(baseClasses.nonEmpty) {
-      out.print(" extends " + decl.baseClasses.mkString(", "))
+      out.print(" implements " + decl.baseClasses.mkString(", "))
     }
     out.println(" {")
     out.println(s"\tconstructor(")

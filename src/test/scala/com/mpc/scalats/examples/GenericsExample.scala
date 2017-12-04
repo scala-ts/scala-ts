@@ -7,7 +7,9 @@ import com.mpc.scalats.core.TypeScriptGenerator
  * Created by Milosz on 06.12.2016.
  */
 
-sealed trait Fruit {
+trait Vegetation
+
+sealed trait Fruit extends Vegetation {
   def id: Int
 }
 

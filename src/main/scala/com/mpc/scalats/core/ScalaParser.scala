@@ -10,6 +10,10 @@ object ScalaParser {
 
   import ScalaModel._
 
+  private val unwantedBaseClasses = Seq("Any", "AnyVal", "Immutable", "Iterable", "Poly", "Poly1", "PolyApply", "Object", "Product", "Equals", "Serializable", "Ordered", "Comparable", "Function1", "PartialFunction")
+
+  private val unwantedTraitDefs = Seq("toString")
+
   def parseCaseClasses(classTypes: List[Type]): List[Entity] = {
     val involvedTypes = classTypes flatMap getInvolvedTypes(Set.empty)
     val typesToParse = (involvedTypes filter isEntityType).distinct
@@ -21,7 +25,7 @@ object ScalaParser {
       case m: MethodSymbol if m.isAccessor => m
     }
     val traitDefs = aType.members.collect {
-      case m: MethodSymbol if m.isAbstract => m
+      case m: MethodSymbol if m.isAbstract && !unwantedTraitDefs.contains(m.name.toString) => m
     }
     val typeParams = aType.typeConstructor.dealias.etaExpand match {
       case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decodedName.toString)
@@ -36,12 +40,11 @@ object ScalaParser {
       thisClassName,
       members.toList,
       typeParams,
-      aType.baseClasses.map(_.name.toString).filter{
-        case "Any" | "Object" | "Product" | "Equals" | "Serializable" => false
-        case other if other == thisClassName => false
+      aType.baseClasses.map(_.name.toString).filter {
+        case name if !(thisClassName :+ unwantedBaseClasses).contains(name) => false
         case _ => true
       },
-      aType.typeSymbol.asClass.isTrait && aType.typeSymbol.asClass.isSealed
+      aType.typeSymbol.asClass.isTrait
     )
   }
 
@@ -63,7 +66,12 @@ object ScalaParser {
       if(scalaType.typeSymbol.asClass.isTrait && scalaType.typeSymbol.asClass.isSealed) {
         subClasses = scalaType.typeSymbol.asClass.knownDirectSubclasses.map(_.info)
       }
-      (scalaType.typeConstructor :: typeArgs ::: memberTypes.toList ::: subClasses.toList).filter(!_.typeSymbol.isParameter).distinct
+
+      val superClasses = scalaType.typeSymbol.asClass.baseClasses.collect { case baseClass if !unwantedBaseClasses.contains(baseClass.name.toString) =>
+        baseClass.info
+      }.toSet
+
+      (scalaType.typeConstructor :: typeArgs ::: memberTypes.toList ::: subClasses.toList ::: superClasses.toList).filter(!_.typeSymbol.isParameter).distinct
     } else {
       List.empty
     }
