@@ -50,18 +50,11 @@ class ScalaParserSpec extends FlatSpec with Matchers {
   it should "correctly hadle either types" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass7Type))
     val expected = CaseClass(
-      "TestClass5",
-      List(CaseClassMember("name", OptionRef(TypeParamRef("T")))),
+      "TestClass7",
+      List(CaseClassMember("name", UnionRef(CaseClassRef("TestClass1", List()),CaseClassRef("TestClass1B", List())))),
       List("T")
     )
-
-    //    List(CaseClass(TestClass7,      List(CaseClassMember(name,UnknownTypeRef(Either))),List(T)),
-    //      CaseClass(TestClass1,List(CaseClassMember(name,StringRef)),List()), \
-    //       CaseClass(TestClass1B,List(CaseClassMember(foo,StringRef)),List()))
-
-    //    println(expected)
-    //    parsed should contain(expected)
-
+    parsed should contain(expected)
   }
 
 }
