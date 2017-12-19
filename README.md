@@ -29,7 +29,8 @@ java -cp 'scala-ts-assembly-0.1.0.jar' com.mpc.scalats.Main "com.example.Example
 
 Add the following plugin to `plugins.sbt`:
 ```
-addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.3.0")
+resolvers += Resolver.bintrayIvyRepo("returntocorp", "sbt-plugins")
+addSbtPlugin("com.github.returnto" % "scala-ts" % "0.4.0")
 ```
 
 Additionally, enable the plugin in your project settings:
