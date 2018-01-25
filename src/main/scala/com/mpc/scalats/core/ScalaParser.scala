@@ -90,6 +90,8 @@ object ScalaParser {
         val keyType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         val valueType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
         MapRef(getTypeRef(keyType, typeParams), getTypeRef(valueType, typeParams))
+      case "Value" =>
+        IntRef
       case _ =>
         //println(s"type ref $typeName umkown")
         UnknownTypeRef(typeName)
