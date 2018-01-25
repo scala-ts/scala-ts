@@ -75,6 +75,10 @@ Currently *scala-ts* supports the following types of case class members:
     sbt
     runMain com.mpc.scalats.AuthorExample
 
+### Publishing
+
+    BINTRAY_USER=<youruser> BINTRAY_PASS=<yourapikey> sbt publish
+
 ## Credits
 
 Many thanks to:
