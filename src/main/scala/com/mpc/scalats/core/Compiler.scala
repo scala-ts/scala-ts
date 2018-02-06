@@ -46,15 +46,17 @@ object Compiler {
   }
 
   private def compileTypeRef(
-                              scalaTypeRef: ScalaModel.TypeRef,
-                              inInterfaceContext: Boolean
-                            )
-                            (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
+    scalaTypeRef: ScalaModel.TypeRef,
+    inInterfaceContext: Boolean
+  )
+    (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.LongRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.DoubleRef =>
+      TypeScriptModel.NumberRef
+    case ScalaModel.FloatRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.BooleanRef =>
       TypeScriptModel.BooleanRef
@@ -77,8 +79,12 @@ object Compiler {
       TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
       TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), UndefinedRef)
-    case ScalaModel.UnknownTypeRef(_) =>
-      TypeScriptModel.StringRef
+    case ScalaModel.UnknownTypeRef(name) =>
+      if (name.equalsIgnoreCase("Metric")) {
+        TypeScriptModel.StringRef
+      } else {
+        TypeScriptModel.UnknownTypeRef(if (inInterfaceContext) s"IElium$name" else name)
+      }
   }
 
 }
