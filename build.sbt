@@ -1,49 +1,21 @@
-import sbt.Keys._
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
 
-lazy val pomSettings = Seq(
-  publishMavenStyle := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishArtifact in Test := false,
-  pomExtra :=
-    <url>https://github.com/miloszpp/scala-ts</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>https://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:miloszpp/scala-ts.git</url>
-      <connection>scm:git:git@github.com:miloszpp/scala-ts.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>miloszpp</id>
-        <name>Miłosz Piechocki</name>
-        <url>http://codewithstyle.info</url>
-      </developer>
-    </developers>
-)
+publishArtifact in Test := false
 
 lazy val root = (project in file(".")).
   settings(
+    version in ThisBuild := "0.4.1",
+    organization in ThisBuild := "com.returntocorp",
+    description := "Generate TS models from scala",
     name := "scala-ts",
-    version := "0.4.0",
-    organization := "com.github.miloszpp",
-    scalaVersion := "2.10.6",
-    mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
     sbtPlugin := true,
-    sbtVersion := "0.13.11"
-  ).
-  settings(pomSettings)
-
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+    publishMavenStyle := false,
+    bintrayRepository := "sbt-plugins",
+    mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
+    sbtVersion := "1.0.2",
+    bintrayOrganization := Some("returntocorp")
+  )
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.6",
   "ch.qos.logback" % "logback-classic" % "1.1.7",

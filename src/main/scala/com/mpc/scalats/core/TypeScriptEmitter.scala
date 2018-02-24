@@ -30,9 +30,12 @@ object TypeScriptEmitter {
   }
 
   private def emitClassDeclaration(decl: ClassDeclaration, out: PrintStream) = {
-    val ClassDeclaration(name, ClassConstructor(parameters), typeParams) = decl
+    val ClassDeclaration(name, ClassConstructor(parameters), typeParams, baseClasses) = decl
     out.print(s"export class $name")
     emitTypeParams(decl.typeParams, out)
+    if(baseClasses.nonEmpty) {
+      out.print(" implements " + decl.baseClasses.mkString(", "))
+    }
     out.println(" {")
     out.println(s"\tconstructor(")
     parameters.zipWithIndex foreach { case (parameter, index) =>

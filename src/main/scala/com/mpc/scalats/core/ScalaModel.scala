@@ -14,9 +14,9 @@ object ScalaModel {
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
 
-  case class CaseClass(name: String, members: List[CaseClassMember], params: List[String])
+  case class Entity(name: String, members: List[EntityMember], params: List[String], baseTypes: List[String], isTrait: Boolean)
 
-  case class CaseClassMember(name: String, typeRef: TypeRef)
+  case class EntityMember(name: String, typeRef: TypeRef)
 
   case class UnknownTypeRef(name: String) extends TypeRef
 

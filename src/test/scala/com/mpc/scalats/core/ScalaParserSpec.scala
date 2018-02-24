@@ -10,34 +10,38 @@ import scala.reflect.runtime.universe._
   */
 class ScalaParserSpec extends FlatSpec with Matchers {
 
-  it should "parse case class with one primitive member" in {
+  it should "parse trait with one primitive member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type))
-    val expected = CaseClass("TestClass1", List(CaseClassMember("name", StringRef)), List.empty)
+    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty, List.empty, true)
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass2Type))
-    val expected = CaseClass("TestClass2", List(CaseClassMember("name", TypeParamRef("T"))), List("T"))
+    val expected = Entity("TestClass2", List(EntityMember("name", TypeParamRef("T"))), List("T"), List.empty, false)
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one member list of type parameter" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass3Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass3",
-      List(CaseClassMember("name", SeqRef(TypeParamRef("T")))),
-      List("T")
+      List(EntityMember("name", SeqRef(TypeParamRef("T")))),
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
   }
 
   it should "parse generic case class with one optional member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass5Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass5",
-      List(CaseClassMember("name", OptionRef(TypeParamRef("T")))),
-      List("T")
+      List(EntityMember("name", OptionRef(TypeParamRef("T")))),
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
   }
@@ -47,14 +51,21 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should have length 6
   }
 
-  it should "correctly hadle either types" in {
+  it should "correctly handle either types" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass7Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass7",
-      List(CaseClassMember("name", UnionRef(CaseClassRef("TestClass1", List()),CaseClassRef("TestClass1B", List())))),
-      List("T")
+      List(EntityMember("name", UnionRef(CaseClassRef("TestClass1", List()),CaseClassRef("TestClass1B", List())))),
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
+  }
+
+  it should "include base types of traits" in {
+    val parser = ScalaParser.parseCaseClasses(List(TestTypes.TestTrait1Type))
+    parser should have length 3
   }
 
 }
@@ -69,10 +80,13 @@ object TestTypes {
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
   val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
+  val TestTrait1Type = typeFromName("com.mpc.scalats.core.TestTypes.TestTrait1")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
-  case class TestClass1(name: String)
+  trait TestClass1 {
+    val name: String
+  }
 
   case class TestClass1B(foo: String)
 
@@ -89,4 +103,11 @@ object TestTypes {
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
 
+  sealed trait TestTrait1 {
+    def id: Int
+  }
+
+  case class TestClass8(id: Int, other: String) extends TestTrait1
+
+  case class TestClass9(id: Int, name: String) extends TestTrait1
 }

@@ -1,6 +1,7 @@
 package com.mpc.scalats.core
 
 import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.core.ScalaModel.CaseClassRef
 import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef}
 
 /**
@@ -8,7 +9,7 @@ import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorP
   */
 object Compiler {
 
-  def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
+  def compile(scalaClasses: List[ScalaModel.Entity])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
       val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
       val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
@@ -16,20 +17,20 @@ object Compiler {
     }
   }
 
-  private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+  private def compileInterface(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
       s"I${scalaClass.name}",
-      scalaClass.members map { scalaMember =>
+      scalaClass.members.map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
           compileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
         )
-      },
+      }.toSet,
       typeParams = scalaClass.params
     )
   }
 
-  private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+  private def compileClass(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.ClassDeclaration(
       scalaClass.name,
       ClassConstructor(
@@ -41,7 +42,8 @@ object Compiler {
           )
         }
       ),
-      typeParams = scalaClass.params
+      typeParams = scalaClass.params,
+      baseClasses = scalaClass.baseTypes
     )
   }
 
