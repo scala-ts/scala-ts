@@ -21,8 +21,7 @@ object TraitExample {
         classOf[Zoo].getName,
         classOf[Cat].getName,
         classOf[Dog].getName
-      ),
-      out = System.out)(Config())
+      ))(Config())
   }
 
 }

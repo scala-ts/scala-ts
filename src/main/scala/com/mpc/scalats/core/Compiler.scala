@@ -11,15 +11,15 @@ object Compiler {
 
   def compile(scalaClasses: List[ScalaModel.Entity])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
-      if (scalaClass.isTrait) List(compileInterface(scalaClass))
-      else if (config.emitClasses) List(compileClass(scalaClass))
-      else List.empty
+      val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
+      val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
+      interface ++ clazz
     }
   }
 
   private def compileInterface(scalaClass: ScalaModel.Entity)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
-      s"${scalaClass.name}",
+      s"I${scalaClass.name}",
       scalaClass.members.map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
@@ -65,7 +65,7 @@ object Compiler {
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
     case ScalaModel.CaseClassRef(name, typeArgs) =>
-      val actualName = name
+      val actualName = if (inInterfaceContext) s"I$name" else name
       TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef

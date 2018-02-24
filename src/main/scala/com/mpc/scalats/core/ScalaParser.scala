@@ -10,7 +10,24 @@ object ScalaParser {
 
   import ScalaModel._
 
-  private val unwantedBaseClasses = Seq("Any", "AnyVal", "Immutable", "Iterable", "Poly", "Poly1", "PolyApply", "Object", "Product", "Equals", "Serializable", "Ordered", "Comparable", "Function1", "PartialFunction")
+  private val unwantedBaseClasses = Seq(
+    "Any",
+    "AnyVal",
+    "Immutable",
+    "Iterable",
+    "Poly",
+    "Poly1",
+    "PolyApply",
+    "Object",
+    "Product",
+    "Equals",
+    "Serializable",
+    "Ordered",
+    "Comparable",
+    "Function1",
+    "PartialFunction",
+    "CharSequence"
+  )
 
   private val unwantedTraitDefs = Seq("toString")
 
@@ -31,7 +48,7 @@ object ScalaParser {
       case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decodedName.toString)
       case _ => List.empty[String]
     }
-    val members = (relevantMemberSymbols ++ traitDefs) map { member =>
+    val members = (relevantMemberSymbols ++ traitDefs).toList.distinct map { member =>
       val memberName = member.name.toString
       EntityMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
     }

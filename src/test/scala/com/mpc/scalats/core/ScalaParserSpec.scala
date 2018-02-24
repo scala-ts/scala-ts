@@ -6,13 +6,13 @@ import org.scalatest._
 import scala.reflect.runtime.universe._
 
 /**
- * Created by Milosz on 06.12.2016.
- */
+  * Created by Milosz on 06.12.2016.
+  */
 class ScalaParserSpec extends FlatSpec with Matchers {
 
-  it should "parse case class with one primitive member" in {
+  it should "parse trait with one primitive member" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type))
-    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty, List.empty, false)
+    val expected = Entity("TestClass1", List(EntityMember("name", StringRef)), List.empty, List.empty, true)
     parsed should contain(expected)
   }
 
@@ -51,14 +51,17 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should have length 6
   }
 
-  it should "correctly hadle either types" in {
+  it should "correctly handle either types" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass7Type))
-    val expected = CaseClass(
+    val expected = Entity(
       "TestClass7",
-      List(CaseClassMember("name", UnionRef(CaseClassRef("TestClass1", List()),CaseClassRef("TestClass1B", List())))),
-      List("T")
+      List(EntityMember("name", UnionRef(CaseClassRef("TestClass1", List()),CaseClassRef("TestClass1B", List())))),
+      List("T"),
+      List.empty,
+      false
     )
     parsed should contain(expected)
+  }
 
   it should "include base types of traits" in {
     val parser = ScalaParser.parseCaseClasses(List(TestTypes.TestTrait1Type))
@@ -104,8 +107,7 @@ object TestTypes {
     def id: Int
   }
 
-  case class TestClass7(id: Int, name: String) extends TestTrait1
-
   case class TestClass8(id: Int, other: String) extends TestTrait1
 
+  case class TestClass9(id: Int, name: String) extends TestTrait1
 }
