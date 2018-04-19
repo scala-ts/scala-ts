@@ -1,6 +1,20 @@
 package com.mpc.scalats.core
 
 object ScalaModel {
+  sealed trait TypeDef
+
+  case class CaseClass(
+    name: String,
+    members: List[CaseClassMember],
+    params: List[String]) extends TypeDef
+
+  case class CaseObject(name: String) extends TypeDef
+
+  case class SealedTrait(
+    name: String,
+    members: List[TypeDef]) extends TypeDef
+
+  // ---
 
   sealed trait TypeRef
 
@@ -13,8 +27,6 @@ object ScalaModel {
   case class CaseClassRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
-
-  case class CaseClass(name: String, members: List[CaseClassMember], params: List[String])
 
   case class CaseClassMember(name: String, typeRef: TypeRef)
 
@@ -35,5 +47,4 @@ object ScalaModel {
   case object DateRef extends TypeRef
 
   case object DateTimeRef extends TypeRef
-
 }

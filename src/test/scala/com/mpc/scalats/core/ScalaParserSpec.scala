@@ -44,10 +44,10 @@ class ScalaParserSpec extends FlatSpec with Matchers {
 
   it should "correctly detect involved types" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass6Type))
-    parsed should have length 6
+    parsed.size should equal(6)
   }
 
-  it should "correctly hadle either types" in {
+  it should "correctly handle either types" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass7Type))
     val expected = CaseClass(
       "TestClass7",
@@ -57,20 +57,36 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(expected)
   }
 
+  it should "correctly parse case object" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestObject1Type))
+    val expected = CaseObject("TestObject1")
+
+    parsed should contain(expected)
+  }
+
+  it should "correctly parse object" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestObject2Type))
+    val expected = CaseObject("TestObject2")
+
+    parsed should contain(expected)
+  }
 }
 
 object TestTypes {
 
   implicit val mirror = runtimeMirror(getClass.getClassLoader)
-  val TestClass1Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass1")
-  val TestClass2Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass2")
-  val TestClass3Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass3")
-  val TestClass4Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass4")
-  val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
-  val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
-  val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
+  import mirror.universe
+  import universe.typeOf
 
-  private def typeFromName(name: String) = mirror.staticClass(name).toType
+  val TestClass1Type = typeOf[TestClass1]
+  val TestClass2Type = typeOf[TestClass2[_]]
+  val TestClass3Type = typeOf[TestClass3[_]]
+  val TestClass4Type = typeOf[TestClass4[_]]
+  val TestClass5Type = typeOf[TestClass5[_]]
+  val TestClass6Type = typeOf[TestClass6[_]]
+  val TestClass7Type = typeOf[TestClass7[_]]
+  val TestObject1Type = typeOf[TestObject1.type]
+  val TestObject2Type = typeOf[TestObject2.type]
 
   case class TestClass1(name: String)
 
@@ -89,4 +105,7 @@ object TestTypes {
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
 
+  case object TestObject1
+
+  object TestObject2
 }

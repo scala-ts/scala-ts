@@ -1,20 +1,33 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef}
+import com.mpc.scalats.core.TypeScriptModel.{
+  ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef
+}
 
 /**
   * Created by Milosz on 09.06.2016.
   */
 object Compiler {
-  def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
-    scalaClasses flatMap { scalaClass =>
-      val interface =
-        if (config.emitInterfaces) List(compileInterface(scalaClass))
-        else List.empty
-      val clazz =
-        if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
-      interface ++ clazz
+
+  def compile(scalaTypes: ListSet[ScalaModel.TypeDef])(implicit config: Config): ListSet[TypeScriptModel.Declaration] = {
+    scalaTypes.flatMap { typeDef =>
+      typeDef match {
+        case scalaClass: ScalaModel.CaseClass => {
+          val clazz = {
+            if (config.emitClasses) List(compileClass(scalaClass))
+            else List.empty[TypeScriptModel.Declaration]
+          }
+
+
+          if (!config.emitInterfaces) clazz
+          else compileInterface(scalaClass) :: clazz
+        }
+
+        case _ => ???
+      }
     }
   }
 

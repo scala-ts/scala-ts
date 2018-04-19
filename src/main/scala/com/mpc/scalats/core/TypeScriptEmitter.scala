@@ -2,13 +2,15 @@ package com.mpc.scalats.core
 
 import java.io.PrintStream
 
+import scala.collection.immutable.ListSet
+
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{Private, Public}
 
 object TypeScriptEmitter {
 
   import TypeScriptModel._
 
-  def emit(declaration: List[Declaration], out: PrintStream): Unit = {
+  def emit(declaration: ListSet[Declaration], out: PrintStream): Unit = {
     declaration foreach {
       case decl: InterfaceDeclaration =>
         emitInterfaceDeclaration(decl, out)

@@ -25,9 +25,9 @@ object TypeScriptGenerator {
 
   def generate(caseClasses: List[Type])(implicit config: Config) = {
     val outputStream = config.outputStream.getOrElse(Console.out)
-    val scalaCaseClasses = ScalaParser.parseCaseClasses(caseClasses)
-    val typeScriptInterfaces = Compiler.compile(scalaCaseClasses)
-    TypeScriptEmitter.emit(typeScriptInterfaces,outputStream)
-  }
+    val scalaTypes = ScalaParser.parseCaseClasses(caseClasses)
+    val typeScriptInterfaces = Compiler.compile(scalaTypes)
 
+    TypeScriptEmitter.emit(typeScriptInterfaces, outputStream)
+  }
 }
