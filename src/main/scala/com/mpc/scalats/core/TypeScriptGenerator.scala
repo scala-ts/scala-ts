@@ -12,20 +12,23 @@ import scala.reflect.runtime.universe._
 object TypeScriptGenerator {
 
   def generateFromClassNames(
-                              classNames: List[String],
-                              classLoader: ClassLoader = getClass.getClassLoader
-                            )
-                            (implicit config: Config) = {
+    classNames: List[String],
+    logger: Logger,
+    classLoader: ClassLoader = getClass.getClassLoader
+  )(implicit config: Config) = {
     implicit val mirror = runtimeMirror(classLoader)
-    val types = classNames map { className =>
+    val types = classNames.map { className =>
       mirror.staticClass(className).toType
     }
-    generate(types)(config)
+
+    generate(types, logger)(config)
   }
 
-  def generate(caseClasses: List[Type])(implicit config: Config) = {
+  def generate(caseClasses: List[Type], logger: Logger)(
+    implicit config: Config) = {
     val outputStream = config.outputStream.getOrElse(Console.out)
-    val scalaTypes = ScalaParser.parseCaseClasses(caseClasses)
+    val scalaParser = new ScalaParser(logger)
+    val scalaTypes = scalaParser.parseTypes(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaTypes)
 
     TypeScriptEmitter.emit(typeScriptInterfaces, outputStream)

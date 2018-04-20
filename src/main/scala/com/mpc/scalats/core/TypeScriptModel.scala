@@ -1,5 +1,7 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 object TypeScriptModel {
 
   sealed trait Declaration
@@ -8,7 +10,10 @@ object TypeScriptModel {
 
   sealed trait AccessModifier
 
-  case class CustomTypeRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
+  case class CustomTypeRef(
+    name: String,
+    typeArgs: List[TypeRef]
+  ) extends TypeRef
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
 
@@ -17,6 +22,12 @@ object TypeScriptModel {
   case class Member(name: String, typeRef: TypeRef)
 
   case class ClassDeclaration(name: String, constructor: ClassConstructor, typeParams: List[String]) extends Declaration
+
+  case class SingletonDeclaration(name: String) extends Declaration
+
+  case class UnionDeclaration(
+    name: String,
+    possibilities: ListSet[TypeParamRef]) extends Declaration
 
   case class ClassConstructor(parameters: List[ClassConstructorParameter])
 
@@ -42,7 +53,7 @@ object TypeScriptModel {
 
   case class TypeParamRef(name: String) extends TypeRef
 
-  case class UnionType(inner1: TypeRef, inner2: TypeRef) extends TypeRef
+  case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef
 
   case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef
 

@@ -1,7 +1,11 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 object ScalaModel {
-  sealed trait TypeDef
+  sealed trait TypeDef {
+    def name: String
+  }
 
   case class CaseClass(
     name: String,
@@ -10,9 +14,9 @@ object ScalaModel {
 
   case class CaseObject(name: String) extends TypeDef
 
-  case class SealedTrait(
+  case class SealedUnion(
     name: String,
-    members: List[TypeDef]) extends TypeDef
+    members: ListSet[TypeDef]) extends TypeDef
 
   // ---
 
@@ -20,7 +24,7 @@ object ScalaModel {
 
   case class OptionRef(innerType: TypeRef) extends TypeRef
 
-  case class UnionRef(innerType: TypeRef, innerType2: TypeRef) extends TypeRef
+  case class UnionRef(possibilities: ListSet[TypeRef]) extends TypeRef
 
   case class MapRef(keyType: TypeRef, valueType: TypeRef) extends TypeRef
 

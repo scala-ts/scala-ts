@@ -4,13 +4,20 @@ import scala.collection.immutable.ListSet
 
 import com.mpc.scalats.configuration.Config
 import com.mpc.scalats.core.TypeScriptModel.{
-  ClassConstructor, ClassConstructorParameter, NullRef, UndefinedRef
+  ClassConstructor,
+  ClassConstructorParameter,
+  NullRef,
+  UndefinedRef,
+  TypeParamRef,
+  UnionDeclaration,
+  SingletonDeclaration
 }
 
 /**
-  * Created by Milosz on 09.06.2016.
-  */
+ * Created by Milosz on 09.06.2016.
+ */
 object Compiler {
+  // TODO: Refactor as class with config parameter in ctor
 
   def compile(scalaTypes: ListSet[ScalaModel.TypeDef])(implicit config: Config): ListSet[TypeScriptModel.Declaration] = {
     scalaTypes.flatMap { typeDef =>
@@ -21,15 +28,21 @@ object Compiler {
             else List.empty[TypeScriptModel.Declaration]
           }
 
-
           if (!config.emitInterfaces) clazz
           else compileInterface(scalaClass) :: clazz
         }
 
-        case _ => ???
+        case ScalaModel.CaseObject(name) =>
+          List(SingletonDeclaration(name))
+
+        case ScalaModel.SealedUnion(name, members) =>
+          compile(members) + UnionDeclaration(
+            name, members.map { m => TypeParamRef(m.name) })
       }
     }
   }
+
+  // ---
 
   private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
@@ -93,26 +106,34 @@ object Compiler {
       TypeScriptModel.DateTimeRef
     case ScalaModel.TypeParamRef(name) =>
       TypeScriptModel.TypeParamRef(name)
-    case ScalaModel.OptionRef(innerType)
-        if config.optionToNullable && config.optionToUndefined =>
-      TypeScriptModel.UnionType(
-        TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
-                                  NullRef),
-        UndefinedRef)
+
+    case ScalaModel.OptionRef(innerType) if (
+      config.optionToNullable && config.optionToUndefined) =>
+      TypeScriptModel.UnionType(ListSet(
+        TypeScriptModel.UnionType(ListSet(
+          compileTypeRef(innerType, inInterfaceContext), NullRef)),
+          UndefinedRef))
+
     case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
-                                NullRef)
-    case ScalaModel.MapRef(kT, vT) =>
-      TypeScriptModel.MapType(compileTypeRef(kT, inInterfaceContext),
-                              compileTypeRef(vT, inInterfaceContext))
-    case ScalaModel.UnionRef(i, i2) =>
-      TypeScriptModel.UnionType(compileTypeRef(i, inInterfaceContext),
-                                compileTypeRef(i2, inInterfaceContext))
+      TypeScriptModel.UnionType(ListSet(
+        compileTypeRef(innerType, inInterfaceContext),
+        NullRef))
+
+    case ScalaModel.MapRef(kT, vT) => TypeScriptModel.MapType(
+      compileTypeRef(kT, inInterfaceContext),
+      compileTypeRef(vT, inInterfaceContext))
+
+    case ScalaModel.UnionRef(possibilities) =>
+      TypeScriptModel.UnionType(possibilities.map { i =>
+        compileTypeRef(i, inInterfaceContext)
+      })
+
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
-                                UndefinedRef)
+      TypeScriptModel.UnionType(ListSet(
+        compileTypeRef(innerType, inInterfaceContext),
+        UndefinedRef))
+
     case ScalaModel.UnknownTypeRef(_) =>
       TypeScriptModel.StringRef
   }
-
 }

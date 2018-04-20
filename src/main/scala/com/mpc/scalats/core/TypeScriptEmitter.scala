@@ -4,7 +4,7 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
-import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{Private, Public}
+import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{ Private, Public }
 
 object TypeScriptEmitter {
 
@@ -14,6 +14,7 @@ object TypeScriptEmitter {
     declaration foreach {
       case decl: InterfaceDeclaration =>
         emitInterfaceDeclaration(decl, out)
+
       case decl: ClassDeclaration =>
         emitClassDeclaration(decl, out)
     }
@@ -69,8 +70,12 @@ object TypeScriptEmitter {
       s"$name<${params.map(getTypeRefString).mkString(", ")}>"
     case UnknownTypeRef(typeName) => typeName
     case TypeParamRef(param) => param
-    case UnionType(inner1, inner2) => s"(${getTypeRefString(inner1)} | ${getTypeRefString(inner2)})"
+
+    case UnionType(possibilities) =>
+      possibilities.map(getTypeRefString).mkString("(", " | ", ")")
+
     case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }"
+
     case NullRef => "null"
     case UndefinedRef => "undefined"
   }

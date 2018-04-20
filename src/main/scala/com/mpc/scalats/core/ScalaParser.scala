@@ -8,24 +8,53 @@ import scala.collection.immutable.ListSet
 
 import scala.reflect.runtime.universe._
 
-object ScalaParser {
+// TODO: Keep namespace using fullName from the Type
+final class ScalaParser(logger: Logger) {
 
   import ScalaModel._
 
-  def parseCaseClasses(types: List[Type]): ListSet[TypeDef] =
+  def parseTypes(types: List[Type]): ListSet[TypeDef] =
     parse(types, ListSet.empty[Type], ListSet.empty[TypeDef])
 
   // ---
 
   private def parseType(tpe: Type): Option[TypeDef] = tpe match {
     case _: SingleTypeApi =>
-      Some(CaseObject(tpe.typeSymbol.name.toString))
+      parseObject(tpe)
 
-    case _ if isCaseClass(tpe) => Some(parseCaseClass(tpe))
-    case _ => Option.empty
+    case _ if (tpe.getClass.getName contains "ModuleType"/*Workaround*/) =>
+      parseObject(tpe)
+
+    case _ if tpe.typeSymbol.isClass => {
+      val classSym = tpe.typeSymbol.asClass
+
+      if (classSym.isTrait && classSym.isSealed && tpe.typeParams.isEmpty) {
+        parseSealedUnion(tpe)
+      } else if (isCaseClass(tpe)) {
+        parseCaseClass(tpe)
+      } else {
+        Option.empty[TypeDef]
+      }
+    }
+
+    case _ => {
+      logger.warning(s"Unsupported Scala type: $tpe")
+      Option.empty[TypeDef]
+    }
   }
 
-  private def parseCaseClass(caseClassType: Type): CaseClass = {
+  private def parseObject(tpe: Type): Option[CaseObject] =
+    Some(CaseObject(tpe.typeSymbol.name.toString stripSuffix ".type"))
+
+  private def parseSealedUnion(tpe: Type): Option[SealedUnion] =
+    directKnownSubclasses(tpe) match {
+      case members @ (_ :: _ ) =>
+        Some(SealedUnion(tpe.typeSymbol.name.toString, parseTypes(members)))
+
+      case _ => Option.empty[SealedUnion]
+    }
+
+  private def parseCaseClass(caseClassType: Type): Option[CaseClass] = {
     val relevantMemberSymbols = caseClassType.members.collect {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
@@ -36,15 +65,15 @@ object ScalaParser {
     }
 
     val members = relevantMemberSymbols map { member =>
-      val memberName = member.name.toString
-      CaseClassMember(memberName, getTypeRef(member.returnType.map(_.normalize), typeParams.toSet))
+      CaseClassMember(member.name.toString, getTypeRef(
+        member.returnType.map(_.normalize), typeParams.toSet))
     }
 
-    CaseClass(
+    Some(CaseClass(
       caseClassType.typeSymbol.name.toString,
       members.toList,
       typeParams
-    )
+    ))
   }
 
   @annotation.tailrec
@@ -113,10 +142,16 @@ object ScalaParser {
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
         CaseClassRef(caseClassName, typeArgRefs)
-      case "Either" =>
+
+      case "Either" => {
         val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         val innerTypeR = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
-        UnionRef(getTypeRef(innerTypeL, typeParams), getTypeRef(innerTypeR, typeParams))
+
+        UnionRef(ListSet(
+          getTypeRef(innerTypeL, typeParams),
+          getTypeRef(innerTypeR, typeParams)))
+      }
+
       case "Map" =>
         val keyType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         val valueType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
@@ -129,4 +164,42 @@ object ScalaParser {
 
   @inline private def isCaseClass(scalaType: Type): Boolean =
     scalaType.typeSymbol.isClass && scalaType.typeSymbol.asClass.isCaseClass
+
+  private def directKnownSubclasses(tpe: Type): List[Type] = {
+    // Workaround for SI-7046: https://issues.scala-lang.org/browse/SI-7046
+    val tpeSym = tpe.typeSymbol.asClass
+
+    @annotation.tailrec
+    def allSubclasses(path: Traversable[Symbol], subclasses: Set[Type]): Set[Type] = path.headOption match {
+      case Some(cls: ClassSymbol) if (
+        tpeSym != cls && cls.selfType.baseClasses.contains(tpeSym)) => {
+        val newSub: Set[Type] = if (!cls.isCaseClass) {
+          logger.warning(s"cannot handle class ${cls.fullName}: no case accessor")
+          Set.empty
+        } else if (cls.typeParams.nonEmpty) {
+          logger.warning(s"cannot handle class ${cls.fullName}: type parameter not supported")
+          Set.empty
+        } else Set(cls.selfType)
+
+        allSubclasses(path.tail, subclasses ++ newSub)
+      }
+
+      case Some(o: ModuleSymbol) if (
+        o.companion == NoSymbol && // not a companion object
+          o.typeSignature.baseClasses.contains(tpeSym)) =>
+        allSubclasses(path.tail, subclasses + o.typeSignature)
+
+      case Some(o: ModuleSymbol) if (
+        o.companion == NoSymbol // not a companion object
+      ) => allSubclasses(path.tail, subclasses)
+
+      case Some(_) => allSubclasses(path.tail, subclasses)
+
+      case _ => subclasses
+    }
+
+    if (tpeSym.isSealed && tpeSym.isAbstract) {
+      allSubclasses(tpeSym.owner.typeSignature.decls, Set.empty).toList
+    } else List.empty
+  }
 }

@@ -4,7 +4,7 @@ import java.io.PrintStream
 import java.net.URLClassLoader
 
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptGenerator
+import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 import sbt.Keys._
 import sbt._
 import complete.DefaultParsers._
@@ -44,7 +44,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       val cpUrls = cp.map(_.asURL).toArray
       val cl = new URLClassLoader(cpUrls, ClassLoader.getSystemClassLoader)
 
-      TypeScriptGenerator.generateFromClassNames(args.toList, cl)
+      TypeScriptGenerator.generateFromClassNames(
+        args.toList, logger(streams.value.log), cl)
     },
     emitInterfaces in generateTypeScript := true,
     emitClasses in generateTypeScript := false,
@@ -54,4 +55,11 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     prependIPrefix := false
   )
 
+  private def logger(l: SbtLogger) = new Logger {
+    def warning(msg: => String): Unit = l.warn(msg)
+  }
+
+  private type SbtLogger = {
+    def warn(msg: => String): Unit
+  }
 }

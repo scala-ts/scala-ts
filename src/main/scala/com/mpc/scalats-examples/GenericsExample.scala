@@ -1,7 +1,7 @@
 package com.mpc.scalats
 
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptGenerator
+import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 
 /**
   * Created by Milosz on 06.12.2016.
@@ -14,9 +14,12 @@ case class Bar(b: Foo[String, String], c:List[Foo[Int, String]])
 case class Xyz(bars: Option[List[Option[Bar]]])
 
 object GenericsExample {
+  def main(args: Array[String]): Unit = {
+    val logger = Logger(
+      org.slf4j.LoggerFactory getLogger TypeScriptGenerator.getClass)
 
-  def main(args: Array[String]) {
-    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.Xyz"))(Config())
+    TypeScriptGenerator.generateFromClassNames(
+      List("com.mpc.scalats.Xyz"), logger)(Config())
   }
 
 }
