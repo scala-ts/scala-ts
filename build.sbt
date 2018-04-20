@@ -33,7 +33,7 @@ lazy val pomSettings = Seq(
 )
 
 lazy val root = (project in file(".")).
-  settings(
+  settings(Seq(
     name := "scala-ts",
     organization := "com.github.miloszpp",
     mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
@@ -45,9 +45,7 @@ lazy val root = (project in file(".")).
         case "2.10" => "0.13.16"
         case "2.12" => "1.1.0"
       }
-    }
-  ).
-  settings(pomSettings)
+    }) ++ Scalac.settings ++ pomSettings)
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,

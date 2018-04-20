@@ -3,12 +3,13 @@ package com.mpc.scalats.core
 import scala.collection.immutable.ListSet
 
 import com.mpc.scalats.configuration.Config
+
 import com.mpc.scalats.core.TypeScriptModel.{
   ClassConstructor,
   ClassConstructorParameter,
   NullRef,
   UndefinedRef,
-  TypeParamRef,
+  UnknownTypeRef,
   UnionDeclaration,
   SingletonDeclaration
 }
@@ -35,9 +36,13 @@ object Compiler {
         case ScalaModel.CaseObject(name) =>
           List(SingletonDeclaration(name))
 
-        case ScalaModel.SealedUnion(name, members) =>
+        case tpe @ ScalaModel.SealedUnion(_, members) =>
           compile(members) + UnionDeclaration(
-            name, members.map { m => TypeParamRef(m.name) })
+            interfaceName(tpe),
+            members.map {
+              case ScalaModel.CaseObject(nme) => UnknownTypeRef(nme)
+              case m => UnknownTypeRef(interfaceName(m))
+            })
       }
     }
   }

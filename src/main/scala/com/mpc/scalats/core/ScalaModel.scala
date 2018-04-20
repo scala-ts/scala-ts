@@ -2,6 +2,8 @@ package com.mpc.scalats.core
 
 import scala.collection.immutable.ListSet
 
+// TODO: ValueClass
+
 object ScalaModel {
   sealed trait TypeDef {
     def name: String

@@ -27,7 +27,7 @@ object TypeScriptModel {
 
   case class UnionDeclaration(
     name: String,
-    possibilities: ListSet[TypeParamRef]) extends Declaration
+    possibilities: ListSet[UnknownTypeRef]) extends Declaration
 
   case class ClassConstructor(parameters: List[ClassConstructorParameter])
 

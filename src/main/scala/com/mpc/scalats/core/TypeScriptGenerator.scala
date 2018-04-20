@@ -1,7 +1,5 @@
 package com.mpc.scalats.core
 
-import java.io.{File, PrintStream}
-
 import com.mpc.scalats.configuration.Config
 
 import scala.reflect.runtime.universe._

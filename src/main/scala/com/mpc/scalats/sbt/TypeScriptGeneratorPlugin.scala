@@ -10,7 +10,6 @@ import sbt._
 import complete.DefaultParsers._
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
-
   object autoImport {
     val generateTypeScript = inputKey[Unit]("Generate Type Script")
 
@@ -54,6 +53,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     outputFile in generateTypeScript := None,
     prependIPrefix := false
   )
+
+  // ---
+
+  import scala.language.reflectiveCalls
 
   private def logger(l: SbtLogger) = new Logger {
     def warning(msg: => String): Unit = l.warn(msg)

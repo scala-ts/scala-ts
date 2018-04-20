@@ -6,49 +6,109 @@ import scala.collection.immutable.ListSet
 
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{ Private, Public }
 
+// TODO: Emit Option (space-lift?)
+// TODO: tab or space for indent
 object TypeScriptEmitter {
 
   import TypeScriptModel._
 
   def emit(declaration: ListSet[Declaration], out: PrintStream): Unit = {
-    declaration foreach {
-      case decl: InterfaceDeclaration =>
-        emitInterfaceDeclaration(decl, out)
+    declaration.foreach { d =>
+      d match {
+        case decl: InterfaceDeclaration =>
+          emitInterfaceDeclaration(decl, out)
 
-      case decl: ClassDeclaration =>
-        emitClassDeclaration(decl, out)
+        case decl: ClassDeclaration =>
+          emitClassDeclaration(decl, out)
+
+        case SingletonDeclaration(name) =>
+          emitSingletonDeclaration(name, out)
+
+        case UnionDeclaration(name, possibilities) =>
+          emitUnionDeclaration(name, possibilities, out)
+      }
+
+      println()
     }
   }
 
-  private def emitInterfaceDeclaration(decl: InterfaceDeclaration, out: PrintStream) = {
+  // ---
+
+  private def emitUnionDeclaration(
+    name: String,
+    possibilities: ListSet[UnknownTypeRef],
+    out: PrintStream): Unit = {
+    out.println(s"""export type $name = ${possibilities.map(_.name) mkString " | "};""")
+  }
+
+  private def emitSingletonDeclaration(name: String, out: PrintStream): Unit = {
+    // Class definition
+    out.println(s"export class $name {")
+    out.println(s"\tprivate static instance: $name;\n")
+
+    out.println("\tprivate constructor() {}\n")
+    out.println("\tpublic static getInstance() {")
+    out.println(s"\t\tif (!${name}.instance) {")
+    out.println(s"\t\t\t${name}.instance = new ${name}();")
+    out.println("\t\t}\n")
+    out.println(s"\t\treturn ${name}.instance;")
+    out.println("\t}")
+
+    out.println("}")
+  }
+
+  private def emitInterfaceDeclaration(
+    decl: InterfaceDeclaration,
+    out: PrintStream): Unit = {
+
     val InterfaceDeclaration(name, members, typeParams) = decl
     out.print(s"export interface $name")
-    emitTypeParams(decl.typeParams, out)
+    emitTypeParams(typeParams, out)
     out.println(" {")
-    members foreach { member =>
-      out.println(s"  ${member.name}: ${getTypeRefString(member.typeRef)};")
+    members.foreach { member =>
+      out.println(s"\t${member.name}: ${getTypeRefString(member.typeRef)};")
     }
     out.println("}")
-    out.println()
   }
 
-  private def emitClassDeclaration(decl: ClassDeclaration, out: PrintStream) = {
+  private def emitClassDeclaration(
+    decl: ClassDeclaration,
+    out: PrintStream): Unit = {
+
     val ClassDeclaration(name, ClassConstructor(parameters), typeParams) = decl
+
+    // Class definition
     out.print(s"export class $name")
-    emitTypeParams(decl.typeParams, out)
+    emitTypeParams(typeParams, out)
     out.println(" {")
-    out.println(s"\tconstructor(")
-    parameters.zipWithIndex foreach { case (parameter, index) =>
-      val accessModifier = parameter.accessModifier match {
-        case Some(Public) => "public "
-        case Some(Private) => "private "
-        case None => ""
+
+    // Class fields
+    parameters.foreach { parameter =>
+      out.print("\t")
+
+      parameter.accessModifier.foreach {
+        case Public => out.print("public ")
+        case Private => out.print("private ")
       }
-      out.print(s"\t\t$accessModifier${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
-      val endLine = if (index + 1 < parameters.length) "," else ""
-      out.println(endLine)
+
+      out.println(s"${parameter.name}: ${getTypeRefString(parameter.typeRef)};")
     }
-    out.println("\t) {}")
+
+    out.println("\n\tconstructor(")
+
+    parameters.zipWithIndex.foreach {
+      case (parameter, index) =>
+        out.print(s"\t\t${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
+        val endLine = if (index + 1 < parameters.length) "," else ""
+        out.println(endLine)
+    }
+
+    out.println("\t) {")
+
+    parameters.foreach { parameter =>
+      out.println(s"\t\tthis.${parameter.name} = ${parameter.name};")
+    }
+    out.println("\t}")
     out.println("}")
   }
 

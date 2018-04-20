@@ -133,8 +133,8 @@ object CompilerResults {
 
   val singleton2 = SingletonDeclaration("TestObject2")
 
-  val union1 = UnionDeclaration("Family", ListSet(
-    TypeParamRef("FamilyMember1"),
-    TypeParamRef("FamilyMember2"),
-    TypeParamRef("FamilyMember3")))
+  val union1 = UnionDeclaration("IFamily", ListSet(
+    UnknownTypeRef("IFamilyMember1"),
+    UnknownTypeRef("FamilyMember2"),
+    UnknownTypeRef("FamilyMember3")))
 }
