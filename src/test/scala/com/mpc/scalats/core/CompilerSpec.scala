@@ -9,7 +9,6 @@ import scala.collection.immutable.ListSet
 
 final class CompilerSpec extends FlatSpec with Matchers {
   import ScalaParserResults._
-  import ScalaFixtures._
   import CompilerResults._
 
   implicit val defaultConfig: Config = Config(emitClasses = true)

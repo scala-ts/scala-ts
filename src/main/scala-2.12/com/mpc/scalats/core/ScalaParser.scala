@@ -59,14 +59,12 @@ final class ScalaParser(logger: Logger) {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
 
-    val typeParams = caseClassType.typeConstructor.normalize match {
-      case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decoded)
-      case _ => List.empty[String]
-    }
+    val typeParams = caseClassType.typeConstructor.
+      dealias.typeParams.map(_.name.decodedName.toString)
 
     val members = relevantMemberSymbols map { member =>
       CaseClassMember(member.name.toString, getTypeRef(
-        member.returnType.map(_.normalize), typeParams.toSet))
+        member.returnType.map(_.dealias), typeParams.toSet))
     }
 
     Some(CaseClass(
@@ -87,9 +85,9 @@ final class ScalaParser(logger: Logger) {
         }
 
         val memberTypes = relevantMemberSymbols.map(
-          _.typeSignature.map(_.normalize) match {
+          _.typeSignature.map(_.dealias) match {
             case NullaryMethodType(resultType) => resultType
-            case t => t.map(_.normalize)
+            case t => t.map(_.dealias)
           })
 
         val typeArgs = scalaType match {
