@@ -1,20 +1,21 @@
 package com.mpc.scalats.core
 
-import com.mpc.scalats.core.ScalaModel._
+import scala.collection.immutable.ListSet
+
 import org.scalatest.{ FlatSpec, Matchers }
 
-import scala.reflect.runtime.universe.runtimeMirror
+import ScalaModel._
 
-import scala.collection.immutable.ListSet
+import scala.reflect.runtime.universe.runtimeMirror
 
 /**
  * Created by Milosz on 06.12.2016.
  */
 final class ScalaParserSpec extends FlatSpec with Matchers {
+  import ScalaParserResults._
+
   val scalaParser = new ScalaParser(Logger(
     org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
-
-  import ScalaParserResults._
 
   it should "parse case class with one primitive member" in {
     val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass1Type))
@@ -108,61 +109,103 @@ object ScalaFixtures {
 
   object TestObject2
 
-  sealed trait Family
+  sealed trait Family {
+    def foo: String
+    val bar = "lorem"
+    def ipsum = 0.1D
+  }
 
-  case class FamilyMember1(foo: String) extends Family
+  case class FamilyMember1(foo: String) extends Family {
+    @StableValue(typescript = "1")
+    val code = 1
+  }
 
-  case object FamilyMember2 extends Family
+  case object FamilyMember2 extends Family {
+    // Members are unsupported for object,
+    // and so the TS singleton won't implements the common interface
+    val foo = "bar"
+  }
 
-  object FamilyMember3 extends Family
+  object FamilyMember3 extends Family {
+    def foo = "lorem"
+  }
 }
 
 object ScalaParserResults {
-  val caseClass1 = CaseClass("TestClass1", List(
-    CaseClassMember("name", StringRef)), List.empty)
+  val caseClass1 = CaseClass(
+    name = "TestClass1",
+    fields = ListSet(TypeMember("name", StringRef)),
+    values = ListSet.empty,
+    typeArgs = ListSet.empty)
 
-  val caseClass2 = CaseClass("TestClass2", List(
-    CaseClassMember("name", TypeParamRef("T"))), List("T"))
+  val caseClass2 = CaseClass(
+    name = "TestClass2",
+    fields = ListSet(TypeMember("name", TypeParamRef("T"))), 
+    values = ListSet.empty,
+    typeArgs = ListSet("T"))
 
   val caseClass3 = CaseClass(
-    "TestClass3",
-    List(CaseClassMember("name", SeqRef(TypeParamRef("T")))),
-    List("T")
+    name = "TestClass3",
+    fields = ListSet(TypeMember("name", SeqRef(TypeParamRef("T")))),
+    values = ListSet.empty,
+    typeArgs = ListSet("T")
   )
 
-  val caseClass4 = CaseClass("TestClass4", List(
-    CaseClassMember("name",
-      CaseClassRef("TestClass3", List(TypeParamRef("T"))))), List("T"))
+  val caseClass4 = CaseClass(
+    name = "TestClass4",
+    fields = ListSet(
+      TypeMember("name", CaseClassRef("TestClass3",
+        ListSet(TypeParamRef("T"))))),
+    values = ListSet.empty,
+    typeArgs = ListSet("T"))
 
   val caseClass5 = CaseClass(
-    "TestClass5",
-    List(CaseClassMember("name", OptionRef(TypeParamRef("T")))),
-    List("T")
+    name = "TestClass5",
+    fields = ListSet(TypeMember("name", OptionRef(TypeParamRef("T")))),
+    values = ListSet.empty,
+    typeArgs = ListSet("T")
   )
 
-  val caseClass6 = CaseClass("TestClass6", List(
-    CaseClassMember("age", CaseClassRef("TestClass3", List(
-      CaseClassRef("TestClass2", List(
-        CaseClassRef("TestClass1", List.empty)))))),
-    CaseClassMember("name", OptionRef(
-      CaseClassRef("TestClass5",List(SeqRef(OptionRef(
-        CaseClassRef("TestClass4",List(StringRef))))))))), List("T"))
+  val caseClass6 = CaseClass(
+    name = "TestClass6",
+    fields = ListSet(
+      TypeMember("age", CaseClassRef("TestClass3", ListSet(
+        CaseClassRef("TestClass2", ListSet(
+          CaseClassRef("TestClass1", ListSet.empty)))))),
+      TypeMember("name", OptionRef(
+        CaseClassRef("TestClass5", ListSet(SeqRef(OptionRef(
+          CaseClassRef("TestClass4", ListSet(StringRef))))))))),
+    values = ListSet.empty,
+    typeArgs = ListSet("T"))
 
   val caseClass7 = CaseClass(
-    "TestClass7",
-    List(CaseClassMember("name", UnionRef(ListSet(
-      CaseClassRef("TestClass1", List.empty),
-      CaseClassRef("TestClass1B", List.empty))))),
-    List("T")
+    name = "TestClass7",
+    fields = ListSet(TypeMember("name", UnionRef(ListSet(
+      CaseClassRef("TestClass1", ListSet.empty),
+      CaseClassRef("TestClass1B", ListSet.empty))))),
+    values = ListSet.empty,
+    typeArgs = ListSet("T")
   )
 
-  val caseObject1 = CaseObject("TestObject1")
+  val caseObject1 = CaseObject("TestObject1", ListSet.empty)
 
-  val caseObject2 = CaseObject("TestObject2")
+  val caseObject2 = CaseObject("TestObject2", ListSet.empty)
 
-  val sealedFamily1 = SealedUnion("Family", ListSet(
-    CaseClass("FamilyMember1", List(
-      CaseClassMember("foo", StringRef)), List.empty),
-    CaseObject("FamilyMember2"),
-    CaseObject("FamilyMember3")))
+  val sealedFamily1 = {
+    // Not 'bar', as not abstract
+    val foo = TypeMember("foo", StringRef)
+    val code = TypeMember("code", IntRef)
+
+    SealedUnion(
+      "Family",
+      ListSet(foo),
+      ListSet(
+        CaseClass(
+          name = "FamilyMember1",
+          fields = ListSet(foo),
+          values = ListSet(code),
+          typeArgs = ListSet.empty),
+        CaseObject("FamilyMember2", ListSet(foo)),
+        CaseObject("FamilyMember3", ListSet(foo))))
+  }
 }

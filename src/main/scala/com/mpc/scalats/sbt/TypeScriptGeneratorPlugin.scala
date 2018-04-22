@@ -3,7 +3,7 @@ package com.mpc.scalats.sbt
 import java.io.PrintStream
 import java.net.URLClassLoader
 
-import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.configuration.{ Config, FieldNaming }
 import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 import sbt.Keys._
 import sbt._
@@ -19,8 +19,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
     val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
     val prependIPrefix = settingKey[Boolean]("Whether to prefix interface names with I")
-    val typescriptIndent = settingKey[String]("Characters used as TypeScript indentation (e.g. \\t")
+    val typescriptIndent = settingKey[String]("Characters used as TypeScript indentation (e.g. \\t)")
     val emitCodecs = settingKey[Boolean]("Generate the codec functions fromData/toData for TypeScript classes")
+    val fieldNaming = settingKey[FieldNaming]("Conversions for the field names if emitCodecs (default: FieldNaming.Identity)")
   }
 
   import autoImport._
@@ -35,7 +36,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         (outputFile in generateTypeScript).value,
         (prependIPrefix in generateTypeScript).value,
         (typescriptIndent in generateTypeScript).value,
-        (emitCodecs in generateTypeScript).value
+        (emitCodecs in generateTypeScript).value,
+        (fieldNaming in generateTypeScript).value
       )
 
       val args = spaceDelimited("").parsed
@@ -53,7 +55,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     outputFile in generateTypeScript := None,
     prependIPrefix := false,
     typescriptIndent in generateTypeScript := "\t",
-    emitCodecs in generateTypeScript := true
+    emitCodecs in generateTypeScript := true,
+    fieldNaming in generateTypeScript := FieldNaming.Identity
   )
 
   // ---

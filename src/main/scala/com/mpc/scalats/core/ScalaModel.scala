@@ -11,14 +11,19 @@ object ScalaModel {
 
   case class CaseClass(
     name: String,
-    members: List[CaseClassMember],
-    params: List[String]) extends TypeDef
+    fields: ListSet[TypeMember],
+    values: ListSet[TypeMember],
+    typeArgs: ListSet[String]) extends TypeDef
 
-  case class CaseObject(name: String) extends TypeDef
+  case class CaseObject(
+    name: String,
+    values: ListSet[TypeMember]
+  ) extends TypeDef
 
   case class SealedUnion(
     name: String,
-    members: ListSet[TypeDef]) extends TypeDef
+    fields: ListSet[TypeMember],
+    possibilities: ListSet[TypeDef]) extends TypeDef
 
   // ---
 
@@ -30,11 +35,11 @@ object ScalaModel {
 
   case class MapRef(keyType: TypeRef, valueType: TypeRef) extends TypeRef
 
-  case class CaseClassRef(name: String, typeArgs: List[TypeRef]) extends TypeRef
+  case class CaseClassRef(name: String, typeArgs: ListSet[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
 
-  case class CaseClassMember(name: String, typeRef: TypeRef)
+  case class TypeMember(name: String, typeRef: TypeRef)
 
   case class UnknownTypeRef(name: String) extends TypeRef
 

@@ -16,6 +16,7 @@ object TypeScriptGenerator {
   )(implicit config: Config) = {
     implicit val mirror = runtimeMirror(classLoader)
     val types = classNames.map { className =>
+      println(s"className = $className")
       mirror.staticClass(className).toType
     }
 

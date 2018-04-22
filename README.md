@@ -48,9 +48,12 @@ Starting from release 0.3.0, it's possible to specify some configuration options
 
 * `emitInterfaces` - generate interface declarations (`true` by default)
 * `emitClasses` - generate class declarations (`false` by default)
+* `emitCodecs` - generate fromData/toData functions for TypeScript classes (if `emitClasses`)
 * `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 * `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
 * `outputStream` - the stream to which the code should be emitted; it defaults to console
+* `typescriptIndent` - the characters used as TypeScript indentation (default: <tab>)
+* `fieldNaming` - the conversions for the field names if emitCodecs (default: FieldNaming.Identity)
 
 Usage example in `build.sbt`:
 

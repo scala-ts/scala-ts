@@ -1,14 +1,15 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptModel._
 
 import org.scalatest.{ FlatSpec, Matchers }
 
-import scala.collection.immutable.ListSet
+import TypeScriptModel._
+import ScalaParserResults._
 
 final class CompilerSpec extends FlatSpec with Matchers {
-  import ScalaParserResults._
   import CompilerResults._
 
   implicit val defaultConfig: Config = Config(emitClasses = true)
@@ -61,7 +62,10 @@ final class CompilerSpec extends FlatSpec with Matchers {
   }
 
   it should "correctly parse object" in {
-    val result = Compiler.compile(ListSet(caseObject2))
+    val result = Compiler.compile(
+      ListSet(caseObject2),
+      Some(InterfaceDeclaration(
+        "SupI", ListSet.empty, ListSet.empty[String], Option.empty)))
 
     result.size should equal(1)
     result should contain(singleton2)
@@ -73,67 +77,97 @@ final class CompilerSpec extends FlatSpec with Matchers {
     result.size should equal(5)
     result should contain(union1)
 
-    val member1Clazz = ClassDeclaration("FamilyMember1", ClassConstructor(List(
-      ClassConstructorParameter(
-        "foo", StringRef, Some(AccessModifier.Public)))), List.empty)
-
     val member1Interface = InterfaceDeclaration("IFamilyMember1",
-      List(Member("foo", StringRef)), List.empty)
+      ListSet(Member("foo", StringRef)),
+      ListSet.empty, Some(unionIface))
 
-    result should contain(member1Clazz)
+    result should contain(unionMember1Clazz)
     result should contain(member1Interface)
-    result should contain(SingletonDeclaration("FamilyMember2"))
-    result should contain(SingletonDeclaration("FamilyMember3"))
+    result should contain(unionMember2Singleton)
+
+    result should contain(
+      SingletonDeclaration("FamilyMember3",
+        ListSet(Member("foo", StringRef)), Some(unionIface)))
   }
 }
 
 object CompilerResults {
   val interface1 = InterfaceDeclaration("ITestClass1",
-    List(Member("name",StringRef)), List.empty)
+    ListSet(Member("name",StringRef)), ListSet.empty, Option.empty)
 
-  val clazz1 = ClassDeclaration("TestClass1", ClassConstructor(List(
-    ClassConstructorParameter(
-      "name", StringRef, Some(AccessModifier.Public)))), List.empty)
+  val clazz1 = ClassDeclaration("TestClass1",
+    ClassConstructor(ListSet(ClassConstructorParameter("name", StringRef))),
+    ListSet.empty,
+    ListSet.empty,
+    Option.empty)
 
   val interface2 = InterfaceDeclaration("ITestClass2",
-    List(Member("name",TypeParamRef("T"))),List("T"))
+    ListSet(Member("name",SimpleTypeRef("T"))), ListSet("T"), Option.empty)
 
-  val clazz2 = ClassDeclaration("TestClass2", ClassConstructor(List(
+  val clazz2 = ClassDeclaration("TestClass2", ClassConstructor(ListSet(
     ClassConstructorParameter(
-      "name", TypeParamRef("T"), Some(AccessModifier.Public)))), List("T"))
+      "name", SimpleTypeRef("T")))), ListSet.empty, ListSet("T"), Option.empty)
 
   val interface3 = InterfaceDeclaration("ITestClass3",
-    List(Member("name", ArrayRef(TypeParamRef("T")))),List("T"))
+    ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
+    ListSet("T"), Option.empty)
 
-  val clazz3 = ClassDeclaration("TestClass3", ClassConstructor(List(
+  val clazz3 = ClassDeclaration("TestClass3", ClassConstructor(ListSet(
+    ClassConstructorParameter("name", ArrayRef(SimpleTypeRef("T"))))),
+    ListSet.empty, ListSet("T"), Option.empty)
+
+  val interface5 = InterfaceDeclaration("ITestClass5", ListSet(
+    Member("name", UnionType(ListSet(SimpleTypeRef("T"), NullRef)))),
+    ListSet("T"), Option.empty)
+
+  val clazz5 = ClassDeclaration("TestClass5", ClassConstructor(ListSet(
     ClassConstructorParameter(
-      "name", ArrayRef(TypeParamRef("T")),
-      Some(AccessModifier.Public)))), List("T"))
+      "name", UnionType(ListSet(SimpleTypeRef("T"), NullRef))))),
+    ListSet.empty, ListSet("T"), Option.empty)
 
-  val interface5 = InterfaceDeclaration("ITestClass5", List(
-    Member("name", UnionType(ListSet(TypeParamRef("T"), NullRef)))), List("T"))
+  val interface7 = InterfaceDeclaration("ITestClass7", ListSet(
+    Member("name", UnionType(ListSet(
+      CustomTypeRef("ITestClass1", ListSet.empty),
+      CustomTypeRef("ITestClass1B", ListSet.empty))))),
+    ListSet("T"), Option.empty)
 
-  val clazz5 = ClassDeclaration("TestClass5", ClassConstructor(List(
-    ClassConstructorParameter(
-      "name", UnionType(ListSet(TypeParamRef("T"), NullRef)),
-      Some(AccessModifier.Public)))), List("T"))
-
-  val interface7 = InterfaceDeclaration("ITestClass7", List(
-    Member("name", UnionType(ListSet(CustomTypeRef("ITestClass1", List.empty),
-      CustomTypeRef("ITestClass1B", List.empty))))), List("T"))
-
-  val clazz7 = ClassDeclaration("TestClass7", ClassConstructor(List(
+  val clazz7 = ClassDeclaration("TestClass7", ClassConstructor(ListSet(
     ClassConstructorParameter("name", UnionType(ListSet(
-      CustomTypeRef("TestClass1",List.empty),
-      CustomTypeRef("TestClass1B", List.empty))),
-      Some(AccessModifier.Public)))), List("T"))
+      CustomTypeRef("TestClass1", ListSet.empty),
+      CustomTypeRef("TestClass1B", ListSet.empty)))))),
+    ListSet.empty, ListSet("T"), Option.empty)
 
-  val singleton1 = SingletonDeclaration("TestObject1")
+  val singleton1 = SingletonDeclaration(
+    "TestObject1", ListSet.empty, Option.empty)
 
-  val singleton2 = SingletonDeclaration("TestObject2")
+  val singleton2 = SingletonDeclaration("TestObject2", ListSet.empty, Some(
+    InterfaceDeclaration("SupI", ListSet.empty, ListSet.empty[String], None)))
 
-  val union1 = UnionDeclaration("IFamily", ListSet(
-    UnknownTypeRef("IFamilyMember1"),
-    UnknownTypeRef("FamilyMember2"),
-    UnknownTypeRef("FamilyMember3")))
+  val union1 = UnionDeclaration(
+    name = "Family",
+    fields = ListSet(Member("foo", StringRef)),
+    possibilities = ListSet(
+      CustomTypeRef("IFamilyMember1", ListSet.empty),
+      CustomTypeRef("FamilyMember2", ListSet.empty),
+      CustomTypeRef("FamilyMember3", ListSet.empty)),
+    superInterface = Option.empty)
+
+  val unionIface = InterfaceDeclaration(
+    s"I${sealedFamily1.name}",
+    ListSet(Member("foo", StringRef)),
+    ListSet.empty[String],
+    Option.empty)
+
+  val unionMember1Clazz = ClassDeclaration(
+    "FamilyMember1",
+    constructor = ClassConstructor(ListSet(
+      ClassConstructorParameter(
+        "foo", StringRef))),
+    values = ListSet(Member("code", NumberRef)),
+    typeParams = ListSet.empty,
+    superInterface = Some(unionIface))
+
+  val unionMember2Singleton = SingletonDeclaration(
+    "FamilyMember2", ListSet(Member("foo", StringRef)), Some(unionIface))
+
 }
