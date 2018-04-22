@@ -12,5 +12,6 @@ case class Config(
     optionToUndefined: Boolean = false,
     outputStream: Option[PrintStream] = None,
     prependIPrefix: Boolean = true,
-    typescriptIndent: String = "\t"
+    typescriptIndent: String = "\t",
+    emitCodecs: Boolean = true
 )

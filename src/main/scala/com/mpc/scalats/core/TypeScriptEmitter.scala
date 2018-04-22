@@ -117,6 +117,19 @@ final class TypeScriptEmitter(config: Config) {
     }
     out.println(s"${indent}}")
 
+    // Codecs
+    if (config.emitCodecs) {
+      // Decoder factory: MyClass.fromData({..})
+      out.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
+      out.println(s"${indent}${indent}return <${name}${tparams}>(data);")
+      out.println(s"${indent}}")
+
+      // Encoder
+      out.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
+      out.println(s"${indent}${indent}return this;")
+      out.println(s"${indent}}")
+    }
+
     out.println("}")
   }
 

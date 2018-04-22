@@ -19,6 +19,14 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 	) {
 		this.name = name;
 	}
+
+	public static fromData(data: any): TestClass1 {
+		return <TestClass1>(data);
+	}
+
+	public static toData(instance: TestClass1): any {
+		return this;
+	}
 }
 """)
   }
@@ -38,6 +46,14 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 		name: T
 	) {
 		this.name = name;
+	}
+
+	public static fromData<T>(data: any): TestClass2<T> {
+		return <TestClass2<T>>(data);
+	}
+
+	public static toData<T>(instance: TestClass2<T>): any {
+		return this;
 	}
 }
 """)
@@ -59,6 +75,14 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 	) {
 		this.name = name;
 	}
+
+	public static fromData<T>(data: any): TestClass3<T> {
+		return <TestClass3<T>>(data);
+	}
+
+	public static toData<T>(instance: TestClass3<T>): any {
+		return this;
+	}
 }
 """)
   }
@@ -79,6 +103,14 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 	) {
 		this.name = name;
 	}
+
+	public static fromData<T>(data: any): TestClass5<T> {
+		return <TestClass5<T>>(data);
+	}
+
+	public static toData<T>(instance: TestClass5<T>): any {
+		return this;
+	}
 }
 """)
   }
@@ -98,6 +130,14 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 		name: (TestClass1 | TestClass1B)
 	) {
 		this.name = name;
+	}
+
+	public static fromData<T>(data: any): TestClass7<T> {
+		return <TestClass7<T>>(data);
+	}
+
+	public static toData<T>(instance: TestClass7<T>): any {
+		return this;
 	}
 }
 """)
