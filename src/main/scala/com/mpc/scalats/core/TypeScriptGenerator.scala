@@ -29,7 +29,7 @@ object TypeScriptGenerator {
     val scalaTypes = scalaParser.parseTypes(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaTypes)
 
-    val emiter = new TypeScriptEmitter(config.typescriptIndent)
+    val emiter = new TypeScriptEmitter(config)
 
     emiter.emit(typeScriptInterfaces, outputStream)
   }

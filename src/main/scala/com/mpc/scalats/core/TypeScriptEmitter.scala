@@ -4,13 +4,14 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
+import com.mpc.scalats.configuration.Config
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{ Private, Public }
 
 // TODO: Emit Option (space-lift?)
 // TODO: Use a template engine (velocity?)
-final class TypeScriptEmitter(indent: String) {
-
+final class TypeScriptEmitter(config: Config) {
   import TypeScriptModel._
+  import config.{ typescriptIndent => indent }
 
   def emit(declaration: ListSet[Declaration], out: PrintStream): Unit = {
     declaration.foreach { d =>
@@ -62,9 +63,9 @@ final class TypeScriptEmitter(indent: String) {
     out: PrintStream): Unit = {
 
     val InterfaceDeclaration(name, members, typeParams) = decl
-    out.print(s"export interface $name")
-    emitTypeParams(typeParams, out)
-    out.println(" {")
+
+    out.println(s"export interface $name${typeParameters(typeParams)} {")
+    
     members.foreach { member =>
       out.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
     }
@@ -76,10 +77,15 @@ final class TypeScriptEmitter(indent: String) {
     out: PrintStream): Unit = {
 
     val ClassDeclaration(name, ClassConstructor(parameters), typeParams) = decl
+    val tparams = typeParameters(typeParams)
 
     // Class definition
-    out.print(s"export class $name")
-    emitTypeParams(typeParams, out)
+    out.print(s"export class ${name}${tparams}")
+
+    if (config.emitInterfaces) {
+      out.print(s" implements I${name}${tparams}")
+    }
+
     out.println(" {")
 
     // Class fields
@@ -114,12 +120,8 @@ final class TypeScriptEmitter(indent: String) {
     out.println("}")
   }
 
-  private def emitTypeParams(params: List[String], out: PrintStream) =
-    if (params.nonEmpty) {
-      out.print("<")
-      out.print(params.mkString(", "))
-      out.print(">")
-    }
+  @inline private def typeParameters(params: List[String]): String =
+    if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   private def getTypeRefString(typeRef: TypeRef): String = typeRef match {
     case NumberRef => "number"

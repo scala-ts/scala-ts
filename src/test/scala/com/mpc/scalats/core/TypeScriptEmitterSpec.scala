@@ -1,15 +1,17 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 import org.scalatest.{ FlatSpec, Matchers }
 
-import scala.collection.immutable.ListSet
+import com.mpc.scalats.configuration.Config
 
 final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   import TypeScriptModel._
   import CompilerResults._
 
   it should "emit TypeScript class for a class with one primitive member" in {
-    emit(ListSet(clazz1)) should equal("""export class TestClass1 {
+    emit(ListSet(clazz1)) should equal("""export class TestClass1 implements ITestClass1 {
 	public name: string;
 
 	constructor(
@@ -29,7 +31,7 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   }
 
   it should "emit TypeScript class for a class with generic member" in {
-    emit(ListSet(clazz2)) should equal("""export class TestClass2<T> {
+    emit(ListSet(clazz2)) should equal("""export class TestClass2<T> implements ITestClass2<T> {
 	public name: T;
 
 	constructor(
@@ -49,7 +51,7 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   }
 
   it should "emit TypeScript class for a class with generic array" in {
-    emit(ListSet(clazz3)) should equal("""export class TestClass3<T> {
+    emit(ListSet(clazz3)) should equal("""export class TestClass3<T> implements ITestClass3<T> {
 	public name: T[];
 
 	constructor(
@@ -69,7 +71,7 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   }
 
   it should "emit TypeScript class for a generic case class with one optional member" in {
-    emit(ListSet(clazz5)) should equal("""export class TestClass5<T> {
+    emit(ListSet(clazz5)) should equal("""export class TestClass5<T> implements ITestClass5<T> {
 	public name: (T | null);
 
 	constructor(
@@ -89,7 +91,7 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   }
 
   it should "emit TypeScript class for a generic case class with disjunction" in {
-    emit(ListSet(clazz7)) should equal("""export class TestClass7<T> {
+    emit(ListSet(clazz7)) should equal("""export class TestClass7<T> implements ITestClass7<T> {
 	public name: (TestClass1 | TestClass1B);
 
 	constructor(
@@ -149,7 +151,7 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 
   // ---
 
-  private lazy val emiter = new TypeScriptEmitter("\t")
+  private lazy val emiter = new TypeScriptEmitter(Config(emitClasses = true))
 
   def emit(decls: ListSet[Declaration]): String = {
     val buf = new java.io.ByteArrayOutputStream()
