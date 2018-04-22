@@ -149,16 +149,18 @@ final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
 
   // ---
 
-    def emit(decls: ListSet[Declaration]): String = {
-      val buf = new java.io.ByteArrayOutputStream()
-      lazy val out = new java.io.PrintStream(buf)
+  private lazy val emiter = new TypeScriptEmitter("\t")
 
-      try {
-        TypeScriptEmitter.emit(decls, out)
-        out.flush()
-        buf.toString
-      } finally {
-        out.close()
-      }
+  def emit(decls: ListSet[Declaration]): String = {
+    val buf = new java.io.ByteArrayOutputStream()
+    lazy val out = new java.io.PrintStream(buf)
+
+    try {
+      emiter.emit(decls, out)
+      out.flush()
+      buf.toString
+    } finally {
+      out.close()
     }
+  }
 }

@@ -19,7 +19,7 @@ object TypeScriptGenerator {
       mirror.staticClass(className).toType
     }
 
-    generate(types, logger)(config)
+    generate(types, logger)
   }
 
   def generate(caseClasses: List[Type], logger: Logger)(
@@ -29,6 +29,8 @@ object TypeScriptGenerator {
     val scalaTypes = scalaParser.parseTypes(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaTypes)
 
-    TypeScriptEmitter.emit(typeScriptInterfaces, outputStream)
+    val emiter = new TypeScriptEmitter(config.typescriptIndent)
+
+    emiter.emit(typeScriptInterfaces, outputStream)
   }
 }

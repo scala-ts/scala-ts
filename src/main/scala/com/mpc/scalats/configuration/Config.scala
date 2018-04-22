@@ -11,5 +11,6 @@ case class Config(
     optionToNullable: Boolean = true,
     optionToUndefined: Boolean = false,
     outputStream: Option[PrintStream] = None,
-    prependIPrefix: Boolean = true
+    prependIPrefix: Boolean = true,
+    typescriptIndent: String = "\t"
 )

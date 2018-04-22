@@ -7,8 +7,8 @@ import scala.collection.immutable.ListSet
 import com.mpc.scalats.core.TypeScriptModel.AccessModifier.{ Private, Public }
 
 // TODO: Emit Option (space-lift?)
-// TODO: tab or space for indent
-object TypeScriptEmitter {
+// TODO: Use a template engine (velocity?)
+final class TypeScriptEmitter(indent: String) {
 
   import TypeScriptModel._
 
@@ -44,15 +44,15 @@ object TypeScriptEmitter {
   private def emitSingletonDeclaration(name: String, out: PrintStream): Unit = {
     // Class definition
     out.println(s"export class $name {")
-    out.println(s"\tprivate static instance: $name;\n")
+    out.println(s"${indent}private static instance: $name;\n")
 
-    out.println("\tprivate constructor() {}\n")
-    out.println("\tpublic static getInstance() {")
-    out.println(s"\t\tif (!${name}.instance) {")
-    out.println(s"\t\t\t${name}.instance = new ${name}();")
-    out.println("\t\t}\n")
-    out.println(s"\t\treturn ${name}.instance;")
-    out.println("\t}")
+    out.println(s"${indent}private constructor() {}\n")
+    out.println(s"${indent}public static getInstance() {")
+    out.println(s"${indent}${indent}if (!${name}.instance) {")
+    out.println(s"${indent}${indent}${indent}${name}.instance = new ${name}();")
+    out.println(s"${indent}${indent}}\n")
+    out.println(s"${indent}${indent}return ${name}.instance;")
+    out.println(s"${indent}}")
 
     out.println("}")
   }
@@ -66,7 +66,7 @@ object TypeScriptEmitter {
     emitTypeParams(typeParams, out)
     out.println(" {")
     members.foreach { member =>
-      out.println(s"\t${member.name}: ${getTypeRefString(member.typeRef)};")
+      out.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
     }
     out.println("}")
   }
@@ -84,7 +84,7 @@ object TypeScriptEmitter {
 
     // Class fields
     parameters.foreach { parameter =>
-      out.print("\t")
+      out.print(indent)
 
       parameter.accessModifier.foreach {
         case Public => out.print("public ")
@@ -94,21 +94,23 @@ object TypeScriptEmitter {
       out.println(s"${parameter.name}: ${getTypeRefString(parameter.typeRef)};")
     }
 
-    out.println("\n\tconstructor(")
+    // Class constructor
+    out.println(s"\n${indent}constructor(")
 
     parameters.zipWithIndex.foreach {
       case (parameter, index) =>
-        out.print(s"\t\t${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
+        out.print(s"${indent}${indent}${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
         val endLine = if (index + 1 < parameters.length) "," else ""
         out.println(endLine)
     }
 
-    out.println("\t) {")
+    out.println(s"${indent}) {")
 
     parameters.foreach { parameter =>
-      out.println(s"\t\tthis.${parameter.name} = ${parameter.name};")
+      out.println(s"${indent}${indent}this.${parameter.name} = ${parameter.name};")
     }
-    out.println("\t}")
+    out.println(s"${indent}}")
+
     out.println("}")
   }
 
