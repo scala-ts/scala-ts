@@ -10,5 +10,6 @@ case class Config(
                  emitClasses: Boolean = false,
                  optionToNullable: Boolean = true,
                  optionToUndefined: Boolean = false,
-                 outputStream : Option[PrintStream] = None
+                 outputStream : Option[PrintStream] = None,
+                 prependIPrefix: Boolean = true
                  )

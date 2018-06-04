@@ -7,7 +7,6 @@ import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorP
   * Created by Milosz on 09.06.2016.
   */
 object Compiler {
-
   def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
       val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
@@ -18,8 +17,8 @@ object Compiler {
 
   private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
     TypeScriptModel.InterfaceDeclaration(
-      s"I${scalaClass.name}",
-      scalaClass.members map { scalaMember =>
+      buildInterfaceName(scalaClass.name),
+      scalaClass.members.map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
           compileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
@@ -27,6 +26,14 @@ object Compiler {
       },
       typeParams = scalaClass.params
     )
+  }
+
+  private def buildInterfaceName(name: String)(implicit config: Config) = {
+    if (config.prependIPrefix) {
+      s"I$name"
+    } else {
+      name
+    }
   }
 
   private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
@@ -63,7 +70,7 @@ object Compiler {
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
     case ScalaModel.CaseClassRef(name, typeArgs) =>
-      val actualName = if (inInterfaceContext) s"I$name" else name
+      val actualName = if (inInterfaceContext) buildInterfaceName(name) else name
       TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
