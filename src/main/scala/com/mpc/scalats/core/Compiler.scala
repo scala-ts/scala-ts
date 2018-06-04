@@ -9,8 +9,11 @@ import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorP
 object Compiler {
   def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
     scalaClasses flatMap { scalaClass =>
-      val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
-      val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
+      val interface =
+        if (config.emitInterfaces) List(compileInterface(scalaClass))
+        else List.empty
+      val clazz =
+        if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
       interface ++ clazz
     }
   }
@@ -29,11 +32,8 @@ object Compiler {
   }
 
   private def buildInterfaceName(name: String)(implicit config: Config) = {
-    if (config.prependIPrefix) {
-      s"I$name"
-    } else {
-      name
-    }
+    val prefix = if (config.prependIPrefix) "I" else ""
+    s"${prefix}${name}"
   }
 
   private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
@@ -53,10 +53,9 @@ object Compiler {
   }
 
   private def compileTypeRef(
-                              scalaTypeRef: ScalaModel.TypeRef,
-                              inInterfaceContext: Boolean
-                            )
-                            (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
+      scalaTypeRef: ScalaModel.TypeRef,
+      inInterfaceContext: Boolean
+  )(implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.LongRef =>
@@ -70,24 +69,35 @@ object Compiler {
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
     case ScalaModel.CaseClassRef(name, typeArgs) =>
-      val actualName = if (inInterfaceContext) buildInterfaceName(name) else name
-      TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
+      val actualName =
+        if (inInterfaceContext) buildInterfaceName(name) else name
+      TypeScriptModel.CustomTypeRef(
+        actualName,
+        typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
     case ScalaModel.DateTimeRef =>
       TypeScriptModel.DateTimeRef
     case ScalaModel.TypeParamRef(name) =>
       TypeScriptModel.TypeParamRef(name)
-    case ScalaModel.OptionRef(innerType) if config.optionToNullable && config.optionToUndefined =>
-      TypeScriptModel.UnionType(TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef), UndefinedRef)
+    case ScalaModel.OptionRef(innerType)
+        if config.optionToNullable && config.optionToUndefined =>
+      TypeScriptModel.UnionType(
+        TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
+                                  NullRef),
+        UndefinedRef)
     case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
+      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
+                                NullRef)
     case ScalaModel.MapRef(kT, vT) =>
-      TypeScriptModel.MapType(compileTypeRef(kT, inInterfaceContext), compileTypeRef(vT, inInterfaceContext))
+      TypeScriptModel.MapType(compileTypeRef(kT, inInterfaceContext),
+                              compileTypeRef(vT, inInterfaceContext))
     case ScalaModel.UnionRef(i, i2) =>
-      TypeScriptModel.UnionType(compileTypeRef(i, inInterfaceContext), compileTypeRef(i2, inInterfaceContext))
+      TypeScriptModel.UnionType(compileTypeRef(i, inInterfaceContext),
+                                compileTypeRef(i2, inInterfaceContext))
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), UndefinedRef)
+      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext),
+                                UndefinedRef)
     case ScalaModel.UnknownTypeRef(_) =>
       TypeScriptModel.StringRef
   }

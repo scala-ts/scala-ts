@@ -16,9 +16,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     val emitInterfaces = settingKey[Boolean]("Generate interface declarations")
     val emitClasses = settingKey[Boolean]("Generate class declarations")
-    val optionToNullable = settingKey[Boolean]("Option types will be compiled to 'type | null'")
-    val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
-    val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
+    val optionToNullable =
+      settingKey[Boolean]("Option types will be compiled to 'type | null'")
+    val optionToUndefined =
+      settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
+    val outputFile = settingKey[Option[PrintStream]](
+      "Print stream to write. Defaults to Console.out")
+    val prependIPrefix =
+      settingKey[Boolean]("Whether to prefix interface names with I")
   }
 
   import autoImport._
@@ -30,7 +35,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         (emitClasses in generateTypeScript).value,
         (optionToNullable in generateTypeScript).value,
         (optionToUndefined in generateTypeScript).value,
-        (outputFile in generateTypeScript).value
+        (outputFile in generateTypeScript).value,
+        (prependIPrefix in generateTypeScript).value
       )
 
       val args = spaceDelimited("").parsed
@@ -44,7 +50,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     emitClasses in generateTypeScript := false,
     optionToNullable in generateTypeScript := true,
     optionToUndefined in generateTypeScript := false,
-    outputFile in generateTypeScript := None
+    outputFile in generateTypeScript := None,
+    prependIPrefix := false
   )
 
 }
