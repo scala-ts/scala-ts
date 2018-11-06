@@ -57,9 +57,9 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(expected)
   }
 
-  it should "correctly handle case class with AnyVal parent" in {
+  it should "parse case class with AnyVal-extends case class" in {
     val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass8Type))
-    val expected = CaseClass("TestClass8", List(CaseClassMember("value", IntRef)), List.empty)
+    val expected = CaseClass("TestClass8", List(CaseClassMember("name", StringRef)), List.empty)
     parsed should contain(expected)
   }
 
@@ -96,6 +96,8 @@ object TestTypes {
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
 
-  case class TestClass8(value: Int) extends AnyVal
+  case class CaseClassAnyVal(value: String) extends AnyVal
+
+  case class TestClass8(name: CaseClassAnyVal)
 
 }

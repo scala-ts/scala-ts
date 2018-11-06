@@ -11,7 +11,8 @@ object ScalaParser {
   import ScalaModel._
 
   def parseCaseClasses(caseClassTypes: List[Type]): List[CaseClass] = {
-    caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass).distinct
+    caseClassTypes.flatMap(getInvolvedTypes(Set.empty))
+      .filter(isCaseClass).filterNot(isCaseClassAnyVal).distinct.map(parseCaseClass).distinct
   }
 
   private def parseCaseClass(caseClassType: Type) = {
@@ -93,7 +94,6 @@ object ScalaParser {
         val valueType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.last
         MapRef(getTypeRef(keyType, typeParams), getTypeRef(valueType, typeParams))
       case _ =>
-        //println(s"type ref $typeName umkown")
         UnknownTypeRef(typeName)
     }
   }
