@@ -57,6 +57,12 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(expected)
   }
 
+  it should "correctly handle case class with AnyVal parent" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass8Type))
+    val expected = CaseClass("TestClass8", List(CaseClassMember("value", IntRef)), List.empty)
+    parsed should contain(expected)
+  }
+
 }
 
 object TestTypes {
@@ -69,6 +75,7 @@ object TestTypes {
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
   val TestClass7Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass7")
+  val TestClass8Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass8")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
@@ -88,5 +95,7 @@ object TestTypes {
   case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
+
+  case class TestClass8(value: Int) extends AnyVal
 
 }

@@ -77,6 +77,8 @@ object ScalaParser {
         DateTimeRef
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
+      case _ if isCaseClassAnyVal(scalaType) =>
+        getTypeRef(scalaType.members.filter(!_.isMethod).map(_.typeSignature).head, Set())
       case _ if isCaseClass(scalaType) =>
         val caseClassName = scalaType.typeSymbol.name.toString
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
@@ -98,5 +100,9 @@ object ScalaParser {
 
   private def isCaseClass(scalaType: Type) =
     scalaType.members.collect({ case m: MethodSymbol if m.isCaseAccessor => m }).nonEmpty
+
+  private def isCaseClassAnyVal(scalaType: Type) = {
+    scalaType <:< typeOf[AnyVal]
+  }
 
 }
