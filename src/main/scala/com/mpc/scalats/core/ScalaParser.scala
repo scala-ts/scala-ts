@@ -64,7 +64,7 @@ object ScalaParser {
         FloatRef
       case "Boolean" =>
         BooleanRef
-      case "String" =>
+      case "String" |  "UUID" =>
         StringRef
       case "List" | "Seq" | "Set" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
