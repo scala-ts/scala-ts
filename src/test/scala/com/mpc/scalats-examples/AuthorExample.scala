@@ -4,8 +4,7 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptGenerator
-
+import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 
 case class NV(temp: Boolean)
 
@@ -41,9 +40,13 @@ case class AuthorDto(id: UUID,
                      isRetired: Boolean)
 
 object AuthorExample {
+  def main(args: Array[String]): Unit = {
+    val logger = Logger(
+      org.slf4j.LoggerFactory getLogger TypeScriptGenerator.getClass)
 
-  def main(args: Array[String]) {
-    TypeScriptGenerator.generateFromClassNames(List("com.mpc.scalats.AuthorDto"))(Config())
+    TypeScriptGenerator.generateFromClassNames(
+      List("com.mpc.scalats.AuthorDto"),
+      logger)(Config())
   }
 
 }

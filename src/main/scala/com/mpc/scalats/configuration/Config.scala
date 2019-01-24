@@ -11,5 +11,13 @@ case class Config(
     optionToNullable: Boolean = true,
     optionToUndefined: Boolean = false,
     outputStream: Option[PrintStream] = None,
-    prependIPrefix: Boolean = true
+    prependIPrefix: Boolean = true,
+    typescriptIndent: String = "\t",
+    emitCodecs: Boolean = true,
+    fieldNaming: FieldNaming = FieldNaming.Identity
 )
+
+// TODO: nullable as function setting (gathering optionToNullable/optionToUndefined)
+// TODO: option as space-lift Option
+// TODO: prelude: String
+// TODO: Per-type options: nullable, fieldNaming, emitCodecs, prelude

@@ -33,19 +33,22 @@ lazy val pomSettings = Seq(
 )
 
 lazy val root = (project in file(".")).
-  settings(
+  settings(Seq(
     name := "scala-ts",
-    version := "0.4.0",
     organization := "com.github.miloszpp",
-    scalaVersion := "2.10.6",
     mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
     sbtPlugin := true,
-    sbtVersion := "0.13.11"
-  ).
-  settings(pomSettings)
+    scalaVersion := "2.12.7",
+    crossScalaVersions := Seq("2.10.7", scalaVersion.value),
+    sbtVersion in pluginCrossBuild := {
+      scalaBinaryVersion.value match {
+        case "2.10" => "0.13.16"
+        case "2.12" => "1.1.0"
+      }
+    }) ++ Scalac.settings ++ pomSettings)
 
 libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-reflect" % "2.10.6",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
