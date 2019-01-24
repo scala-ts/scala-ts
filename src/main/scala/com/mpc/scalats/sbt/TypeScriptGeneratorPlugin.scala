@@ -3,27 +3,25 @@ package com.mpc.scalats.sbt
 import java.io.PrintStream
 import java.net.URLClassLoader
 
-import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.TypeScriptGenerator
+import com.mpc.scalats.configuration.{ Config, FieldNaming }
+import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 import sbt.Keys._
 import sbt._
 import complete.DefaultParsers._
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
-
   object autoImport {
     val generateTypeScript = inputKey[Unit]("Generate Type Script")
 
     val emitInterfaces = settingKey[Boolean]("Generate interface declarations")
     val emitClasses = settingKey[Boolean]("Generate class declarations")
-    val optionToNullable =
-      settingKey[Boolean]("Option types will be compiled to 'type | null'")
-    val optionToUndefined =
-      settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
-    val outputFile = settingKey[Option[PrintStream]](
-      "Print stream to write. Defaults to Console.out")
-    val prependIPrefix =
-      settingKey[Boolean]("Whether to prefix interface names with I")
+    val optionToNullable = settingKey[Boolean]("Option types will be compiled to 'type | null'")
+    val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
+    val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
+    val prependIPrefix = settingKey[Boolean]("Whether to prefix interface names with I")
+    val typescriptIndent = settingKey[String]("Characters used as TypeScript indentation (e.g. \\t)")
+    val emitCodecs = settingKey[Boolean]("Generate the codec functions fromData/toData for TypeScript classes")
+    val fieldNaming = settingKey[FieldNaming]("Conversions for the field names if emitCodecs (default: FieldNaming.Identity)")
   }
 
   import autoImport._
@@ -36,7 +34,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         (optionToNullable in generateTypeScript).value,
         (optionToUndefined in generateTypeScript).value,
         (outputFile in generateTypeScript).value,
-        (prependIPrefix in generateTypeScript).value
+        (prependIPrefix in generateTypeScript).value,
+        (typescriptIndent in generateTypeScript).value,
+        (emitCodecs in generateTypeScript).value,
+        (fieldNaming in generateTypeScript).value
       )
 
       val args = spaceDelimited("").parsed
@@ -44,14 +45,29 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       val cpUrls = cp.map(_.asURL).toArray
       val cl = new URLClassLoader(cpUrls, ClassLoader.getSystemClassLoader)
 
-      TypeScriptGenerator.generateFromClassNames(args.toList, cl)
+      TypeScriptGenerator.generateFromClassNames(
+        args.toList, logger(streams.value.log), cl)
     },
     emitInterfaces in generateTypeScript := true,
     emitClasses in generateTypeScript := false,
     optionToNullable in generateTypeScript := true,
     optionToUndefined in generateTypeScript := false,
     outputFile in generateTypeScript := None,
-    prependIPrefix := false
+    prependIPrefix := false,
+    typescriptIndent in generateTypeScript := "\t",
+    emitCodecs in generateTypeScript := true,
+    fieldNaming in generateTypeScript := FieldNaming.Identity
   )
 
+  // ---
+
+  import scala.language.reflectiveCalls
+
+  private def logger(l: SbtLogger) = new Logger {
+    def warning(msg: => String): Unit = l.warn(msg)
+  }
+
+  private type SbtLogger = {
+    def warn(msg: => String): Unit
+  }
 }
