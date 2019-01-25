@@ -25,7 +25,8 @@ object Compiler {
           compileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
         )
       },
-      typeParams = scalaClass.params
+      typeParams = scalaClass.params,
+      parent = scalaClass.parent.map(p => s"IElium$p")
     )
   }
 

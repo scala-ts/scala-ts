@@ -11,8 +11,8 @@ import scala.reflect.runtime.universe._
 class ScalaParserSpec extends FlatSpec with Matchers {
 
   it should "parse case class with one primitive member" in {
-    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type))
-    val expected = CaseClass("TestClass1", List(CaseClassMember("name", StringRef)), List.empty)
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass1Type, TestTypes.TestTrait1, TestTypes.TestTrait2))
+    val expected = CaseClass("TestClass1", List(CaseClassMember("name", StringRef)), List.empty, Some("Trait1"))
     parsed should contain(expected)
   }
 
@@ -42,9 +42,19 @@ class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(expected)
   }
 
+  it should "parse empty sealed trait" in {
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestTrait1))
+    val expected = CaseClass(
+      "Trait1",
+      Nil,
+      Nil
+    )
+    parsed should contain(expected)
+  }
+
   it should "correctly detect involved types" in {
-    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass6Type))
-    parsed should have length 6
+    val parsed = ScalaParser.parseCaseClasses(List(TestTypes.TestClass6Type, TestTypes.TestTrait1, TestTypes.TestTrait2))
+    parsed should have length 7
   }
 
 }
@@ -58,10 +68,20 @@ object TestTypes {
   val TestClass4Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass4")
   val TestClass5Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass5")
   val TestClass6Type = typeFromName("com.mpc.scalats.core.TestTypes.TestClass6")
+  val TestTrait1 = typeFromName("com.mpc.scalats.core.TestTypes.Trait1")
+  val TestTrait2 = typeFromName("com.mpc.scalats.core.TestTypes.Trait2")
 
   private def typeFromName(name: String) = mirror.staticClass(name).toType
 
-  case class TestClass1(name: String)
+  sealed trait Trait1
+
+  sealed trait Trait2 {
+    def someFunction : String
+  }
+
+  case class TestClass1(name: String) extends Trait2 with Trait1 {
+    override def someFunction: String = ???
+  }
 
   case class TestClass2[T](name: T)
 
@@ -72,4 +92,6 @@ object TestTypes {
   case class TestClass5[T](name: Option[T])
 
   case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
+
+
 }

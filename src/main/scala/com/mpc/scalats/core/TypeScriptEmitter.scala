@@ -20,13 +20,14 @@ object TypeScriptEmitter {
     out.close()
   }
 
-  private def emitInterfaceDeclaration(decl: InterfaceDeclaration, out: PrintStream) = {
-    val InterfaceDeclaration(name, members, typeParams) = decl
+  private def emitInterfaceDeclaration(decl: InterfaceDeclaration, out: PrintStream): Unit = {
+    val InterfaceDeclaration(name, members, typeParams, parent) = decl
     out.print(s"export interface $name")
     emitTypeParams(decl.typeParams, out)
+    parent.foreach(p => out.print(s" extends $p"))
     out.println(" {")
     members foreach { member =>
-      out.println(s"\t${member.name}: ${getTypeRefString(member.typeRef)};")
+      out.println(s"\t${member.name}: ${getTypeRefString(member.typeRef)}")
     }
     out.println("}")
     out.println()

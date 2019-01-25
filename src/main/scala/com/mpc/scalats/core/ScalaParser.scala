@@ -3,6 +3,7 @@ package com.mpc.scalats.core
 /**
   * Created by Milosz on 09.06.2016.
   */
+
 import scala.reflect.runtime.universe._
 
 object ScalaParser {
@@ -10,10 +11,30 @@ object ScalaParser {
   import ScalaModel._
 
   def parseCaseClasses(caseClassTypes: List[Type]): List[CaseClass] = {
-    caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass).distinct
+    val sealedTraitTypes = caseClassTypes.filter(isSealedTrait).distinct.map(parseSealedTrait).distinct
+    sealedTraitTypes ++
+      caseClassTypes.flatMap(getInvolvedTypes(Set.empty)).filter(isCaseClass).distinct.map(parseCaseClass(_, sealedTraitTypes)).distinct
   }
 
-  private def parseCaseClass(caseClassType: Type) = {
+  private def isSealedTrait(scalaType: Type) = {
+    scalaType.typeSymbol.asClass.isSealed &&
+      scalaType.typeSymbol.asClass.isTrait
+  }
+
+  private def parseSealedTrait(sealedTraitType: Type): CaseClass = {
+    val typeParams = sealedTraitType.typeConstructor.normalize match {
+      case polyType: PolyTypeApi => polyType.typeParams.map(_.name.decoded)
+      case _ => List.empty[String]
+    }
+    CaseClass(
+      sealedTraitType.typeSymbol.name.toString,
+      Nil,
+      typeParams
+    )
+  }
+
+  private def parseCaseClass(caseClassType: Type, sealedTraitTypes: List[CaseClass]) = {
+    val possibleParentsName = sealedTraitTypes.map(_.name)
     val relevantMemberSymbols = caseClassType.members.collect {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
@@ -25,10 +46,13 @@ object ScalaParser {
       val memberName = member.name.toString
       CaseClassMember(memberName, getTypeRef(member.returnType, typeParams.toSet))
     }
+    val relevantParent = caseClassType.baseClasses.map(_.name.toString).find(possibleParentsName.contains)
+
     CaseClass(
       caseClassType.typeSymbol.name.toString,
       members.toList,
-      typeParams
+      typeParams,
+      relevantParent
     )
   }
 
@@ -64,7 +88,7 @@ object ScalaParser {
         FloatRef
       case "Boolean" =>
         BooleanRef
-      case "String" |  "UUID" =>
+      case "String" | "UUID" =>
         StringRef
       case "List" | "Seq" | "Set" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
@@ -72,7 +96,7 @@ object ScalaParser {
       case "Option" =>
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         OptionRef(getTypeRef(innerType, typeParams))
-      case "LocalDate"  =>
+      case "LocalDate" =>
         DateRef
       case "Instant" | "Timestamp" =>
         DateTimeRef

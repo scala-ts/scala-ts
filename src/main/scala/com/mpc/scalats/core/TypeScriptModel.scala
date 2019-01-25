@@ -12,7 +12,7 @@ object TypeScriptModel {
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
 
-  case class InterfaceDeclaration(name: String, members: List[Member], typeParams: List[String]) extends Declaration
+  case class InterfaceDeclaration(name: String, members: List[Member], typeParams: List[String], parent: Option[String] = None) extends Declaration
 
   case class Member(name: String, typeRef: TypeRef)
 
