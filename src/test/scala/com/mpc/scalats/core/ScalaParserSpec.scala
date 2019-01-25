@@ -54,6 +54,11 @@ final class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(caseClass7)
   }
 
+  it should "correctly parse case class extends AnyVal as a primitive type" in {
+    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass8Type))
+    parsed should contain(caseClass8)
+  }
+
   it should "correctly parse case object" in {
     val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestObject1Type))
 
@@ -84,6 +89,7 @@ object ScalaFixtures {
   val TestClass5Type = typeOf[TestClass5[_]]
   val TestClass6Type = typeOf[TestClass6[_]]
   val TestClass7Type = typeOf[TestClass7[_]]
+  val TestClass8Type = typeOf[TestClass8]
   val TestObject1Type = typeOf[TestObject1.type]
   val TestObject2Type = typeOf[TestObject2.type]
 
@@ -104,6 +110,10 @@ object ScalaFixtures {
   case class TestClass6[T](name: Option[TestClass5[List[Option[TestClass4[String]]]]], age: TestClass3[TestClass2[TestClass1]])
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
+
+  case class AnyValChild(value: String) extends AnyVal
+
+  case class TestClass8(name: AnyValChild)
 
   case object TestObject1
 
@@ -186,6 +196,12 @@ object ScalaParserResults {
     values = ListSet.empty,
     typeArgs = ListSet("T")
   )
+
+  val caseClass8 = CaseClass(
+    name = "TestClass8",
+    fields = ListSet(TypeMember("name", StringRef)),
+    values = ListSet.empty,
+    typeArgs = ListSet.empty)
 
   val caseObject1 = CaseObject("TestObject1", ListSet.empty)
 
