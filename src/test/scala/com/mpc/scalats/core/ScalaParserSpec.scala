@@ -54,7 +54,7 @@ final class ScalaParserSpec extends FlatSpec with Matchers {
     parsed should contain(caseClass7)
   }
 
-  it should "parse case class with AnyVal-extends case class" in {
+  it should "correctly parse case class extends AnyVal as a primitive type" in {
     val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass8Type))
     parsed should contain(caseClass8)
   }
@@ -111,9 +111,9 @@ object ScalaFixtures {
 
   case class TestClass7[T](name: Either[TestClass1, TestClass1B])
 
-  case class CaseClassAnyVal(value: String) extends AnyVal
+  case class AnyValChild(value: String) extends AnyVal
 
-  case class TestClass8(name: CaseClassAnyVal)
+  case class TestClass8(name: AnyValChild)
 
   case object TestObject1
 

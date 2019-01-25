@@ -32,7 +32,7 @@ final class ScalaParser(logger: Logger) {
 
       if (classSym.isTrait && classSym.isSealed && !tpe.takesTypeArgs) {
         parseSealedUnion(tpe)
-      } else if (isCaseClass(tpe)  && !isCaseClassAnyVal(tpe)) {
+      } else if (isCaseClass(tpe)  && !isAnyValChild(tpe)) {
         parseCaseClass(tpe)
       } else {
         Option.empty[TypeDef]
@@ -197,7 +197,7 @@ final class ScalaParser(logger: Logger) {
         DateTimeRef
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
-      case _ if isCaseClassAnyVal(scalaType) =>
+      case _ if isAnyValChild(scalaType) =>
         getTypeRef(scalaType.members.filter(!_.isMethod).map(_.typeSignature).head, Set())
       case _ if isCaseClass(scalaType) =>
         val caseClassName = scalaType.typeSymbol.name.toString
@@ -227,9 +227,8 @@ final class ScalaParser(logger: Logger) {
   @inline private def isCaseClass(scalaType: Type): Boolean =
     scalaType.typeSymbol.isClass && scalaType.typeSymbol.asClass.isCaseClass
 
-  @inline private def isCaseClassAnyVal(scalaType: Type) = {
+  @inline private def isAnyValChild(scalaType: Type): Boolean =
     scalaType <:< typeOf[AnyVal]
-  }
 
   private def directKnownSubclasses(tpe: Type): List[Type] = {
     // Workaround for SI-7046: https://issues.scala-lang.org/browse/SI-7046
