@@ -1,32 +1,47 @@
 package org.scalats.core
 
-import org.scalats.configuration.Config
+import java.io.PrintStream
 
-import scala.reflect.runtime.universe._
+import scala.reflect.api.Universe
+import scala.reflect.runtime
 
+/**
+ * Created by Milosz on 11.06.2016.
+ */
 object TypeScriptGenerator {
 
+  /**
+   * Generates TypeScript from specified runtime classes.
+   */
   def generateFromClassNames(
+    config: Configuration,
     classNames: List[String],
     logger: Logger,
-    classLoader: ClassLoader = getClass.getClassLoader
-  )(implicit config: Config) = {
-    val mirror = runtimeMirror(classLoader)
+    out: String => PrintStream = _ => Console.out,
+    classLoader: ClassLoader = getClass.getClassLoader): Unit = {
+    import runtime.universe
+
+    val mirror = universe.runtimeMirror(classLoader)
     val types = classNames.map { className =>
       mirror.staticClass(className).toType
     }
 
-    generate(types, logger, mirror)
+    generate(universe)(config, types, logger, out)
   }
 
-  def generate(caseClasses: List[Type], logger: Logger, mirror: Mirror)(implicit config: Config): Unit = {
-    val outputStream = config.outputStream.getOrElse(Console.out)
-    val scalaParser = new ScalaParser(logger, mirror)
-    val scalaTypes = scalaParser.parseTypes(caseClasses)
-    val typeScriptInterfaces = Compiler.compile(scalaTypes)
+  def generate(universe: Universe)(
+    config: Configuration,
+    types: List[universe.Type],
+    logger: Logger,
+    out: String => PrintStream): Unit = {
+    val scalaParser = new ScalaParser[universe.type](universe, logger)
+    val transpiler = new Transpiler(config)
 
-    val emiter = new TypeScriptEmitter(config)
+    val scalaTypes = scalaParser.parseTypes(types)
+    val typeScriptInterfaces = transpiler(scalaTypes)
 
-    emiter.emit(typeScriptInterfaces, outputStream)
+    val emiter = new TypeScriptEmitter(config, out)
+
+    emiter.emit(typeScriptInterfaces)
   }
 }

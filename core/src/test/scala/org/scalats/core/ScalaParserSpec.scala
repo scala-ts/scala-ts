@@ -8,38 +8,37 @@ import org.slf4j.LoggerFactory
 
 import ScalaModel._
 
-import scala.reflect.runtime.universe.runtimeMirror
+import scala.reflect.runtime.{ universe => runtimeUniverse }
 
 final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   import ScalaParserResults._
 
-  val logger = Logger(LoggerFactory.getLogger(getClass.getSimpleName))
-  val mirror = runtimeMirror(getClass.getClassLoader)
-
-  val scalaParser = new ScalaParser(logger, mirror)
+  val scalaParser = new ScalaParser[runtimeUniverse.type](
+    universe = runtimeUniverse,
+    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
 
   it should "parse case class with one primitive member" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass1Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass1Type))
     parsed should contain(caseClass1)
   }
 
   it should "parse generic case class with one member" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass2Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass2Type))
     parsed should contain(caseClass2)
   }
 
   it should "parse generic case class with one member list of type parameter" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass3Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass3Type))
     parsed should contain(caseClass3)
   }
 
   it should "parse generic case class with one optional member" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass5Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass5Type))
     parsed should contain(caseClass5)
   }
 
   it should "correctly detect involved types" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass6Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass6Type))
 
     parsed.size should equal(6)
     parsed should contain(caseClass1)
@@ -51,12 +50,12 @@ final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "correctly handle either types" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass7Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass7Type))
     parsed should contain(caseClass7)
   }
 
   it should "correctly parse case class extends AnyVal as a primitive type" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass8Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass8Type))
     parsed should contain(caseClass8)
   }
 
@@ -66,28 +65,27 @@ final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "correctly parse case object" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestObject1Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject1Type))
 
     parsed should contain(caseObject1)
   }
 
   it should "correctly parse object" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestObject2Type))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject2Type))
 
     parsed should contain(caseObject2)
   }
 
   it should "correctly parse sealed trait as union" in {
-    val parsed = scalaParser.parseTypes(List(ScalaFixtures.FamilyType))
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.FamilyType))
 
     parsed should contain(sealedFamily1)
   }
 }
 
-object ScalaFixtures {
-  implicit val mirror = runtimeMirror(getClass.getClassLoader)
-  import mirror.universe
-  import universe.typeOf
+object ScalaRuntimeFixtures {
+  implicit val mirror = runtimeUniverse.runtimeMirror(getClass.getClassLoader)
+  import runtimeUniverse.typeOf
 
   val TestClass1Type = typeOf[TestClass1]
   val TestClass2Type = typeOf[TestClass2[_]]
@@ -171,8 +169,7 @@ object ScalaParserResults {
     identifier = QualifiedIdentifier("TestClass3", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", SeqRef(TypeParamRef("T")))),
     values = ListSet.empty,
-    typeArgs = ListSet("T")
-  )
+    typeArgs = ListSet("T"))
 
   val caseClass4 = CaseClass(
     identifier = QualifiedIdentifier("TestClass4", List("ScalaFixtures")),
@@ -186,8 +183,7 @@ object ScalaParserResults {
     identifier = QualifiedIdentifier("TestClass5", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", OptionRef(TypeParamRef("T")))),
     values = ListSet.empty,
-    typeArgs = ListSet("T")
-  )
+    typeArgs = ListSet("T"))
 
   val caseClass6 = CaseClass(
     identifier = QualifiedIdentifier("TestClass6", List("ScalaFixtures")),
@@ -207,8 +203,7 @@ object ScalaParserResults {
       CaseClassRef(QualifiedIdentifier("TestClass1", List("ScalaFixtures")), ListSet.empty),
       CaseClassRef(QualifiedIdentifier("TestClass1B", List("ScalaFixtures")), ListSet.empty))))),
     values = ListSet.empty,
-    typeArgs = ListSet("T")
-  )
+    typeArgs = ListSet("T"))
 
   val caseClass8 = CaseClass(
     identifier = QualifiedIdentifier("TestClass8", List("ScalaFixtures")),

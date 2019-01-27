@@ -4,40 +4,43 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
-import org.scalats.configuration.{ Config, FieldNaming }
-
 // TODO: Emit Option (space-lift?)
 // TODO: Use a template engine (velocity?)
-final class TypeScriptEmitter(val config: Config) {
+/**
+ * @param out the function to select a `PrintStream` from type name
+ */
+final class TypeScriptEmitter(
+  val config: Configuration,
+  out: String => PrintStream) {
+
   import TypeScriptModel._
   import Internals.list
   import config.{ typescriptIndent => indent }
 
   // TODO: If for ClassDeclaration or SingletonDeclaration there is values
   // implementing the superInterface, then do not 'implements'
-  def emit(declaration: ListSet[Declaration], out: PrintStream): Unit = {
+  def emit(declaration: ListSet[Declaration]): Unit =
     list(declaration).foreach { d =>
       d match {
         case decl: InterfaceDeclaration =>
-          emitInterfaceDeclaration(decl, out)
+          emitInterfaceDeclaration(decl)
 
         case decl: EnumDeclaration =>
           emitEnumDeclaration(decl, out)
 
         case decl: ClassDeclaration =>
-          emitClassDeclaration(decl, out)
+          emitClassDeclaration(decl)
 
         case SingletonDeclaration(name, members, superInterface) =>
-          emitSingletonDeclaration(name, members, superInterface, out)
+          emitSingletonDeclaration(name, members, superInterface)
 
         case UnionDeclaration(name, fields, possibilities, superInterface) =>
           emitUnionDeclaration(
-            name, fields, possibilities, superInterface, out)
+            name, fields, possibilities, superInterface)
       }
 
       println()
     }
-  }
 
   // ---
 
@@ -45,12 +48,12 @@ final class TypeScriptEmitter(val config: Config) {
     name: String,
     fields: ListSet[Member],
     possibilities: ListSet[CustomTypeRef],
-    superInterface: Option[InterfaceDeclaration],
-    out: PrintStream): Unit = {
+    superInterface: Option[InterfaceDeclaration]): Unit = {
+    val o = out(name)
 
     // Namespace and union type
-    out.println(s"export namespace $name {")
-    out.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "};""")
+    o.println(s"export namespace $name {")
+    o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "};""")
 
     if (config.emitCodecs) {
       // TODO: Discriminator naming
@@ -59,68 +62,68 @@ final class TypeScriptEmitter(val config: Config) {
       val children = list(possibilities)
 
       // Decoder factory: MyClass.fromData({..})
-      out.println(s"\n${indent}public static fromData(data: any): ${name} {")
-      out.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
+      o.println(s"\n${indent}public static fromData(data: any): ${name} {")
+      o.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
 
       children.foreach { sub =>
         val clazz = if (sub.name startsWith "I") sub.name.drop(1) else sub.name
 
-        out.println(s"""${indent}${indent}${indent}case "${naming(sub.name)}": {""")
-        out.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data);")
-        out.println(s"${indent}${indent}${indent}}")
+        o.println(s"""${indent}${indent}${indent}case "${naming(sub.name)}": {""")
+        o.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data);")
+        o.println(s"${indent}${indent}${indent}}")
       }
 
-      out.println(s"${indent}${indent}}")
-      out.println(s"${indent}}")
+      o.println(s"${indent}${indent}}")
+      o.println(s"${indent}}")
 
       // Encoder
-      out.println(s"\n${indent}public static toData(instance: ${name}): any {")
+      o.println(s"\n${indent}public static toData(instance: ${name}): any {")
 
       children.zipWithIndex.foreach {
         case (sub, index) =>
-          out.print(s"${indent}${indent}")
+          o.print(s"${indent}${indent}")
 
           if (index > 0) {
-            out.print("} else ")
+            o.print("} else ")
           }
 
           val clazz =
             if (sub.name startsWith "I") sub.name.drop(1) else sub.name
 
-          out.println(s"if (instance instanceof ${sub.name}) {")
-          out.println(s"${indent}${indent}${indent}const data = ${clazz}.toData(instance);")
-          out.println(s"""${indent}${indent}${indent}data['$discriminatorName'] = "${naming(sub.name)}";""")
-          out.println(s"${indent}${indent}${indent}return data;")
+          o.println(s"if (instance instanceof ${sub.name}) {")
+          o.println(s"${indent}${indent}${indent}const data = ${clazz}.toData(instance);")
+          o.println(s"""${indent}${indent}${indent}data['$discriminatorName'] = "${naming(sub.name)}";""")
+          o.println(s"${indent}${indent}${indent}return data;")
       }
 
-      out.println(s"${indent}${indent}}")
-      out.println(s"${indent}}")
+      o.println(s"${indent}${indent}}")
+      o.println(s"${indent}}")
     }
 
-    out.println("}")
+    o.println("}")
 
     // Union interface
-    out.print(s"\nexport interface I${name}")
+    o.print(s"\nexport interface I${name}")
 
     superInterface.foreach { iface =>
-      out.print(s" extends I${iface.name}")
+      o.print(s" extends I${iface.name}")
     }
 
-    out.println(" {")
+    o.println(" {")
 
     // Abstract fields - common to all the subtypes
     list(fields).foreach { member =>
-      out.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
+      o.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
     }
 
-    out.println("}")
+    o.println("}")
   }
 
   private def emitSingletonDeclaration(
     name: String,
     members: ListSet[Member],
-    superInterface: Option[InterfaceDeclaration],
-    out: PrintStream): Unit = {
+    superInterface: Option[InterfaceDeclaration]): Unit = {
+    val o = out(name)
 
     if (members.nonEmpty) {
       def mkString = members.map {
@@ -132,57 +135,56 @@ final class TypeScriptEmitter(val config: Config) {
     }
 
     // Class definition
-    out.print(s"export class $name")
+    o.print(s"export class $name")
 
     superInterface.filter(_ => members.isEmpty).foreach { i =>
-      out.print(s" implements ${i.name}")
+      o.print(s" implements ${i.name}")
     }
 
-    out.println(" {")
+    o.println(" {")
 
-    out.println(s"${indent}private static instance: $name;\n")
+    o.println(s"${indent}private static instance: $name;\n")
 
-    out.println(s"${indent}private constructor() {}\n")
-    out.println(s"${indent}public static getInstance() {")
-    out.println(s"${indent}${indent}if (!${name}.instance) {")
-    out.println(s"${indent}${indent}${indent}${name}.instance = new ${name}();")
-    out.println(s"${indent}${indent}}\n")
-    out.println(s"${indent}${indent}return ${name}.instance;")
-    out.println(s"${indent}}")
+    o.println(s"${indent}private constructor() {}\n")
+    o.println(s"${indent}public static getInstance() {")
+    o.println(s"${indent}${indent}if (!${name}.instance) {")
+    o.println(s"${indent}${indent}${indent}${name}.instance = new ${name}();")
+    o.println(s"${indent}${indent}}\n")
+    o.println(s"${indent}${indent}return ${name}.instance;")
+    o.println(s"${indent}}")
 
     if (config.emitCodecs) {
       // Decoder factory: MyClass.fromData({..})
-      out.println(s"\n${indent}public static fromData(data: any): ${name} {")
-      out.println(s"${indent}${indent}return ${name}.instance;")
-      out.println(s"${indent}}")
+      o.println(s"\n${indent}public static fromData(data: any): ${name} {")
+      o.println(s"${indent}${indent}return ${name}.instance;")
+      o.println(s"${indent}}")
 
       // Encoder
-      out.println(s"\n${indent}public static toData(instance: ${name}): any {")
-      out.println(s"${indent}${indent}return instance;")
-      out.println(s"${indent}}")
+      o.println(s"\n${indent}public static toData(instance: ${name}): any {")
+      o.println(s"${indent}${indent}return instance;")
+      o.println(s"${indent}}")
     }
 
-    out.println("}")
+    o.println("}")
   }
 
   private def emitInterfaceDeclaration(
-    decl: InterfaceDeclaration,
-    out: PrintStream): Unit = {
-
+    decl: InterfaceDeclaration): Unit = {
     val InterfaceDeclaration(name, fields, typeParams, superInterface) = decl
+    val o = out(name)
 
-    out.print(s"export interface $name${typeParameters(typeParams)}")
+    o.print(s"export interface $name${typeParameters(typeParams)}")
 
     superInterface.foreach { iface =>
-      out.print(s" extends ${iface.name}")
+      o.print(s" extends ${iface.name}")
     }
 
-    out.println(" {")
-    
+    o.println(" {")
+
     list(fields).foreach { member =>
-      out.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
+      o.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
     }
-    out.println("}")
+    o.println("}")
   }
 
   private def emitEnumDeclaration(
@@ -204,7 +206,9 @@ final class TypeScriptEmitter(val config: Config) {
     out: PrintStream): Unit = {
 
     val ClassDeclaration(name, ClassConstructor(parameters),
-      values, typeParams, _/*superInterface*/) = decl
+      values, typeParams, _ /*superInterface*/ ) = decl
+
+    val o = out(name)
 
     val tparams = typeParameters(typeParams)
 
@@ -218,22 +222,22 @@ final class TypeScriptEmitter(val config: Config) {
     }
 
     // Class definition
-    out.print(s"export class ${name}${tparams}")
+    o.print(s"export class ${name}${tparams}")
 
     if (config.emitInterfaces) {
-      out.print(s" implements I${name}${tparams}")
+      o.print(s" implements I${name}${tparams}")
     }
 
-    out.println(" {")
+    o.println(" {")
 
     list(values).foreach { v =>
-      out.print(indent)
+      o.print(indent)
 
       if (config.emitInterfaces) {
-        out.print("public ")
+        o.print("public ")
       }
 
-      out.println(s"${v.name}: ${getTypeRefString(v.typeRef)};")
+      o.println(s"${v.name}: ${getTypeRefString(v.typeRef)};")
     }
 
     val params = list(parameters)
@@ -241,67 +245,67 @@ final class TypeScriptEmitter(val config: Config) {
     if (!config.emitInterfaces) {
       // Class fields
       params.foreach { parameter =>
-        out.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)};")
+        o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)};")
       }
     }
 
     // Class constructor
-    out.print(s"${indent}constructor(")
+    o.print(s"${indent}constructor(")
 
     params.zipWithIndex.foreach {
       case (parameter, index) =>
         if (index > 0) {
-          out.println(",")
+          o.println(",")
         } else {
-          out.println("")
+          o.println("")
         }
 
-        out.print(s"${indent}${indent}")
+        o.print(s"${indent}${indent}")
 
         if (config.emitInterfaces) {
-          out.print("public ")
+          o.print("public ")
         }
 
-        out.print(s"${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
+        o.print(s"${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
     }
 
-    out.println(s"\n${indent}) {")
+    o.println(s"\n${indent}) {")
 
     params.foreach { parameter =>
-      out.println(s"${indent}${indent}this.${parameter.name} = ${parameter.name};")
+      o.println(s"${indent}${indent}this.${parameter.name} = ${parameter.name};")
     }
-    out.println(s"${indent}}")
+    o.println(s"${indent}}")
 
     // Codecs functions
     if (config.emitCodecs) {
-      emitClassCodecs(decl, out)
+      emitClassCodecs(decl)
     }
 
-    out.println("}")
+    o.println("}")
   }
 
-  private def emitClassCodecs(
-    decl: ClassDeclaration,
-    out: PrintStream): Unit = {
+  private def emitClassCodecs(decl: ClassDeclaration): Unit = {
     import decl.{ constructor, name, typeParams }, constructor.parameters
+
+    val o = out(name)
     val tparams = typeParameters(typeParams)
 
     if (config.fieldNaming == FieldNaming.Identity) {
       // optimized identity
 
       // Decoder factory: MyClass.fromData({..})
-      out.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
-      out.println(s"${indent}${indent}return <${name}${tparams}>(data);")
-      out.println(s"${indent}}")
+      o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
+      o.println(s"${indent}${indent}return <${name}${tparams}>(data);")
+      o.println(s"${indent}}")
 
       // Encoder
-      out.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
-      out.println(s"${indent}${indent}return instance;")
-      out.println(s"${indent}}")
+      o.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
+      o.println(s"${indent}${indent}return instance;")
+      o.println(s"${indent}}")
     } else {
       // Decoder factory: MyClass.fromData({..})
-      out.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
-      out.print(s"${indent}${indent}return new ${name}${tparams}(")
+      o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
+      o.print(s"${indent}${indent}return new ${name}${tparams}(")
 
       val params = list(parameters).zipWithIndex
 
@@ -309,29 +313,29 @@ final class TypeScriptEmitter(val config: Config) {
         case (parameter, index) =>
           val encoded = config.fieldNaming(parameter.name)
 
-          if (index > 0) out.print(", ")
+          if (index > 0) o.print(", ")
 
-          out.print(s"data.${encoded}")
+          o.print(s"data.${encoded}")
       }
 
-      out.println(s");")
-      out.println(s"${indent}}")
+      o.println(s");")
+      o.println(s"${indent}}")
 
       // Encoder
-      out.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
-      out.println(s"${indent}${indent}return {")
+      o.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
+      o.println(s"${indent}${indent}return {")
 
       params.foreach {
         case (parameter, index) =>
           val encoded = config.fieldNaming(parameter.name)
 
-          if (index > 0) out.print(",\n")
+          if (index > 0) o.print(",\n")
 
-          out.print(s"${indent}${indent}${indent}${encoded}: instance.${parameter.name}")
+          o.print(s"${indent}${indent}${indent}${encoded}: instance.${parameter.name}")
       }
 
-      out.println(s"\n${indent}${indent}};")
-      out.println(s"${indent}}")
+      o.println(s"\n${indent}${indent}};")
+      o.println(s"${indent}}")
     }
   }
 
@@ -358,5 +362,4 @@ final class TypeScriptEmitter(val config: Config) {
     case NullRef => "null"
     case UndefinedRef => "undefined"
   }
-
 }

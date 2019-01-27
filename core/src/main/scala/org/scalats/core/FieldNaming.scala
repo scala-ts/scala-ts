@@ -1,6 +1,6 @@
-package org.scalats.configuration
+package org.scalats.core
 
-trait FieldNaming extends (String => String){
+trait FieldNaming extends (String => String) {
   /**
    * Returns the encoded representation for the given field name
    * (e.g. fooBar -> foo_bar if snake case is used).
@@ -9,15 +9,14 @@ trait FieldNaming extends (String => String){
 }
 
 object FieldNaming {
-  /** 
+  /**
    * Functional factory
-   * 
+   *
    * @param naming the naming name
    */
   def apply(
     naming: String,
-    convert: String => String
-  ): FieldNaming = new Functional(naming, convert)
+    convert: String => String): FieldNaming = new Functional(naming, convert)
 
   /** Identity naming */
   val Identity: FieldNaming = FieldNaming("Identity", identity[String])
@@ -65,8 +64,7 @@ object FieldNaming {
 
   private final class Functional(
     private val naming: String,
-    f: String => String
-  ) extends FieldNaming {
+    f: String => String) extends FieldNaming {
     @inline def apply(property: String): String = f(property)
 
     @inline override def toString: String = naming

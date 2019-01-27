@@ -1,0 +1,36 @@
+<scalats>
+  <compilationRuleSet>
+    <includes>
+      <include>ScalaParserSpec\.scala</include>
+      <include>Transpiler.*</include>
+    </includes>
+
+    <excludes>
+      <exclude>foo</exclude>
+    </excludes>
+  </compilationRuleSet>
+
+  <typeRuleSet>
+    <!--
+      Regular expressions on type full names.
+      Can be prefixed with either 'object:' or 'class:' (for class or trait).
+    -->
+    <includes>
+      <include>object:org\.scalats\.core\..*</include>
+    </includes>
+
+    <excludes>
+      <exclude>.*Spec</exclude>
+    </excludes>
+  </typeRuleSet>
+
+  <settings>
+    <emitInterfaces>true</emitInterfaces>
+    <emitClasses>false</emitClasses>
+    <optionToNullable>true</optionToNullable>
+    <optionToUndefined>false</optionToUndefined>
+    <prependIPrefix>true</prependIPrefix>
+    <typescriptIndent>	</typescriptIndent>
+    <emitCodecs>true</emitCodecs>
+  </settings>
+</scalats>

@@ -5,11 +5,9 @@ import scala.collection.immutable.ListSet
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import org.scalats.configuration.{ Config, FieldNaming }
-
-final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
+final class TypeScriptEmitterSpec extends FlatSpec with Matchers {
   import TypeScriptModel._
-  import CompilerResults._
+  import TranspilerResults._
 
   it should "emit TypeScript class for a class with one primitive member" in {
     emit(ListSet(clazz1)) should equal("""export class TestClass1 implements ITestClass1 {
@@ -226,15 +224,15 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 
   it should "emit TypeScript class as union member #1" in {
     the[IllegalStateException].
-      thrownBy(emit(ListSet(unionMember1Clazz))) should have message(
-      "Cannot emit static members for class values: code (number)")
+      thrownBy(emit(ListSet(unionMember1Clazz))) should have message (
+        "Cannot emit static members for class values: code (number)")
 
   }
 
   it should "emit TypeScript singleton as union member #2" in {
     the[IllegalStateException].
-      thrownBy(emit(ListSet(unionMember2Singleton))) should have message(
-      "Cannot emit static members for singleton values: foo (string)")
+      thrownBy(emit(ListSet(unionMember2Singleton))) should have message (
+        "Cannot emit static members for singleton values: foo (string)")
 
   }
 
@@ -281,17 +279,18 @@ export interface IFamily {
 
   // ---
 
-  private lazy val defaultConfig = Config(emitClasses = true)
+  private lazy val defaultConfig = Configuration(emitClasses = true)
 
   def emit(
     decls: ListSet[Declaration],
-    config: Config = defaultConfig): String = {
-    val emiter = new TypeScriptEmitter(config)
+    config: Configuration = defaultConfig): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
+    val emiter = new TypeScriptEmitter(config, _ => out)
+
     try {
-      emiter.emit(decls, out)
+      emiter.emit(decls)
       out.flush()
       buf.toString
     } finally {

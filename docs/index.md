@@ -28,7 +28,7 @@ In previous example, `com.example.ExampleDto` is the Scala class for which the T
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("org.scala-ts" % "scala-ts" % version)
+    addSbtPlugin("org.scala-ts" % "scala-ts-sbt" % version)
 
 Additionally, enable the plugin in your project settings:
 
@@ -58,6 +58,8 @@ emitClasses in generateTypeScript := true
 
 enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
+
+TODO: See [scalac plugin configuration](../core/src/test/resources/plugin-conf.xml)
 
 ## Type support
 

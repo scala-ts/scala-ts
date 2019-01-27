@@ -10,8 +10,7 @@ object TypeScriptModel {
 
   case class CustomTypeRef(
     name: String,
-    typeArgs: ListSet[TypeRef]
-  ) extends TypeRef
+    typeArgs: ListSet[TypeRef]) extends TypeRef
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
 
@@ -25,14 +24,12 @@ object TypeScriptModel {
     constructor: ClassConstructor,
     values: ListSet[Member],
     typeParams: ListSet[String],
-    superInterface: Option[InterfaceDeclaration]
-  ) extends Declaration
+    superInterface: Option[InterfaceDeclaration]) extends Declaration
 
   case class SingletonDeclaration(
     name: String,
     values: ListSet[Member],
-    superInterface: Option[InterfaceDeclaration]
-  ) extends Declaration
+    superInterface: Option[InterfaceDeclaration]) extends Declaration
 
   case class EnumDeclaration(
     name: String,
@@ -43,13 +40,13 @@ object TypeScriptModel {
     name: String,
     fields: ListSet[Member],
     possibilities: ListSet[CustomTypeRef],
-    superInterface: Option[InterfaceDeclaration]
-  ) extends Declaration
+    superInterface: Option[InterfaceDeclaration]) extends Declaration
 
   case class ClassConstructor(parameters: ListSet[ClassConstructorParameter])
 
-  case class ClassConstructorParameter(name: String,
-                                       typeRef: TypeRef)
+  case class ClassConstructorParameter(
+    name: String,
+    typeRef: TypeRef)
 
   case class UnknownTypeRef(name: String) extends TypeRef
 

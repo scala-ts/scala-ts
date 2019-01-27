@@ -2,21 +2,19 @@ package org.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalats.configuration.Config
-
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import org.scalatest.{ FlatSpec, Matchers }
 
 import TypeScriptModel._
 import ScalaParserResults._
 
-final class CompilerSpec extends AnyFlatSpec with Matchers {
-  import CompilerResults._
+final class TranspilerSpec extends FlatSpec with Matchers {
+  import TranspilerResults._
 
-  implicit val defaultConfig: Config = Config(emitClasses = true)
+  val defaultTranspiler: Transpiler =
+    new Transpiler(Configuration(emitClasses = true))
 
   it should "compile a case class with one primitive member" in {
-    val result = Compiler.compile(ListSet(caseClass1))
+    val result = defaultTranspiler(ListSet(caseClass1))
 
     result.size should equal(2)
     result should contain(interface1)
@@ -24,7 +22,7 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "compile a generic class with one member" in {
-    val result = Compiler.compile(ListSet(caseClass2))
+    val result = defaultTranspiler(ListSet(caseClass2))
 
     result.size should equal(2)
     result should contain(interface2)
@@ -32,7 +30,7 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "compile a generic case class with one member list of type parameter" in {
-    val result = Compiler.compile(ListSet(caseClass3))
+    val result = defaultTranspiler(ListSet(caseClass3))
 
     result.size should equal(2)
     result should contain(interface3)
@@ -40,7 +38,7 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "compile a generic case class with one optional member" in {
-    val result = Compiler.compile(ListSet(caseClass5))
+    val result = defaultTranspiler(ListSet(caseClass5))
 
     result.size should equal(2)
     result should contain(interface5)
@@ -48,7 +46,7 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "compile disjunction types" in {
-    val result = Compiler.compile(ListSet(caseClass7))
+    val result = defaultTranspiler(ListSet(caseClass7))
 
     result.size should equal(2)
     result should contain(interface7)
@@ -56,14 +54,14 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "compile parse case object" in {
-    val result = Compiler.compile(ListSet(caseObject1))
+    val result = defaultTranspiler(ListSet(caseObject1))
 
     result.size should equal(1)
     result should contain(singleton1)
   }
 
   it should "correctly parse object" in {
-    val result = Compiler.compile(
+    val result = defaultTranspiler(
       ListSet(caseObject2),
       Some(InterfaceDeclaration(
         "SupI", ListSet.empty, ListSet.empty[String], Option.empty)))
@@ -73,12 +71,13 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "correctly parse sealed trait as union" in {
-    val result = Compiler.compile(ListSet(sealedFamily1))
+    val result = defaultTranspiler(ListSet(sealedFamily1))
 
     result.size should equal(5)
     result should contain(union1)
 
-    val member1Interface = InterfaceDeclaration("IFamilyMember1",
+    val member1Interface = InterfaceDeclaration(
+      "IFamilyMember1",
       ListSet(Member("foo", StringRef)),
       ListSet.empty, Some(unionIface))
 
@@ -87,29 +86,34 @@ final class CompilerSpec extends AnyFlatSpec with Matchers {
     result should contain(unionMember2Singleton)
 
     result should contain(
-      SingletonDeclaration("FamilyMember3",
+      SingletonDeclaration(
+        "FamilyMember3",
         ListSet(Member("foo", StringRef)), Some(unionIface)))
   }
 }
 
-object CompilerResults {
-  val interface1 = InterfaceDeclaration("ITestClass1",
-    ListSet(Member("name",StringRef)), ListSet.empty, Option.empty)
+object TranspilerResults {
+  val interface1 = InterfaceDeclaration(
+    "ITestClass1",
+    ListSet(Member("name", StringRef)), ListSet.empty, Option.empty)
 
-  val clazz1 = ClassDeclaration("TestClass1",
+  val clazz1 = ClassDeclaration(
+    "TestClass1",
     ClassConstructor(ListSet(ClassConstructorParameter("name", StringRef))),
     ListSet.empty,
     ListSet.empty,
     Option.empty)
 
-  val interface2 = InterfaceDeclaration("ITestClass2",
-    ListSet(Member("name",SimpleTypeRef("T"))), ListSet("T"), Option.empty)
+  val interface2 = InterfaceDeclaration(
+    "ITestClass2",
+    ListSet(Member("name", SimpleTypeRef("T"))), ListSet("T"), Option.empty)
 
   val clazz2 = ClassDeclaration("TestClass2", ClassConstructor(ListSet(
     ClassConstructorParameter(
       "name", SimpleTypeRef("T")))), ListSet.empty, ListSet("T"), Option.empty)
 
-  val interface3 = InterfaceDeclaration("ITestClass3",
+  val interface3 = InterfaceDeclaration(
+    "ITestClass3",
     ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
     ListSet("T"), Option.empty)
 

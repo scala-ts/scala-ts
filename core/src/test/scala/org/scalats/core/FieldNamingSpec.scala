@@ -1,4 +1,4 @@
-package org.scalats.configuration
+package org.scalats.core
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -11,8 +11,7 @@ final class FieldNamingSpec extends AnyFlatSpec with Matchers {
     val fixtures = Table(
       "lorem" -> "lorem",
       "fooBar" -> "fooBar",
-      "Ipsum" -> "Ipsum"
-    )
+      "Ipsum" -> "Ipsum")
 
     forAll(fixtures) { (name, encoded) =>
       Identity(name) should equal(encoded)
@@ -25,8 +24,7 @@ final class FieldNamingSpec extends AnyFlatSpec with Matchers {
     val fixtures = Table(
       "lorem" -> "lorem",
       "fooBar" -> "foo_bar",
-      "Ipsum" -> "Ipsum"
-    )
+      "Ipsum" -> "Ipsum")
 
     forAll(fixtures) { (name, encoded) =>
       SnakeCase(name) should equal(encoded)
