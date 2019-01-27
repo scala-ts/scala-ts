@@ -4,6 +4,8 @@ import sbt._
 
 object Scalac {
   lazy val settings = Seq(
+    scalaVersion := "2.12.8",
+    crossScalaVersions := Seq("2.10.7", scalaVersion.value),
     scalacOptions ++= {
       val opts = Seq(
         "-encoding", "UTF-8",
@@ -11,7 +13,7 @@ object Scalac {
         "-unchecked",
         "-deprecation",
         "-feature",
-        "-Xfatal-warnings",
+        //"-Xfatal-warnings", // Issue on publish due to annotation
         "-Xlint",
         "-Ywarn-numeric-widen",
         "-Ywarn-dead-code",

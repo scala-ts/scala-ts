@@ -28,11 +28,11 @@ In previous example, `com.example.ExampleDto` is the Scala class for which the T
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("com.github.miloszpp" % "scala-ts" % version)
+    addSbtPlugin("org.scala-ts" % "scala-ts" % version)
 
 Additionally, enable the plugin in your project settings:
 
-    enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
+    enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
 
 Now you can use the `generateTypeScript` command in SBT. For example:
 
@@ -56,7 +56,7 @@ Usage example in `build.sbt`:
 ```ocaml
 emitClasses in generateTypeScript := true
 
-enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
+enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
 ## Type support

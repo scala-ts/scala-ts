@@ -1,56 +1,28 @@
 import sbt.Keys._
 
-lazy val pomSettings = Seq(
-  publishMavenStyle := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishArtifact in Test := false,
-  pomExtra :=
-    <url>https://github.com/miloszpp/scala-ts</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>https://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:miloszpp/scala-ts.git</url>
-      <connection>scm:git:git@github.com:miloszpp/scala-ts.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>miloszpp</id>
-        <name>Miłosz Piechocki</name>
-        <url>http://codewithstyle.info</url>
-      </developer>
-    </developers>
-)
+name in ThisBuild := "scala-ts"
 
-lazy val root = (project in file(".")).
-  settings(Seq(
-    name := "scala-ts",
-    organization := "com.github.miloszpp",
-    mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
-    sbtPlugin := true,
-    scalaVersion := "2.12.10",
-    crossScalaVersions := Seq("2.10.7", scalaVersion.value),
-    sbtVersion in pluginCrossBuild := {
-      scalaBinaryVersion.value match {
-        case "2.10" => "0.13.18"
-        case "2.12" => "1.3.4"
-      }
-    }) ++ Scalac.settings ++ pomSettings)
+organization in ThisBuild := "org.scala-ts"
 
-libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "org.scalatest" %% "scalatest" % "3.1.4" % "test"
-)
+val commonSettings = Scalac.settings ++ Publish.settings
 
-onChangedBuildSource in Global := ReloadOnSourceChanges
+lazy val core = project.in(file("core")).settings(Seq(
+  name := "scala-ts-core",
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+    "ch.qos.logback" % "logback-classic" % "1.1.7",
+    "org.scalatest" %% "scalatest" % "3.0.1" % Test
+  ),
+  mainClass in (Compile, run) := Some("org.scalats.Main")
+) ++ commonSettings)
+
+lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
+  settings(
+    name := "scala-ts-sbt",
+    sbtPlugin := true
+  ).dependsOn(core)
+
+lazy val root = (project in file("."))
+  .aggregate(core, `sbt-plugin`)
+  .settings(commonSettings)
