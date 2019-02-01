@@ -1,9 +1,9 @@
-# scala-ts
+#scala-ts
 
-Fork of scala-ts for Elium usage.
+Fork of scala-ts
 
-Features are normally pull requested into the parent repo.
+Proposes an alternative way of doing thing in the scala parsing phase to scala-ts, notably for descending sealed trait hierarchies.
 
-Publish settings are changed to point to our internal nexus.
+It's tailored internally for Elium usage, notably interfaces will be prefixed with IElium.
 
-You should usually prefer the main repo, except for the random occurences of features not already available upstream but available here.
+If this fork gains popularity, we can make it more configurable for general usage.
