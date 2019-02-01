@@ -1,4 +1,4 @@
-#scala-ts
+# scala-ts
 
 Fork of scala-ts
 
