@@ -13,8 +13,6 @@ object TypeScriptEmitter {
     declaration foreach {
       case decl: InterfaceDeclaration =>
         emitInterfaceDeclaration(decl, out)
-      case decl: ClassDeclaration  =>
-        emitClassDeclaration(decl, out)
     }
     out.flush()
     out.close()
@@ -31,26 +29,6 @@ object TypeScriptEmitter {
     }
     out.println("}")
     out.println()
-  }
-
-  private def emitClassDeclaration(decl: ClassDeclaration, out: PrintStream) = {
-    val ClassDeclaration(name, ClassConstructor(parameters), typeParams) = decl
-    out.print(s"export class $name")
-    emitTypeParams(decl.typeParams, out)
-    out.println(" {")
-    out.println(s"\tconstructor(")
-    parameters.zipWithIndex foreach { case (parameter, index) =>
-      val accessModifier = parameter.accessModifier match {
-        case Some(Public) => "public "
-        case Some(Private) => "private "
-        case None => ""
-      }
-      out.print(s"\t\t$accessModifier${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
-      val endLine = if (index + 1 < parameters.length) "," else ""
-      out.println(endLine)
-    }
-    out.println("\t) {}")
-    out.println("}")
   }
 
   private def emitTypeParams(params: List[String], out: PrintStream) =

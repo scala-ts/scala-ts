@@ -13,12 +13,12 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
   object autoImport {
     val generateTypeScript = inputKey[Unit]("Generate Type Script")
-
-    val emitInterfaces = settingKey[Boolean]("Generate interface declarations")
-    val emitClasses = settingKey[Boolean]("Generate class declarations")
+    val interfacePrefix = settingKey[String]("Interfaces prefix")
     val optionToNullable = settingKey[Boolean]("Option types will be compiled to 'type | null'")
     val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
-    val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
+    val outputStream = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
+    val customNameMap = settingKey[Map[String, String]]("Custom names mapping for classes. Doesn't allow to override standard types. Names will not use interfacePrefix setting.")
+    val leafTypes = settingKey[Set[String]]("Forced leaf types for parsing. The parser won't explore involved types for those types, and won't emit them. They'll still be used as member types where they are involved.")
   }
 
   import autoImport._
@@ -26,11 +26,12 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
   override lazy val projectSettings = Seq(
     generateTypeScript := {
       implicit val config = Config(
-        (emitInterfaces in generateTypeScript).value,
-        (emitClasses in generateTypeScript).value,
+        (interfacePrefix in generateTypeScript).value,
         (optionToNullable in generateTypeScript).value,
         (optionToUndefined in generateTypeScript).value,
-        (outputFile in generateTypeScript).value
+        (outputStream in generateTypeScript).value,
+        (customNameMap in generateTypeScript).value,
+        (leafTypes in generateTypeScript).value,
       )
 
       val args = spaceDelimited("").parsed
@@ -40,11 +41,12 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
       TypeScriptGenerator.generateFromClassNames(args.toList, cl)
     },
-    emitInterfaces in generateTypeScript := true,
-    emitClasses in generateTypeScript := false,
+    interfacePrefix in generateTypeScript := "IElium",
     optionToNullable in generateTypeScript := true,
     optionToUndefined in generateTypeScript := false,
-    outputFile in generateTypeScript := None
+    outputStream in generateTypeScript := None,
+    customNameMap in generateTypeScript := Map("Metric" -> "string"),
+    leafTypes in generateTypeScript := Set.empty
   )
 
 }

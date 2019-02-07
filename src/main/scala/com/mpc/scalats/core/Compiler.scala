@@ -9,46 +9,26 @@ import com.mpc.scalats.core.TypeScriptModel.{ClassConstructor, ClassConstructorP
 object Compiler {
 
   def compile(scalaClasses: List[ScalaModel.CaseClass])(implicit config: Config): List[TypeScriptModel.Declaration] = {
-    scalaClasses flatMap { scalaClass =>
-      val interface = if (config.emitInterfaces) List(compileInterface(scalaClass)) else List.empty
-      val clazz = if (config.emitClasses) List(compileClass(scalaClass)) else List.empty
-      interface ++ clazz
-    }
+    scalaClasses flatMap { scalaClass => List(compileInterface(scalaClass)) }
   }
 
   private def compileInterface(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
+    val prefix = config.interfacePrefix
     TypeScriptModel.InterfaceDeclaration(
-      s"IElium${scalaClass.name}",
+      config.customNameMap.getOrElse(scalaClass.name,s"$prefix${scalaClass.name}"),
       scalaClass.members map { scalaMember =>
         TypeScriptModel.Member(
           scalaMember.name,
-          compileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
+          compileTypeRef(scalaMember.typeRef)
         )
       },
       typeParams = scalaClass.params,
-      parent = scalaClass.parent.map(p => s"IElium$p")
-    )
-  }
-
-  private def compileClass(scalaClass: ScalaModel.CaseClass)(implicit config: Config) = {
-    TypeScriptModel.ClassDeclaration(
-      scalaClass.name,
-      ClassConstructor(
-        scalaClass.members map { scalaMember =>
-          ClassConstructorParameter(
-            scalaMember.name,
-            compileTypeRef(scalaMember.typeRef, inInterfaceContext = false),
-            Some(TypeScriptModel.AccessModifier.Public)
-          )
-        }
-      ),
-      typeParams = scalaClass.params
+      parent = scalaClass.parent.map(p => s"$prefix$p")
     )
   }
 
   private def compileTypeRef(
-    scalaTypeRef: ScalaModel.TypeRef,
-    inInterfaceContext: Boolean
+    scalaTypeRef: ScalaModel.TypeRef
   )
     (implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.IntRef =>
@@ -64,10 +44,10 @@ object Compiler {
     case ScalaModel.StringRef =>
       TypeScriptModel.StringRef
     case ScalaModel.SeqRef(innerType) =>
-      TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
+      TypeScriptModel.ArrayRef(compileTypeRef(innerType))
     case ScalaModel.CaseClassRef(name, typeArgs) =>
-      val actualName = if (inInterfaceContext) s"IElium$name" else name
-      TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
+      val actualName = config.customNameMap.getOrElse(name,s"${config.interfacePrefix}$name")
+      TypeScriptModel.CustomTypeRef(actualName, typeArgs.map(compileTypeRef(_)))
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
     case ScalaModel.DateTimeRef =>
@@ -75,17 +55,14 @@ object Compiler {
     case ScalaModel.TypeParamRef(name) =>
       TypeScriptModel.TypeParamRef(name)
     case ScalaModel.OptionRef(innerType) if config.optionToNullable && config.optionToUndefined =>
-      TypeScriptModel.UnionType(TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef), UndefinedRef)
+      TypeScriptModel.UnionType(TypeScriptModel.UnionType(compileTypeRef(innerType), NullRef), UndefinedRef)
     case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), NullRef)
+      TypeScriptModel.UnionType(compileTypeRef(innerType), NullRef)
     case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
-      TypeScriptModel.UnionType(compileTypeRef(innerType, inInterfaceContext), UndefinedRef)
+      TypeScriptModel.UnionType(compileTypeRef(innerType), UndefinedRef)
     case ScalaModel.UnknownTypeRef(name) =>
-      if (name.equalsIgnoreCase("Metric")) {
-        TypeScriptModel.StringRef
-      } else {
-        TypeScriptModel.UnknownTypeRef(if (inInterfaceContext) s"IElium$name" else name)
-      }
+       config.customNameMap.get(name).map(TypeScriptModel.UnknownTypeRef).getOrElse(
+        TypeScriptModel.UnknownTypeRef(s"${config.interfacePrefix}$name")
+      )
   }
-
 }
