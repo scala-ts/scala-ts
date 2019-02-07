@@ -16,7 +16,7 @@ lazy val publishSettings = Seq(
 
 lazy val projectSettings = Seq(
   name := "scala-ts",
-  version := "1.0.0",
+  version := "1.0.1-SNAPSHOT",
   organization := "com.github.miloszpp",
   scalaVersion := "2.12.6",
   mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
