@@ -1,8 +1,3 @@
-### THIS PROJECT IS NOT MAINTAINED ANY MORE
-UNFORTUNATELY I DON'T HAVE TIME ANY MORE TO MAINTAIN THIS PROJECT. PLEASE REACH OUT TO ME IF YOU'RE INTERESTED IN TAKING IT OVER.
-
-Check out [scala-tsi](https://github.com/code-star/scala-tsi) as a maintained alternative.
-
 # scala-ts
 
 ## Overview
