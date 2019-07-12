@@ -1,84 +1,31 @@
 # scala-ts
 
-## Overview
-
 *scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
 
-*scala-ts* is helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
+It's helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
-http://codewithstyle.info/scala-ts-scala-typescript-code-generator/
-
-*New version 0.3.2* - added support for more types; added file output support.
-
-*New version 0.4.0* - added support for SBT 1.0, Either and Map.
+> See [*Scala-ts: Scala to TypeScript code generator*](http://codewithstyle.info/scala-ts-scala-typescript-code-generator/) at Code with Style.
 
 ## Usage
 
 *scala-ts* can be used either standalone or as a sbt plugin.
 
-### Standalone
+See:
 
-Run `com.mpc.scalats.Main` class and provide a space separated list of fully qualified class names which you want to generate TypeScript for. 
+- [Usage details](../docs/index.html#usage)
+- [Releases](https://github.com/scala-ts/scala-ts/releases) (with downloads)
 
-Example:
-```
-java -cp 'scala-ts-assembly-0.1.0.jar' com.mpc.scalats.Main "com.example.ExampleDto"
-```
+## Build manually
 
-### SBT plugin
+It can be built from this source repository.
 
-Add the following plugin to `plugins.sbt`:
+    sbt +publishLocal
 
-    addSbtPlugin("com.github.miloszpp" % "scala-ts" % "0.3.0")
+To run the tests, use:
 
-Additionally, enable the plugin in your project settings:
+    sbt test
 
-    enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
-
-Now you can use the `generateTypeScript` command in SBT. For example:
-
-    sbt "generateTypeScript com.example.ExampleDto"
-
-### Configuration
-
-Starting from release 0.3.0, it's possible to specify some configuration options:
-
-* `emitInterfaces` - generate interface declarations (`true` by default)
-* `emitClasses` - generate class declarations (`false` by default)
-* `emitCodecs` - generate fromData/toData functions for TypeScript classes (if `emitClasses`)
-* `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
-* `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
-* `outputStream` - the stream to which the code should be emitted; it defaults to console
-* `typescriptIndent` - the characters used as TypeScript indentation (default: <tab>)
-* `fieldNaming` - the conversions for the field names if emitCodecs (default: FieldNaming.Identity)
-
-Usage example in `build.sbt`:
-
-```
-emitClasses in generateTypeScript := true
-
-enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
-```
-
-## Type support
-
-Currently *scala-ts* supports the following types of case class members:
-
-* `Int`, `Double`, `Boolean`, `String`, `Long`
-* `List`, `Seq`, `Set`
-* `Option`
-* `LocalDate`, `Instant`, `Timestamp`
-* generic types
-* References to other case classes
-* (case) object, as singleton class
-* sealed trait, as union type
-
-## Development
-
-### Quickstart
-
-    sbt
-    runMain com.mpc.scalats.AuthorExample
+[Travis](https://travis-ci.org/scala-ts/scala-ts): ![Travis build status](https://travis-ci.org/scala-ts/scala-ts.svg?branch=master)
 
 ## Credits
 
