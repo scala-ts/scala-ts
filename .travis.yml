@@ -1,10 +1,10 @@
 sudo: false
 language: scala
 jdk:
-  - oraclejdk8
-scala: 2.12.4
+  - openjdk8
+scala: 2.12.8
 cache:
   directories:
   - $HOME/.ivy2
   - $HOME/.sbt
-script: sbt -Dsbt.scala.version=2.12.4 testOnly
+script: sbt testOnly
