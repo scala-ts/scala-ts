@@ -1,14 +1,15 @@
 package com.mpc.scalats.core
 
 import scala.collection.immutable.ListSet
-
 import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.core.ScalaModel.TypeName
 
 import com.mpc.scalats.core.TypeScriptModel.{
   ClassConstructor,
   ClassConstructorParameter,
   CustomTypeRef,
   Declaration,
+  EnumDeclaration,
   InterfaceDeclaration,
   Member,
   NullRef,
@@ -17,6 +18,8 @@ import com.mpc.scalats.core.TypeScriptModel.{
   SimpleTypeRef,
   SingletonDeclaration
 }
+
+import scala.language.implicitConversions
 
 /**
  * Created by Milosz on 09.06.2016.
@@ -28,6 +31,14 @@ object Compiler {
     scalaTypes: ListSet[ScalaModel.TypeDef]
   )(implicit config: Config): ListSet[Declaration] =
     compile(scalaTypes, Option.empty[InterfaceDeclaration])
+
+  implicit def typeNameToString(typeName: TypeName)(implicit config: Config): String = {
+    if (config.prependEnclosingClassNames) {
+      (typeName.enclosingClassNames :+ typeName.name).mkString
+    } else {
+      typeName.name
+    }
+  }
 
   def compile(
     scalaTypes: ListSet[ScalaModel.TypeDef],
@@ -47,6 +58,11 @@ object Compiler {
             compileInterface(scalaClass, superInterface)) ++ clazz
         }
 
+        case ScalaModel.Enumeration(name, values) => {
+          ListSet[Declaration](
+            EnumDeclaration(name, values))
+        }
+
         case ScalaModel.CaseObject(name, members) => {
           val values = members.map { scalaMember =>
             Member(scalaMember.name,
@@ -64,7 +80,7 @@ object Compiler {
           }
 
           val unionRef = InterfaceDeclaration(
-            s"I${name}", ifaceFields, ListSet.empty[String], superInterface)
+            s"I${typeNameToString(name)}", ifaceFields, ListSet.empty[String], superInterface)
 
           compile(possibilities, Some(unionRef)) + UnionDeclaration(
             name,
@@ -74,7 +90,7 @@ object Compiler {
                 CustomTypeRef(nme, ListSet.empty)
 
               case ScalaModel.CaseClass(n, _, _, tpeArgs) => {
-                val nme = if (config.emitInterfaces) s"I${n}" else n
+                val nme = if (config.emitInterfaces) s"I${typeNameToString(n)}" else typeNameToString(n)
                 CustomTypeRef(nme, tpeArgs.map { SimpleTypeRef(_) })
               }
 
@@ -139,9 +155,11 @@ object Compiler {
 
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
+    case ScalaModel.EnumerationRef(name) =>
+      TypeScriptModel.SimpleTypeRef(name)
 
     case ScalaModel.CaseClassRef(name, typeArgs) => {
-      val actualName = if (inInterfaceContext) buildInterfaceName(name) else name
+      val actualName = if (inInterfaceContext) buildInterfaceName(name) else typeNameToString(name)
       TypeScriptModel.CustomTypeRef(
         actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     }

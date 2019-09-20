@@ -12,6 +12,7 @@ case class Config(
     optionToUndefined: Boolean = false,
     outputStream: Option[PrintStream] = None,
     prependIPrefix: Boolean = true,
+    prependEnclosingClassNames: Boolean = false,
     typescriptIndent: String = "\t",
     emitCodecs: Boolean = true,
     fieldNaming: FieldNaming = FieldNaming.Identity

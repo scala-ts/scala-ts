@@ -153,7 +153,7 @@ object CompilerResults {
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(
-    s"I${sealedFamily1.name}",
+    s"I${sealedFamily1.name.name}",
     ListSet(Member("foo", StringRef)),
     ListSet.empty[String],
     Option.empty)

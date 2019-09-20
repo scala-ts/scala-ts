@@ -64,12 +64,14 @@ enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
 Currently *scala-ts* supports the following types of case class members:
 
 * `Int`, `Double`, `Boolean`, `String`, `Long`
-* `List`, `Seq`, `Set`
-* `Option`
-* `LocalDate`, `Instant`, `Timestamp`
+* `List`, `Seq`, `Set`, `Map`
+* `Option`, `Either`
+* `LocalDate`, `LocalDateTime`, `Instant`, `Timestamp`, `ZonedDateTime`
 * `BigDecimal` (mapped to TypeScript's `number`)
 * `UUID` (mapped to TypeScript's `string`)
+* value classes
+* enumeration values
 * generic types
-* References to other case classes
-* (case) object, as singleton class
-* sealed trait, as union type
+* references to other case classes
+* (case) objects, as singleton class
+* sealed traits, as union type
