@@ -189,6 +189,8 @@ object ScalaParser {
         DoubleRef
       case "Float" =>
         FloatRef
+      case "BigDecimal" =>
+        BigDecimalRef
       case "Boolean" =>
         BooleanRef
       case "String" | "UUID" =>

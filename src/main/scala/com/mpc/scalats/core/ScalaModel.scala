@@ -26,6 +26,8 @@ object ScalaModel {
 
   case object FloatRef extends TypeRef
 
+  case object BigDecimalRef extends TypeRef
+
   case object BooleanRef extends TypeRef
 
   case object StringRef extends TypeRef

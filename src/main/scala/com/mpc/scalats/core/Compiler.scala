@@ -39,6 +39,8 @@ object Compiler {
       TypeScriptModel.NumberRef
     case ScalaModel.FloatRef =>
       TypeScriptModel.NumberRef
+    case ScalaModel.BigDecimalRef =>
+      TypeScriptModel.NumberRef
     case ScalaModel.BooleanRef =>
       TypeScriptModel.BooleanRef
     case ScalaModel.StringRef =>
