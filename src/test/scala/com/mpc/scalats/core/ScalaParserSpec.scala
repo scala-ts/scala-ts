@@ -2,16 +2,17 @@ package com.mpc.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalatest.{ FlatSpec, Matchers }
 
 import ScalaModel._
 
 import scala.reflect.runtime.universe.runtimeMirror
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Created by Milosz on 06.12.2016.
  */
-final class ScalaParserSpec extends FlatSpec with Matchers {
+final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   import ScalaParserResults._
 
   val scalaParser = new ScalaParser(Logger(
