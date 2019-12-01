@@ -11,7 +11,7 @@ import scala.util.control.NonFatal
 import scala.reflect.runtime.universe._
 
 // TODO: Keep namespace using fullName from the Type
-final class ScalaParser(logger: Logger)(implicit mirror: Mirror) {
+final class ScalaParser(logger: Logger, mirror: Mirror) {
 
   import ScalaModel._
 

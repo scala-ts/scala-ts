@@ -1,15 +1,14 @@
 package com.mpc.scalats.core
 
+import com.mpc.scalats.configuration.Config
+import com.mpc.scalats.core.ScalaParserResults._
+import com.mpc.scalats.core.TypeScriptModel._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
 import scala.collection.immutable.ListSet
 
-import com.mpc.scalats.configuration.Config
-
-import org.scalatest.{ FlatSpec, Matchers }
-
-import TypeScriptModel._
-import ScalaParserResults._
-
-final class CompilerSpec extends FlatSpec with Matchers {
+final class CompilerSpec extends AnyFlatSpec with Matchers {
   import CompilerResults._
 
   implicit val defaultConfig: Config = Config(emitClasses = true)

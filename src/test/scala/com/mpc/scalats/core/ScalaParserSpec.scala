@@ -1,23 +1,23 @@
 package com.mpc.scalats.core
 
+import com.mpc.scalats.core.ScalaModel._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.slf4j.LoggerFactory
+
 import scala.collection.immutable.ListSet
-
-import org.scalatest.{ FlatSpec, Matchers }
-
-import ScalaModel._
-
 import scala.reflect.runtime.universe.runtimeMirror
 
 /**
  * Created by Milosz on 06.12.2016.
  */
-final class ScalaParserSpec extends FlatSpec with Matchers {
+final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   import ScalaParserResults._
 
-  implicit val mirror = runtimeMirror(getClass.getClassLoader)
+  val logger = Logger(LoggerFactory.getLogger(getClass.getSimpleName))
+  val mirror = runtimeMirror(getClass.getClassLoader)
 
-  val scalaParser = new ScalaParser(Logger(
-    org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
+  val scalaParser = new ScalaParser(logger, mirror)
 
   it should "parse case class with one primitive member" in {
     val parsed = scalaParser.parseTypes(List(ScalaFixtures.TestClass1Type))

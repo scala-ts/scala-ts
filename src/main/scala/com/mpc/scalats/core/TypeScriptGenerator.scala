@@ -14,17 +14,17 @@ object TypeScriptGenerator {
     logger: Logger,
     classLoader: ClassLoader = getClass.getClassLoader
   )(implicit config: Config) = {
-    implicit val mirror = runtimeMirror(classLoader)
+    val mirror = runtimeMirror(classLoader)
     val types = classNames.map { className =>
       mirror.staticClass(className).toType
     }
 
-    generate(types, logger)
+    generate(types, logger, mirror)
   }
 
-  def generate(caseClasses: List[Type], logger: Logger)(implicit config: Config, mirror: Mirror): Unit = {
+  def generate(caseClasses: List[Type], logger: Logger, mirror: Mirror)(implicit config: Config): Unit = {
     val outputStream = config.outputStream.getOrElse(Console.out)
-    val scalaParser = new ScalaParser(logger)
+    val scalaParser = new ScalaParser(logger, mirror)
     val scalaTypes = scalaParser.parseTypes(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaTypes)
 

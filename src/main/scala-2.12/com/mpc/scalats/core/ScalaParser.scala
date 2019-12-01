@@ -8,7 +8,7 @@ import scala.collection.immutable.ListSet
 import scala.reflect.runtime.universe._
 
 // TODO: Keep namespace using fullName from the Type
-final class ScalaParser(logger: Logger)(implicit mirror: Mirror) {
+final class ScalaParser(logger: Logger, mirror: Mirror) {
 
   import ScalaModel._
 
@@ -234,6 +234,7 @@ final class ScalaParser(logger: Logger)(implicit mirror: Mirror) {
     scalaType <:< typeOf[AnyVal]
 
   @inline private def isEnumerationValue(scalaType: Type): Boolean = {
+    // FIXME rather compare Type (than string)
     scalaType.typeSymbol.asClass.fullName == "scala.Enumeration.Value"
   }
 

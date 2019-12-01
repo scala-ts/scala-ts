@@ -38,17 +38,19 @@ lazy val root = (project in file(".")).
     organization := "com.github.miloszpp",
     mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
     sbtPlugin := true,
-    scalaVersion := "2.12.8",
+    scalaVersion := "2.12.10",
     crossScalaVersions := Seq("2.10.7", scalaVersion.value),
     sbtVersion in pluginCrossBuild := {
       scalaBinaryVersion.value match {
-        case "2.10" => "0.13.16"
-        case "2.12" => "1.1.0"
+        case "2.10" => "0.13.18"
+        case "2.12" => "1.3.4"
       }
     }) ++ Scalac.settings ++ pomSettings)
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "org.scalatest" %% "scalatest" % "3.0.8" % "test"
+  "org.scalatest" %% "scalatest" % "3.1.0" % "test"
 )
+
+onChangedBuildSource in Global := ReloadOnSourceChanges
