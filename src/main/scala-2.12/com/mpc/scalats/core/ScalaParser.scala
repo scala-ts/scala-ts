@@ -175,13 +175,13 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
         IntRef
       case "Long" =>
         LongRef
-      case "Double" | "BigDecimal" =>
+      case "Double" =>
         DoubleRef
       case "BigDecimal" =>
         BigDecimalRef
       case "Boolean" =>
         BooleanRef
-      case "String" | "UUID" =>
+      case "String" =>
         StringRef
       case "UUID" =>
         UuidRef
