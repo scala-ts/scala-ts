@@ -119,7 +119,7 @@ object Compiler {
         }
       ),
       values = scalaClass.values.map { v =>
-        TypeScriptModel.Member(v.name, compileTypeRef(v.typeRef, false))
+        TypeScriptModel.Member(v.name, compileTypeRef(v.typeRef, inInterfaceContext = false))
       },
       typeParams = scalaClass.typeArgs,
       superInterface
@@ -130,16 +130,13 @@ object Compiler {
       scalaTypeRef: ScalaModel.TypeRef,
       inInterfaceContext: Boolean
   )(implicit config: Config): TypeScriptModel.TypeRef = scalaTypeRef match {
-    case ScalaModel.IntRef =>
-      TypeScriptModel.NumberRef
-    case ScalaModel.LongRef =>
-      TypeScriptModel.NumberRef
-    case ScalaModel.DoubleRef =>
+    case ScalaModel.IntRef | ScalaModel.LongRef | ScalaModel.DoubleRef | ScalaModel.BigDecimalRef =>
       TypeScriptModel.NumberRef
     case ScalaModel.BooleanRef =>
       TypeScriptModel.BooleanRef
-    case ScalaModel.StringRef =>
+    case ScalaModel.StringRef | ScalaModel.UuidRef =>
       TypeScriptModel.StringRef
+
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(compileTypeRef(innerType, inInterfaceContext))
 
