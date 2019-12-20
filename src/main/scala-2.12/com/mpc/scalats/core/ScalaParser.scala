@@ -1,9 +1,5 @@
 package com.mpc.scalats.core
 
-/**
-  * Created by Milosz on 09.06.2016.
-  */
-
 import scala.collection.immutable.ListSet
 import scala.reflect.runtime.universe._
 
@@ -68,9 +64,9 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
       case Field(m) => member(m, List.empty)
     }
 
-    val typeName = buildTypeName(tpe.typeSymbol)
+    val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
     Some(CaseObject(
-      typeName.copy(name = typeName.name stripSuffix ".type"),
+      identifier.copy(name = identifier.name stripSuffix ".type"),
       ListSet.empty ++ members))
   }
 
@@ -86,7 +82,7 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
     directKnownSubclasses(tpe) match {
       case possibilities @ (_ :: _ ) =>
         Some(SealedUnion(
-          buildTypeName(tpe.typeSymbol),
+          buildQualifiedIdentifier(tpe.typeSymbol),
           ListSet.empty ++ members,
           parseTypes(possibilities)))
 
@@ -96,12 +92,12 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
 
   private def parseEnumeration(enumerationValueType: Type): Option[Enumeration] = {
     val enumerationObject = enumerationObjectByValueType(enumerationValueType)
-    val name = buildTypeName(enumerationObject)
+    val identifier = buildQualifiedIdentifier(enumerationObject)
     val values = enumerationObject.info.decls.filter { decl =>
       decl.isPublic && decl.isMethod && decl.asMethod.isGetter && decl.asMethod.returnType =:= enumerationValueType
     }.map(_.asTerm.name.toString.trim)
 
-    Some(Enumeration(name, ListSet(values.toSeq: _*)))
+    Some(Enumeration(identifier, ListSet(values.toSeq: _*)))
   }
 
   private def parseCaseClass(caseClassType: Type): Option[CaseClass] = {
@@ -120,17 +116,16 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
     }.filterNot(members.contains)
 
     Some(CaseClass(
-      buildTypeName(caseClassType.typeSymbol),
+      buildQualifiedIdentifier(caseClassType.typeSymbol),
       ListSet.empty ++ members,
       ListSet.empty ++ values,
       ListSet.empty ++ typeParams
     ))
   }
 
-  @inline private def member(
-    sym: MethodSymbol, typeParams: List[String]
-  ) = TypeMember(sym.name.toString, getTypeRef(
-    sym.returnType.map(_.dealias), typeParams.toSet))
+  @inline private def member(sym: MethodSymbol, typeParams: List[String]) =
+    TypeMember(sym.name.toString, getTypeRef(
+      sym.returnType.map(_.dealias), typeParams.toSet))
 
   @annotation.tailrec
   private def parse(types: List[Type], examined: ListSet[Type], parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
@@ -201,13 +196,12 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
         getTypeRef(scalaType.members.filter(!_.isMethod).map(_.typeSignature).head, Set())
       case _ if isEnumerationValue(scalaType) =>
         val enumerationObject = enumerationObjectByValueType(scalaType)
-        EnumerationRef(name = buildTypeName(enumerationObject))
+        EnumerationRef(identifier = buildQualifiedIdentifier(enumerationObject))
       case _ if isCaseClass(scalaType) =>
-        val caseClassName = buildTypeName(scalaType.typeSymbol)
+        val caseClassIdentifier = buildQualifiedIdentifier(scalaType.typeSymbol)
         val typeArgs = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args
         val typeArgRefs = typeArgs.map(getTypeRef(_, typeParams))
-
-        CaseClassRef(caseClassName, ListSet.empty ++ typeArgRefs)
+        CaseClassRef(caseClassIdentifier, ListSet.empty ++ typeArgRefs)
 
       case "Either" =>
         val innerTypeL = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
@@ -223,7 +217,7 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
         MapRef(getTypeRef(keyType, typeParams), getTypeRef(valueType, typeParams))
       case _ =>
         logger.warning(s"type ref $scalaType unknown")
-        UnknownTypeRef(buildTypeName(scalaType.typeSymbol))
+        UnknownTypeRef(buildQualifiedIdentifier(scalaType.typeSymbol))
     }
   }
 
@@ -249,8 +243,8 @@ final class ScalaParser(logger: Logger, mirror: Mirror) {
     else ownerChain(symbol.owner, symbol.owner +: acc)
   }
 
-  @inline private def buildTypeName(symbol: Symbol): TypeName = {
-    TypeName(
+  @inline private def buildQualifiedIdentifier(symbol: Symbol): QualifiedIdentifier = {
+    QualifiedIdentifier(
       name = symbol.name.toString,
       enclosingClassNames = ownerChain(symbol).map(_.name.toString)
     )

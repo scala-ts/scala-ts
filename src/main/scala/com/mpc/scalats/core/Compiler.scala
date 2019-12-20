@@ -2,7 +2,7 @@ package com.mpc.scalats.core
 
 import scala.collection.immutable.ListSet
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.ScalaModel.TypeName
+import com.mpc.scalats.core.ScalaModel.QualifiedIdentifier
 
 import com.mpc.scalats.core.TypeScriptModel.{
   ClassConstructor,
@@ -21,9 +21,6 @@ import com.mpc.scalats.core.TypeScriptModel.{
 
 import scala.language.implicitConversions
 
-/**
- * Created by Milosz on 09.06.2016.
- */
 object Compiler {
   // TODO: Refactor as class with config parameter in ctor
 
@@ -32,11 +29,11 @@ object Compiler {
   )(implicit config: Config): ListSet[Declaration] =
     compile(scalaTypes, Option.empty[InterfaceDeclaration])
 
-  implicit def typeNameToString(typeName: TypeName)(implicit config: Config): String = {
+  implicit def qualifiedIdentifierToString(identifier: QualifiedIdentifier)(implicit config: Config): String = {
     if (config.prependEnclosingClassNames) {
-      (typeName.enclosingClassNames :+ typeName.name).mkString
+      (identifier.enclosingClassNames :+ identifier.name).mkString
     } else {
-      typeName.name
+      identifier.name
     }
   }
 
@@ -80,7 +77,7 @@ object Compiler {
           }
 
           val unionRef = InterfaceDeclaration(
-            s"I${typeNameToString(name)}", ifaceFields, ListSet.empty[String], superInterface)
+            s"I${qualifiedIdentifierToString(name)}", ifaceFields, ListSet.empty[String], superInterface)
 
           compile(possibilities, Some(unionRef)) + UnionDeclaration(
             name,
@@ -90,12 +87,12 @@ object Compiler {
                 CustomTypeRef(nme, ListSet.empty)
 
               case ScalaModel.CaseClass(n, _, _, tpeArgs) => {
-                val nme = if (config.emitInterfaces) s"I${typeNameToString(n)}" else typeNameToString(n)
+                val nme = if (config.emitInterfaces) s"I${qualifiedIdentifierToString(n)}" else qualifiedIdentifierToString(n)
                 CustomTypeRef(nme, tpeArgs.map { SimpleTypeRef(_) })
               }
 
               case m =>
-                CustomTypeRef(buildInterfaceName(m.name), ListSet.empty)
+                CustomTypeRef(buildInterfaceName(m.identifier), ListSet.empty)
             },
             superInterface)
         }
@@ -106,7 +103,7 @@ object Compiler {
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]
   )(implicit config: Config) = InterfaceDeclaration(
-    buildInterfaceName(scalaClass.name),
+    buildInterfaceName(scalaClass.identifier),
     scalaClass.fields.map { scalaMember =>
       TypeScriptModel.Member(
         scalaMember.name,
@@ -126,7 +123,7 @@ object Compiler {
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration])(implicit config: Config) = {
     TypeScriptModel.ClassDeclaration(
-      scalaClass.name,
+      scalaClass.identifier,
       ClassConstructor(
         scalaClass.fields map { scalaMember =>
           ClassConstructorParameter(
@@ -159,7 +156,7 @@ object Compiler {
       TypeScriptModel.SimpleTypeRef(name)
 
     case ScalaModel.CaseClassRef(name, typeArgs) => {
-      val actualName = if (inInterfaceContext) buildInterfaceName(name) else typeNameToString(name)
+      val actualName = if (inInterfaceContext) buildInterfaceName(name) else qualifiedIdentifierToString(name)
       TypeScriptModel.CustomTypeRef(
         actualName, typeArgs.map(compileTypeRef(_, inInterfaceContext)))
     }

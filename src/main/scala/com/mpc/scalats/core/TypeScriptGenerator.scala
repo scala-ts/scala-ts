@@ -4,9 +4,6 @@ import com.mpc.scalats.configuration.Config
 
 import scala.reflect.runtime.universe._
 
-/**
-  * Created by Milosz on 11.06.2016.
-  */
 object TypeScriptGenerator {
 
   def generateFromClassNames(

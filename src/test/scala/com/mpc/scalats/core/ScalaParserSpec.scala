@@ -1,16 +1,15 @@
 package com.mpc.scalats.core
 
-import com.mpc.scalats.core.ScalaModel._
+import scala.collection.immutable.ListSet
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.slf4j.LoggerFactory
 
-import scala.collection.immutable.ListSet
+import ScalaModel._
+
 import scala.reflect.runtime.universe.runtimeMirror
 
-/**
- * Created by Milosz on 06.12.2016.
- */
 final class ScalaParserSpec extends AnyFlatSpec with Matchers {
   import ScalaParserResults._
 
@@ -157,75 +156,75 @@ object ScalaFixtures {
 
 object ScalaParserResults {
   val caseClass1 = CaseClass(
-    name = TypeName("TestClass1", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass1", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", StringRef)),
     values = ListSet.empty,
     typeArgs = ListSet.empty)
 
   val caseClass2 = CaseClass(
-    name = TypeName("TestClass2", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass2", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", TypeParamRef("T"))), 
     values = ListSet.empty,
     typeArgs = ListSet("T"))
 
   val caseClass3 = CaseClass(
-    name = TypeName("TestClass3", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass3", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", SeqRef(TypeParamRef("T")))),
     values = ListSet.empty,
     typeArgs = ListSet("T")
   )
 
   val caseClass4 = CaseClass(
-    name = TypeName("TestClass4", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass4", List("ScalaFixtures")),
     fields = ListSet(
-      TypeMember("name", CaseClassRef(TypeName("TestClass3", List("ScalaFixtures")),
+      TypeMember("name", CaseClassRef(QualifiedIdentifier("TestClass3", List("ScalaFixtures")),
         ListSet(TypeParamRef("T"))))),
     values = ListSet.empty,
     typeArgs = ListSet("T"))
 
   val caseClass5 = CaseClass(
-    name = TypeName("TestClass5", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass5", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", OptionRef(TypeParamRef("T")))),
     values = ListSet.empty,
     typeArgs = ListSet("T")
   )
 
   val caseClass6 = CaseClass(
-    name = TypeName("TestClass6", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass6", List("ScalaFixtures")),
     fields = ListSet(
-      TypeMember("age", CaseClassRef(TypeName("TestClass3", List("ScalaFixtures")), ListSet(
-        CaseClassRef(TypeName("TestClass2", List("ScalaFixtures")), ListSet(
-          CaseClassRef(TypeName("TestClass1", List("ScalaFixtures")), ListSet.empty)))))),
+      TypeMember("age", CaseClassRef(QualifiedIdentifier("TestClass3", List("ScalaFixtures")), ListSet(
+        CaseClassRef(QualifiedIdentifier("TestClass2", List("ScalaFixtures")), ListSet(
+          CaseClassRef(QualifiedIdentifier("TestClass1", List("ScalaFixtures")), ListSet.empty)))))),
       TypeMember("name", OptionRef(
-        CaseClassRef(TypeName("TestClass5", List("ScalaFixtures")), ListSet(SeqRef(OptionRef(
-          CaseClassRef(TypeName("TestClass4", List("ScalaFixtures")), ListSet(StringRef))))))))),
+        CaseClassRef(QualifiedIdentifier("TestClass5", List("ScalaFixtures")), ListSet(SeqRef(OptionRef(
+          CaseClassRef(QualifiedIdentifier("TestClass4", List("ScalaFixtures")), ListSet(StringRef))))))))),
     values = ListSet.empty,
     typeArgs = ListSet("T"))
 
   val caseClass7 = CaseClass(
-    name = TypeName("TestClass7", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass7", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", UnionRef(ListSet(
-      CaseClassRef(TypeName("TestClass1", List("ScalaFixtures")), ListSet.empty),
-      CaseClassRef(TypeName("TestClass1B", List("ScalaFixtures")), ListSet.empty))))),
+      CaseClassRef(QualifiedIdentifier("TestClass1", List("ScalaFixtures")), ListSet.empty),
+      CaseClassRef(QualifiedIdentifier("TestClass1B", List("ScalaFixtures")), ListSet.empty))))),
     values = ListSet.empty,
     typeArgs = ListSet("T")
   )
 
   val caseClass8 = CaseClass(
-    name = TypeName("TestClass8", List("ScalaFixtures")),
+    identifier = QualifiedIdentifier("TestClass8", List("ScalaFixtures")),
     fields = ListSet(TypeMember("name", StringRef)),
     values = ListSet.empty,
     typeArgs = ListSet.empty)
 
   val caseClass9 = CaseClass(
-    name = TypeName("TestClass9", List("ScalaFixtures")),
-    fields = ListSet(TypeMember("name", EnumerationRef(TypeName("TestEnumeration", List("ScalaFixtures"))))),
+    identifier = QualifiedIdentifier("TestClass9", List("ScalaFixtures")),
+    fields = ListSet(TypeMember("name", EnumerationRef(QualifiedIdentifier("TestEnumeration", List("ScalaFixtures"))))),
     values = ListSet.empty,
     typeArgs = ListSet.empty)
 
-  val caseObject1 = CaseObject(TypeName("TestObject1", List("ScalaFixtures")), ListSet.empty)
+  val caseObject1 = CaseObject(QualifiedIdentifier("TestObject1", List("ScalaFixtures")), ListSet.empty)
 
-  val caseObject2 = CaseObject(TypeName("TestObject2", List("ScalaFixtures")), ListSet.empty)
+  val caseObject2 = CaseObject(QualifiedIdentifier("TestObject2", List("ScalaFixtures")), ListSet.empty)
 
   val sealedFamily1 = {
     // Not 'bar', as not abstract
@@ -233,15 +232,15 @@ object ScalaParserResults {
     val code = TypeMember("code", IntRef)
 
     SealedUnion(
-      TypeName("Family", List("ScalaFixtures")),
+      QualifiedIdentifier("Family", List("ScalaFixtures")),
       ListSet(foo),
       ListSet(
         CaseClass(
-          name = TypeName("FamilyMember1", List("ScalaFixtures")),
+          identifier = QualifiedIdentifier("FamilyMember1", List("ScalaFixtures")),
           fields = ListSet(foo),
           values = ListSet(code),
           typeArgs = ListSet.empty),
-        CaseObject(TypeName("FamilyMember2", List("ScalaFixtures")), ListSet(foo)),
-        CaseObject(TypeName("FamilyMember3", List("ScalaFixtures")), ListSet(foo))))
+        CaseObject(QualifiedIdentifier("FamilyMember2", List("ScalaFixtures")), ListSet(foo)),
+        CaseObject(QualifiedIdentifier("FamilyMember3", List("ScalaFixtures")), ListSet(foo))))
   }
 }

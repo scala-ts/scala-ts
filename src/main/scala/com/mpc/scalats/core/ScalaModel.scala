@@ -5,34 +5,37 @@ import scala.collection.immutable.ListSet
 // TODO: ValueClass
 
 object ScalaModel {
-  case class TypeName(
+  case class QualifiedIdentifier(
     name: String,
     enclosingClassNames: List[String]
   )
 
   sealed trait TypeDef {
-    def name: TypeName
+    def identifier: QualifiedIdentifier
   }
 
   case class CaseClass(
-    name: TypeName,
+    identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
     values: ListSet[TypeMember],
-    typeArgs: ListSet[String]) extends TypeDef
+    typeArgs: ListSet[String]
+  ) extends TypeDef
 
   case class CaseObject(
-    name: TypeName,
+    identifier: QualifiedIdentifier,
     values: ListSet[TypeMember]
   ) extends TypeDef
 
   case class SealedUnion(
-    name: TypeName,
+    identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
-    possibilities: ListSet[TypeDef]) extends TypeDef
+    possibilities: ListSet[TypeDef]
+  ) extends TypeDef
 
   case class Enumeration(
-    name: TypeName,
-    values: ListSet[String]) extends TypeDef
+    identifier: QualifiedIdentifier,
+    values: ListSet[String]
+  ) extends TypeDef
 
   // ---
 
@@ -44,17 +47,17 @@ object ScalaModel {
 
   case class MapRef(keyType: TypeRef, valueType: TypeRef) extends TypeRef
 
-  case class CaseClassRef(name: TypeName, typeArgs: ListSet[TypeRef]) extends TypeRef
+  case class CaseClassRef(identifier: QualifiedIdentifier, typeArgs: ListSet[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
 
   case class TypeMember(name: String, typeRef: TypeRef)
 
-  case class UnknownTypeRef(name: TypeName) extends TypeRef
+  case class UnknownTypeRef(identifier: QualifiedIdentifier) extends TypeRef
 
   case class TypeParamRef(name: String) extends TypeRef
 
-  case class EnumerationRef(name: TypeName) extends TypeRef
+  case class EnumerationRef(identifier: QualifiedIdentifier) extends TypeRef
 
   case object IntRef extends TypeRef
 

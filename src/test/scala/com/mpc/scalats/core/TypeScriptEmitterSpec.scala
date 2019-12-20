@@ -1,14 +1,15 @@
 package com.mpc.scalats.core
 
-import com.mpc.scalats.configuration.{ Config, FieldNaming }
+import scala.collection.immutable.ListSet
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.collection.immutable.ListSet
+import com.mpc.scalats.configuration.{ Config, FieldNaming }
 
 final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
-  import CompilerResults._
   import TypeScriptModel._
+  import CompilerResults._
 
   it should "emit TypeScript class for a class with one primitive member" in {
     emit(ListSet(clazz1)) should equal("""export class TestClass1 implements ITestClass1 {

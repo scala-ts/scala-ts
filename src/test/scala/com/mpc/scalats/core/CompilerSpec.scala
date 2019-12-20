@@ -1,12 +1,14 @@
 package com.mpc.scalats.core
 
+import scala.collection.immutable.ListSet
+
 import com.mpc.scalats.configuration.Config
-import com.mpc.scalats.core.ScalaParserResults._
-import com.mpc.scalats.core.TypeScriptModel._
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.collection.immutable.ListSet
+import TypeScriptModel._
+import ScalaParserResults._
 
 final class CompilerSpec extends AnyFlatSpec with Matchers {
   import CompilerResults._
@@ -152,7 +154,7 @@ object CompilerResults {
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(
-    s"I${sealedFamily1.name.name}",
+    s"I${sealedFamily1.identifier.name}",
     ListSet(Member("foo", StringRef)),
     ListSet.empty[String],
     Option.empty)
