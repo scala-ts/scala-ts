@@ -181,10 +181,14 @@ final class ScalaParser(logger: Logger) {
         LongRef
       case "Double" =>
         DoubleRef
+      case "BigDecimal" =>
+        BigDecimalRef
       case "Boolean" =>
         BooleanRef
       case "String" =>
         StringRef
+      case "UUID" =>
+        UuidRef
       case "List" | "Seq" | "Set" => // TODO: Traversable
         val innerType = scalaType.asInstanceOf[scala.reflect.runtime.universe.TypeRef].args.head
         SeqRef(getTypeRef(innerType, typeParams))

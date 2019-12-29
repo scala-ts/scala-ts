@@ -67,6 +67,8 @@ Currently *scala-ts* supports the following types of case class members:
 * `List`, `Seq`, `Set`
 * `Option`
 * `LocalDate`, `Instant`, `Timestamp`
+* `BigDecimal` (mapped to TypeScript's `number`)
+* `UUID` (mapped to TypeScript's `string`)
 * generic types
 * References to other case classes
 * (case) object, as singleton class
