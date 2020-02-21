@@ -1,9 +1,10 @@
 package com.mpc.scalats.configuration
 
-import org.scalatest.{ FlatSpec, Matchers }
 import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-final class FieldNamingSpec extends FlatSpec with Matchers {
+final class FieldNamingSpec extends AnyFlatSpec with Matchers {
   it should "support identity" in {
     import FieldNaming.Identity
 
