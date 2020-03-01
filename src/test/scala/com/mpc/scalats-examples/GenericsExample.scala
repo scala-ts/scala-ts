@@ -3,10 +3,6 @@ package com.mpc.scalats
 import com.mpc.scalats.configuration.Config
 import com.mpc.scalats.core.{ Logger, TypeScriptGenerator }
 
-/**
-  * Created by Milosz on 06.12.2016.
-  */
-
 case class Foo[T, Q](a : T, b: List[Q])
 
 case class Bar(b: Foo[String, String], c:List[Foo[Int, String]])

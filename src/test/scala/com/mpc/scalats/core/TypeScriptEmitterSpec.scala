@@ -2,6 +2,8 @@ package com.mpc.scalats.core
 
 import scala.collection.immutable.ListSet
 
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import com.mpc.scalats.configuration.{ Config, FieldNaming }
 import org.scalatest.flatspec.AnyFlatSpec

@@ -4,9 +4,6 @@ import com.mpc.scalats.configuration.Config
 
 import scala.reflect.runtime.universe._
 
-/**
-  * Created by Milosz on 11.06.2016.
-  */
 object TypeScriptGenerator {
 
   def generateFromClassNames(
@@ -14,19 +11,17 @@ object TypeScriptGenerator {
     logger: Logger,
     classLoader: ClassLoader = getClass.getClassLoader
   )(implicit config: Config) = {
-    implicit val mirror = runtimeMirror(classLoader)
+    val mirror = runtimeMirror(classLoader)
     val types = classNames.map { className =>
-      println(s"className = $className")
       mirror.staticClass(className).toType
     }
 
-    generate(types, logger)
+    generate(types, logger, mirror)
   }
 
-  def generate(caseClasses: List[Type], logger: Logger)(
-    implicit config: Config) = {
+  def generate(caseClasses: List[Type], logger: Logger, mirror: Mirror)(implicit config: Config): Unit = {
     val outputStream = config.outputStream.getOrElse(Console.out)
-    val scalaParser = new ScalaParser(logger)
+    val scalaParser = new ScalaParser(logger, mirror)
     val scalaTypes = scalaParser.parseTypes(caseClasses)
     val typeScriptInterfaces = Compiler.compile(scalaTypes)
 

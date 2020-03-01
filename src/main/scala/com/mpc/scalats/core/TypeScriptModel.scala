@@ -34,6 +34,11 @@ object TypeScriptModel {
     superInterface: Option[InterfaceDeclaration]
   ) extends Declaration
 
+  case class EnumDeclaration(
+    name: String,
+    values: ListSet[String]
+  ) extends Declaration
+
   case class UnionDeclaration(
     name: String,
     fields: ListSet[Member],
