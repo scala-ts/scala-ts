@@ -1,0 +1,1 @@
+onChangedBuildSource in Global := ReloadOnSourceChanges

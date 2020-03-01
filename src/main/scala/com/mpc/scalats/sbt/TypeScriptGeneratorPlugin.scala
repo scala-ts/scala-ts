@@ -19,6 +19,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val optionToUndefined = settingKey[Boolean]("Option types will be compiled to 'type | undefined'")
     val outputFile  = settingKey[Option[PrintStream]]("Print stream to write. Defaults to Console.out")
     val prependIPrefix = settingKey[Boolean]("Whether to prefix interface names with I")
+    val prependEnclosingClassNames = settingKey[Boolean]("Whether to prepend enclosing class/object names")
     val typescriptIndent = settingKey[String]("Characters used as TypeScript indentation (e.g. \\t)")
     val emitCodecs = settingKey[Boolean]("Generate the codec functions fromData/toData for TypeScript classes")
     val fieldNaming = settingKey[FieldNaming]("Conversions for the field names if emitCodecs (default: FieldNaming.Identity)")
@@ -35,6 +36,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         (optionToUndefined in generateTypeScript).value,
         (outputFile in generateTypeScript).value,
         (prependIPrefix in generateTypeScript).value,
+        (prependEnclosingClassNames in generateTypeScript).value,
         (typescriptIndent in generateTypeScript).value,
         (emitCodecs in generateTypeScript).value,
         (fieldNaming in generateTypeScript).value
@@ -54,6 +56,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     optionToUndefined in generateTypeScript := false,
     outputFile in generateTypeScript := None,
     prependIPrefix := false,
+    prependEnclosingClassNames in generateTypeScript := false,
     typescriptIndent in generateTypeScript := "\t",
     emitCodecs in generateTypeScript := true,
     fieldNaming in generateTypeScript := FieldNaming.Identity

@@ -12,7 +12,7 @@ It's helpful when working with REST-ful Scala backend and TypeScript frontend. H
 
 See:
 
-- [Usage details](../docs/index.html#usage)
+- [Usage details](docs/index.md#usage)
 - [Releases](https://github.com/scala-ts/scala-ts/releases) (with downloads)
 
 ## Build manually
