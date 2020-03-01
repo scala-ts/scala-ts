@@ -4,12 +4,13 @@ import scala.collection.immutable.ListSet
 
 import com.mpc.scalats.configuration.Config
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import TypeScriptModel._
 import ScalaParserResults._
 
-final class CompilerSpec extends FlatSpec with Matchers {
+final class CompilerSpec extends AnyFlatSpec with Matchers {
   import CompilerResults._
 
   implicit val defaultConfig: Config = Config(emitClasses = true)
@@ -153,7 +154,7 @@ object CompilerResults {
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(
-    s"I${sealedFamily1.name}",
+    s"I${sealedFamily1.identifier.name}",
     ListSet(Member("foo", StringRef)),
     ListSet.empty[String],
     Option.empty)

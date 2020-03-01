@@ -21,6 +21,9 @@ final class TypeScriptEmitter(val config: Config) {
         case decl: InterfaceDeclaration =>
           emitInterfaceDeclaration(decl, out)
 
+        case decl: EnumDeclaration =>
+          emitEnumDeclaration(decl, out)
+
         case decl: ClassDeclaration =>
           emitClassDeclaration(decl, out)
 
@@ -178,6 +181,20 @@ final class TypeScriptEmitter(val config: Config) {
     
     list(fields).foreach { member =>
       out.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
+    }
+    out.println("}")
+  }
+
+  private def emitEnumDeclaration(
+    decl: EnumDeclaration,
+    out: PrintStream): Unit = {
+
+    val EnumDeclaration(name, values) = decl
+
+    out.println(s"export enum $name {")
+
+    list(values).foreach { value =>
+      out.println(s"${indent}${value} = '${value}',")
     }
     out.println("}")
   }

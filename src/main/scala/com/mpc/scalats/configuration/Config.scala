@@ -2,9 +2,6 @@ package com.mpc.scalats.configuration
 
 import java.io.PrintStream
 
-/**
-  * Created by Milosz on 09.12.2016.
-  */
 case class Config(
     emitInterfaces: Boolean = true,
     emitClasses: Boolean = false,
@@ -12,6 +9,7 @@ case class Config(
     optionToUndefined: Boolean = false,
     outputStream: Option[PrintStream] = None,
     prependIPrefix: Boolean = true,
+    prependEnclosingClassNames: Boolean = false,
     typescriptIndent: String = "\t",
     emitCodecs: Boolean = true,
     fieldNaming: FieldNaming = FieldNaming.Identity
