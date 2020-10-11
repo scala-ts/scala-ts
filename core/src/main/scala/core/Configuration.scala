@@ -1,5 +1,9 @@
 package org.scalats.core
 
+// TODO: Move files to src/main/scala
+// TODO: option as space-lift Option
+// TODO: Per-type options: nullable, fieldNaming, emitCodecs, prelude
+
 /**
  * Created by Milosz on 09.12.2016.
  */
@@ -9,6 +13,7 @@ final class Configuration(
   val optionToNullable: Boolean,
   val optionToUndefined: Boolean,
   val prependIPrefix: Boolean,
+  val prependEnclosingClassNames: Boolean = false,
   val typescriptIndent: String,
   val emitCodecs: Boolean,
   val fieldNaming: FieldNaming) {
@@ -19,6 +24,7 @@ final class Configuration(
     optionToNullable: Boolean = this.optionToNullable,
     optionToUndefined: Boolean = this.optionToUndefined,
     prependIPrefix: Boolean = this.prependIPrefix,
+    prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
     emitCodecs: Boolean = this.emitCodecs,
     fieldNaming: FieldNaming = this.fieldNaming): Configuration =
@@ -28,6 +34,7 @@ final class Configuration(
       optionToNullable,
       optionToUndefined,
       prependIPrefix,
+      prependEnclosingClassNames,
       typescriptIndent,
       emitCodecs,
       fieldNaming)
@@ -42,12 +49,13 @@ final class Configuration(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple8(
+  private lazy val tupled = Tuple9(
     emitInterfaces,
     emitClasses,
     optionToNullable,
     optionToUndefined,
     prependIPrefix,
+    prependEnclosingClassNames,
     typescriptIndent,
     emitCodecs,
     fieldNaming)
@@ -68,6 +76,7 @@ object Configuration {
     optionToNullable: Boolean = true,
     optionToUndefined: Boolean = false,
     prependIPrefix: Boolean = true,
+    prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = "\t",
     emitCodecs: Boolean = true,
     fieldNaming: FieldNaming = FieldNaming.Identity): Configuration =
@@ -77,6 +86,7 @@ object Configuration {
       optionToNullable,
       optionToUndefined,
       prependIPrefix,
+      prependEnclosingClassNames,
       typescriptIndent,
       emitCodecs,
       fieldNaming)
@@ -90,6 +100,7 @@ object Configuration {
     val optionToNullable = bool("optionToNullable", true)
     val optionToUndefined = bool("optionToUndefined", false)
     val prependIPrefix = bool("prependIPrefix", true)
+    val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
     val typescriptIndent = (xml \ "typescriptIndent").
       headOption.fold("\t")(_.text)
 
@@ -106,6 +117,7 @@ object Configuration {
       optionToNullable,
       optionToUndefined,
       prependIPrefix,
+      prependEnclosingClassNames,
       typescriptIndent,
       emitCodecs,
       fieldNaming)

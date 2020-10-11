@@ -21,7 +21,9 @@ object TypeScriptGenerator {
     classLoader: ClassLoader = getClass.getClassLoader): Unit = {
     import runtime.universe
 
-    val mirror = universe.runtimeMirror(classLoader)
+    implicit def cl: ClassLoader = classLoader
+
+    val mirror = universe.runtimeMirror(cl)
     val types = classNames.map { className =>
       mirror.staticClass(className).toType
     }
@@ -29,11 +31,13 @@ object TypeScriptGenerator {
     generate(universe)(config, types, logger, out)
   }
 
-  def generate(universe: Universe)(
+  def generate[U <: Universe](universe: U)(
     config: Configuration,
     types: List[universe.Type],
     logger: Logger,
-    out: String => PrintStream): Unit = {
+    out: String => PrintStream)(
+    implicit
+    cu: CompileUniverse[universe.type]): Unit = {
     val scalaParser = new ScalaParser[universe.type](universe, logger)
     val transpiler = new Transpiler(config)
 

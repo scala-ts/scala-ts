@@ -26,7 +26,7 @@ final class TypeScriptEmitter(
           emitInterfaceDeclaration(decl)
 
         case decl: EnumDeclaration =>
-          emitEnumDeclaration(decl, out)
+          emitEnumDeclaration(decl)
 
         case decl: ClassDeclaration =>
           emitClassDeclaration(decl)
@@ -61,6 +61,7 @@ final class TypeScriptEmitter(
       val naming: String => String = identity[String](_)
       val children = list(possibilities)
 
+      // TODO: type guard
       // Decoder factory: MyClass.fromData({..})
       o.println(s"\n${indent}public static fromData(data: any): ${name} {")
       o.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
@@ -130,8 +131,7 @@ final class TypeScriptEmitter(
         case Member(nme, tpe) => s"$nme ($tpe)"
       }.mkString(", ")
 
-      throw new IllegalStateException(
-        s"Cannot emit static members for singleton values: ${mkString}")
+      throw new IllegalStateException(s"Cannot emit static members for properties of singleton '$name': ${mkString}")
     }
 
     // Class definition
@@ -187,24 +187,20 @@ final class TypeScriptEmitter(
     o.println("}")
   }
 
-  private def emitEnumDeclaration(
-    decl: EnumDeclaration,
-    out: PrintStream): Unit = {
-
+  private def emitEnumDeclaration(decl: EnumDeclaration): Unit = {
     val EnumDeclaration(name, values) = decl
+    val o = out(name)
 
-    out.println(s"export enum $name {")
+    o.println(s"export enum $name {")
 
     list(values).foreach { value =>
-      out.println(s"${indent}${value} = '${value}',")
+      o.println(s"${indent}${value} = '${value}',")
     }
-    out.println("}")
+
+    o.println("}")
   }
 
-  private def emitClassDeclaration(
-    decl: ClassDeclaration,
-    out: PrintStream): Unit = {
-
+  private def emitClassDeclaration(decl: ClassDeclaration): Unit = {
     val ClassDeclaration(name, ClassConstructor(parameters),
       values, typeParams, _ /*superInterface*/ ) = decl
 

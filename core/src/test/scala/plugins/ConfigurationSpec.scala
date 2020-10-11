@@ -4,11 +4,12 @@ import scala.collection.immutable.Set
 
 import scala.xml.XML
 
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
 import org.scalats.core.{ Configuration => Settings }
 
-import org.scalatest.{ FlatSpec, Matchers }
-
-final class ConfigurationSpec extends FlatSpec with Matchers {
+final class ConfigurationSpec extends AnyFlatSpec with Matchers {
   it should "load configuration from fully defined XML" in {
     val xml = XML.load(getClass getResourceAsStream "/plugin-conf.xml")
     val cfg = Configuration.load(xml)
@@ -20,7 +21,7 @@ final class ConfigurationSpec extends FlatSpec with Matchers {
           excludes = Set("foo")),
         typeRuleSet = SourceRuleSet(
           includes = Set("org\\.scalats\\.core\\..*"),
-          excludes = Set(".*Spec")),
-        settings = Settings()))
+          excludes = Set(".*Spec", f"ScalaRuntimeFixtures$$", "object:.*ScalaParserResults", "FamilyMember(2|3)")),
+        settings = Settings(typescriptIndent = "  ")))
   }
 }

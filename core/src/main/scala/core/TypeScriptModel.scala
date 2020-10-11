@@ -3,7 +3,6 @@ package org.scalats.core
 import scala.collection.immutable.ListSet
 
 object TypeScriptModel {
-
   sealed trait Declaration
 
   sealed trait TypeRef
@@ -33,8 +32,7 @@ object TypeScriptModel {
 
   case class EnumDeclaration(
     name: String,
-    values: ListSet[String]
-  ) extends Declaration
+    values: ListSet[String]) extends Declaration
 
   case class UnionDeclaration(
     name: String,

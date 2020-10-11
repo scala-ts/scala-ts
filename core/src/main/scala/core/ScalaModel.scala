@@ -5,8 +5,7 @@ import scala.collection.immutable.ListSet
 object ScalaModel {
   case class QualifiedIdentifier(
     name: String,
-    enclosingClassNames: List[String]
-  )
+    enclosingClassNames: List[String])
 
   sealed trait TypeDef {
     def identifier: QualifiedIdentifier
@@ -16,24 +15,20 @@ object ScalaModel {
     identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
     values: ListSet[TypeMember],
-    typeArgs: ListSet[String]
-  ) extends TypeDef
+    typeArgs: ListSet[String]) extends TypeDef
 
   case class CaseObject(
     identifier: QualifiedIdentifier,
-    values: ListSet[TypeMember]
-  ) extends TypeDef
+    values: ListSet[TypeMember]) extends TypeDef
 
   case class SealedUnion(
     identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
-    possibilities: ListSet[TypeDef]
-  ) extends TypeDef
+    possibilities: ListSet[TypeDef]) extends TypeDef
 
   case class Enumeration(
     identifier: QualifiedIdentifier,
-    values: ListSet[String]
-  ) extends TypeDef
+    values: ListSet[String]) extends TypeDef
 
   // ---
 

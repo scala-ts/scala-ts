@@ -7,16 +7,8 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override def projectSettings= Seq(
-    scalaVersion := "2.12.8",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0"),
-    unmanagedSourceDirectories in Compile += {
-      val base = (sourceDirectory in Compile).value
-
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n >= 11 => base / "scala-2.11+"
-        case _                       => base / "scala-2.11-"
-      }
-    },
+    scalaVersion := "2.12.12",
+    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.3"),
     unmanagedSourceDirectories in Compile += {
       val base = (sourceDirectory in Compile).value
 

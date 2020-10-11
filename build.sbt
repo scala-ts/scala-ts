@@ -1,23 +1,23 @@
 import sbt.Keys._
 
-name in ThisBuild := "scala-ts"
+name := "scala-ts"
 
 organization in ThisBuild := "org.scala-ts"
 
-val commonSettings = Publish.settings
-
-lazy val core = project.in(file("core")).settings(Seq(
+lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "ch.qos.logback" % "logback-classic" % "1.1.7",
-    "org.scalatest" %% "scalatest" % "3.0.8" % Test
+    "org.slf4j" % "slf4j-api" % "1.7.30",
+    "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
+    "org.scalatest" %% "scalatest" % "3.2.2" % Test
   ),
   mainClass in (Compile, run) := Some("org.scalats.Main"),
   compile in Test := (compile in Test).dependsOn(
-    packageBin in Compile/* make sure plugin.jar is available */).value,
-  scalacOptions in Test ++= {
+    packageBin in Compile/* make sure plugin.jar is available */).value
+  /* TODO: (Re)move 
+  ,scalacOptions in Test ++= {
     val v = version.value
     val sv = scalaVersion.value
     val b = (baseDirectory in Compile).value
@@ -33,8 +33,8 @@ lazy val core = project.in(file("core")).settings(Seq(
       s"-Xplugin:${j.getAbsolutePath}",
       "-P:scalats:debug",
       s"-P:scalats:configuration=${testCfg.getAbsolutePath}")
-  }
-) ++ commonSettings)
+  } */
+)
 
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
   settings(
@@ -44,4 +44,3 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
 
 lazy val root = (project in file("."))
   .aggregate(core, `sbt-plugin`)
-  .settings(commonSettings)

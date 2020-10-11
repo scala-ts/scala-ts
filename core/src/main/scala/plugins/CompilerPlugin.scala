@@ -2,13 +2,11 @@ package org.scalats.plugins
 
 import java.io.File
 
-import scala.xml.XML
-
 import scala.util.matching.Regex
 
-//import scala.reflect.internal.util.Position
-import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
 import scala.tools.nsc.{ Global, Phase }
+import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
+import scala.xml.XML
 
 import org.scalats.core.TypeScriptGenerator
 
@@ -20,7 +18,9 @@ final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
   private var config: Configuration = _
   private var debug: Boolean = false
 
-  override def processOptions(options: List[String], error: String => Unit): Unit = {
+  override def processOptions(
+    options: List[String],
+    error: String => Unit): Unit = {
     val prefix = "configuration="
 
     options.foreach { opt =>
@@ -126,41 +126,45 @@ final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
       unit: CompilationUnit,
       acceptsType: Symbol => Boolean): Unit = {
 
-      val scalaTypes: List[Type] = unit.body.children.flatMap { x =>
-        val sym = x.symbol
+      @annotation.tailrec
+      def go(syms: Seq[Symbol], tpes: List[Type]): List[Type] =
+        syms.headOption match {
+          case Some(sym) => {
+            if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
+              val tpe = sym.typeSignature
+              lazy val kind: String = if (sym.isModule) "object" else "class"
 
-        if (sym.isModule && !sym.hasPackageFlag) {
-          if (acceptsType(sym)) {
-            if (plugin.debug) {
-              global.inform(s"${plugin.name}.debug: Handling object ${sym.fullName}")
+              if (acceptsType(sym)) {
+                if (plugin.debug) {
+                  global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
+                }
+
+                if (sym.isModule) {
+                  go(tpe.members ++: syms.tail, tpe :: tpes)
+                } else {
+                  go(syms.tail, tpe :: tpes)
+                }
+              } else {
+                if (plugin.debug) {
+                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                }
+
+                if (sym.isModule) {
+                  go(tpe.members ++: syms.tail, tpes)
+                } else {
+                  go(syms.tail, tpes)
+                }
+              }
+            } else {
+              go(syms.tail, tpes)
             }
-
-            Seq(sym.typeSignature)
-          } else {
-            if (plugin.debug) {
-              global.inform(s"${plugin.name}.debug: Skip excluded 'object:${sym.fullName}'")
-            }
-
-            Seq.empty
           }
-        } else if (sym.isClass) {
-          if (acceptsType(sym)) {
-            if (plugin.debug) {
-              global.inform(s"${plugin.name}.debug: Handling class ${sym.fullName}")
-            }
 
-            Seq(sym.typeSignature)
-          } else {
-            if (plugin.debug) {
-              global.inform(s"${plugin.name}.debug: Skip excluded 'class:${sym.fullName}'")
-            }
-
-            Seq.empty
-          }
-        } else {
-          Seq.empty
+          case _ =>
+            tpes.reverse
         }
-      }
+
+      val scalaTypes: List[Type] = go(unit.body.children.map(_.symbol), Nil)
 
       object CompilerLogger extends org.scalats.core.Logger {
         def warning(msg: => String): Unit = global.warning(msg)

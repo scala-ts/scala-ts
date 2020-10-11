@@ -9,7 +9,11 @@ import scala.collection.immutable.ListSet
 import scala.reflect.api.Universe
 
 // TODO: Keep namespace using fullName from the Type
-final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
+final class ScalaParser[U <: Universe](
+  universe: U, logger: Logger)(
+  implicit
+  cu: CompileUniverse[U]) {
+
   import universe.{
     ClassSymbol,
     MethodSymbol,
@@ -18,10 +22,13 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
     NullaryMethodType,
     SingleTypeApi,
     Symbol,
+    TypeSymbol,
     Type,
     TypeRef,
     typeOf
   }
+
+  private lazy val mirror = cu.defaultMirror(universe)
 
   import ScalaModel.{ TypeRef => ScalaTypeRef, _ }
 
@@ -108,8 +115,9 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
   }
 
   private def parseEnumeration(enumerationValueType: Type): Option[Enumeration] = {
-    val enumerationObject = enumerationObjectByValueType(enumerationValueType)
+    val enumerationObject = enumerationValueType.typeSymbol.owner
     val identifier = buildQualifiedIdentifier(enumerationObject)
+
     val values = enumerationObject.info.decls.filter { decl =>
       decl.isPublic && decl.isMethod && decl.asMethod.isGetter && decl.asMethod.returnType =:= enumerationValueType
     }.map(_.asTerm.name.toString.trim)
@@ -123,13 +131,11 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
 
     // Members
     val members = caseClassType.members.collect {
-      case Field(m) if m.isCaseAccessor =>
-        member(m, typeParams)
+      case Field(m) if m.isCaseAccessor => member(m, typeParams)
     }.toList
 
     val values = caseClassType.decls.collect {
-      case Field(m) =>
-        member(m, typeParams)
+      case Field(m) => member(m, typeParams)
     }.filterNot(members.contains)
 
     Some(CaseClass(
@@ -140,9 +146,10 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
   }
 
   @inline private def member(
-    sym: MethodSymbol, typeParams: List[String]) = TypeMember(
-    sym.name.toString, scalaTypeRef(
-      sym.returnType.map(_.dealias), typeParams.toSet))
+    sym: MethodSymbol, typeParams: List[String]) =
+    TypeMember(
+      sym.name.toString, scalaTypeRef(
+        sym.returnType.map(_.dealias), typeParams.toSet))
 
   @annotation.tailrec
   private def parse(types: List[Type], examined: ListSet[Type], parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
@@ -181,45 +188,69 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
   }
 
   // TODO: resolve from implicit (typeclass)
-  private def scalaTypeRef(scalaType: Type, typeParams: Set[String]): ScalaTypeRef = {
+  // TODO: Tuple
+  private def scalaTypeRef(
+    scalaType: Type,
+    typeParams: Set[String]): ScalaTypeRef = {
     scalaType.typeSymbol.name.toString match {
       case "Int" | "Byte" | "Short" =>
         IntRef
+
       case "Long" =>
         LongRef
+
       case "Double" =>
         DoubleRef
+
       case "BigDecimal" =>
         BigDecimalRef
+
       case "Boolean" =>
         BooleanRef
+
       case "String" =>
         StringRef
+
       case "UUID" =>
         UuidRef
-      case "List" | "Seq" | "Set" => // TODO: Traversable
+
+      case "List" | "Seq" | "Set" => { // TODO: Traversable
         val innerType = scalaType.asInstanceOf[TypeRef].args.head
         SeqRef(scalaTypeRef(innerType, typeParams))
-      case "Option" =>
+      }
+
+      case "Option" => {
         val innerType = scalaType.asInstanceOf[TypeRef].args.head
         OptionRef(scalaTypeRef(innerType, typeParams))
+      }
+
       case "LocalDate" =>
         DateRef
+
       case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" =>
         DateTimeRef
+
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
+
       case _ if isAnyValChild(scalaType) =>
-        scalaTypeRef(scalaType.members.filter(!_.isMethod).map(_.typeSignature).head, Set())
-      case _ if isEnumerationValue(scalaType) =>
-        val enumerationObject = enumerationObjectByValueType(scalaType)
+        scalaTypeRef(scalaType.members.filter(!_.isMethod).
+          map(_.typeSignature).head, Set())
+
+      case _ if isEnumerationValue(scalaType) => {
+        val enumerationObject = mirror.staticModule(
+          scalaType.toString stripSuffix ".Value")
+
         EnumerationRef(identifier = buildQualifiedIdentifier(enumerationObject))
-      case _ if isCaseClass(scalaType) =>
+      }
+
+      case _ if isCaseClass(scalaType) => {
         val caseClassName = buildQualifiedIdentifier(scalaType.typeSymbol)
         val typeArgs = scalaType.asInstanceOf[TypeRef].args
         val typeArgRefs = typeArgs.map(scalaTypeRef(_, typeParams))
 
         CaseClassRef(caseClassName, ListSet.empty ++ typeArgRefs)
+      }
 
       case "Either" => {
         val innerTypeL = scalaType.asInstanceOf[TypeRef].args.head
@@ -235,8 +266,7 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
         val valueType = scalaType.asInstanceOf[TypeRef].args.last
         MapRef(scalaTypeRef(keyType, typeParams), scalaTypeRef(valueType, typeParams))
       case unknown =>
-        //println(s"type ref $typeName umkown")
-        UnknownTypeRef(unknown)
+        UnknownTypeRef(buildQualifiedIdentifier(scalaType.typeSymbol))
     }
   }
 
@@ -251,11 +281,6 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
     scalaType.typeSymbol.asClass.fullName == "scala.Enumeration.Value"
   }
 
-  @inline private def enumerationObjectByValueType(enumerationValueType: Type): ModuleSymbol = {
-    // FIXME find a better way to extract the enclosing Enumeration object
-    mirror.staticModule(enumerationValueType.toString.replaceFirst("\\.Value$", ""))
-  }
-
   @annotation.tailrec
   private def ownerChain(symbol: Symbol, acc: List[Symbol] = List.empty): List[Symbol] = {
     if (symbol.owner.isPackage) acc
@@ -265,8 +290,7 @@ final class ScalaParser[U <: Universe](universe: U, logger: Logger) {
   @inline private def buildQualifiedIdentifier(symbol: Symbol): QualifiedIdentifier = {
     QualifiedIdentifier(
       name = symbol.name.toString,
-      enclosingClassNames = ownerChain(symbol).map(_.name.toString)
-    )
+      enclosingClassNames = ownerChain(symbol).map(_.name.toString))
   }
 
   private def directKnownSubclasses(tpe: Type): List[Type] = {

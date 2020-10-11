@@ -66,8 +66,8 @@ object Configuration {
    * Loads the plugin configuration from given XML.
    */
   def load(xml: Elem): Configuration = {
-    val settings: Settings = (xml \ "settings") match {
-      case e: Elem => Settings.load(e)
+    val settings: Settings = (xml \ "settings").headOption match {
+      case Some(e: Elem) => Settings.load(e)
       case _ => Settings()
     }
 

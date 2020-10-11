@@ -1,0 +1,13 @@
+<configuration debug="false">
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%highlight(%-5level) %cyan(%logger{10}) - %msg %n%xException</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="ScalaParserSpec" level="error" />
+
+  <root level="info">
+    <appender-ref ref="STDOUT" />
+  </root>
+</configuration>

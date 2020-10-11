@@ -16,11 +16,14 @@
       Can be prefixed with either 'object:' or 'class:' (for class or trait).
     -->
     <includes>
-      <include>object:org\.scalats\.core\..*</include>
+      <include>org\.scalats\.core\..*</include>
     </includes>
 
     <excludes>
       <exclude>.*Spec</exclude>
+      <exclude>ScalaRuntimeFixtures$</exclude>
+      <exclude>object:.*ScalaParserResults</exclude>
+      <exclude>FamilyMember(2|3)</exclude>
     </excludes>
   </typeRuleSet>
 
@@ -30,7 +33,7 @@
     <optionToNullable>true</optionToNullable>
     <optionToUndefined>false</optionToUndefined>
     <prependIPrefix>true</prependIPrefix>
-    <typescriptIndent>	</typescriptIndent>
+    <typescriptIndent>  </typescriptIndent>
     <emitCodecs>true</emitCodecs>
   </settings>
 </scalats>

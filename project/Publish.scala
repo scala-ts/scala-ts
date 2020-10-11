@@ -1,8 +1,12 @@
 import sbt._
 import sbt.Keys._
+import sbt.plugins.JvmPlugin
 
-object Publish {
-  lazy val settings = Seq(
+object Publish extends AutoPlugin {
+  override def trigger = allRequirements
+  override def requires = JvmPlugin
+
+  override lazy val projectSettings = Seq(
     publishMavenStyle := true,
     publishTo := {
       if (isSnapshot.value) {

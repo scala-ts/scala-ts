@@ -2,20 +2,7 @@ package org.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalats.core.TypeScriptModel.{
-  ClassConstructor,
-  ClassConstructorParameter,
-  CustomTypeRef,
-  Declaration,
-  EnumDeclaration,
-  InterfaceDeclaration,
-  Member,
-  NullRef,
-  UndefinedRef,
-  UnionDeclaration,
-  SimpleTypeRef,
-  SingletonDeclaration
-}
+import org.scalats.core.TypeScriptModel.{ ClassConstructor, ClassConstructorParameter, CustomTypeRef, Declaration, EnumDeclaration, InterfaceDeclaration, Member, NullRef, SimpleTypeRef, SingletonDeclaration, UndefinedRef, UnionDeclaration } // TODO: scalariform limit length
 
 /**
  * Created by Milosz on 09.06.2016.
@@ -40,12 +27,11 @@ final class Transpiler(config: Configuration) {
             transpileInterface(scalaClass, superInterface)) ++ clazz
         }
 
-        case ScalaModel.Enumeration(name, values) => {
-          ListSet[Declaration](
-            EnumDeclaration(name, values))
+        case ScalaModel.Enumeration(id, values) => {
+          ListSet[Declaration](EnumDeclaration(idToString(id), values))
         }
 
-        case ScalaModel.CaseObject(name, members) => {
+        case ScalaModel.CaseObject(id, members) => {
           val values = members.map { scalaMember =>
             Member(
               scalaMember.name,
@@ -53,10 +39,10 @@ final class Transpiler(config: Configuration) {
           }
 
           ListSet[Declaration](
-            SingletonDeclaration(name, values, superInterface))
+            SingletonDeclaration(idToString(id), values, superInterface))
         }
 
-        case ScalaModel.SealedUnion(name, fields, possibilities) => {
+        case ScalaModel.SealedUnion(id, fields, possibilities) => {
           val ifaceFields = fields.map { scalaMember =>
             Member(
               scalaMember.name,
@@ -64,22 +50,22 @@ final class Transpiler(config: Configuration) {
           }
 
           val unionRef = InterfaceDeclaration(
-            s"I${qualifiedIdentifierToString(name)}", ifaceFields, ListSet.empty[String], superInterface)
+            toInterfaceName(id),
+            ifaceFields, ListSet.empty[String], superInterface)
 
           apply(possibilities, Some(unionRef)) + UnionDeclaration(
-            name,
+            idToString(id),
             ifaceFields,
             possibilities.map {
-              case ScalaModel.CaseObject(nme, _) =>
-                CustomTypeRef(nme, ListSet.empty)
+              case ScalaModel.CaseObject(pid, _) =>
+                CustomTypeRef(idToString(pid), ListSet.empty)
 
-              case ScalaModel.CaseClass(n, _, _, tpeArgs) => {
-                val nme = if (config.emitInterfaces) s"I${qualifiedIdentifierToString(n)}" else qualifiedIdentifierToString(n)
-                CustomTypeRef(nme, tpeArgs.map { SimpleTypeRef(_) })
-              }
+              case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
+                CustomTypeRef(
+                  toInterfaceName(pid), tpeArgs.map { SimpleTypeRef(_) })
 
               case m =>
-                CustomTypeRef(buildInterfaceName(m.identifier), ListSet.empty)
+                CustomTypeRef(toInterfaceName(m.identifier), ListSet.empty)
             },
             superInterface)
         }
@@ -89,7 +75,7 @@ final class Transpiler(config: Configuration) {
   private def transpileInterface(
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]) = InterfaceDeclaration(
-    buildInterfaceName(scalaClass.identifier),
+    toInterfaceName(scalaClass.identifier),
     scalaClass.fields.map { scalaMember =>
       TypeScriptModel.Member(
         scalaMember.name,
@@ -98,16 +84,11 @@ final class Transpiler(config: Configuration) {
     typeParams = scalaClass.typeArgs,
     superInterface = superInterface)
 
-  private def buildInterfaceName(name: String) = {
-    val prefix = if (config.prependIPrefix) "I" else ""
-    s"${prefix}${name}"
-  }
-
   private def transpileClass(
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]) = {
     TypeScriptModel.ClassDeclaration(
-      scalaClass.identifier,
+      idToString(scalaClass.identifier),
       ClassConstructor(
         scalaClass.fields map { scalaMember =>
           ClassConstructorParameter(
@@ -137,13 +118,18 @@ final class Transpiler(config: Configuration) {
 
     case ScalaModel.SeqRef(innerType) =>
       TypeScriptModel.ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
-    case ScalaModel.EnumerationRef(name) =>
-      TypeScriptModel.SimpleTypeRef(name)
 
-    case ScalaModel.CaseClassRef(name, typeArgs) => {
-      val actualName = if (inInterfaceContext) buildInterfaceName(name) else qualifiedIdentifierToString(name)
+    case ScalaModel.EnumerationRef(id) =>
+      TypeScriptModel.SimpleTypeRef(idToString(id))
+
+    case ScalaModel.CaseClassRef(id, typeArgs) => {
+      val name = {
+        if (inInterfaceContext) toInterfaceName(id)
+        else idToString(id)
+      }
+
       TypeScriptModel.CustomTypeRef(
-        actualName, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
+        name, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
     }
 
     case ScalaModel.DateRef =>
@@ -182,5 +168,18 @@ final class Transpiler(config: Configuration) {
 
     case ScalaModel.UnknownTypeRef(_) =>
       TypeScriptModel.StringRef
+  }
+
+  private def toInterfaceName(id: ScalaModel.QualifiedIdentifier) = {
+    val prefix = if (config.prependIPrefix) "I" else ""
+    s"${prefix}${idToString(id)}"
+  }
+
+  private def idToString(identifier: ScalaModel.QualifiedIdentifier): String = {
+    if (config.prependEnclosingClassNames) {
+      (identifier.enclosingClassNames :+ identifier.name).mkString
+    } else {
+      identifier.name
+    }
   }
 }
