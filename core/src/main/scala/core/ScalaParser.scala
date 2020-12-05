@@ -22,7 +22,6 @@ final class ScalaParser[U <: Universe](
     NullaryMethodType,
     SingleTypeApi,
     Symbol,
-    TypeSymbol,
     Type,
     TypeRef,
     typeOf

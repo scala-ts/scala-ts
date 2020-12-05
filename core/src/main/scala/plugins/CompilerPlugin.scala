@@ -2,10 +2,11 @@ package org.scalats.plugins
 
 import java.io.File
 
-import scala.util.matching.Regex
-
 import scala.tools.nsc.{ Global, Phase }
 import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
+
+import scala.util.matching.Regex
+
 import scala.xml.XML
 
 import org.scalats.core.TypeScriptGenerator

@@ -11,7 +11,7 @@ object CompileUniverse {
   import scala.tools.nsc.Global
 
   implicit def globalUniverse[G <: Global] = new CompileUniverse[G] {
-    def defaultMirror(g: G) = g.rootMirror
+    def defaultMirror(g: G): g.Mirror = g.rootMirror
   }
 
   implicit def javaUniverse[J <: JavaUniverse](
