@@ -11,7 +11,7 @@ lazy val core = project.in(file("core")).settings(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     "org.slf4j" % "slf4j-api" % "1.7.30",
     "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.2" % Test
+    "org.scalatest" %% "scalatest" % "3.2.3" % Test
   ),
   mainClass in (Compile, run) := Some("org.scalats.Main"),
   compile in Test := (compile in Test).dependsOn(
