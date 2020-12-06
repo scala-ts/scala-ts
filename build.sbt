@@ -1,56 +1,65 @@
 import sbt.Keys._
 
-lazy val pomSettings = Seq(
-  publishMavenStyle := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+name := "scala-ts"
+
+organization in ThisBuild := "org.scala-ts"
+
+lazy val core = project.in(file("core")).settings(
+  name := "scala-ts-core",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.3"),
+  unmanagedSourceDirectories in Compile += {
+    val base = (sourceDirectory in Compile).value
+
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, n)) if n >= 12 => base / "scala-2.12+"
+      case _                       => base / "scala-2.12-"
+    }
   },
-  publishArtifact in Test := false,
-  pomExtra :=
-    <url>https://github.com/miloszpp/scala-ts</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>https://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:miloszpp/scala-ts.git</url>
-      <connection>scm:git:git@github.com:miloszpp/scala-ts.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>miloszpp</id>
-        <name>Miłosz Piechocki</name>
-        <url>http://codewithstyle.info</url>
-      </developer>
-    </developers>
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+    "org.slf4j" % "slf4j-api" % "1.7.30",
+    "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
+    "org.scalatest" %% "scalatest" % "3.2.3" % Test
+  ),
+  libraryDependencies ++= {
+    if (scalaBinaryVersion.value == "2.13") {
+      Seq(
+        "org.scala-lang.modules" %% "scala-xml" % "1.3.0")
+    } else {
+      Seq.empty
+    }
+  },
+  mainClass in (Compile, run) := Some("org.scalats.Main"),
+  compile in Test := (compile in Test).dependsOn(
+    packageBin in Compile/* make sure plugin.jar is available */).value
+  /* TODO: (Re)move 
+  ,scalacOptions in Test ++= {
+    val v = version.value
+    val sv = scalaVersion.value
+    val b = (baseDirectory in Compile).value
+    val n = (name in Compile).value
+    val msv = scalaBinaryVersion.value
+
+    val td = b / "target" / s"scala-$msv"
+    val j = td / s"${n}_$msv-$v.jar"
+
+    val testCfg = (resourceDirectory in Test).value / "plugin-conf.xml"
+
+    Seq(
+      s"-Xplugin:${j.getAbsolutePath}",
+      "-P:scalats:debug",
+      s"-P:scalats:configuration=${testCfg.getAbsolutePath}")
+  } */
 )
 
-lazy val root = (project in file(".")).
-  settings(Seq(
-    name := "scala-ts",
-    organization := "com.github.miloszpp",
-    mainClass in (Compile, run) := Some("com.mpc.scalats.Main"),
-    sbtPlugin := true,
-    scalaVersion := "2.12.10",
-    crossScalaVersions := Seq("2.10.7", scalaVersion.value),
-    sbtVersion in pluginCrossBuild := {
-      scalaBinaryVersion.value match {
-        case "2.10" => "0.13.18"
-        case "2.12" => "1.3.4"
-      }
-    }) ++ Scalac.settings ++ pomSettings)
+lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
+  settings(
+    name := "scala-ts-sbt",
+    crossScalaVersions := Seq("2.11.12", scalaVersion.value),
+    pluginCrossBuild / sbtVersion := "1.3.13",
+    sbtPlugin := true
+  ).dependsOn(core)
 
-libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "org.scalatest" %% "scalatest" % "3.1.4" % "test"
-)
-
-onChangedBuildSource in Global := ReloadOnSourceChanges
+lazy val root = (project in file("."))
+  .aggregate(core, `sbt-plugin`)

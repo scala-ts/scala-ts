@@ -28,26 +28,26 @@ In previous example, `com.example.ExampleDto` is the Scala class for which the T
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("com.github.miloszpp" % "scala-ts" % version)
+    addSbtPlugin("org.scala-ts" % "scala-ts-sbt" % version)
 
 Additionally, enable the plugin in your project settings:
 
-    enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
+    enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
 
 Now you can use the `generateTypeScript` command in SBT. For example:
 
     sbt "generateTypeScript com.example.ExampleDto"
 
-### Configuration
+#### Configuration
 
-Starting from release 0.3.0, it's possible to specify some configuration options:
+Starting from release 0.3.0, it's possible to specify some configuration optionsfor `generateTypeScript`.
 
 * `emitInterfaces` - generate interface declarations (`true` by default)
 * `emitClasses` - generate class declarations (`false` by default)
 * `emitCodecs` - generate fromData/toData functions for TypeScript classes (if `emitClasses`)
 * `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 * `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
-* `outputStream` - the stream to which the code should be emitted; it defaults to console
+* `sourceManaged` - the base directory where to generate the TypeScript files.
 * `typescriptIndent` - the characters used as TypeScript indentation (default: <tab>)
 * `fieldNaming` - the conversions for the field names if emitCodecs (default: FieldNaming.Identity)
 
@@ -56,8 +56,10 @@ Usage example in `build.sbt`:
 ```ocaml
 emitClasses in generateTypeScript := true
 
-enablePlugins(com.mpc.scalats.sbt.TypeScriptGeneratorPlugin)
+enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
+
+TODO: See [scalac plugin configuration](../core/src/test/resources/plugin-conf.xml)
 
 ## Type support
 
