@@ -314,7 +314,7 @@ final class TypeScriptEmitter(
           o.print(s"data.${encoded}")
       }
 
-      o.println(s");")
+      o.println(");")
       o.println(s"${indent}}")
 
       // Encoder

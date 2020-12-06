@@ -11,7 +11,9 @@ import scala.xml.XML
 
 import org.scalats.core.TypeScriptGenerator
 
-final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
+final class CompilerPlugin(val global: Global)
+  extends Plugin with PluginCompat { plugin =>
+
   val name = "scalats"
   val description = "Scala compiler plugin for TypeScript (scalats)"
   val components: List[PluginComponent] = List(Component)
@@ -19,9 +21,10 @@ final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
   private var config: Configuration = _
   private var debug: Boolean = false
 
-  override def processOptions(
+  @SuppressWarnings(Array("NullParameter"))
+  override def init(
     options: List[String],
-    error: String => Unit): Unit = {
+    error: String => Unit): Boolean = {
     val prefix = "configuration="
 
     options.foreach { opt =>
@@ -41,6 +44,8 @@ final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
 
       global.inform(s"${plugin.name}: Defaulting configuration")
     }
+
+    true
   }
 
   override val optionsHelp: Option[String] = Some(
@@ -168,7 +173,7 @@ final class CompilerPlugin(val global: Global) extends Plugin { plugin =>
       val scalaTypes: List[Type] = go(unit.body.children.map(_.symbol), Nil)
 
       object CompilerLogger extends org.scalats.core.Logger {
-        def warning(msg: => String): Unit = global.warning(msg)
+        def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
       TypeScriptGenerator.generate(global)(
