@@ -13,62 +13,60 @@ final class Transpiler(config: Configuration) {
   def apply(
     scalaTypes: ListSet[ScalaModel.TypeDef],
     superInterface: Option[InterfaceDeclaration]): ListSet[Declaration] =
-    scalaTypes.flatMap { typeDef =>
-      typeDef match {
-        case scalaClass: ScalaModel.CaseClass => {
-          val clazz = {
-            if (config.emitClasses) {
-              ListSet[Declaration](transpileClass(scalaClass, superInterface))
-            } else ListSet.empty[Declaration]
-          }
-
-          if (!config.emitInterfaces) clazz
-          else ListSet[Declaration](
-            transpileInterface(scalaClass, superInterface)) ++ clazz
+    scalaTypes.flatMap {
+      case scalaClass: ScalaModel.CaseClass => {
+        val clazz = {
+          if (config.emitClasses) {
+            ListSet[Declaration](transpileClass(scalaClass, superInterface))
+          } else ListSet.empty[Declaration]
         }
 
-        case ScalaModel.Enumeration(id, values) => {
-          ListSet[Declaration](EnumDeclaration(idToString(id), values))
+        if (!config.emitInterfaces) clazz
+        else ListSet[Declaration](
+          transpileInterface(scalaClass, superInterface)) ++ clazz
+      }
+
+      case ScalaModel.Enumeration(id, values) => {
+        ListSet[Declaration](EnumDeclaration(idToString(id), values))
+      }
+
+      case ScalaModel.CaseObject(id, members) => {
+        val values = members.map { scalaMember =>
+          Member(
+            scalaMember.name,
+            transpileTypeRef(scalaMember.typeRef, false))
         }
 
-        case ScalaModel.CaseObject(id, members) => {
-          val values = members.map { scalaMember =>
-            Member(
-              scalaMember.name,
-              transpileTypeRef(scalaMember.typeRef, false))
-          }
+        ListSet[Declaration](
+          SingletonDeclaration(idToString(id), values, superInterface))
+      }
 
-          ListSet[Declaration](
-            SingletonDeclaration(idToString(id), values, superInterface))
+      case ScalaModel.SealedUnion(id, fields, possibilities) => {
+        val ifaceFields = fields.map { scalaMember =>
+          Member(
+            scalaMember.name,
+            transpileTypeRef(scalaMember.typeRef, false))
         }
 
-        case ScalaModel.SealedUnion(id, fields, possibilities) => {
-          val ifaceFields = fields.map { scalaMember =>
-            Member(
-              scalaMember.name,
-              transpileTypeRef(scalaMember.typeRef, false))
-          }
+        val unionRef = InterfaceDeclaration(
+          toInterfaceName(id),
+          ifaceFields, ListSet.empty[String], superInterface)
 
-          val unionRef = InterfaceDeclaration(
-            toInterfaceName(id),
-            ifaceFields, ListSet.empty[String], superInterface)
+        apply(possibilities, Some(unionRef)) + UnionDeclaration(
+          idToString(id),
+          ifaceFields,
+          possibilities.map {
+            case ScalaModel.CaseObject(pid, _) =>
+              CustomTypeRef(idToString(pid), ListSet.empty)
 
-          apply(possibilities, Some(unionRef)) + UnionDeclaration(
-            idToString(id),
-            ifaceFields,
-            possibilities.map {
-              case ScalaModel.CaseObject(pid, _) =>
-                CustomTypeRef(idToString(pid), ListSet.empty)
+            case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
+              CustomTypeRef(
+                toInterfaceName(pid), tpeArgs.map { SimpleTypeRef(_) })
 
-              case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
-                CustomTypeRef(
-                  toInterfaceName(pid), tpeArgs.map { SimpleTypeRef(_) })
-
-              case m =>
-                CustomTypeRef(toInterfaceName(m.identifier), ListSet.empty)
-            },
-            superInterface)
-        }
+            case m =>
+              CustomTypeRef(toInterfaceName(m.identifier), ListSet.empty)
+          },
+          superInterface)
       }
     }
 
@@ -177,7 +175,7 @@ final class Transpiler(config: Configuration) {
 
   private def idToString(identifier: ScalaModel.QualifiedIdentifier): String = {
     if (config.prependEnclosingClassNames) {
-      (identifier.enclosingClassNames :+ identifier.name).mkString
+      s"${identifier.enclosingClassNames.mkString}${identifier.name}"
     } else {
       identifier.name
     }
