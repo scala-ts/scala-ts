@@ -10,7 +10,6 @@ import scala.reflect.api.Universe
 
 import com.github.ghik.silencer.silent
 
-// TODO: Keep namespace using fullName from the Type
 final class ScalaParser[U <: Universe](
   universe: U, logger: Logger)(
   implicit
@@ -84,17 +83,30 @@ final class ScalaParser[U <: Universe](
       }
   }
 
+  private val skipCompanion = true // TODO: Configurable
+
   private def parseObject(tpe: Type): Option[CaseObject] = {
-    @silent(".*is\\ unchecked.*")
-    def members = tpe.decls.collect {
-      case Field(m) => member(m, List.empty)
+    def classExists: Boolean = try {
+      Option(mirror staticClass tpe.typeSymbol.fullName).nonEmpty
+    } catch {
+      case scala.util.control.NonFatal(_) =>
+        false
     }
 
-    val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
+    if (skipCompanion && classExists) {
+      Option.empty
+    } else {
+      @silent(".*is\\ unchecked.*")
+      def members = tpe.decls.collect {
+        case Field(m) => member(m, List.empty)
+      }
 
-    Some(CaseObject(
-      identifier.copy(name = identifier.name stripSuffix ".type"),
-      ListSet.empty ++ members))
+      val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
+
+      Some(CaseObject(
+        identifier.copy(name = identifier.name stripSuffix ".type"),
+        ListSet.empty ++ members))
+    }
   }
 
   private def parseSealedUnion(tpe: Type): Option[SealedUnion] = {
@@ -163,6 +175,7 @@ final class ScalaParser[U <: Universe](
   @silent(".*is\\ unchecked.*")
   private def parse(types: List[Type], examined: ListSet[Type], parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
     case scalaType :: tail => {
+
       if (!examined.contains(scalaType) &&
         !scalaType.typeSymbol.isParameter) {
 
@@ -233,7 +246,7 @@ final class ScalaParser[U <: Universe](
         DateRef
 
       case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" =>
-        DateTimeRef
+        DateTimeRef // TODO: OffsetDateTimeb
 
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)

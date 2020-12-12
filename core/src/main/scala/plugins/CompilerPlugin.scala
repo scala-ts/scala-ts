@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 
 import scala.xml.XML
 
-import org.scalats.core.TypeScriptGenerator
+import org.scalats.core.{ Logger, TypeScriptGenerator }
 
 final class CompilerPlugin(val global: Global)
   extends Plugin with PluginCompat { plugin =>
@@ -19,19 +19,29 @@ final class CompilerPlugin(val global: Global)
   val components: List[PluginComponent] = List(Component)
 
   private var config: Configuration = _
+  private var printerOutputDirectory: File = _
   private var debug: Boolean = false
 
-  @SuppressWarnings(Array("NullParameter"))
+  @SuppressWarnings(Array("NullParameter", "NullAssignment"))
   override def init(
     options: List[String],
     error: String => Unit): Boolean = {
-    val prefix = "configuration="
+    val cfgPrefix = "configuration="
+    val outDirPrefix = "printerOutputDirectory="
+
+    printerOutputDirectory = new File(".")
+
+    var configPath: String = null
 
     options.foreach { opt =>
-      if (opt startsWith prefix) {
-        config = Configuration.load(XML.loadFile(opt stripPrefix prefix))
+      if (opt startsWith cfgPrefix) {
+        configPath = opt.stripPrefix(cfgPrefix)
+      }
 
-        global.inform(s"${plugin.name}: Loaded configuration: $config")
+      if (opt startsWith outDirPrefix) {
+        printerOutputDirectory = new File(opt stripPrefix outDirPrefix)
+
+        global.inform(s"{${plugin.name}} Set printer output directory: ${printerOutputDirectory.getAbsolutePath}")
       }
 
       if (opt == "debug" || opt == "debug=true") {
@@ -39,10 +49,19 @@ final class CompilerPlugin(val global: Global)
       }
     }
 
+    if (configPath != null) {
+      config = Configuration.load(
+        XML.loadFile(configPath),
+        Logger(global),
+        Option(printerOutputDirectory))
+
+      global.inform(s"{${plugin.name}} Configuration loaded from '${configPath}': $config")
+    }
+
     if (config == null) {
       config = Configuration()
 
-      global.inform(s"${plugin.name}: Defaulting configuration")
+      global.inform(s"{${plugin.name}} Loading the default configuration")
     }
 
     true
@@ -180,7 +199,7 @@ final class CompilerPlugin(val global: Global)
         config = plugin.config.settings,
         types = scalaTypes,
         logger = CompilerLogger,
-        out = { _ => Console.out /* TODO: as parameter/from conf? */ })
+        out = config.printer)
 
     }
   }

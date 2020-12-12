@@ -1,7 +1,5 @@
 package org.scalats.core
 
-import java.io.PrintStream
-
 import scala.reflect.api.Universe
 import scala.reflect.runtime
 
@@ -17,7 +15,7 @@ object TypeScriptGenerator {
     config: Configuration,
     classNames: List[String],
     logger: Logger,
-    out: String => PrintStream = _ => Console.out,
+    out: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
     classLoader: ClassLoader = getClass.getClassLoader): Unit = {
     import runtime.universe
 
@@ -35,7 +33,7 @@ object TypeScriptGenerator {
     config: Configuration,
     types: List[universe.Type],
     logger: Logger,
-    out: String => PrintStream)(
+    out: TypeScriptPrinter)(
     implicit
     cu: CompileUniverse[universe.type]): Unit = {
     val scalaParser = new ScalaParser[universe.type](universe, logger)

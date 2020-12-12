@@ -11,3 +11,5 @@ addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.0")
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.0")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.24")
+
+addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")

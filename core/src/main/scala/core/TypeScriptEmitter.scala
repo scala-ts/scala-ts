@@ -15,31 +15,31 @@ final class TypeScriptEmitter(
 
   import TypeScriptModel._
   import Internals.list
-  import config.{ typescriptIndent => indent }
+
+  import config.{
+    typescriptLineSeparator => lineSeparator,
+    typescriptIndent => indent
+  }
 
   // TODO: If for ClassDeclaration or SingletonDeclaration there is values
   // implementing the superInterface, then do not 'implements'
   def emit(declaration: ListSet[Declaration]): Unit =
-    list(declaration).foreach { d =>
-      d match {
-        case decl: InterfaceDeclaration =>
-          emitInterfaceDeclaration(decl)
+    list(declaration).foreach {
+      case decl: InterfaceDeclaration =>
+        emitInterfaceDeclaration(decl)
 
-        case decl: EnumDeclaration =>
-          emitEnumDeclaration(decl)
+      case decl: EnumDeclaration =>
+        emitEnumDeclaration(decl)
 
-        case decl: ClassDeclaration =>
-          emitClassDeclaration(decl)
+      case decl: ClassDeclaration =>
+        emitClassDeclaration(decl)
 
-        case SingletonDeclaration(name, members, superInterface) =>
-          emitSingletonDeclaration(name, members, superInterface)
+      case SingletonDeclaration(name, members, superInterface) =>
+        emitSingletonDeclaration(name, members, superInterface)
 
-        case UnionDeclaration(name, fields, possibilities, superInterface) =>
-          emitUnionDeclaration(
-            name, fields, possibilities, superInterface)
-      }
-
-      println()
+      case UnionDeclaration(name, fields, possibilities, superInterface) =>
+        emitUnionDeclaration(
+          name, fields, possibilities, superInterface)
     }
 
   // ---
@@ -49,19 +49,18 @@ final class TypeScriptEmitter(
     fields: ListSet[Member],
     possibilities: ListSet[CustomTypeRef],
     superInterface: Option[InterfaceDeclaration]): Unit = {
-    val o = out(name)
+    val o = out(name) // TODO: finalize
 
     // Namespace and union type
     o.println(s"export namespace $name {")
-    o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "};""")
+    o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
 
-    if (config.emitCodecs) {
+    if (config.emitCodecs.enabled) {
       // TODO: Discriminator naming
       val discriminatorName = "_type"
       val naming: String => String = identity[String](_)
       val children = list(possibilities)
 
-      // TODO: type guard
       // Decoder factory: MyClass.fromData({..})
       o.println(s"\n${indent}public static fromData(data: any): ${name} {")
       o.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
@@ -70,7 +69,7 @@ final class TypeScriptEmitter(
         val clazz = if (sub.name startsWith "I") sub.name.drop(1) else sub.name
 
         o.println(s"""${indent}${indent}${indent}case "${naming(sub.name)}": {""")
-        o.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data);")
+        o.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data)${lineSeparator}")
         o.println(s"${indent}${indent}${indent}}")
       }
 
@@ -92,9 +91,9 @@ final class TypeScriptEmitter(
             if (sub.name startsWith "I") sub.name.drop(1) else sub.name
 
           o.println(s"if (instance instanceof ${sub.name}) {")
-          o.println(s"${indent}${indent}${indent}const data = ${clazz}.toData(instance);")
-          o.println(s"""${indent}${indent}${indent}data['$discriminatorName'] = "${naming(sub.name)}";""")
-          o.println(s"${indent}${indent}${indent}return data;")
+          o.println(s"${indent}${indent}${indent}const data = ${clazz}.toData(instance)${lineSeparator}")
+          o.println(s"""${indent}${indent}${indent}data['$discriminatorName'] = "${naming(sub.name)}"${lineSeparator}""")
+          o.println(s"${indent}${indent}${indent}return data${lineSeparator}")
       }
 
       o.println(s"${indent}${indent}}")
@@ -113,8 +112,10 @@ final class TypeScriptEmitter(
     o.println(" {")
 
     // Abstract fields - common to all the subtypes
+    val fieldNaming = config.fieldNaming(name, _: String)
+
     list(fields).foreach { member =>
-      o.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
+      o.println(s"${indent}${fieldNaming(member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
     }
 
     o.println("}")
@@ -143,25 +144,26 @@ final class TypeScriptEmitter(
 
     o.println(" {")
 
-    o.println(s"${indent}private static instance: $name;\n")
+    o.println(s"${indent}private static instance: $name${lineSeparator}\n")
 
     o.println(s"${indent}private constructor() {}\n")
     o.println(s"${indent}public static getInstance() {")
     o.println(s"${indent}${indent}if (!${name}.instance) {")
-    o.println(s"${indent}${indent}${indent}${name}.instance = new ${name}();")
+    o.println(s"${indent}${indent}${indent}${name}.instance = new ${name}()${lineSeparator}")
     o.println(s"${indent}${indent}}\n")
-    o.println(s"${indent}${indent}return ${name}.instance;")
+    o.println(s"${indent}${indent}return ${name}.instance${lineSeparator}")
     o.println(s"${indent}}")
 
-    if (config.emitCodecs) {
+    if (config.emitCodecs.enabled) {
       // Decoder factory: MyClass.fromData({..})
       o.println(s"\n${indent}public static fromData(data: any): ${name} {")
-      o.println(s"${indent}${indent}return ${name}.instance;")
+      o.println(s"${indent}${indent}return ${name}.instance${lineSeparator}")
       o.println(s"${indent}}")
 
       // Encoder
+      // TODO: return type { [key: string]: any }
       o.println(s"\n${indent}public static toData(instance: ${name}): any {")
-      o.println(s"${indent}${indent}return instance;")
+      o.println(s"${indent}${indent}return instance${lineSeparator}")
       o.println(s"${indent}}")
     }
 
@@ -182,7 +184,7 @@ final class TypeScriptEmitter(
     o.println(" {")
 
     list(fields).foreach { member =>
-      o.println(s"${indent}${member.name}: ${getTypeRefString(member.typeRef)};")
+      o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
     }
     o.println("}")
   }
@@ -226,6 +228,8 @@ final class TypeScriptEmitter(
 
     o.println(" {")
 
+    val fieldNaming = config.fieldNaming(name, _: String)
+
     list(values).foreach { v =>
       o.print(indent)
 
@@ -233,7 +237,7 @@ final class TypeScriptEmitter(
         o.print("public ")
       }
 
-      o.println(s"${v.name}: ${getTypeRefString(v.typeRef)};")
+      o.println(s"${fieldNaming(v.name)}: ${getTypeRefString(v.typeRef)}${lineSeparator}")
     }
 
     val params = list(parameters)
@@ -241,7 +245,7 @@ final class TypeScriptEmitter(
     if (!config.emitInterfaces) {
       // Class fields
       params.foreach { parameter =>
-        o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)};")
+        o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)}${lineSeparator}")
       }
     }
 
@@ -262,18 +266,20 @@ final class TypeScriptEmitter(
           o.print("public ")
         }
 
-        o.print(s"${parameter.name}: ${getTypeRefString(parameter.typeRef)}")
+        o.print(s"${fieldNaming(parameter.name)}: ${getTypeRefString(parameter.typeRef)}")
     }
 
     o.println(s"\n${indent}) {")
 
     params.foreach { parameter =>
-      o.println(s"${indent}${indent}this.${parameter.name} = ${parameter.name};")
+      val nme = fieldNaming(parameter.name)
+
+      o.println(s"${indent}${indent}this.${nme} = ${nme}${lineSeparator}")
     }
     o.println(s"${indent}}")
 
     // Codecs functions
-    if (config.emitCodecs) {
+    if (config.emitCodecs.enabled) {
       emitClassCodecs(decl)
     }
 
@@ -291,12 +297,12 @@ final class TypeScriptEmitter(
 
       // Decoder factory: MyClass.fromData({..})
       o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
-      o.println(s"${indent}${indent}return <${name}${tparams}>(data);")
+      o.println(s"${indent}${indent}return <${name}${tparams}>(data)${lineSeparator}")
       o.println(s"${indent}}")
 
       // Encoder
       o.println(s"\n${indent}public static toData${tparams}(instance: ${name}${tparams}): any {")
-      o.println(s"${indent}${indent}return instance;")
+      o.println(s"${indent}${indent}return instance${lineSeparator}")
       o.println(s"${indent}}")
     } else {
       // Decoder factory: MyClass.fromData({..})
@@ -304,17 +310,18 @@ final class TypeScriptEmitter(
       o.print(s"${indent}${indent}return new ${name}${tparams}(")
 
       val params = list(parameters).zipWithIndex
+      val fieldNaming = config.fieldNaming(name, _: String)
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = config.fieldNaming(parameter.name)
+          val encoded = fieldNaming(parameter.name)
 
           if (index > 0) o.print(", ")
 
           o.print(s"data.${encoded}")
       }
 
-      o.println(");")
+      o.println(s")${lineSeparator}")
       o.println(s"${indent}}")
 
       // Encoder
@@ -323,14 +330,14 @@ final class TypeScriptEmitter(
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = config.fieldNaming(parameter.name)
+          val encoded = fieldNaming(parameter.name)
 
           if (index > 0) o.print(",\n")
 
-          o.print(s"${indent}${indent}${indent}${encoded}: instance.${parameter.name}")
+          o.print(s"${indent}${indent}${indent}${encoded}: instance.${fieldNaming(parameter.name)}")
       }
 
-      o.println(s"\n${indent}${indent}};")
+      o.println(s"\n${indent}${indent}}${lineSeparator}")
       o.println(s"${indent}}")
     }
   }
