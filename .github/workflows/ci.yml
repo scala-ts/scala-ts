@@ -47,7 +47,7 @@ jobs:
       run: sbt +core/testOnly
 
     - name: 'Run SBT plugin tests'
-      run: sbt ';error ;^ publishLocal ;^ scripted scala-ts-sbt/simple' # TODO: run all scripts
+      run: sbt ';error ;^ publishLocal ;^ scripted'
 
     - name: 'Set up Node'
       uses: actions/setup-node@v1
@@ -56,7 +56,7 @@ jobs:
 
     - name: 'Compile generated TypeScript from SBT scripted tests'
       run: |
-        cp sbt-plugin/src/sbt-test/*.* /tmp/scala-ts-sbt/
+        cp sbt-plugin/src/node/*.* /tmp/scala-ts-sbt/
         cd /tmp/scala-ts-sbt/
         find . -type f -name '*.ts' -print
         npm ci
