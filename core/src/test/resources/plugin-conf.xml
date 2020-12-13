@@ -30,10 +30,16 @@
   <settings>
     <emitInterfaces>true</emitInterfaces>
     <emitClasses>false</emitClasses>
+    <emitCodecs>true</emitCodecs>
+
     <optionToNullable>true</optionToNullable>
     <optionToUndefined>false</optionToUndefined>
-    <prependIPrefix>true</prependIPrefix>
+
+    <prependIPrefix>false</prependIPrefix>
+    <prependEnclosingClassNames>false</prependEnclosingClassNames>
+
     <typescriptIndent>  </typescriptIndent>
-    <emitCodecs>true</emitCodecs>
+
+    <fieldNaming>SnakeCase</fieldNaming>
   </settings>
 </scalats>

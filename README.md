@@ -1,36 +1,52 @@
-# scala-ts
+# ScalaTS
 
-*scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
+*ScalaTS* generate TypeScript from Scala.
 
 It's helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
-> See [*Scala-ts: Scala to TypeScript code generator*](http://codewithstyle.info/scala-ts-scala-typescript-code-generator/) at Code with Style.
-
 ## Usage
 
-*scala-ts* can be used either standalone or as a sbt plugin.
+*ScalaTS* can be used either standalone or as a SBT plugin.
 
 See:
 
 - [Usage details](docs/index.md#usage)
-- [Releases](https://github.com/scala-ts/scala-ts/releases) (with downloads)
+- Blog post: [Scala-ts: Scala to TypeScript code generator*](http://codewithstyle.info/scala-ts-scala-typescript-code-generator/) at Code with Style.
 
 ## Build manually
 
-It can be built from this source repository.
+The core library and compiler plugin can be built using [SBT](https://www.scala-sbt.org).
 
-    sbt +publishLocal
+    sbt +core/publishLocal
 
-To run the tests, use:
+The SBT plugin can also be built:
 
-    sbt test
+    sbt '^ sbt-plugin/publishLocal'
 
-[Travis](https://travis-ci.org/scala-ts/scala-ts): ![Travis build status](https://travis-ci.org/scala-ts/scala-ts.svg?branch=master)
+*Running tests:* [![Travis build status](https://travis-ci.org/scala-ts/scala-ts.svg?branch=master)](https://travis-ci.org/scala-ts/scala-ts):
+
+The tests for the core library and compiler plugin can be executed.
+
+    sbt +core/test
+
+The [scripted tests](https://www.scala-sbt.org/1.x/docs/Testing-sbt-plugins.html) for the SBT plugins can also be executed.
+
+    sbt ';^ sbt-plugin/testOnly ;^ sbt-plugin/scripted'
+
+Considering a single scripted tests (e.g. `simple`), it can be executed interactively for development purpose.
+
+```bash
+export SCRIPTED_TEST="simple"
+export PLUGIN_VERSION="0.4.1-SNAPSHOT"
+export SBT_VERSION="1.4.4"
+
+cd "sbt-plugin/src/sbt-test/scala-ts-sbt/${SCRIPTED_TEST}"
+sbt "-J-Dscala-ts.version=${PLUGIN_VERSION}" "-J-Dsbt.version=${SBT_VERSION}"
+```
 
 ## Credits
 
-Many thanks to:
+Many thanks to all the [contributors](https://github.com/scala-ts/scala-ts/graphs/contributors).
 
-* https://github.com/nicolasdalsass who forked the project into https://github.com/Elium/scala-ts/tree/master. I incorporated some of his ideas into `scala-ts`.
-* https://github.com/returntocorp - for SBT 1.0 support, Either, Map
-
+* [@nicolasdalsass](https://github.com/nicolasdalsass) who create a [forked project](https://github.com/Elium/scala-ts/tree/master). Some of his ideas have been integrated back into `scala-ts`.
+* [@returntocorp](https://github.com/returntocorp) for the SBT 1.0, `Either`, `Map` support.

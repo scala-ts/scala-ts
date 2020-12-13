@@ -1,0 +1,9 @@
+# Simple generation from Scala case class
+> compile
+$ exists target/scala-ts/src_managed/CaseClassFoo.ts
+
+# Check the generated files is as expected
+$ must-mirror target/scala-ts/src_managed/CaseClassFoo.ts src/test/resources/CaseClassFoo.ts
+
+# Preserve the generated files (to compile with tsc after)
+> preserveGeneratedTypescript

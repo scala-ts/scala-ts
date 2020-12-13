@@ -37,7 +37,7 @@ object Publish extends AutoPlugin {
         </developer>
         <developer>
           <id>cchantep</id>
-          <name>cchanteo</name>
+          <name>cchantep</name>
           <url>https://github.com/cchantep</url>
         </developer>
       </developers>

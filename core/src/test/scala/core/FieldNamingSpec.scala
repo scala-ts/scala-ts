@@ -14,7 +14,7 @@ final class FieldNamingSpec extends AnyFlatSpec with Matchers {
       "Ipsum" -> "Ipsum")
 
     forAll(fixtures) { (name, encoded) =>
-      Identity(name) should equal(encoded)
+      Identity("Foo", name) should equal(encoded)
     }
   }
 
@@ -27,7 +27,7 @@ final class FieldNamingSpec extends AnyFlatSpec with Matchers {
       "Ipsum" -> "Ipsum")
 
     forAll(fixtures) { (name, encoded) =>
-      SnakeCase(name) should equal(encoded)
+      SnakeCase("Bar", name) should equal(encoded)
     }
   }
 }

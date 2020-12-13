@@ -75,6 +75,12 @@ final class ScalaParserSpec extends AnyFlatSpec with Matchers {
     parsed should contain(caseObject1)
   }
 
+  it should "skip companion object" in {
+    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass1CompanionType))
+
+    parsed.size should equal(0)
+  }
+
   it should "correctly parse object" in {
     val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject2Type))
 
@@ -93,6 +99,8 @@ object ScalaRuntimeFixtures {
   import runtimeUniverse.typeOf
 
   val TestClass1Type = typeOf[TestClass1]
+  val TestClass1CompanionType = typeOf[TestClass1.type]
+
   val TestClass2Type = typeOf[TestClass2[_]]
   val TestClass3Type = typeOf[TestClass3[_]]
   val TestClass5Type = typeOf[TestClass5[_]]

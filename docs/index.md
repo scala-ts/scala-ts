@@ -14,7 +14,93 @@ layout: default
 
 ## Usage
 
-*scala-ts* can be used either standalone or as a sbt plugin.
+*scala-ts* can be used either [standalone](#standalone) or as a SBT plugin.
+
+### SBT plugin
+
+Add the following plugin to `project/plugins.sbt`:
+
+    addSbtPlugin("org.scala-ts" % "scala-ts-sbt" % version)
+
+Additionally, enable (or disabled) the plugin for a specific project:
+
+```
+// Enable:
+enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
+
+// Disable:
+disablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
+```
+
+By default, the TypeScript files are generated on compile:
+
+    sbt compile
+
+#### Configuration
+
+The [compiler plugin settings](#compiler-plugin) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsEmitClasses` SBT setting corresponds to the compiler plugin setting `emitClasses`.
+
+```ocaml
+scalatsEmitClasses := true
+```
+
+The SBT plugins also has some specific settings.
+
+TODO: Review
+
+TODO: scalatsOnCompile (default true)
+
+TODO: scalatsDebug false
+
+TODO: `sourceManaged in scalatsOnCompile` - the directory to initialize the printer with (output directory)
+
+### Compiler plugin
+
+*scala-ts* can be configured as a Scalac compiler plugin using the following options.
+
+- `-Xplugin:/path/to/scala-ts-core.jar`
+- `-P:scalats:configuration=/path/to/plugin-conf.xml`
+
+The following generator settings can be specified as XML in the plugin configuration (see [examples](../core/src/test/resources/plugin-conf.xml)).
+
+- `emitInterfaces` - Generate interface declarations (default: `true`)
+- `emitClasses` - Generate class declarations (default: `false`)
+- `emitCodecs` - Generate fromData/toData functions for TypeScript classes (if `emitClasses`) (default: `true`)
+- `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
+- `optionToUndefined` - Translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
+- `prependIPrefix` - Prepend `I` prefix to generated interfaces (default: `true`)
+- `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
+- `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
+- `fieldNaming` - The conversions for the field names if emitCodecs: `Identity`, `SnakeCase` or a class name (default: `Identity`).
+- `printer` - An optional printer class.
+- `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` from).
+
+Also the following build options can be configured.
+
+- `compilationRuleSet` - Set of rules to specify which Scala source files must be considered.
+- `typeRuleSet` - Set of rules to specify which types (from the already filtered source files) must be considered.
+
+A rule set such as `compilationRuleSet` is described with multiple include and/or excludes rules:
+
+```xml
+<scalats>
+  <compilationRuleSet>
+    <includes>
+      <include>ScalaParserSpec\.scala</include>
+      <include>Transpiler.*</include>
+    </includes>
+
+    <excludes>
+      <exclude>foo</exclude>
+    </excludes>
+  </compilationRuleSet>
+</scalats>
+```
+
+Optionally the following argument can be passed.
+
+- `-P:scalats:debug` - Enable debug.
+- `-P:scalats:printerOutputDirectory=/path/to/base` - Path to a base directory to initialize a custom printer with.
 
 ### Standalone
 
@@ -24,56 +110,19 @@ A standalone assembly can be directly downloaded from the corresponding [release
 
 In previous example, `com.example.ExampleDto` is the Scala class for which the TypeScript must be generated.
 
-### SBT plugin
-
-Add the following plugin to `project/plugins.sbt`:
-
-    addSbtPlugin("org.scala-ts" % "scala-ts-sbt" % version)
-
-Additionally, enable the plugin in your project settings:
-
-    enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
-
-Now you can use the `generateTypeScript` command in SBT. For example:
-
-    sbt "generateTypeScript com.example.ExampleDto"
-
-#### Configuration
-
-Starting from release 0.3.0, it's possible to specify some configuration optionsfor `generateTypeScript`.
-
-* `emitInterfaces` - generate interface declarations (`true` by default)
-* `emitClasses` - generate class declarations (`false` by default)
-* `emitCodecs` - generate fromData/toData functions for TypeScript classes (if `emitClasses`)
-* `optionToNullable` - translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
-* `optionToUndefined` - translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
-* `sourceManaged` - the base directory where to generate the TypeScript files.
-* `typescriptIndent` - the characters used as TypeScript indentation (default: <tab>)
-* `fieldNaming` - the conversions for the field names if emitCodecs (default: FieldNaming.Identity)
-
-Usage example in `build.sbt`:
-
-```ocaml
-emitClasses in generateTypeScript := true
-
-enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
-```
-
-TODO: See [scalac plugin configuration](../core/src/test/resources/plugin-conf.xml)
-
 ## Type support
 
 Currently *scala-ts* supports the following types of case class members:
 
-* `Int`, `Double`, `Boolean`, `String`, `Long`
-* `List`, `Seq`, `Set`, `Map`
-* `Option`, `Either`
-* `LocalDate`, `LocalDateTime`, `Instant`, `Timestamp`, `ZonedDateTime`
-* `BigDecimal` (mapped to TypeScript's `number`)
-* `UUID` (mapped to TypeScript's `string`)
-* value classes
-* enumeration values
-* generic types
-* references to other case classes
-* (case) objects, as singleton class
-* sealed traits, as union type
+- `Int`, `Double`, `Boolean`, `String`, `Long`
+- `List`, `Seq`, `Set`, `Map`
+- `Option`, `Either`
+- `LocalDate`, `LocalDateTime`, `Instant`, `Timestamp`, `ZonedDateTime`
+- `BigDecimal` (mapped to TypeScript's `number`)
+- `UUID` (mapped to TypeScript's `string`)
+- value classes
+- enumeration values
+- generic types
+- references to other case classes
+- (case) objects, as singleton class
+- sealed traits, as union type

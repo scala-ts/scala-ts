@@ -24,8 +24,7 @@ lazy val core = project.in(file("core")).settings(
   ),
   libraryDependencies ++= {
     if (scalaBinaryVersion.value == "2.13") {
-      Seq(
-        "org.scala-lang.modules" %% "scala-xml" % "1.3.0")
+      Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.0")
     } else {
       Seq.empty
     }
@@ -33,32 +32,43 @@ lazy val core = project.in(file("core")).settings(
   mainClass in (Compile, run) := Some("org.scalats.Main"),
   compile in Test := (compile in Test).dependsOn(
     packageBin in Compile/* make sure plugin.jar is available */).value
-  /* TODO: (Re)move 
-  ,scalacOptions in Test ++= {
-    val v = version.value
-    val sv = scalaVersion.value
-    val b = (baseDirectory in Compile).value
-    val n = (name in Compile).value
-    val msv = scalaBinaryVersion.value
-
-    val td = b / "target" / s"scala-$msv"
-    val j = td / s"${n}_$msv-$v.jar"
-
-    val testCfg = (resourceDirectory in Test).value / "plugin-conf.xml"
-
-    Seq(
-      s"-Xplugin:${j.getAbsolutePath}",
-      "-P:scalats:debug",
-      s"-P:scalats:configuration=${testCfg.getAbsolutePath}")
-  } */
 )
 
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
+  enablePlugins(SbtPlugin).
   settings(
     name := "scala-ts-sbt",
     crossScalaVersions := Seq("2.11.12", scalaVersion.value),
     pluginCrossBuild / sbtVersion := "1.3.13",
-    sbtPlugin := true
+    sbtPlugin := true,
+    scriptedLaunchOpts ++= Seq(
+      "-Xmx1024M",
+      s"-Dscala-ts.version=${version.value}",
+      s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
+    ),
+    scriptedBufferLog := false,
+    sourceGenerators in Compile += Def.task {
+      val groupId = organization.value
+      val coreArtifactId = (core / name).value
+      val ver = version.value
+      val dir = (sourceManaged in Compile).value
+      val outdir = dir / "org" / "scalats" / "sbt"
+      val f = outdir / "Manifest.scala"
+
+      outdir.mkdirs()
+
+      Seq(IO.writer[File](f, "", IO.defaultCharset, false) { w =>
+        w.append(s"""package org.scalats.sbt
+
+object Manifest {
+  val groupId = "$groupId"
+  val coreArtifactId = "$coreArtifactId"
+  val version = "$ver"
+}""")
+
+        f
+      })
+    }.taskValue
   ).dependsOn(core)
 
 lazy val root = (project in file("."))
