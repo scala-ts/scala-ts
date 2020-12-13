@@ -11,8 +11,8 @@ ThisBuild / scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-Xlint",
-  "-g:vars"
-  //TODO:"-Xfatal-warnings"
+  "-g:vars",
+  "-Xfatal-warnings"
 )
 
 ThisBuild / scalacOptions ++= {
@@ -34,7 +34,7 @@ ThisBuild / scalacOptions ++= {
   } else {
     Seq(
       "-explaintypes",
-      //TODO:"-Werror",
+      "-Werror",
       "-Wnumeric-widen",
       "-Wdead-code",
       "-Wvalue-discard",
@@ -45,7 +45,8 @@ ThisBuild / scalacOptions ++= {
 }
 
 scalacOptions in (Compile, console) ~= {
-  _.filterNot(o => o.startsWith("-X") || o.startsWith("-Y"))
+  _.filterNot(o =>
+    o.startsWith("-X") || o.startsWith("-Y") || o.startsWith("-P:silencer"))
 }
 
 scalacOptions in Test ~= {
@@ -58,4 +59,16 @@ scalacOptions in (Compile, console) ~= {
 
 scalacOptions in (Test, console) ~= {
   _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
+}
+
+// Silencer
+ThisBuild / libraryDependencies ++= {
+  val silencerVersion = "1.7.1"
+
+  Seq(
+    compilerPlugin(("com.github.ghik" %% "silencer-plugin" % silencerVersion).
+      cross(CrossVersion.full)),
+    ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided).
+      cross(CrossVersion.full)
+  )
 }
