@@ -1,0 +1,9 @@
+# Custom generation from Scala case class
+> compile
+$ exists target/_custom/scalatsBar.ts
+
+# Check the generated files is as expected
+$ must-mirror target/_custom/scalatsBar.ts src/test/resources/Bar.ts
+
+# Preserve the generated files (to compile with tsc after)
+> preserveGeneratedTypescript

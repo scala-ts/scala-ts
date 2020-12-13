@@ -54,6 +54,10 @@ TODO: scalatsDebug false
 
 TODO: `sourceManaged in scalatsOnCompile` - the directory to initialize the printer with (output directory)
 
+TODO: Custom field naming in `project/` + `scalatsFieldNaming := classOf[scalats.CustomFieldNaming]`
+
+TODO: Custom printer in `project/`
+
 ### Compiler plugin
 
 *scala-ts* can be configured as a Scalac compiler plugin using the following options.
@@ -126,3 +130,5 @@ Currently *scala-ts* supports the following types of case class members:
 - references to other case classes
 - (case) objects, as singleton class
 - sealed traits, as union type
+
+TODO: Table for mapping between Scala / TS types
