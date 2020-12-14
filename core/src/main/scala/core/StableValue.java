@@ -1,4 +1,4 @@
-package org.scalats.core;
+package io.github.scalats.core;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

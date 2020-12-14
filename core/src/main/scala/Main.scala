@@ -1,6 +1,6 @@
-package org.scalats
+package io.github.scalats
 
-import org.scalats.core.{ Configuration, Logger, TypeScriptGenerator }
+import io.github.scalats.core.{ Configuration, Logger, TypeScriptGenerator }
 
 object Main {
   def main(args: Array[String]): Unit = {

@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 // TODO: (String, String) => String with Scalatype as first arg
 trait FieldNaming extends Function2[String, String, String] {

@@ -1,4 +1,4 @@
-package org.scalats.plugins
+package io.github.scalats.plugins
 
 import scala.tools.nsc.plugins.Plugin
 

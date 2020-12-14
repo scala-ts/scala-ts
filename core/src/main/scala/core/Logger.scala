@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 trait Logger {
   def warning(msg: => String): Unit

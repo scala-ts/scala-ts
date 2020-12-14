@@ -1,4 +1,4 @@
-package org.scalats.plugins
+package io.github.scalats.plugins
 
 import java.io.File
 
@@ -8,7 +8,7 @@ import scala.util.control.NonFatal
 
 import scala.xml._
 
-import org.scalats.core.{
+import io.github.scalats.core.{
   Configuration => Settings,
   Logger,
   TypeScriptPrinter

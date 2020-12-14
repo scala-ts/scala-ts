@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 import scala.reflect.api.Universe
 import scala.reflect.runtime

@@ -1,14 +1,14 @@
-package org.scalats.sbt
+package io.github.scalats.sbt
 
 import sbt._
 import sbt.Keys._
 
-import org.scalats.core.{
+import _root_.io.github.scalats.core.{
   Configuration => Settings,
   FieldNaming,
   TypeScriptPrinter
 }
-import org.scalats.plugins.{ Configuration, FilePrinter, SourceRuleSet }
+import _root_.io.github.scalats.plugins.{ Configuration, FilePrinter, SourceRuleSet }
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
@@ -39,7 +39,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       "Option types will be compiled to 'type | undefined'")
 
     val scalatsPrinter = taskKey[Class[_ <: TypeScriptPrinter]](
-      "Class implementing 'TypeScriptPrinter' to print the generated TypeScript code according the Scala type (default: org.scalats.plugins.FilePrinter)")
+      "Class implementing 'TypeScriptPrinter' to print the generated TypeScript code according the Scala type (default: io.github.scalats.plugins.FilePrinter)")
 
     val scalatsPrependIPrefix = settingKey[Boolean](
       "Whether to prefix interface names with 'I'")
