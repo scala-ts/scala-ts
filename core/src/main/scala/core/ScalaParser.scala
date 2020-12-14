@@ -10,6 +10,7 @@ import scala.reflect.api.Universe
 
 import com.github.ghik.silencer.silent
 
+// TODO: reverse class/interface member
 final class ScalaParser[U <: Universe](
   universe: U, logger: Logger)(
   implicit
@@ -45,12 +46,14 @@ final class ScalaParser[U <: Universe](
       parseObject(tpe)
 
     case _ if tpe.typeSymbol.isClass => {
+      // TODO: Special case for ValueClass; See #ValueClass_1
+
       val classSym = tpe.typeSymbol.asClass
 
       if (classSym.isTrait && classSym.isSealed && tpe.typeParams.isEmpty) {
         parseSealedUnion(tpe)
       } else if (isCaseClass(tpe)) {
-        parseCaseClass(tpe) // TODO: Special case for ValueClass
+        parseCaseClass(tpe)
       } else if (isEnumerationValue(tpe)) {
         parseEnumeration(tpe)
       } else {
@@ -83,7 +86,7 @@ final class ScalaParser[U <: Universe](
       }
   }
 
-  private val skipCompanion = true // TODO: Configurable
+  private val skipCompanion = true // TODO: (low priority) Configurable
 
   private def parseObject(tpe: Type): Option[CaseObject] = {
     def classExists: Boolean = try {
@@ -110,7 +113,7 @@ final class ScalaParser[U <: Universe](
   }
 
   private def parseSealedUnion(tpe: Type): Option[SealedUnion] = {
-    // TODO: Check & warn there is no type parameters for a union type
+    // TODO: (low priority) Check & warn there is no type parameters for a union type
 
     // Members
     @silent(".*is\\ unchecked.*")
@@ -162,7 +165,7 @@ final class ScalaParser[U <: Universe](
       buildQualifiedIdentifier(caseClassType.typeSymbol),
       ListSet.empty ++ members,
       ListSet.empty ++ values,
-      ListSet.empty ++ typeParams))
+      typeParams))
   }
 
   @inline private def member(
@@ -209,78 +212,57 @@ final class ScalaParser[U <: Universe](
     case _ => parsed
   }
 
-  // TODO: Tuple
   @silent(".*is\\ unchecked.*")
   private def scalaTypeRef(
     scalaType: Type,
     typeParams: Set[String]): ScalaTypeRef = {
-    val tpeName = scalaType.typeSymbol.name.toString
+    import scalaType.typeSymbol
+    val tpeName: String = typeSymbol.name.toString
 
     def unknown = UnknownTypeRef(
-      buildQualifiedIdentifier(scalaType.typeSymbol))
+      buildQualifiedIdentifier(typeSymbol))
 
-    def nonGenericType = tpeName match {
-      case "Int" | "Byte" | "Short" =>
-        IntRef
+    def nonGenericType = scalaType match {
+      case Scalar(ref) =>
+        ref
 
-      case "Long" =>
-        LongRef
+      case _ => tpeName match {
+        case typeParam if (typeParams contains typeParam) =>
+          TypeParamRef(typeParam)
 
-      case "Double" =>
-        DoubleRef
+        case _ if isAnyValChild(scalaType) =>
+          // #ValueClass_1
+          scalaType.members.filter(!_.isMethod).
+            map(_.typeSignature).headOption match {
+              case Some(valueTpe) =>
+                scalaTypeRef(valueTpe, Set.empty)
 
-      case "BigDecimal" =>
-        BigDecimalRef
+              case _ =>
+                unknown
+            }
 
-      case "Boolean" =>
-        BooleanRef
+        case _ if isEnumerationValue(scalaType) => {
+          val enumerationObject = mirror.staticModule(
+            scalaType.toString stripSuffix ".Value")
 
-      case "String" =>
-        StringRef
+          EnumerationRef(
+            identifier = buildQualifiedIdentifier(enumerationObject))
+        }
 
-      case "UUID" =>
-        UuidRef
-
-      case "LocalDate" =>
-        DateRef
-
-      case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" | "OffsetDateTime" =>
-        DateTimeRef
-
-      case typeParam if typeParams.contains(typeParam) =>
-        TypeParamRef(typeParam)
-
-      case _ if isAnyValChild(scalaType) =>
-        scalaType.members.filter(!_.isMethod).
-          map(_.typeSignature).headOption match {
-            case Some(valueTpe) =>
-              scalaTypeRef(valueTpe, Set.empty)
-
-            case _ =>
-              unknown
-          }
-
-      case _ if isEnumerationValue(scalaType) => {
-        val enumerationObject = mirror.staticModule(
-          scalaType.toString stripSuffix ".Value")
-
-        EnumerationRef(
-          identifier = buildQualifiedIdentifier(enumerationObject))
+        case _ =>
+          unknown
       }
-
-      case _ =>
-        unknown
     }
 
     scalaType match {
       case tpeRef: TypeRef => if (isCaseClass(scalaType)) {
-        val caseClassName = buildQualifiedIdentifier(scalaType.typeSymbol)
+        val caseClassName = buildQualifiedIdentifier(typeSymbol)
         val typeArgs = tpeRef.args
         val typeArgRefs = typeArgs.map(scalaTypeRef(_, typeParams))
 
-        CaseClassRef(caseClassName, ListSet.empty ++ typeArgRefs)
-      } else tpeRef.args match {
-        case a :: b :: _ => tpeName match {
+        CaseClassRef(caseClassName, typeArgRefs)
+      } else (tpeRef.args) match {
+        case args @ (a :: b :: _) => tpeName match {
           case "Either" =>
             UnionRef(ListSet(
               scalaTypeRef(a, typeParams),
@@ -291,20 +273,31 @@ final class ScalaParser[U <: Universe](
               scalaTypeRef(a, typeParams),
               scalaTypeRef(b, typeParams))
 
+          case _ if (typeSymbol.fullName startsWith "scala.Tuple") =>
+            TupleRef(args.map(a => scalaTypeRef(a, typeParams)))
+
           case _ =>
             unknown
         }
 
         case innerType :: _ => tpeName match {
-          case "List" | "Seq" | "Set" => // TODO: Traversable
+          case "List" | "Seq" | "Set" =>
+            //println(s"?$innerType---> ${universe.appliedType(mirror.staticClass("scala.collection.Traversable"), innerType)}")
+            // TODO: Rather check type is Traversable
             SeqRef(scalaTypeRef(innerType, typeParams))
 
           case "Option" =>
             OptionRef(scalaTypeRef(innerType, typeParams))
 
+          case "Tuple1" if (typeSymbol.fullName startsWith "scala.") =>
+            TupleRef(List(scalaTypeRef(innerType, typeParams)))
+
           case _ =>
             unknown
         }
+
+        case args if (typeSymbol.fullName startsWith "scala.Tuple") =>
+          TupleRef(args.map(a => scalaTypeRef(a, typeParams)))
 
         case _ =>
           nonGenericType
@@ -316,15 +309,61 @@ final class ScalaParser[U <: Universe](
     }
   }
 
+  private object Scalar {
+    def unapply(scalaType: Type): Option[ScalaTypeRef] = {
+      val tpeName: String = scalaType.typeSymbol.name.toString
+
+      (scalaType.typeSymbol.fullName -> tpeName) match {
+        case (_, "Int" | "Byte" | "Short") =>
+          Some(IntRef)
+
+        case (_, "Long") =>
+          Some(LongRef)
+
+        case (_, "Double") =>
+          Some(DoubleRef)
+
+        case (_, "BigDecimal") => // TODO: BigInt, BigDecimal, java.math
+          Some(BigDecimalRef)
+
+        case (_, "Boolean") =>
+          Some(BooleanRef)
+
+        case (_, "String") =>
+          Some(StringRef)
+
+        case ("java.util.UUID", _) =>
+          Some(UuidRef)
+
+        case ("java.time.LocalDate", _) =>
+          Some(DateRef)
+
+        case (full, "Instant" | "LocalDateTime" | "ZonedDateTime" | "OffsetDateTime") if (full startsWith "java.time.") =>
+          Some(DateTimeRef)
+
+        case (full, "Date" | "Timestamp") if (full startsWith "java.sql") =>
+          Some(DateTimeRef)
+
+        case ("java.util.Date", _) =>
+          Some(DateTimeRef)
+
+        case _ =>
+          None
+      }
+    }
+  }
+
   @inline private def isCaseClass(scalaType: Type): Boolean =
     !isAnyValChild(scalaType) &&
-      scalaType.typeSymbol.isClass && scalaType.typeSymbol.asClass.isCaseClass
+      scalaType.typeSymbol.isClass &&
+      scalaType.typeSymbol.asClass.isCaseClass &&
+      !scalaType.typeSymbol.fullName.startsWith("scala.") /* e.g. Skip Tuple */
 
   @inline private def isAnyValChild(scalaType: Type): Boolean =
     scalaType <:< typeOf[AnyVal]
 
   @inline private def isEnumerationValue(scalaType: Type): Boolean = {
-    // FIXME rather compare Type (than string)
+    // TODO: rather compare Type (than string)
     scalaType.typeSymbol.asClass.fullName == "scala.Enumeration.Value"
   }
 

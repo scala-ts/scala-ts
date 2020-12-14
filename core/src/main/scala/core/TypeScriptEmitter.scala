@@ -4,8 +4,9 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
+// TODO: Append on out
 // TODO: Emit Option (space-lift?)
-// TODO: Use a template engine (velocity?)
+// TODO: (low priority) Use a template engine (velocity?)
 /**
  * @param out the function to select a `PrintStream` from type name
  */
@@ -287,8 +288,10 @@ final class TypeScriptEmitter(
 
     val tparams = typeParameters(typeParams)
 
-    // TODO: Review as toJSON/fromJSON, support Date as string, support other class-trait as property
-    // TODO: return type { [key: string]: any }
+    /* TODO: Review as toJSON/fromJSON,
+     - support Date as string, support other class-trait as property
+     - Return type { [key: string]: any }
+     */
 
     if (config.fieldNaming == FieldNaming.Identity) {
       // optimized identity
@@ -342,7 +345,7 @@ final class TypeScriptEmitter(
 
   // ---
 
-  @inline private def typeParameters(params: ListSet[String]): String =
+  @inline private def typeParameters(params: List[String]): String =
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   // TODO: Tuple ~> Update ScalaParser and model accordingly
@@ -357,10 +360,14 @@ final class TypeScriptEmitter(
 
     case ArrayRef(innerType) => s"${getTypeRefString(innerType)}[]"
 
+    case TupleRef(params) =>
+      params.map(getTypeRefString).mkString("[", ", ", "]")
+
     case CustomTypeRef(name, params) if params.isEmpty => name
 
     case CustomTypeRef(name, params) if params.nonEmpty =>
       s"$name<${params.map(getTypeRefString).mkString(", ")}>"
+
     case UnknownTypeRef(typeName) => typeName
 
     case SimpleTypeRef(param) => param
@@ -368,7 +375,8 @@ final class TypeScriptEmitter(
     case UnionType(possibilities) =>
       possibilities.map(getTypeRefString).mkString("(", " | ", ")")
 
-    case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }" // TODO: Unit test
+    case MapType(keyType, valueType) =>
+      s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }" // TODO: Unit test
 
     case NullRef => "null"
 

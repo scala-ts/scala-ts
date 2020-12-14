@@ -1,4 +1,6 @@
 export interface CaseClassFoo {
+  tuple3: [Date, Date, CaseClassFoo];
+  tuple2: [string, number];
   ts: Date;
   zonedDateTime: Date;
   offsetDateTime: Date;

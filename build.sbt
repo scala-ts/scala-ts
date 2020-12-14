@@ -2,7 +2,7 @@ import sbt.Keys._
 
 name := "scala-ts"
 
-organization in ThisBuild := "io.github.scalats"
+organization in ThisBuild := "io.github.scala-ts"
 
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",

@@ -20,7 +20,7 @@ layout: default
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("io.github.scalats" % "scala-ts-sbt" % version)
+    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % version)
 
 Additionally, enable (or disabled) the plugin for a specific project:
 

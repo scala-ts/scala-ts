@@ -1,4 +1,4 @@
-organization := "io.github.scalats"
+organization := "io.github.scala-ts"
 
 name := "sbt-plugin-test-simple"
 

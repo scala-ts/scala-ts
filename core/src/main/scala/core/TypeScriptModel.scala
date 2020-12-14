@@ -9,11 +9,15 @@ object TypeScriptModel {
 
   case class CustomTypeRef(
     name: String,
-    typeArgs: ListSet[TypeRef]) extends TypeRef
+    typeArgs: List[TypeRef]) extends TypeRef
 
   case class ArrayRef(innerType: TypeRef) extends TypeRef
 
-  case class InterfaceDeclaration(name: String, fields: ListSet[Member], typeParams: ListSet[String], superInterface: Option[InterfaceDeclaration]) extends Declaration
+  case class InterfaceDeclaration(
+    name: String,
+    fields: ListSet[Member],
+    typeParams: List[String],
+    superInterface: Option[InterfaceDeclaration]) extends Declaration
   // TODO: Support mapping of typeParams with superInterface
 
   case class Member(name: String, typeRef: TypeRef)
@@ -22,7 +26,7 @@ object TypeScriptModel {
     name: String,
     constructor: ClassConstructor,
     values: ListSet[Member],
-    typeParams: ListSet[String],
+    typeParams: List[String],
     superInterface: Option[InterfaceDeclaration]) extends Declaration
 
   case class SingletonDeclaration(
@@ -48,37 +52,41 @@ object TypeScriptModel {
 
   case class UnknownTypeRef(name: String) extends TypeRef
 
-  case object NumberRef extends TypeRef {
-    override def toString = "number"
+  case class TupleRef(typeArgs: List[TypeRef]) extends TypeRef
+
+  sealed class SimpleTypeRef private[core] (val name: String) extends TypeRef {
+    @inline override def toString = name
+
+    override def hashCode: Int = name.hashCode
+
+    override def equals(that: Any): Boolean = that match {
+      case other: SimpleTypeRef =>
+        this.name == other.name
+
+      case _ =>
+        false
+    }
   }
 
-  case object StringRef extends TypeRef {
-    override def toString = "string"
+  object SimpleTypeRef {
+    def apply(name: String) = new SimpleTypeRef(name)
+
+    def unapply(ref: SimpleTypeRef): Option[String] = Option(ref.name)
   }
 
-  case object BooleanRef extends TypeRef {
-    override def toString = "boolean"
-  }
+  case object NumberRef extends SimpleTypeRef("number")
 
-  case object DateRef extends TypeRef {
-    override def toString = "Date"
-  }
+  case object StringRef extends SimpleTypeRef("string")
 
-  case object DateTimeRef extends TypeRef {
-    override def toString = "DateTime"
-  }
+  case object BooleanRef extends SimpleTypeRef("boolean")
 
-  case object NullRef extends TypeRef {
-    override def toString = "null"
-  }
+  case object DateRef extends SimpleTypeRef("Date")
 
-  case object UndefinedRef extends TypeRef {
-    override def toString = "undefined"
-  }
+  case object DateTimeRef extends SimpleTypeRef("DateTime")
 
-  case class SimpleTypeRef(name: String) extends TypeRef {
-    override def toString = name
-  }
+  case object NullRef extends SimpleTypeRef("null")
+
+  case object UndefinedRef extends SimpleTypeRef("undefined")
 
   case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef
 

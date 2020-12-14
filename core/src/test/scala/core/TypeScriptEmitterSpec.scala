@@ -132,6 +132,33 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 """)
   }
 
+  it should "emit generic case class with tuple values" in {
+    emit(ListSet(clazz10)) should equal("""export class ScalaRuntimeFixturesTestClass10 implements IScalaRuntimeFixturesTestClass10 {
+  constructor(
+    public tupleC: [string, string, number],
+    public tupleB: [string, number],
+    public tupleA: [string, number],
+    public tuple: [number],
+    public name: string
+  ) {
+    this.tupleC = tupleC;
+    this.tupleB = tupleB;
+    this.tupleA = tupleA;
+    this.tuple = tuple;
+    this.name = name;
+  }
+
+  public static fromData(data: any): ScalaRuntimeFixturesTestClass10 {
+    return <ScalaRuntimeFixturesTestClass10>(data);
+  }
+
+  public static toData(instance: ScalaRuntimeFixturesTestClass10): any {
+    return instance;
+  }
+}
+""")
+  }
+
   it should "emit interface for a generic case class with disjunction" in {
     emit(ListSet(interface7)) should equal("""export interface IScalaRuntimeFixturesTestClass7<T> {
   name: (IScalaRuntimeFixturesTestClass1 | IScalaRuntimeFixturesTestClass1B);
@@ -144,7 +171,7 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
       ClassConstructorParameter("name", SimpleTypeRef("T")),
       ClassConstructorParameter("fooBar", TypeScriptModel.StringRef))),
       ListSet.empty,
-      ListSet("T"), Option.empty)
+      List("T"), Option.empty)
 
     val config = defaultConfig.copy(fieldNaming = FieldNaming.SnakeCase)
 
