@@ -1,16 +1,16 @@
 export interface CaseClassFoo {
-  tuple3: [Date, Date, CaseClassFoo];
-  tuple2: [string, number];
-  ts: Date;
-  zonedDateTime: Date;
-  offsetDateTime: Date;
-  localDateTime: Date;
-  instant: Date;
-  localDate: Date;
-  time: number;
-  score: number;
-  flag: number;
-  i: number;
-  name: string;
   id: string;
+  name: string;
+  i: number;
+  flag: number;
+  score: number;
+  time: number;
+  localDate: Date;
+  instant: Date;
+  localDateTime: Date;
+  offsetDateTime: Date;
+  zonedDateTime: Date;
+  ts: Date;
+  tuple2: [string, number];
+  tuple3: [Date, Date, CaseClassFoo];
 }
