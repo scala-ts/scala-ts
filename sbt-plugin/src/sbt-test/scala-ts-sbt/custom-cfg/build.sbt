@@ -1,4 +1,4 @@
-organization := "org.scala-ts"
+organization := "io.github.scalats"
 
 name := "sbt-plugin-test-custom-cfg"
 

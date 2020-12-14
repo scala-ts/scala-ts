@@ -1,4 +1,4 @@
-package org.scalats.plugins
+package io.github.scalats.plugins
 
 import java.io.File
 
@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 
 import scala.xml.XML
 
-import org.scalats.core.{ Logger, TypeScriptGenerator }
+import io.github.scalats.core.{ Logger, TypeScriptGenerator }
 
 final class CompilerPlugin(val global: Global)
   extends Plugin with PluginCompat { plugin =>
@@ -191,7 +191,7 @@ final class CompilerPlugin(val global: Global)
 
       val scalaTypes: List[Type] = go(unit.body.children.map(_.symbol), Nil)
 
-      object CompilerLogger extends org.scalats.core.Logger {
+      object CompilerLogger extends io.github.scalats.core.Logger {
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 

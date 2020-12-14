@@ -20,16 +20,16 @@ layout: default
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("org.scala-ts" % "scala-ts-sbt" % version)
+    addSbtPlugin("io.github.scalats" % "scala-ts-sbt" % version)
 
 Additionally, enable (or disabled) the plugin for a specific project:
 
 ```
 // Enable:
-enablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
+enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 
 // Disable:
-disablePlugins(org.scalats.sbt.TypeScriptGeneratorPlugin)
+disablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
 By default, the TypeScript files are generated on compile:

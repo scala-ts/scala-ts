@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 /**
  * Created by Milosz on 09.06.2016.

@@ -1,8 +1,8 @@
-package org.scalats.core
+package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalats.core.TypeScriptModel.{ ClassConstructor, ClassConstructorParameter, CustomTypeRef, Declaration, EnumDeclaration, InterfaceDeclaration, Member, NullRef, SimpleTypeRef, SingletonDeclaration, UndefinedRef, UnionDeclaration } // TODO: scalariform limit length
+import io.github.scalats.core.TypeScriptModel.{ ClassConstructor, ClassConstructorParameter, CustomTypeRef, Declaration, EnumDeclaration, InterfaceDeclaration, Member, NullRef, SimpleTypeRef, SingletonDeclaration, UndefinedRef, UnionDeclaration } // TODO: scalariform limit length
 
 /**
  * Created by Milosz on 09.06.2016.

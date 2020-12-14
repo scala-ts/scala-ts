@@ -1,4 +1,4 @@
-package org.scalats.plugins
+package io.github.scalats.plugins
 
 import scala.collection.immutable.Set
 

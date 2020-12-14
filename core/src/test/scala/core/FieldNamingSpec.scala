@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

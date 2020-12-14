@@ -1,4 +1,4 @@
-package org.scalats.core
+package io.github.scalats.core
 
 private[core] trait LoggerCompat { _: Logger.type =>
   def apply(global: scala.tools.nsc.Global): Logger = new Logger {

@@ -1,4 +1,4 @@
 <plugin>
   <name>scalats</name>
-  <classname>org.scalats.plugins.CompilerPlugin</classname>
+  <classname>io.github.scalats.plugins.CompilerPlugin</classname>
 </plugin>

@@ -2,7 +2,7 @@ import sbt.Keys._
 
 name := "scala-ts"
 
-organization in ThisBuild := "org.scala-ts"
+organization in ThisBuild := "io.github.scalats"
 
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
@@ -29,7 +29,7 @@ lazy val core = project.in(file("core")).settings(
       Seq.empty
     }
   },
-  mainClass in (Compile, run) := Some("org.scalats.Main"),
+  mainClass in (Compile, run) := Some("io.github.scalats.Main"),
   compile in Test := (compile in Test).dependsOn(
     packageBin in Compile/* make sure plugin.jar is available */).value
 )
@@ -58,7 +58,7 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       outdir.mkdirs()
 
       Seq(IO.writer[File](f, "", IO.defaultCharset, false) { w =>
-        w.append(s"""package org.scalats.sbt
+        w.append(s"""package io.github.scalats.sbt
 
 object Manifest {
   val groupId = "$groupId"
