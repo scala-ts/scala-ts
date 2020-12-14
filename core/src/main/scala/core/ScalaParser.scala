@@ -209,7 +209,6 @@ final class ScalaParser[U <: Universe](
     case _ => parsed
   }
 
-  // TODO: resolve from implicit (typeclass)
   // TODO: Tuple
   @silent(".*is\\ unchecked.*")
   private def scalaTypeRef(
@@ -245,8 +244,8 @@ final class ScalaParser[U <: Universe](
       case "LocalDate" =>
         DateRef
 
-      case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" =>
-        DateTimeRef // TODO: OffsetDateTimeb
+      case "Instant" | "Timestamp" | "LocalDateTime" | "ZonedDateTime" | "OffsetDateTime" =>
+        DateTimeRef
 
       case typeParam if typeParams.contains(typeParam) =>
         TypeParamRef(typeParam)
