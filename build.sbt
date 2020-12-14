@@ -38,7 +38,7 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
   enablePlugins(SbtPlugin).
   settings(
     name := "scala-ts-sbt",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value),
+    crossScalaVersions := Seq(scalaVersion.value),
     pluginCrossBuild / sbtVersion := "1.3.13",
     sbtPlugin := true,
     scriptedLaunchOpts ++= Seq(
@@ -46,6 +46,7 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       s"-Dscala-ts.version=${version.value}",
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
+    // TODO: core / publishLocal on update?
     scriptedBufferLog := false,
     sourceGenerators in Compile += Def.task {
       val groupId = organization.value
@@ -72,4 +73,8 @@ object Manifest {
   ).dependsOn(core)
 
 lazy val root = (project in file("."))
+  .settings(
+    publish := ({}),
+    publishTo := None,
+  )
   .aggregate(core, `sbt-plugin`)

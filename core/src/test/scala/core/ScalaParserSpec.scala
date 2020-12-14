@@ -239,7 +239,7 @@ object ScalaParserResults {
       TypeMember("name", OptionRef(
         CaseClassRef(
           QualifiedIdentifier(
-          "TestClass5", List("ScalaRuntimeFixtures")),
+            "TestClass5", List("ScalaRuntimeFixtures")),
           typeArgs = List(SeqRef(OptionRef(
             CaseClassRef(
               QualifiedIdentifier(
