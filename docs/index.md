@@ -75,6 +75,7 @@ The following generator settings can be specified as XML in the plugin configura
 - `prependIPrefix` - Prepend `I` prefix to generated interfaces (default: `true`)
 - `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
 - `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
+- `typescriptLineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
 - `fieldNaming` - The conversions for the field names if emitCodecs: `Identity`, `SnakeCase` or a class name (default: `Identity`).
 - `printer` - An optional printer class.
 - `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` from).

@@ -16,10 +16,8 @@ final class TypeScriptEmitter(
   import TypeScriptModel._
   import Internals.list
 
-  import config.{
-    typescriptLineSeparator => lineSeparator,
-    typescriptIndent => indent
-  }
+  import config.{ typescriptIndent => indent }
+  import config.typescriptLineSeparator.{ value => lineSeparator }
 
   // TODO: If for ClassDeclaration or SingletonDeclaration there is values
   // implementing the superInterface, then do not 'implements'

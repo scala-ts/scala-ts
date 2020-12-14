@@ -16,6 +16,7 @@ final class CoreConfigSpec extends AnyFlatSpec with Matchers {
     "<prependIPrefix>true</prependIPrefix>",
     "<prependEnclosingClassNames>true</prependEnclosingClassNames>",
     "<typescriptIndent>\t</typescriptIndent>",
+    "<typescriptLineSeparator>;</typescriptLineSeparator>",
     "<fieldNaming>Identity</fieldNaming>",
     "</scalats>").mkString("")
 

@@ -32,6 +32,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     val scalatsEmitClasses = settingKey[Boolean]("Generate class declarations")
 
+    val scalatsEmitCodecs = settingKey[Boolean](
+      "EXPERIMENTAL: Generate the codec functions fromData/toData for TypeScript classes")
+
     val scalatsOptionToNullable = settingKey[Boolean](
       "Option types will be compiled to 'type | null'")
 
@@ -50,8 +53,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsTypescriptIndent = settingKey[String](
       "Characters used as TypeScript indentation (default: 2 spaces)")
 
-    val scalatsEmitCodecs = settingKey[Boolean](
-      "Generate the codec functions fromData/toData for TypeScript classes")
+    val scalatsTypescriptLineSeparator = settingKey[String](
+      "Characters used as TypeScript line separator (default: ';')")
 
     val scalatsFieldNaming = settingKey[Class[_ <: FieldNaming]]("Conversions for the field names if 'scalatsEmitCodecs' (default: Identity)")
 
@@ -135,6 +138,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           scalatsPrependIPrefix.value,
           scalatsPrependEnclosingClassNames.value,
           scalatsTypescriptIndent.value,
+          new Settings.TypeScriptLineSeparator(
+            scalatsTypescriptLineSeparator.value),
           fieldNaming)
 
         val printer = {
@@ -205,6 +210,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsPrependIPrefix := false,
     scalatsPrependEnclosingClassNames := false,
     scalatsTypescriptIndent := "  ",
+    scalatsTypescriptLineSeparator := ";",
     scalatsEmitInterfaces := true,
     scalatsEmitClasses := false,
     scalatsEmitCodecs := true,

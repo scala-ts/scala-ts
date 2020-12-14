@@ -1,7 +1,7 @@
 export interface CaseClassFoo {
   ts: Date;
   zonedDateTime: Date;
-  offsetDateTime: string;
+  offsetDateTime: Date;
   localDateTime: Date;
   instant: Date;
   localDate: Date;
