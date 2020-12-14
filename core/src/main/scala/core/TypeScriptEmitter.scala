@@ -19,8 +19,6 @@ final class TypeScriptEmitter(
   import config.{ typescriptIndent => indent }
   import config.typescriptLineSeparator.{ value => lineSeparator }
 
-  // TODO: If for ClassDeclaration or SingletonDeclaration there is values
-  // implementing the superInterface, then do not 'implements'
   def emit(declaration: ListSet[Declaration]): Unit =
     list(declaration).foreach {
       case decl: InterfaceDeclaration =>
@@ -46,9 +44,7 @@ final class TypeScriptEmitter(
     name: String,
     fields: ListSet[Member],
     possibilities: ListSet[CustomTypeRef],
-    superInterface: Option[InterfaceDeclaration]): Unit = {
-    val o = out(name) // TODO: finalize
-
+    superInterface: Option[InterfaceDeclaration]): Unit = withOut(name) { o =>
     // Namespace and union type
     o.println(s"export namespace $name {")
     o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
@@ -122,9 +118,7 @@ final class TypeScriptEmitter(
   private def emitSingletonDeclaration(
     name: String,
     members: ListSet[Member],
-    superInterface: Option[InterfaceDeclaration]): Unit = {
-    val o = out(name)
-
+    superInterface: Option[InterfaceDeclaration]): Unit = withOut(name) { o =>
     if (members.nonEmpty) {
       def mkString = members.map {
         case Member(nme, tpe) => s"$nme ($tpe)"
@@ -159,7 +153,6 @@ final class TypeScriptEmitter(
       o.println(s"${indent}}")
 
       // Encoder
-      // TODO: return type { [key: string]: any }
       o.println(s"\n${indent}public static toData(instance: ${name}): any {")
       o.println(s"${indent}${indent}return instance${lineSeparator}")
       o.println(s"${indent}}")
@@ -171,124 +164,131 @@ final class TypeScriptEmitter(
   private def emitInterfaceDeclaration(
     decl: InterfaceDeclaration): Unit = {
     val InterfaceDeclaration(name, fields, typeParams, superInterface) = decl
-    val o = out(name)
 
-    o.print(s"export interface $name${typeParameters(typeParams)}")
+    withOut(name) { o =>
+      o.print(s"export interface $name${typeParameters(typeParams)}")
 
-    superInterface.foreach { iface =>
-      o.print(s" extends ${iface.name}")
+      superInterface.foreach { iface =>
+        o.print(s" extends ${iface.name}")
+      }
+
+      o.println(" {")
+
+      list(fields).foreach { member =>
+        o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
+      }
+
+      o.println("}")
     }
-
-    o.println(" {")
-
-    list(fields).foreach { member =>
-      o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
-    }
-    o.println("}")
   }
 
   private def emitEnumDeclaration(decl: EnumDeclaration): Unit = {
     val EnumDeclaration(name, values) = decl
-    val o = out(name)
 
-    o.println(s"export enum $name {")
+    withOut(name) { o =>
+      o.println(s"export enum $name {")
 
-    list(values).foreach { value =>
-      o.println(s"${indent}${value} = '${value}',")
+      list(values).foreach { value =>
+        o.println(s"${indent}${value} = '${value}',")
+      }
+
+      o.println("}")
     }
-
-    o.println("}")
   }
 
   private def emitClassDeclaration(decl: ClassDeclaration): Unit = {
     val ClassDeclaration(name, ClassConstructor(parameters),
       values, typeParams, _ /*superInterface*/ ) = decl
 
-    val o = out(name)
+    withOut(name) { o =>
+      val tparams = typeParameters(typeParams)
 
-    val tparams = typeParameters(typeParams)
+      if (values.nonEmpty) {
+        def mkString = values.map {
+          case Member(nme, tpe) => s"$nme ($tpe)"
+        }.mkString(", ")
 
-    if (values.nonEmpty) {
-      def mkString = values.map {
-        case Member(nme, tpe) => s"$nme ($tpe)"
-      }.mkString(", ")
+        throw new IllegalStateException(
+          s"Cannot emit static members for class values: ${mkString}")
+      }
 
-      throw new IllegalStateException(
-        s"Cannot emit static members for class values: ${mkString}")
-    }
-
-    // Class definition
-    o.print(s"export class ${name}${tparams}")
-
-    if (config.emitInterfaces) {
-      o.print(s" implements I${name}${tparams}")
-    }
-
-    o.println(" {")
-
-    val fieldNaming = config.fieldNaming(name, _: String)
-
-    list(values).foreach { v =>
-      o.print(indent)
+      // Class definition
+      o.print(s"export class ${name}${tparams}")
 
       if (config.emitInterfaces) {
-        o.print("public ")
+        o.print(s" implements I${name}${tparams}")
       }
 
-      o.println(s"${fieldNaming(v.name)}: ${getTypeRefString(v.typeRef)}${lineSeparator}")
-    }
+      o.println(" {")
 
-    val params = list(parameters)
+      val fieldNaming = config.fieldNaming(name, _: String)
 
-    if (!config.emitInterfaces) {
-      // Class fields
-      params.foreach { parameter =>
-        o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)}${lineSeparator}")
-      }
-    }
-
-    // Class constructor
-    o.print(s"${indent}constructor(")
-
-    params.zipWithIndex.foreach {
-      case (parameter, index) =>
-        if (index > 0) {
-          o.println(",")
-        } else {
-          o.println("")
-        }
-
-        o.print(s"${indent}${indent}")
+      list(values).foreach { v =>
+        o.print(indent)
 
         if (config.emitInterfaces) {
           o.print("public ")
         }
 
-        o.print(s"${fieldNaming(parameter.name)}: ${getTypeRefString(parameter.typeRef)}")
+        o.println(s"${fieldNaming(v.name)}: ${getTypeRefString(v.typeRef)}${lineSeparator}")
+      }
+
+      val params = list(parameters)
+
+      if (!config.emitInterfaces) {
+        // Class fields
+        params.foreach { parameter =>
+          o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)}${lineSeparator}")
+        }
+      }
+
+      // Class constructor
+      o.print(s"${indent}constructor(")
+
+      params.zipWithIndex.foreach {
+        case (parameter, index) =>
+          if (index > 0) {
+            o.println(",")
+          } else {
+            o.println("")
+          }
+
+          o.print(s"${indent}${indent}")
+
+          if (config.emitInterfaces) {
+            o.print("public ")
+          }
+
+          o.print(s"${fieldNaming(parameter.name)}: ${getTypeRefString(parameter.typeRef)}")
+      }
+
+      o.println(s"\n${indent}) {")
+
+      params.foreach { parameter =>
+        val nme = fieldNaming(parameter.name)
+
+        o.println(s"${indent}${indent}this.${nme} = ${nme}${lineSeparator}")
+      }
+      o.println(s"${indent}}")
+
+      // Codecs functions
+      if (config.emitCodecs.enabled) {
+        emitClassCodecs(o, decl)
+      }
+
+      o.println("}")
     }
-
-    o.println(s"\n${indent}) {")
-
-    params.foreach { parameter =>
-      val nme = fieldNaming(parameter.name)
-
-      o.println(s"${indent}${indent}this.${nme} = ${nme}${lineSeparator}")
-    }
-    o.println(s"${indent}}")
-
-    // Codecs functions
-    if (config.emitCodecs.enabled) {
-      emitClassCodecs(decl)
-    }
-
-    o.println("}")
   }
 
-  private def emitClassCodecs(decl: ClassDeclaration): Unit = {
+  private def emitClassCodecs(
+    o: PrintStream,
+    decl: ClassDeclaration): Unit = {
     import decl.{ constructor, name, typeParams }, constructor.parameters
 
-    val o = out(name)
     val tparams = typeParameters(typeParams)
+
+    // TODO: Review as toJSON/fromJSON, support Date as string, support other class-trait as property
+    // TODO: return type { [key: string]: any }
 
     if (config.fieldNaming == FieldNaming.Identity) {
       // optimized identity
@@ -340,27 +340,56 @@ final class TypeScriptEmitter(
     }
   }
 
+  // ---
+
   @inline private def typeParameters(params: ListSet[String]): String =
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
+  // TODO: Tuple ~> Update ScalaParser and model accordingly
   private def getTypeRefString(typeRef: TypeRef): String = typeRef match {
     case NumberRef => "number"
+
     case BooleanRef => "boolean"
+
     case StringRef => "string"
+
     case DateRef | DateTimeRef => "Date"
+
     case ArrayRef(innerType) => s"${getTypeRefString(innerType)}[]"
+
     case CustomTypeRef(name, params) if params.isEmpty => name
+
     case CustomTypeRef(name, params) if params.nonEmpty =>
       s"$name<${params.map(getTypeRefString).mkString(", ")}>"
     case UnknownTypeRef(typeName) => typeName
+
     case SimpleTypeRef(param) => param
 
     case UnionType(possibilities) =>
       possibilities.map(getTypeRefString).mkString("(", " | ", ")")
 
-    case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }"
+    case MapType(keyType, valueType) => s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }" // TODO: Unit test
 
     case NullRef => "null"
+
     case UndefinedRef => "undefined"
+  }
+
+  private def withOut[T](name: String)(f: PrintStream => T): T = {
+    lazy val print = out(name)
+
+    try {
+      val res = f(print)
+
+      print.flush()
+
+      res
+    } finally {
+      try {
+        print.close()
+      } catch {
+        case scala.util.control.NonFatal(_) =>
+      }
+    }
   }
 }

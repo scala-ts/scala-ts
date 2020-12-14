@@ -69,7 +69,6 @@ The following generator settings can be specified as XML in the plugin configura
 
 - `emitInterfaces` - Generate interface declarations (default: `true`)
 - `emitClasses` - Generate class declarations (default: `false`)
-- `emitCodecs` - Generate fromData/toData functions for TypeScript classes (if `emitClasses`) (default: `true`)
 - `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 - `optionToUndefined` - Translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
 - `prependIPrefix` - Prepend `I` prefix to generated interfaces (default: `true`)
