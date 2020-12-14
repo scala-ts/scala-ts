@@ -1,4 +1,4 @@
-package org.scalats.plugins
+package io.github.scalats.plugins
 
 import java.net.URL
 
@@ -9,7 +9,7 @@ import scala.xml.XML
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import org.scalats.core.{ Configuration => Settings, FieldNaming, Logger }
+import io.github.scalats.core.{ Configuration => Settings, FieldNaming, Logger }
 
 final class PluginConfigSpec extends AnyFlatSpec with Matchers {
   lazy val logger = Logger(org.slf4j.LoggerFactory getLogger getClass)

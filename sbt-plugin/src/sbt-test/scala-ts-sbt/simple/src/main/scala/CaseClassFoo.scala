@@ -1,4 +1,4 @@
-package org.scalats.sbttest
+package io.github.scalats.sbttest
 
 import java.time._
 
