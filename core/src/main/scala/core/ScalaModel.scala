@@ -15,7 +15,7 @@ object ScalaModel {
     identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
     values: ListSet[TypeMember],
-    typeArgs: ListSet[String]) extends TypeDef
+    typeArgs: List[String]) extends TypeDef
 
   case class CaseObject(
     identifier: QualifiedIdentifier,
@@ -38,9 +38,17 @@ object ScalaModel {
 
   case class UnionRef(possibilities: ListSet[TypeRef]) extends TypeRef
 
-  case class MapRef(keyType: TypeRef, valueType: TypeRef) extends TypeRef
+  /**
+   * @param keyType the type of the `Map` keys
+   * @param valueType the type of the `Map` values
+   */
+  case class MapRef(
+    keyType: TypeRef,
+    valueType: TypeRef) extends TypeRef
 
-  case class CaseClassRef(identifier: QualifiedIdentifier, typeArgs: ListSet[TypeRef]) extends TypeRef
+  case class CaseClassRef(
+    identifier: QualifiedIdentifier,
+    typeArgs: List[TypeRef]) extends TypeRef
 
   case class SeqRef(innerType: TypeRef) extends TypeRef
 
@@ -51,6 +59,10 @@ object ScalaModel {
   case class TypeParamRef(name: String) extends TypeRef
 
   case class EnumerationRef(identifier: QualifiedIdentifier) extends TypeRef
+
+  case class TupleRef(typeArgs: List[TypeRef]) extends TypeRef
+
+  // Non generic/simple types
 
   case object IntRef extends TypeRef
 

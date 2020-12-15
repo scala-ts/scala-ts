@@ -50,21 +50,21 @@ final class Transpiler(config: Configuration) {
 
         val unionRef = InterfaceDeclaration(
           toInterfaceName(id),
-          ifaceFields, ListSet.empty[String], superInterface)
+          ifaceFields, List.empty[String], superInterface)
 
         apply(possibilities, Some(unionRef)) + UnionDeclaration(
           idToString(id),
           ifaceFields,
           possibilities.map {
             case ScalaModel.CaseObject(pid, _) =>
-              CustomTypeRef(idToString(pid), ListSet.empty)
+              CustomTypeRef(idToString(pid), List.empty)
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
               CustomTypeRef(
                 toInterfaceName(pid), tpeArgs.map { SimpleTypeRef(_) })
 
             case m =>
-              CustomTypeRef(toInterfaceName(m.identifier), ListSet.empty)
+              CustomTypeRef(toInterfaceName(m.identifier), List.empty)
           },
           superInterface)
       }
@@ -103,14 +103,12 @@ final class Transpiler(config: Configuration) {
   private def transpileTypeRef(
     scalaTypeRef: ScalaModel.TypeRef,
     inInterfaceContext: Boolean): TypeScriptModel.TypeRef = scalaTypeRef match {
-    case ScalaModel.IntRef =>
+    case ScalaModel.DoubleRef | ScalaModel.IntRef | ScalaModel.LongRef =>
       TypeScriptModel.NumberRef
-    case ScalaModel.LongRef =>
-      TypeScriptModel.NumberRef
-    case ScalaModel.DoubleRef =>
-      TypeScriptModel.NumberRef
+
     case ScalaModel.BooleanRef =>
       TypeScriptModel.BooleanRef
+
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
       TypeScriptModel.StringRef
 
@@ -119,6 +117,10 @@ final class Transpiler(config: Configuration) {
 
     case ScalaModel.EnumerationRef(id) =>
       TypeScriptModel.SimpleTypeRef(idToString(id))
+
+    case ScalaModel.TupleRef(typeArgs) =>
+      TypeScriptModel.TupleRef(
+        typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
 
     case ScalaModel.CaseClassRef(id, typeArgs) => {
       val name = {
@@ -132,6 +134,7 @@ final class Transpiler(config: Configuration) {
 
     case ScalaModel.DateRef =>
       TypeScriptModel.DateRef
+
     case ScalaModel.DateTimeRef =>
       TypeScriptModel.DateTimeRef
 

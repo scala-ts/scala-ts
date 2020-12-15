@@ -1,4 +1,4 @@
 export interface Bar {
-  _age: number;
   _name: string;
+  _age: number;
 }

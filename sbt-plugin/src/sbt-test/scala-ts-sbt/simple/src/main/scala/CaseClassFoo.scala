@@ -14,5 +14,7 @@ case class CaseClassFoo(
   localDateTime: LocalDateTime,
   offsetDateTime: OffsetDateTime,
   zonedDateTime: ZonedDateTime,
-  ts: java.sql.Timestamp)
+  ts: java.sql.Timestamp,
+  tuple2: (String, Int),
+  tuple3: (Instant, LocalDate, CaseClassFoo))
 

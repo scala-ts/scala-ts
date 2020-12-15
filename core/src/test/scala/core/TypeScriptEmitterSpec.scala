@@ -132,6 +132,33 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 """)
   }
 
+  it should "emit generic case class with tuple values" in {
+    emit(ListSet(clazz10)) should equal("""export class ScalaRuntimeFixturesTestClass10 implements IScalaRuntimeFixturesTestClass10 {
+  constructor(
+    public name: string,
+    public tuple: [number],
+    public tupleA: [string, number],
+    public tupleB: [string, number],
+    public tupleC: [string, string, number]
+  ) {
+    this.name = name;
+    this.tuple = tuple;
+    this.tupleA = tupleA;
+    this.tupleB = tupleB;
+    this.tupleC = tupleC;
+  }
+
+  public static fromData(data: any): ScalaRuntimeFixturesTestClass10 {
+    return <ScalaRuntimeFixturesTestClass10>(data);
+  }
+
+  public static toData(instance: ScalaRuntimeFixturesTestClass10): any {
+    return instance;
+  }
+}
+""")
+  }
+
   it should "emit interface for a generic case class with disjunction" in {
     emit(ListSet(interface7)) should equal("""export interface IScalaRuntimeFixturesTestClass7<T> {
   name: (IScalaRuntimeFixturesTestClass1 | IScalaRuntimeFixturesTestClass1B);
@@ -144,27 +171,27 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
       ClassConstructorParameter("name", SimpleTypeRef("T")),
       ClassConstructorParameter("fooBar", TypeScriptModel.StringRef))),
       ListSet.empty,
-      ListSet("T"), Option.empty)
+      List("T"), Option.empty)
 
     val config = defaultConfig.copy(fieldNaming = FieldNaming.SnakeCase)
 
     emit(ListSet(clazz), config) should equal("""export class Test<T> implements ITest<T> {
   constructor(
-    public name: T,
-    public foo_bar: string
+    public foo_bar: string,
+    public name: T
   ) {
-    this.name = name;
     this.foo_bar = foo_bar;
+    this.name = name;
   }
 
   public static fromData<T>(data: any): Test<T> {
-    return new Test<T>(data.name, data.foo_bar);
+    return new Test<T>(data.foo_bar, data.name);
   }
 
   public static toData<T>(instance: Test<T>): any {
     return {
-      name: instance.name,
-      foo_bar: instance.foo_bar
+      foo_bar: instance.foo_bar,
+      name: instance.name
     };
   }
 }
@@ -242,30 +269,30 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 
   public static fromData(data: any): ScalaRuntimeFixturesFamily {
     switch (data._type) {
-      case "IScalaRuntimeFixturesFamilyMember1": {
-        return ScalaRuntimeFixturesFamilyMember1.fromData(data);
+      case "ScalaRuntimeFixturesFamilyMember3": {
+        return ScalaRuntimeFixturesFamilyMember3.fromData(data);
       }
       case "ScalaRuntimeFixturesFamilyMember2": {
         return ScalaRuntimeFixturesFamilyMember2.fromData(data);
       }
-      case "ScalaRuntimeFixturesFamilyMember3": {
-        return ScalaRuntimeFixturesFamilyMember3.fromData(data);
+      case "IScalaRuntimeFixturesFamilyMember1": {
+        return ScalaRuntimeFixturesFamilyMember1.fromData(data);
       }
     }
   }
 
   public static toData(instance: ScalaRuntimeFixturesFamily): any {
-    if (instance instanceof IScalaRuntimeFixturesFamilyMember1) {
-      const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
-      data['_type'] = "IScalaRuntimeFixturesFamilyMember1";
+    if (instance instanceof ScalaRuntimeFixturesFamilyMember3) {
+      const data = ScalaRuntimeFixturesFamilyMember3.toData(instance);
+      data['_type'] = "ScalaRuntimeFixturesFamilyMember3";
       return data;
     } else if (instance instanceof ScalaRuntimeFixturesFamilyMember2) {
       const data = ScalaRuntimeFixturesFamilyMember2.toData(instance);
       data['_type'] = "ScalaRuntimeFixturesFamilyMember2";
       return data;
-    } else if (instance instanceof ScalaRuntimeFixturesFamilyMember3) {
-      const data = ScalaRuntimeFixturesFamilyMember3.toData(instance);
-      data['_type'] = "ScalaRuntimeFixturesFamilyMember3";
+    } else if (instance instanceof IScalaRuntimeFixturesFamilyMember1) {
+      const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
+      data['_type'] = "IScalaRuntimeFixturesFamilyMember1";
       return data;
     }
   }

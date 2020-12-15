@@ -54,6 +54,14 @@ final class TranspilerSpec extends AnyFlatSpec with Matchers {
     result should contain(clazz7)
   }
 
+  it should "compile Tuple types" in {
+    val result = defaultTranspiler(ListSet(caseClass10))
+
+    result.size should equal(2)
+    result should contain(interface10)
+    result should contain(clazz10)
+  }
+
   it should "compile parse case object" in {
     val result = defaultTranspiler(ListSet(caseObject1))
 
@@ -65,7 +73,7 @@ final class TranspilerSpec extends AnyFlatSpec with Matchers {
     val result = defaultTranspiler(
       ListSet(caseObject2),
       Some(InterfaceDeclaration(
-        "SupI", ListSet.empty, ListSet.empty[String], Option.empty)))
+        "SupI", ListSet.empty, List.empty[String], Option.empty)))
 
     result.size should equal(1)
     result should contain(singleton2)
@@ -80,7 +88,7 @@ final class TranspilerSpec extends AnyFlatSpec with Matchers {
     val member1Interface = InterfaceDeclaration(
       "IScalaRuntimeFixturesFamilyMember1",
       ListSet(Member("foo", StringRef)),
-      ListSet.empty, Some(unionIface))
+      List.empty, Some(unionIface))
 
     result should contain(unionMember1Clazz)
     result should contain(member1Interface)
@@ -96,81 +104,118 @@ final class TranspilerSpec extends AnyFlatSpec with Matchers {
 object TranspilerResults {
   val interface1 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass1",
-    ListSet(Member("name", StringRef)), ListSet.empty, Option.empty)
+    ListSet(Member("name", StringRef)), List.empty, Option.empty)
 
   val clazz1 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass1",
     ClassConstructor(ListSet(ClassConstructorParameter("name", StringRef))),
     ListSet.empty,
-    ListSet.empty,
-    Option.empty)
+    typeParams = List.empty,
+    superInterface = Option.empty)
 
   val interface2 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass2",
-    ListSet(Member("name", SimpleTypeRef("T"))), ListSet("T"), Option.empty)
+    ListSet(Member("name", SimpleTypeRef("T"))),
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val clazz2 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass2",
     ClassConstructor(ListSet(
-      ClassConstructorParameter(
-        "name", SimpleTypeRef("T")))), ListSet.empty, ListSet("T"), Option.empty)
+      ClassConstructorParameter("name", SimpleTypeRef("T")))),
+    ListSet.empty,
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val interface3 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass3",
     ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
-    ListSet("T"), Option.empty)
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val clazz3 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass3", ClassConstructor(ListSet(
       ClassConstructorParameter("name", ArrayRef(SimpleTypeRef("T"))))),
-    ListSet.empty, ListSet("T"), Option.empty)
+    ListSet.empty,
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val interface5 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass5", ListSet(
       Member("name", UnionType(ListSet(SimpleTypeRef("T"), NullRef)))),
-    ListSet("T"), Option.empty)
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val clazz5 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass5", ClassConstructor(ListSet(
       ClassConstructorParameter(
         "name", UnionType(ListSet(SimpleTypeRef("T"), NullRef))))),
-    ListSet.empty, ListSet("T"), Option.empty)
+    ListSet.empty,
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val interface7 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass7", ListSet(
       Member("name", UnionType(ListSet(
-        CustomTypeRef("IScalaRuntimeFixturesTestClass1", ListSet.empty),
-        CustomTypeRef("IScalaRuntimeFixturesTestClass1B", ListSet.empty))))),
-    ListSet("T"), Option.empty)
+        CustomTypeRef("IScalaRuntimeFixturesTestClass1", List.empty),
+        CustomTypeRef("IScalaRuntimeFixturesTestClass1B", List.empty))))),
+    typeParams = List("T"),
+    superInterface = Option.empty)
 
   val clazz7 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass7", ClassConstructor(ListSet(
       ClassConstructorParameter("name", UnionType(ListSet(
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1", ListSet.empty),
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1B", ListSet.empty)))))),
-    ListSet.empty, ListSet("T"), Option.empty)
+        CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
+        CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty)))))),
+    ListSet.empty,
+    typeParams = List("T"),
+    superInterface = Option.empty)
+
+  val interface10 = InterfaceDeclaration(
+    "IScalaRuntimeFixturesTestClass10", ListSet(
+      Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
+      Member("tupleB", TupleRef(List(StringRef, NumberRef))),
+      Member("tupleA", TupleRef(List(StringRef, NumberRef))),
+      Member("tuple", TupleRef(List(NumberRef))),
+      Member("name", StringRef)),
+    typeParams = List.empty,
+    superInterface = None)
+
+  val clazz10 = ClassDeclaration(
+    "ScalaRuntimeFixturesTestClass10", ClassConstructor(ListSet(
+      ClassConstructorParameter(
+        "tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
+      ClassConstructorParameter(
+        "tupleB", TupleRef(List(StringRef, NumberRef))),
+      ClassConstructorParameter(
+        "tupleA", TupleRef(List(StringRef, NumberRef))),
+      ClassConstructorParameter("tuple", TupleRef(List(NumberRef))),
+      ClassConstructorParameter("name", StringRef))),
+    ListSet.empty,
+    typeParams = List.empty,
+    superInterface = None)
 
   val singleton1 = SingletonDeclaration(
     "ScalaRuntimeFixturesTestObject1", ListSet.empty, Option.empty)
 
   val singleton2 = SingletonDeclaration(
     "ScalaRuntimeFixturesTestObject2", ListSet.empty, Some(
-      InterfaceDeclaration("SupI", ListSet.empty, ListSet.empty[String], None)))
+      InterfaceDeclaration("SupI", ListSet.empty, List.empty[String], None)))
 
   val union1 = UnionDeclaration(
     name = "ScalaRuntimeFixturesFamily",
     fields = ListSet(Member("foo", StringRef)),
     possibilities = ListSet(
-      CustomTypeRef("IScalaRuntimeFixturesFamilyMember1", ListSet.empty),
-      CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", ListSet.empty),
-      CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", ListSet.empty)),
+      CustomTypeRef("IScalaRuntimeFixturesFamilyMember1", List.empty),
+      CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", List.empty),
+      CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", List.empty)),
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(
     s"IScalaRuntimeFixtures${sealedFamily1.identifier.name}",
     ListSet(Member("foo", StringRef)),
-    ListSet.empty[String],
-    Option.empty)
+    typeParams = List.empty[String],
+    superInterface = Option.empty)
 
   val unionMember1Clazz = ClassDeclaration(
     "ScalaRuntimeFixturesFamilyMember1",
@@ -178,7 +223,7 @@ object TranspilerResults {
       ClassConstructorParameter(
         "foo", StringRef))),
     values = ListSet(Member("code", NumberRef)),
-    typeParams = ListSet.empty,
+    typeParams = List.empty,
     superInterface = Some(unionIface))
 
   val unionMember2Singleton = SingletonDeclaration(

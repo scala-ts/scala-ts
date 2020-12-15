@@ -19,9 +19,8 @@ final class Configuration(
   val prependIPrefix: Boolean,
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
+  val typescriptLineSeparator: Configuration.TypeScriptLineSeparator,
   val fieldNaming: FieldNaming) {
-
-  val typescriptLineSeparator = ";" // TODO: Make it configurable
 
   private[core] def copy(
     emitInterfaces: Boolean = this.emitInterfaces,
@@ -32,6 +31,7 @@ final class Configuration(
     prependIPrefix: Boolean = this.prependIPrefix,
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
+    typescriptLineSeparator: Configuration.TypeScriptLineSeparator = this.typescriptLineSeparator,
     fieldNaming: FieldNaming = this.fieldNaming): Configuration =
     new Configuration(
       emitInterfaces,
@@ -42,6 +42,7 @@ final class Configuration(
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
+      typescriptLineSeparator,
       fieldNaming)
 
   override def equals(that: Any): Boolean = that match {
@@ -54,7 +55,7 @@ final class Configuration(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple9(
+  private lazy val tupled = Tuple10(
     emitInterfaces,
     emitClasses,
     emitCodecs,
@@ -63,6 +64,7 @@ final class Configuration(
     prependIPrefix,
     prependEnclosingClassNames,
     typescriptIndent,
+    typescriptLineSeparator,
     fieldNaming)
 }
 
@@ -80,6 +82,7 @@ object Configuration {
     prependIPrefix: Boolean = true,
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
+    typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
     fieldNaming: FieldNaming = FieldNaming.Identity): Configuration =
     new Configuration(
       emitInterfaces,
@@ -90,6 +93,7 @@ object Configuration {
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
+      typescriptLineSeparator,
       fieldNaming)
 
   def load(
@@ -109,6 +113,11 @@ object Configuration {
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
     val typescriptIndent = (xml \ "typescriptIndent").
       headOption.fold(DefaultTypeScriptIndent)(_.text)
+
+    val typescriptLineSeparator = (xml \ "typescriptLineSeparator").
+      headOption.fold(TypeScriptSemiColon) { n =>
+        new TypeScriptLineSeparator(n.text)
+      }
 
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
@@ -146,6 +155,7 @@ object Configuration {
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
+      typescriptLineSeparator,
       fieldNaming)
 
   }
@@ -177,6 +187,7 @@ object Configuration {
       <prependIPrefix>{ conf.prependIPrefix }</prependIPrefix>,
       <prependEnclosingClassNames>{ conf.prependEnclosingClassNames }</prependEnclosingClassNames>,
       <typescriptIndent>{ conf.typescriptIndent }</typescriptIndent>,
+      <typescriptLineSeparator>{ conf.typescriptLineSeparator }</typescriptLineSeparator>,
       <fieldNaming>{ fieldNaming }</fieldNaming>)
   }
 
@@ -184,10 +195,17 @@ object Configuration {
 
   final class EmitCodecs private[scalats] (
     val enabled: Boolean) extends AnyVal {
-
     @inline override def toString = enabled.toString
   }
 
   val EmitCodecsEnabled = new EmitCodecs(true)
   val EmitCodecsDisabled = new EmitCodecs(true)
+
+  // ---
+
+  final class TypeScriptLineSeparator(val value: String) extends AnyVal {
+    @inline override def toString = value
+  }
+
+  val TypeScriptSemiColon = new TypeScriptLineSeparator(";")
 }
