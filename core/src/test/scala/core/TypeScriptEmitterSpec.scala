@@ -310,11 +310,12 @@ export interface IScalaRuntimeFixturesFamily {
 
   def emit(
     decls: ListSet[Declaration],
-    config: Configuration = defaultConfig): String = {
+    config: Configuration = defaultConfig,
+    typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(config, _ => out)
+    val emiter = new TypeScriptEmitter(config, _ => out, typeMapper)
 
     try {
       emiter.emit(decls)

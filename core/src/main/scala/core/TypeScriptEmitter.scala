@@ -4,15 +4,14 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
-// TODO: Append on out
-// TODO: Emit Option (space-lift?)
 // TODO: (low priority) Use a template engine (velocity?)
 /**
  * @param out the function to select a `PrintStream` from type name
  */
 final class TypeScriptEmitter(
   val config: Configuration,
-  out: String => PrintStream) {
+  out: String => PrintStream,
+  typeMapper: TypeScriptEmitter.TypeMapper) {
 
   import TypeScriptModel._
   import Internals.list
@@ -110,7 +109,7 @@ final class TypeScriptEmitter(
     val fieldNaming = config.fieldNaming(name, _: String)
 
     list(fields).foreach { member =>
-      o.println(s"${indent}${fieldNaming(member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
+      o.println(s"${indent}${fieldNaming(member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
     }
 
     o.println("}")
@@ -176,7 +175,7 @@ final class TypeScriptEmitter(
       o.println(" {")
 
       list(fields).foreach { member =>
-        o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${getTypeRefString(member.typeRef)}${lineSeparator}")
+        o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
       }
 
       o.println("}")
@@ -231,7 +230,7 @@ final class TypeScriptEmitter(
           o.print("public ")
         }
 
-        o.println(s"${fieldNaming(v.name)}: ${getTypeRefString(v.typeRef)}${lineSeparator}")
+        o.println(s"${fieldNaming(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
       }
 
       val params = list(parameters)
@@ -239,7 +238,7 @@ final class TypeScriptEmitter(
       if (!config.emitInterfaces) {
         // Class fields
         params.foreach { parameter =>
-          o.print(s"${indent}public ${parameter.name}: ${getTypeRefString(parameter.typeRef)}${lineSeparator}")
+          o.print(s"${indent}public ${parameter.name}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}${lineSeparator}")
         }
       }
 
@@ -260,7 +259,7 @@ final class TypeScriptEmitter(
             o.print("public ")
           }
 
-          o.print(s"${fieldNaming(parameter.name)}: ${getTypeRefString(parameter.typeRef)}")
+          o.print(s"${fieldNaming(parameter.name)}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}")
       }
 
       o.println(s"\n${indent}) {")
@@ -348,39 +347,55 @@ final class TypeScriptEmitter(
   @inline private def typeParameters(params: List[String]): String =
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
-  // TODO: Tuple ~> Update ScalaParser and model accordingly
-  private def getTypeRefString(typeRef: TypeRef): String = typeRef match {
-    case NumberRef => "number"
+  private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
+    (ownerType: String, memberName: String, typeRef: TypeRef) =>
+      typeMapper(resolvedTypeMapper, ownerType, memberName, typeRef).
+        getOrElse(defaultTypeMapping(ownerType, memberName, typeRef))
+  }
 
-    case BooleanRef => "boolean"
+  private def defaultTypeMapping(
+    ownerType: String,
+    memberName: String,
+    typeRef: TypeRef): String = {
+    val tr = resolvedTypeMapper(ownerType, memberName, _)
 
-    case StringRef => "string"
+    typeRef match {
+      case NumberRef => "number"
 
-    case DateRef | DateTimeRef => "Date"
+      case BooleanRef => "boolean"
 
-    case ArrayRef(innerType) => s"${getTypeRefString(innerType)}[]"
+      case StringRef => "string"
 
-    case TupleRef(params) =>
-      params.map(getTypeRefString).mkString("[", ", ", "]")
+      case DateRef | DateTimeRef => "Date"
 
-    case CustomTypeRef(name, params) if params.isEmpty => name
+      case ArrayRef(innerType) =>
+        s"${tr(innerType)}[]"
 
-    case CustomTypeRef(name, params) if params.nonEmpty =>
-      s"$name<${params.map(getTypeRefString).mkString(", ")}>"
+      case TupleRef(params) =>
+        params.map(tr).mkString("[", ", ", "]")
 
-    case UnknownTypeRef(typeName) => typeName
+      case CustomTypeRef(name, Nil) => name
 
-    case SimpleTypeRef(param) => param
+      case CustomTypeRef(name, params) =>
+        s"$name<${params.map(tr).mkString(", ")}>"
 
-    case UnionType(possibilities) =>
-      possibilities.map(getTypeRefString).mkString("(", " | ", ")")
+      case UnknownTypeRef(typeName) => typeName
 
-    case MapType(keyType, valueType) =>
-      s"{ [key: ${getTypeRefString(keyType)}]: ${getTypeRefString(valueType)} }" // TODO: Unit test
+      case SimpleTypeRef(param) => param
 
-    case NullRef => "null"
+      case NullableType(innerType) if config.optionToNullable =>
+        s"(${tr(innerType)} | null)"
 
-    case UndefinedRef => "undefined"
+      case NullableType(innerType) if config.optionToUndefined =>
+        s"(${tr(innerType)} | undefined)"
+
+      case UnionType(possibilities) =>
+        possibilities.map(tr).mkString("(", " | ", ")")
+
+      case MapType(keyType, valueType) =>
+        s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }" // TODO: Unit test
+
+    }
   }
 
   private def withOut[T](name: String)(f: PrintStream => T): T = {
@@ -400,4 +415,8 @@ final class TypeScriptEmitter(
       }
     }
   }
+}
+
+private[core] object TypeScriptEmitter {
+  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeScriptModel.TypeRef, Option[String]]
 }

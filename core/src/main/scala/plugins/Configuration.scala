@@ -11,7 +11,8 @@ import scala.xml._
 import io.github.scalats.core.{
   Configuration => Settings,
   Logger,
-  TypeScriptPrinter
+  TypeScriptPrinter,
+  TypeScriptTypeMapper
 }
 
 /**
@@ -23,6 +24,7 @@ final class Configuration(
   val compilationRuleSet: SourceRuleSet,
   val typeRuleSet: SourceRuleSet,
   val printer: TypeScriptPrinter,
+  val typeScriptTypeMappers: Seq[TypeScriptTypeMapper],
   val additionalClasspath: Seq[URL]) {
   override def equals(that: Any): Boolean = that match {
     case other: Configuration => tupled == other.tupled
@@ -44,11 +46,12 @@ object Configuration {
     compilationRuleSet: SourceRuleSet = SourceRuleSet(),
     typeRuleSet: SourceRuleSet = SourceRuleSet(),
     printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
+    typeScriptTypeMappers: Seq[TypeScriptTypeMapper] = Seq(TypeScriptTypeMapper.Defaults),
     additionalClasspath: Seq[URL] = Seq.empty): Configuration =
     new Configuration(
       settings,
       compilationRuleSet, typeRuleSet,
-      printer, additionalClasspath)
+      printer, typeScriptTypeMappers, additionalClasspath)
 
   /**
    * Loads the plugin configuration from given XML.
@@ -120,9 +123,19 @@ object Configuration {
 
     val printer = customPrinter.getOrElse(TypeScriptPrinter.StandardOutput)
 
+    def typeMappers: Seq[TypeScriptTypeMapper] =
+      (xml \ "typeScriptTypeMappers" \ "class").map { tm =>
+        val mapperClass = additionalClassLoader.fold[Class[_]](
+          Class.forName(tm.text))(_.loadClass(tm.text)).
+          asSubclass(classOf[TypeScriptTypeMapper])
+
+        mapperClass.getDeclaredConstructor().newInstance()
+      }
+
     new Configuration(
       settings,
-      compilationRuleSet, typeRuleSet, printer, additionalClasspath)
+      compilationRuleSet, typeRuleSet, printer,
+      typeMappers, additionalClasspath)
   }
 
   @SuppressWarnings(Array("NullParameter"))
@@ -146,6 +159,14 @@ object Configuration {
 
     if (conf.printer != TypeScriptPrinter.StandardOutput) {
       children += (<printer>{ conf.printer.getClass.getName }</printer>)
+    }
+
+    if (conf.typeScriptTypeMappers.nonEmpty) {
+      children += elem(
+        "typeScriptTypeMappers",
+        conf.typeScriptTypeMappers.map { m =>
+          (<class>{ m.getClass.getName }</class>)
+        })
     }
 
     elem(rootName, children.result())

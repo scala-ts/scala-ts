@@ -9,7 +9,11 @@ import scala.util.matching.Regex
 
 import scala.xml.XML
 
-import io.github.scalats.core.{ Logger, TypeScriptGenerator }
+import io.github.scalats.core.{
+  Logger,
+  TypeScriptTypeMapper,
+  TypeScriptGenerator
+}
 
 final class CompilerPlugin(val global: Global)
   extends Plugin with PluginCompat { plugin =>
@@ -195,12 +199,16 @@ final class CompilerPlugin(val global: Global)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
+      val typeMapper = TypeScriptTypeMapper.
+        chain(config.typeScriptTypeMappers).
+        getOrElse(TypeScriptTypeMapper.Defaults)
+
       TypeScriptGenerator.generate(global)(
         config = plugin.config.settings,
         types = scalaTypes,
         logger = CompilerLogger,
-        out = config.printer)
-
+        out = config.printer,
+        typeMapper = typeMapper)
     }
   }
 }

@@ -10,7 +10,6 @@ import scala.reflect.api.Universe
 
 import com.github.ghik.silencer.silent
 
-// TODO: reverse class/interface member
 final class ScalaParser[U <: Universe](
   universe: U, logger: Logger)(
   implicit
@@ -62,7 +61,7 @@ final class ScalaParser[U <: Universe](
     }
 
     case _ => {
-      logger.warning(s"Unsupported Scala type: $tpe")
+      logger.warning(s"Unsupported Scala type: ${tpe.typeSymbol.fullName}")
       Option.empty[TypeDef]
     }
   }
@@ -176,27 +175,37 @@ final class ScalaParser[U <: Universe](
 
   @annotation.tailrec
   @silent(".*is\\ unchecked.*")
-  private def parse(types: List[Type], examined: ListSet[Type], parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
+  private def parse(
+    types: List[Type],
+    examined: ListSet[Type],
+    parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
     case scalaType :: tail => {
-
       if (!examined.contains(scalaType) &&
         !scalaType.typeSymbol.isParameter) {
-
-        val relevantMemberSymbols = scalaType.members.collect {
-          case m: MethodSymbol if m.isCaseAccessor => m
-        }
-
-        val memberTypes = relevantMemberSymbols.map(
-          _.typeSignature.map(_.dealias) match {
-            case NullaryMethodType(resultType) => resultType
-            case t => t.map(_.dealias)
-          })
 
         val typeArgs = scalaType match {
           case t: TypeRef =>
             t.args
 
           case _ => List.empty[Type]
+        }
+
+        val typeParams: Map[Symbol, Type] =
+          scalaType.typeConstructor.typeSymbol.
+            asType.typeParams.zip(typeArgs).toMap
+
+        val memberTypes = scalaType.members.collect {
+          case m: MethodSymbol if m.isCaseAccessor =>
+            val mt = m.typeSignature match {
+              case NullaryMethodType(resultType) => // for `=> T`
+                resultType
+
+              case t =>
+                t
+            }
+
+            // Resolve member type according `scalaType` type parameters
+            typeParams.getOrElse(mt.typeSymbol, mt)
         }
 
         parse(
@@ -283,7 +292,7 @@ final class ScalaParser[U <: Universe](
         case innerType :: _ => tpeName match {
           case "List" | "Seq" | "Set" =>
             //println(s"?$innerType---> ${universe.appliedType(mirror.staticClass("scala.collection.Traversable"), innerType)}")
-            // TODO: Rather check type is Traversable
+            // TODO: (medium priority) Rather check type is Traversable
             SeqRef(scalaTypeRef(innerType, typeParams))
 
           case "Option" =>
@@ -363,7 +372,7 @@ final class ScalaParser[U <: Universe](
     scalaType <:< typeOf[AnyVal]
 
   @inline private def isEnumerationValue(scalaType: Type): Boolean = {
-    // TODO: rather compare Type (than string)
+    // TODO: (low priority) rather compare Type (than string)
     scalaType.typeSymbol.asClass.fullName == "scala.Enumeration.Value"
   }
 

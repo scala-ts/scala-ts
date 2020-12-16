@@ -52,10 +52,6 @@ object Compiler extends AutoPlugin {
     },
     scalacOptions in (Compile, console) ~= { _.filterNot(excludeScalacOpts) },
     scalacOptions in (Compile, doc) ~= { _.filterNot(excludeScalacOpts) },
-    scalacOptions in (Test, console) ~= { _.filterNot(excludeScalacOpts) },
-    scalacOptions in Test ~= {
-      _.filterNot(_ == "-Xfatal-warnings")
-    },
     libraryDependencies ++= {
       val silencerVersion = "1.7.1"
 
@@ -68,9 +64,14 @@ object Compiler extends AutoPlugin {
     }
   )
 
+  private val excludeTestScalacOpts: String => Boolean = { o =>
+    o.startsWith("-X") || o.startsWith("-Y")
+  }
+
   private val excludeScalacOpts: String => Boolean = { o =>
-    o.startsWith("-X") || o.startsWith("-Y") || o == "128" ||
+    excludeTestScalacOpts(o) || o == "128" ||
     o.startsWith("-P:silencer") || o.startsWith("-P:semanticdb") ||
-    o == "-Werror" // skip fatal warning as silencer is not enabled
+    // skip fatal warning as silencer is not enabled
+    o == "-Werror" || o == "-Xfatal-warnings"
   }
 }

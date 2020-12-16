@@ -46,6 +46,8 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       s"-Dscala-ts.version=${version.value}",
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
+    compile in Compile := (compile in Compile).dependsOn(
+      core / publishLocal).value,
     // TODO: core / publishLocal on update?
     scriptedBufferLog := false,
     sourceGenerators in Compile += Def.task {

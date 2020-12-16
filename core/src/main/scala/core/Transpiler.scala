@@ -2,12 +2,12 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import io.github.scalats.core.TypeScriptModel.{ ClassConstructor, ClassConstructorParameter, CustomTypeRef, Declaration, EnumDeclaration, InterfaceDeclaration, Member, NullRef, SimpleTypeRef, SingletonDeclaration, UndefinedRef, UnionDeclaration } // TODO: scalariform limit length
-
 /**
  * Created by Milosz on 09.06.2016.
  */
 final class Transpiler(config: Configuration) {
+  import TypeScriptModel._
+
   @inline def apply(scalaTypes: ListSet[ScalaModel.TypeDef]): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
 
   def apply(
@@ -103,7 +103,10 @@ final class Transpiler(config: Configuration) {
   private def transpileTypeRef(
     scalaTypeRef: ScalaModel.TypeRef,
     inInterfaceContext: Boolean): TypeScriptModel.TypeRef = scalaTypeRef match {
-    case ScalaModel.DoubleRef | ScalaModel.IntRef | ScalaModel.LongRef =>
+    case ScalaModel.BigDecimalRef |
+      ScalaModel.DoubleRef |
+      ScalaModel.IntRef |
+      ScalaModel.LongRef =>
       TypeScriptModel.NumberRef
 
     case ScalaModel.BooleanRef =>
@@ -141,17 +144,9 @@ final class Transpiler(config: Configuration) {
     case ScalaModel.TypeParamRef(name) =>
       TypeScriptModel.SimpleTypeRef(name)
 
-    case ScalaModel.OptionRef(innerType) if (
-      config.optionToNullable && config.optionToUndefined) =>
-      TypeScriptModel.UnionType(ListSet(
-        TypeScriptModel.UnionType(ListSet(
-          transpileTypeRef(innerType, inInterfaceContext), NullRef)),
-        UndefinedRef))
-
-    case ScalaModel.OptionRef(innerType) if config.optionToNullable =>
-      TypeScriptModel.UnionType(ListSet(
-        transpileTypeRef(innerType, inInterfaceContext),
-        NullRef))
+    case ScalaModel.OptionRef(innerType) =>
+      TypeScriptModel.NullableType(
+        transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.MapRef(kT, vT) => TypeScriptModel.MapType(
       transpileTypeRef(kT, inInterfaceContext),
@@ -161,11 +156,6 @@ final class Transpiler(config: Configuration) {
       TypeScriptModel.UnionType(possibilities.map { i =>
         transpileTypeRef(i, inInterfaceContext)
       })
-
-    case ScalaModel.OptionRef(innerType) if config.optionToUndefined =>
-      TypeScriptModel.UnionType(ListSet(
-        transpileTypeRef(innerType, inInterfaceContext),
-        UndefinedRef))
 
     case ScalaModel.UnknownTypeRef(_) =>
       TypeScriptModel.StringRef

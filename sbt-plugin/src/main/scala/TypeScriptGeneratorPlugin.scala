@@ -6,7 +6,8 @@ import sbt.Keys._
 import _root_.io.github.scalats.core.{
   Configuration => Settings,
   FieldNaming,
-  TypeScriptPrinter
+  TypeScriptPrinter,
+  TypeScriptTypeMapper
 }
 import _root_.io.github.scalats.plugins.{ Configuration, FilePrinter, SourceRuleSet }
 
@@ -41,8 +42,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsOptionToUndefined = settingKey[Boolean](
       "Option types will be compiled to 'type | undefined'")
 
-    val scalatsPrinter = taskKey[Class[_ <: TypeScriptPrinter]](
+    val scalatsPrinter = settingKey[Class[_ <: TypeScriptPrinter]](
       "Class implementing 'TypeScriptPrinter' to print the generated TypeScript code according the Scala type (default: io.github.scalats.plugins.FilePrinter)")
+
+    val scalatsTypeScriptTypeMappers = settingKey[Seq[Class[_ <: TypeScriptTypeMapper]]]("Class implementing 'TypeScriptTypeMapper' to customize the mapping (default: None)")
 
     val scalatsPrependIPrefix = settingKey[Boolean](
       "Whether to prefix interface names with 'I'")
@@ -153,6 +156,12 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
             getDeclaredConstructor(classOf[File]).newInstance(outDir)
         }
 
+        val typeMappers = scalatsTypeScriptTypeMappers.value.map {
+          _.getDeclaredConstructor().newInstance()
+        }
+
+        //.getOrElse(TypeScriptTypeMapper.Defaults)
+
         val conf = Configuration(
           settings = settings,
           compilationRuleSet = SourceRuleSet(
@@ -162,6 +171,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
             includes = scalatsSourceIncludes.value,
             excludes = scalatsSourceExcludes.value),
           printer = printer,
+          typeScriptTypeMappers = typeMappers,
           additionalClasspath = Seq(sbtProjectClassUrl))
 
         val confFile = scalatsCompilerPluginConf.value.getAbsolutePath
@@ -205,6 +215,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsTypeIncludes := Set(".*"),
     scalatsTypeExcludes := Set.empty[String],
     scalatsPrinter := classOf[FilePrinter],
+    scalatsTypeScriptTypeMappers := Seq.empty[Class[_ <: TypeScriptTypeMapper]],
     scalatsOptionToNullable := true,
     scalatsOptionToUndefined := false,
     scalatsPrependIPrefix := false,

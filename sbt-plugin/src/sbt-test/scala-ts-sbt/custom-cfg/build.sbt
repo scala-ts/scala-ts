@@ -17,6 +17,9 @@ sourceManaged in scalatsOnCompile := {
 // Custom printer
 scalatsPrinter := classOf[scalats.CustomPrinter]
 
+// Custom type mapper
+scalatsTypeScriptTypeMappers := Seq(classOf[scalats.CustomTypeMapper])
+
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO
   val logger = streams.value.log
