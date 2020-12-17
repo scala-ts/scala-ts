@@ -17,8 +17,10 @@ final class Configuration(
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
   val typescriptLineSeparator: Configuration.TypeScriptLineSeparator,
-  val fieldNaming: FieldNaming) {
+  val fieldNaming: FieldNaming,
+  val discriminator: Configuration.Discriminator) {
 
+  @SuppressWarnings(Array("MaxParameters"))
   private[core] def copy(
     emitInterfaces: Boolean = this.emitInterfaces,
     emitClasses: Boolean = this.emitClasses,
@@ -29,7 +31,8 @@ final class Configuration(
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
     typescriptLineSeparator: Configuration.TypeScriptLineSeparator = this.typescriptLineSeparator,
-    fieldNaming: FieldNaming = this.fieldNaming): Configuration =
+    fieldNaming: FieldNaming = this.fieldNaming,
+    discriminator: Configuration.Discriminator = this.discriminator): Configuration =
     new Configuration(
       emitInterfaces,
       emitClasses,
@@ -40,7 +43,8 @@ final class Configuration(
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming)
+      fieldNaming,
+      discriminator)
 
   override def equals(that: Any): Boolean = that match {
     case other: Configuration => tupled == other.tupled
@@ -52,7 +56,7 @@ final class Configuration(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple10(
+  private lazy val tupled = Tuple11(
     emitInterfaces,
     emitClasses,
     emitCodecs,
@@ -62,7 +66,8 @@ final class Configuration(
     prependEnclosingClassNames,
     typescriptIndent,
     typescriptLineSeparator,
-    fieldNaming)
+    fieldNaming,
+    discriminator)
 }
 
 object Configuration {
@@ -70,6 +75,7 @@ object Configuration {
 
   val DefaultTypeScriptIndent = "  "
 
+  @SuppressWarnings(Array("MaxParameters"))
   def apply(
     emitInterfaces: Boolean = true,
     emitClasses: Boolean = false,
@@ -80,7 +86,8 @@ object Configuration {
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
     typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
-    fieldNaming: FieldNaming = FieldNaming.Identity): Configuration =
+    fieldNaming: FieldNaming = FieldNaming.Identity,
+    discriminator: Discriminator = DefaultDiscriminator): Configuration =
     new Configuration(
       emitInterfaces,
       emitClasses,
@@ -91,7 +98,8 @@ object Configuration {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming)
+      fieldNaming,
+      discriminator)
 
   def load(
     xml: Elem,
@@ -143,6 +151,11 @@ object Configuration {
         FieldNaming.Identity
       }
 
+    val discriminator: Discriminator =
+      (xml \ "discriminator").headOption.map { n =>
+        new Discriminator(n.text)
+      }.getOrElse(DefaultDiscriminator)
+
     new Configuration(
       emitInterfaces,
       emitClasses,
@@ -153,7 +166,8 @@ object Configuration {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming)
+      fieldNaming,
+      discriminator)
 
   }
 
@@ -185,7 +199,8 @@ object Configuration {
       <prependEnclosingClassNames>{ conf.prependEnclosingClassNames }</prependEnclosingClassNames>,
       <typescriptIndent>{ conf.typescriptIndent }</typescriptIndent>,
       <typescriptLineSeparator>{ conf.typescriptLineSeparator }</typescriptLineSeparator>,
-      <fieldNaming>{ fieldNaming }</fieldNaming>)
+      <fieldNaming>{ fieldNaming }</fieldNaming>,
+      <discriminator>{ conf.discriminator.text }</discriminator>)
   }
 
   // ---
@@ -205,4 +220,13 @@ object Configuration {
   }
 
   val TypeScriptSemiColon = new TypeScriptLineSeparator(";")
+
+  // ---
+
+  final class Discriminator(val text: String) extends AnyVal {
+    @inline override def toString = text
+  }
+
+  /** `"_type"` */
+  val DefaultDiscriminator = new Discriminator("_type")
 }

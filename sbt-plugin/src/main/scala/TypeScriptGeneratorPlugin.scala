@@ -61,6 +61,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     val scalatsFieldNaming = settingKey[Class[_ <: FieldNaming]]("Conversions for the field names if 'scalatsEmitCodecs' (default: Identity)")
 
+    // TODO: scripted test
+    val scalatsDiscriminator = settingKey[String](
+      "Name for the discriminator field")
+
     val scalatsSourceIncludes = settingKey[Set[String]](
       "Scala sources to be included for ScalaTS (default: '.*'")
 
@@ -143,7 +147,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           scalatsTypescriptIndent.value,
           new Settings.TypeScriptLineSeparator(
             scalatsTypescriptLineSeparator.value),
-          fieldNaming)
+          fieldNaming,
+          new Settings.Discriminator(scalatsDiscriminator.value))
 
         val printer = {
           val outDir = (sourceManaged in scalatsOnCompile).value
@@ -159,8 +164,6 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
         val typeMappers = scalatsTypeScriptTypeMappers.value.map {
           _.getDeclaredConstructor().newInstance()
         }
-
-        //.getOrElse(TypeScriptTypeMapper.Defaults)
 
         val conf = Configuration(
           settings = settings,
@@ -225,18 +228,6 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsEmitInterfaces := true,
     scalatsEmitClasses := false,
     scalatsEmitCodecs := true,
-    scalatsFieldNaming := FieldNaming.Identity.getClass)
-
-  // ---
-
-  /*import scala.language.reflectiveCalls
-
-  private def logger(l: SbtLogger) = new Logger {
-    def warning(msg: => String): Unit = l.warn(msg)
-  }
-
-  private type SbtLogger = {
-    def warn(msg: => String): Unit
-  }
-   */
+    scalatsFieldNaming := FieldNaming.Identity.getClass,
+    scalatsDiscriminator := Settings.DefaultDiscriminator.text)
 }

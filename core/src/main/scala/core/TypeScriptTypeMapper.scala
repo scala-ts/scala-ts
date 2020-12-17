@@ -78,7 +78,7 @@ object TypeScriptTypeMapper {
   lazy val dateAsString = new DateAsString()
 
   /**
-   * Maps [[TypeScriptModel.NullableRef]] to `Option<T>`
+   * Maps [[TypeScriptModel.NullableType]] to `Option<T>`
    * (e.g. [[https://github.com/AlexGalays/space-monad space-monad]]
    * or [[https://gcanti.github.io/fp-ts/modules/Option.ts fp-ts]])
    */

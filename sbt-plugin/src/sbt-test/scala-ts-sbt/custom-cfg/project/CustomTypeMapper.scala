@@ -4,6 +4,7 @@ import io.github.scalats.core.{TypeScriptTypeMapper,TypeScriptModel}
 
 final class CustomTypeMapper extends TypeScriptTypeMapper {
   def apply(
+    parent: TypeScriptTypeMapper.Resolved,
     ownerType: String,
     member: String,
     tpe: TypeScriptModel.TypeRef): Option[String] = {

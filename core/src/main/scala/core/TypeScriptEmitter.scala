@@ -16,7 +16,10 @@ final class TypeScriptEmitter(
   import TypeScriptModel._
   import Internals.list
 
-  import config.{ typescriptIndent => indent }
+  import config.{
+    discriminator => discriminatorName,
+    typescriptIndent => indent
+  }
   import config.typescriptLineSeparator.{ value => lineSeparator }
 
   def emit(declaration: ListSet[Declaration]): Unit =
@@ -50,8 +53,7 @@ final class TypeScriptEmitter(
     o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
 
     if (config.emitCodecs.enabled) {
-      // TODO: Discriminator naming
-      val discriminatorName = "_type"
+      // TODO: Config
       val naming: String => String = identity[String](_)
       val children = list(possibilities)
 
