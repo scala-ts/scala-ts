@@ -359,7 +359,7 @@ final class TypeScriptEmitter(
     ownerType: String,
     memberName: String,
     typeRef: TypeRef): String = {
-    val tr = resolvedTypeMapper(ownerType, memberName, _)
+    val tr = resolvedTypeMapper(ownerType, memberName, _: TypeRef)
 
     typeRef match {
       case NumberRef => "number"
