@@ -332,8 +332,11 @@ final class ScalaParser[U <: Universe](
         case (_, "Double") =>
           Some(DoubleRef)
 
-        case (_, "BigDecimal") => // TODO: BigInt, BigDecimal, java.math
+        case (_, "BigDecimal") =>
           Some(BigDecimalRef)
+
+        case (_, "BigInt" | "BigInteger") =>
+          Some(BigIntegerRef)
 
         case (_, "Boolean") =>
           Some(BooleanRef)

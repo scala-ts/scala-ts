@@ -104,6 +104,7 @@ final class Transpiler(config: Configuration) {
     scalaTypeRef: ScalaModel.TypeRef,
     inInterfaceContext: Boolean): TypeScriptModel.TypeRef = scalaTypeRef match {
     case ScalaModel.BigDecimalRef |
+      ScalaModel.BigIntegerRef |
       ScalaModel.DoubleRef |
       ScalaModel.IntRef |
       ScalaModel.LongRef =>

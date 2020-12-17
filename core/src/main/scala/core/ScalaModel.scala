@@ -72,6 +72,8 @@ object ScalaModel {
 
   case object BigDecimalRef extends TypeRef
 
+  case object BigIntegerRef extends TypeRef
+
   case object BooleanRef extends TypeRef
 
   case object StringRef extends TypeRef

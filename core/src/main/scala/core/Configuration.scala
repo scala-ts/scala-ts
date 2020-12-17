@@ -2,8 +2,6 @@ package io.github.scalats.core
 
 import scala.util.control.NonFatal
 
-// TODO: nullable as function setting (gathering optionToNullable/optionToUndefined); See also space-lift/fp-ts Option
-
 // TODO: Per-type options: nullable, fieldNaming, emitCodecs (by annotation on such type?)
 
 /**
