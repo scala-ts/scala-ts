@@ -1,40 +1,45 @@
 package io.github.scalats.core
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
+  "TypeScript type mapper" title
 
-final class TypeScriptTypeMapperSpec extends AnyFlatSpec with Matchers {
   import TypeScriptModel._
   import TypeScriptTypeMapper._
 
   lazy val unresolved: Function3[String, String, TypeRef, String] =
     (_, _, _) => "_tpe_"
 
-  it should "map nullable as Option" in {
-    nullableAsOption(
-      unresolved, "_", "_", NullableType(StringRef)) should equal(
-      Some("Option<_tpe_>"))
-  }
+  "Mapper" should {
+    "map nullable as Option" in {
+      nullableAsOption(
+        unresolved, "_", "_", NullableType(StringRef)) must beTypedEqualTo(
+        Some("Option<_tpe_>"))
+    }
 
-  it should "map number as string" in {
-    numberAsString(
-      unresolved, "_", "_", NumberRef) should equal(Some("string"))
-  }
+    "map number as string" in {
+      numberAsString(
+        unresolved, "_", "_", NumberRef) must beSome("string")
+    }
 
-  it should "map date as string" in {
-    val mapper = dateAsString(unresolved, "_", "_", _: TypeRef)
+    "map date as string" in {
+      val mapper = dateAsString(unresolved, "_", "_", _: TypeRef)
 
-    mapper(DateRef) should equal(Some("string"))
-    mapper(DateTimeRef) should equal(Some("string"))
-  }
+      mapper(DateRef) must beSome("string") and {
+        mapper(DateTimeRef) must beSome("string")
+      }
+    }
 
-  it should "chain" in {
-    chain(Seq(numberAsString, dateAsString)).foreach { m =>
-      val mapper = m(unresolved, "_", "_", _: TypeRef)
+    "be chained" in {
+      chain(Seq(numberAsString, dateAsString)).
+        aka("chained") must beSome[TypeScriptTypeMapper].which { m =>
+          val mapper = m(unresolved, "_", "_", _: TypeRef)
 
-      mapper(NumberRef) should equal(Some("string"))
-      mapper(DateRef) should equal(Some("string"))
-      mapper(DateTimeRef) should equal(Some("string"))
+          mapper(NumberRef) must beSome("string") and {
+            mapper(DateRef) must beSome("string")
+          } and {
+            mapper(DateTimeRef) must beSome("string")
+          }
+        }
     }
   }
 }

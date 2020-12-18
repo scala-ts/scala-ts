@@ -2,102 +2,121 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
 import TypeScriptModel._
 import ScalaParserResults._
 
-final class TranspilerSpec extends AnyFlatSpec with Matchers {
+final class TranspilerSpec extends org.specs2.mutable.Specification {
+  "Transpiler" title
+
   import TranspilerResults._
 
   val defaultTranspiler: Transpiler =
     new Transpiler(Configuration(emitClasses = true))
 
-  it should "compile a case class with one primitive member" in {
-    val result = defaultTranspiler(ListSet(caseClass1))
+  "Transpiler" should {
+    "transpile a case class with one primitive member" in {
+      val result = defaultTranspiler(ListSet(caseClass1))
 
-    result.size should equal(2)
-    result should contain(interface1)
-    result should contain(clazz1)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface1)
+      } and {
+        result must contain(clazz1)
+      }
+    }
 
-  it should "compile a generic class with one member" in {
-    val result = defaultTranspiler(ListSet(caseClass2))
+    "transpile a generic class with one member" in {
+      val result = defaultTranspiler(ListSet(caseClass2))
 
-    result.size should equal(2)
-    result should contain(interface2)
-    result should contain(clazz2)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface2)
+      } and {
+        result must contain(clazz2)
+      }
+    }
 
-  it should "compile a generic case class with one member list of type parameter" in {
-    val result = defaultTranspiler(ListSet(caseClass3))
+    "transpile a generic case class with one member list of type parameter" in {
+      val result = defaultTranspiler(ListSet(caseClass3))
 
-    result.size should equal(2)
-    result should contain(interface3)
-    result should contain(clazz3)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface3)
+      } and {
+        result must contain(clazz3)
+      }
+    }
 
-  it should "compile a generic case class with one optional member" in {
-    val result = defaultTranspiler(ListSet(caseClass5))
+    "transpile a generic case class with one optional member" in {
+      val result = defaultTranspiler(ListSet(caseClass5))
 
-    result.size should equal(2)
-    result should contain(interface5)
-    result should contain(clazz5)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface5)
+      } and {
+        result must contain(clazz5)
+      }
+    }
 
-  it should "compile disjunction types" in {
-    val result = defaultTranspiler(ListSet(caseClass7))
+    "transpile disjunction types" in {
+      val result = defaultTranspiler(ListSet(caseClass7))
 
-    result.size should equal(2)
-    result should contain(interface7)
-    result should contain(clazz7)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface7)
+      } and {
+        result must contain(clazz7)
+      }
+    }
 
-  it should "compile Tuple types" in {
-    val result = defaultTranspiler(ListSet(caseClass10))
+    "transpile Tuple types" in {
+      val result = defaultTranspiler(ListSet(caseClass10))
 
-    result.size should equal(2)
-    result should contain(interface10)
-    result should contain(clazz10)
-  }
+      result.size must_=== 2 and {
+        result must contain(interface10)
+      } and {
+        result must contain(clazz10)
+      }
+    }
 
-  it should "compile parse case object" in {
-    val result = defaultTranspiler(ListSet(caseObject1))
+    "transpile case object" in {
+      val result = defaultTranspiler(ListSet(caseObject1))
 
-    result.size should equal(1)
-    result should contain(singleton1)
-  }
+      result.size must_=== 1 and {
+        result must contain(singleton1)
+      }
+    }
 
-  it should "correctly parse object" in {
-    val result = defaultTranspiler(
-      ListSet(caseObject2),
-      Some(InterfaceDeclaration(
-        "SupI", ListSet.empty, List.empty[String], Option.empty)))
+    "correctly transpile object" in {
+      val result = defaultTranspiler(
+        ListSet(caseObject2),
+        Some(InterfaceDeclaration(
+          "SupI", ListSet.empty, List.empty[String], Option.empty)))
 
-    result.size should equal(1)
-    result should contain(singleton2)
-  }
+      result.size must_=== 1 and {
+        result must contain(singleton2)
+      }
+    }
 
-  it should "correctly parse sealed trait as union" in {
-    val result = defaultTranspiler(ListSet(sealedFamily1))
+    "correctly transpile sealed trait as union" in {
+      val result = defaultTranspiler(ListSet(sealedFamily1))
 
-    result.size should equal(5)
-    result should contain(union1)
+      result.size must_=== 5 and {
+        result must contain(union1)
+      } and {
+        result must contain(unionMember1Clazz)
+      } and {
+        result must contain(unionMember2Singleton)
+      } and {
 
-    val member1Interface = InterfaceDeclaration(
-      "IScalaRuntimeFixturesFamilyMember1",
-      ListSet(Member("foo", StringRef)),
-      List.empty, Some(unionIface))
+        val member1Interface = InterfaceDeclaration(
+          "IScalaRuntimeFixturesFamilyMember1",
+          ListSet(Member("foo", StringRef)),
+          List.empty, Some(unionIface))
 
-    result should contain(unionMember1Clazz)
-    result should contain(member1Interface)
-    result should contain(unionMember2Singleton)
-
-    result should contain(
-      SingletonDeclaration(
-        "ScalaRuntimeFixturesFamilyMember3",
-        ListSet(Member("foo", StringRef)), Some(unionIface)))
+        result must contain(member1Interface)
+      } and {
+        result must contain(
+          SingletonDeclaration(
+            "ScalaRuntimeFixturesFamilyMember3",
+            ListSet(Member("foo", StringRef)), Some(unionIface)))
+      }
+    }
   }
 }
 

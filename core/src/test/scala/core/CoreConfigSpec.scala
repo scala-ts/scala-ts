@@ -2,10 +2,9 @@ package io.github.scalats.core
 
 import scala.xml.XML
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+final class CoreConfigSpec extends org.specs2.mutable.Specification {
+  "Core configuration" title
 
-final class CoreConfigSpec extends AnyFlatSpec with Matchers {
   val fullXml = Seq(
     "<scalats>",
     "<emitInterfaces>true</emitInterfaces>",
@@ -21,29 +20,33 @@ final class CoreConfigSpec extends AnyFlatSpec with Matchers {
     "<discriminator>_type</discriminator>",
     "</scalats>").mkString("")
 
-  it should "load configuration from fully defined XML" in {
-    val cfg = Configuration.load(
-      XML loadString fullXml,
-      Logger(org.slf4j.LoggerFactory getLogger getClass))
+  "Fully defined configuration" should {
+    "be loaded from XML" in {
+      val cfg = Configuration.load(
+        XML loadString fullXml,
+        Logger(org.slf4j.LoggerFactory getLogger getClass))
 
-    cfg should equal(Configuration(typescriptIndent = "\t"))
+      cfg must_=== Configuration(typescriptIndent = "\t")
+    }
+
+    "be written as XML" in {
+      Configuration.toXml(
+        Configuration(typescriptIndent = "\t")).toString must_=== fullXml
+    }
   }
 
-  it should "write configuration as XML" in {
-    Configuration.toXml(
-      Configuration(typescriptIndent = "\t")).toString should equal(fullXml)
-  }
-
-  it should "load configuration with custom field naming" in {
-    val source = s"""<scalats>
+  "Configuration with custom field naming" should {
+    "be loaded from XML" in {
+      val source = s"""<scalats>
   <fieldNaming>${classOf[CustomFieldNaming].getName}</fieldNaming>
 </scalats>"""
 
-    val cfg = Configuration.load(
-      XML loadString source,
-      Logger(org.slf4j.LoggerFactory getLogger getClass))
+      val cfg = Configuration.load(
+        XML loadString source,
+        Logger(org.slf4j.LoggerFactory getLogger getClass))
 
-    cfg should equal(Configuration(fieldNaming = new CustomFieldNaming))
+      cfg must_=== Configuration(fieldNaming = new CustomFieldNaming)
+    }
   }
 }
 
