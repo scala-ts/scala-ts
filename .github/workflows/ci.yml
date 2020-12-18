@@ -64,3 +64,15 @@ jobs:
         npm ci
         npm run build
         
+    - name: 'Publish snapshot (master)'
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: |
+        export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
+        export PUBLISH_REPO_ID="oss.sonatype.org"
+        export PUBLISH_REPO_URL="https://oss.sonatype.org/content/repositories/snapshots"
+        
+        export PUBLISH_USER="$SONATYPE_USER"
+        export PUBLISH_PASS="$SONATYPE_PASSWORD"
+
+        sbt ';+core/publish ;^sbt-plugin/publish'
+
