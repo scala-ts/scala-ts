@@ -22,7 +22,7 @@ final class TypeScriptTypeMapperSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "map date as string" in {
-    val mapper = dateAsString(unresolved, "_", "_", _)
+    val mapper = dateAsString(unresolved, "_", "_", _: TypeRef)
 
     mapper(DateRef) should equal(Some("string"))
     mapper(DateTimeRef) should equal(Some("string"))
