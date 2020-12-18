@@ -18,6 +18,7 @@ final class CoreConfigSpec extends AnyFlatSpec with Matchers {
     "<typescriptIndent>\t</typescriptIndent>",
     "<typescriptLineSeparator>;</typescriptLineSeparator>",
     "<fieldNaming>Identity</fieldNaming>",
+    "<discriminator>_type</discriminator>",
     "</scalats>").mkString("")
 
   it should "load configuration from fully defined XML" in {

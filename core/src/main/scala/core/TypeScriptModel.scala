@@ -18,7 +18,6 @@ object TypeScriptModel {
     fields: ListSet[Member],
     typeParams: List[String],
     superInterface: Option[InterfaceDeclaration]) extends Declaration
-  // TODO: Support mapping of typeParams with superInterface
 
   case class Member(name: String, typeRef: TypeRef)
 
@@ -84,9 +83,7 @@ object TypeScriptModel {
 
   case object DateTimeRef extends SimpleTypeRef("DateTime")
 
-  case object NullRef extends SimpleTypeRef("null")
-
-  case object UndefinedRef extends SimpleTypeRef("undefined")
+  case class NullableType(innerType: TypeRef) extends TypeRef
 
   case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef
 

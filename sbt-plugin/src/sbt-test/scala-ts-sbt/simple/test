@@ -1,3 +1,5 @@
+$ absent target/scala-ts/src_managed/CaseClassFoo.ts
+
 # Simple generation from Scala case class
 > compile
 $ exists target/scala-ts/src_managed/CaseClassFoo.ts

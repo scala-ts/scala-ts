@@ -87,12 +87,14 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 """)
   }
 
-  it should "emit class for a generic case class with one optional member" in {
+  it should "emit class for a generic case class with a optional member" in {
     emit(ListSet(clazz5)) should equal("""export class ScalaRuntimeFixturesTestClass5<T> implements IScalaRuntimeFixturesTestClass5<T> {
   constructor(
-    public name: (T | null)
+    public name: (T | null),
+    public counters: { [key: string]: number }
   ) {
     this.name = name;
+    this.counters = counters;
   }
 
   public static fromData<T>(data: any): ScalaRuntimeFixturesTestClass5<T> {
@@ -106,9 +108,10 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 """)
   }
 
-  it should "emit interface for a generic case class with one optional member" in {
+  it should "emit interface for a generic case class with a optional member" in {
     emit(ListSet(interface5)) should equal("""export interface IScalaRuntimeFixturesTestClass5<T> {
   name: (T | null);
+  counters: { [key: string]: number };
 }
 """)
   }
@@ -168,8 +171,8 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 
   it should "emit class using FieldNaming.SnakeCase" in {
     val clazz = ClassDeclaration("Test", ClassConstructor(ListSet(
-      ClassConstructorParameter("name", SimpleTypeRef("T")),
-      ClassConstructorParameter("fooBar", TypeScriptModel.StringRef))),
+      ClassConstructorParameter("fooBar", TypeScriptModel.StringRef),
+      ClassConstructorParameter("name", SimpleTypeRef("T")))),
       ListSet.empty,
       List("T"), Option.empty)
 
@@ -177,21 +180,21 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 
     emit(ListSet(clazz), config) should equal("""export class Test<T> implements ITest<T> {
   constructor(
-    public foo_bar: string,
-    public name: T
+    public name: T,
+    public foo_bar: string
   ) {
-    this.foo_bar = foo_bar;
     this.name = name;
+    this.foo_bar = foo_bar;
   }
 
   public static fromData<T>(data: any): Test<T> {
-    return new Test<T>(data.foo_bar, data.name);
+    return new Test<T>(data.name, data.foo_bar);
   }
 
   public static toData<T>(instance: Test<T>): any {
     return {
-      foo_bar: instance.foo_bar,
-      name: instance.name
+      name: instance.name,
+      foo_bar: instance.foo_bar
     };
   }
 }
@@ -269,30 +272,30 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
 
   public static fromData(data: any): ScalaRuntimeFixturesFamily {
     switch (data._type) {
-      case "ScalaRuntimeFixturesFamilyMember3": {
-        return ScalaRuntimeFixturesFamilyMember3.fromData(data);
+      case "IScalaRuntimeFixturesFamilyMember1": {
+        return ScalaRuntimeFixturesFamilyMember1.fromData(data);
       }
       case "ScalaRuntimeFixturesFamilyMember2": {
         return ScalaRuntimeFixturesFamilyMember2.fromData(data);
       }
-      case "IScalaRuntimeFixturesFamilyMember1": {
-        return ScalaRuntimeFixturesFamilyMember1.fromData(data);
+      case "ScalaRuntimeFixturesFamilyMember3": {
+        return ScalaRuntimeFixturesFamilyMember3.fromData(data);
       }
     }
   }
 
   public static toData(instance: ScalaRuntimeFixturesFamily): any {
-    if (instance instanceof ScalaRuntimeFixturesFamilyMember3) {
-      const data = ScalaRuntimeFixturesFamilyMember3.toData(instance);
-      data['_type'] = "ScalaRuntimeFixturesFamilyMember3";
+    if (instance instanceof IScalaRuntimeFixturesFamilyMember1) {
+      const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
+      data['_type'] = "IScalaRuntimeFixturesFamilyMember1";
       return data;
     } else if (instance instanceof ScalaRuntimeFixturesFamilyMember2) {
       const data = ScalaRuntimeFixturesFamilyMember2.toData(instance);
       data['_type'] = "ScalaRuntimeFixturesFamilyMember2";
       return data;
-    } else if (instance instanceof IScalaRuntimeFixturesFamilyMember1) {
-      const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
-      data['_type'] = "IScalaRuntimeFixturesFamilyMember1";
+    } else if (instance instanceof ScalaRuntimeFixturesFamilyMember3) {
+      const data = ScalaRuntimeFixturesFamilyMember3.toData(instance);
+      data['_type'] = "ScalaRuntimeFixturesFamilyMember3";
       return data;
     }
   }
@@ -310,11 +313,12 @@ export interface IScalaRuntimeFixturesFamily {
 
   def emit(
     decls: ListSet[Declaration],
-    config: Configuration = defaultConfig): String = {
+    config: Configuration = defaultConfig,
+    typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(config, _ => out)
+    val emiter = new TypeScriptEmitter(config, _ => out, typeMapper)
 
     try {
       emiter.emit(decls)

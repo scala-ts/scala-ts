@@ -16,6 +16,7 @@ object TypeScriptGenerator {
     classNames: List[String],
     logger: Logger,
     out: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
+    typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults,
     classLoader: ClassLoader = getClass.getClassLoader): Unit = {
     import runtime.universe
 
@@ -26,14 +27,15 @@ object TypeScriptGenerator {
       mirror.staticClass(className).toType
     }
 
-    generate(universe)(config, types, logger, out)
+    generate(universe)(config, types, logger, out, typeMapper)
   }
 
   def generate[U <: Universe](universe: U)(
     config: Configuration,
     types: List[universe.Type],
     logger: Logger,
-    out: TypeScriptPrinter)(
+    out: TypeScriptPrinter,
+    typeMapper: TypeScriptTypeMapper)(
     implicit
     cu: CompileUniverse[universe.type]): Unit = {
     val scalaParser = new ScalaParser[universe.type](universe, logger)
@@ -42,7 +44,7 @@ object TypeScriptGenerator {
     val scalaTypes = scalaParser.parseTypes(types)
     val typeScriptInterfaces = transpiler(scalaTypes)
 
-    val emiter = new TypeScriptEmitter(config, out)
+    val emiter = new TypeScriptEmitter(config, out, typeMapper)
 
     emiter.emit(typeScriptInterfaces)
   }

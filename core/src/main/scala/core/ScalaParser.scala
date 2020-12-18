@@ -8,24 +8,22 @@ import scala.collection.immutable.ListSet
 
 import scala.reflect.api.Universe
 
-import com.github.ghik.silencer.silent
-
-// TODO: reverse class/interface member
 final class ScalaParser[U <: Universe](
   universe: U, logger: Logger)(
   implicit
   cu: CompileUniverse[U]) {
 
   import universe.{
-    ClassSymbol,
+    ClassSymbolTag,
     MethodSymbol,
-    ModuleSymbol,
+    MethodSymbolTag,
+    ModuleSymbolTag,
     NoSymbol,
-    NullaryMethodType,
+    NullaryMethodTypeTag,
     SingleTypeApi,
     Symbol,
     Type,
-    TypeRef,
+    TypeRefTag,
     typeOf
   }
 
@@ -45,7 +43,7 @@ final class ScalaParser[U <: Universe](
     case _ if (tpe.getClass.getName contains "ModuleType" /*Workaround*/ ) =>
       parseObject(tpe)
 
-    case _ if tpe.typeSymbol.isClass => {
+    case _ if (tpe.typeSymbol.isClass) => {
       // TODO: Special case for ValueClass; See #ValueClass_1
 
       val classSym = tpe.typeSymbol.asClass
@@ -62,7 +60,7 @@ final class ScalaParser[U <: Universe](
     }
 
     case _ => {
-      logger.warning(s"Unsupported Scala type: $tpe")
+      logger.warning(s"Unsupported Scala type: ${tpe.typeSymbol.fullName}")
       Option.empty[TypeDef]
     }
   }
@@ -99,9 +97,8 @@ final class ScalaParser[U <: Universe](
     if (skipCompanion && classExists) {
       Option.empty
     } else {
-      @silent(".*is\\ unchecked.*")
       def members = tpe.decls.collect {
-        case Field(m) => member(m, List.empty)
+        case Field(MethodSymbolTag(m)) => member(m, List.empty)
       }
 
       val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
@@ -116,9 +113,8 @@ final class ScalaParser[U <: Universe](
     // TODO: (low priority) Check & warn there is no type parameters for a union type
 
     // Members
-    @silent(".*is\\ unchecked.*")
     def members = tpe.decls.collect {
-      case m: MethodSymbol if (m.isAbstract && m.isPublic && !m.isImplicit &&
+      case MethodSymbolTag(m) if (m.isAbstract && m.isPublic && !m.isImplicit &&
         !m.name.toString.endsWith("$")) => member(m, List.empty)
     }
 
@@ -151,14 +147,13 @@ final class ScalaParser[U <: Universe](
       dealias.typeParams.map(_.name.decodedName.toString)
 
     // Members
-    @silent(".*is\\ unchecked.*")
     def members = caseClassType.members.collect {
-      case Field(m) if m.isCaseAccessor => member(m, typeParams)
+      case Field(MethodSymbolTag(m)) if m.isCaseAccessor =>
+        member(m, typeParams)
     }.toList
 
-    @silent(".*is\\ unchecked.*")
     def values = caseClassType.decls.collect {
-      case Field(m) => member(m, typeParams)
+      case Field(MethodSymbolTag(m)) => member(m, typeParams)
     }.filterNot(members.contains)
 
     Some(CaseClass(
@@ -175,28 +170,37 @@ final class ScalaParser[U <: Universe](
         sym.returnType.map(_.dealias), typeParams.toSet))
 
   @annotation.tailrec
-  @silent(".*is\\ unchecked.*")
-  private def parse(types: List[Type], examined: ListSet[Type], parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
+  private def parse(
+    types: List[Type],
+    examined: ListSet[Type],
+    parsed: ListSet[TypeDef]): ListSet[TypeDef] = types match {
     case scalaType :: tail => {
-
       if (!examined.contains(scalaType) &&
         !scalaType.typeSymbol.isParameter) {
 
-        val relevantMemberSymbols = scalaType.members.collect {
-          case m: MethodSymbol if m.isCaseAccessor => m
-        }
-
-        val memberTypes = relevantMemberSymbols.map(
-          _.typeSignature.map(_.dealias) match {
-            case NullaryMethodType(resultType) => resultType
-            case t => t.map(_.dealias)
-          })
-
         val typeArgs = scalaType match {
-          case t: TypeRef =>
+          case TypeRefTag(t) =>
             t.args
 
           case _ => List.empty[Type]
+        }
+
+        val typeParams: Map[Symbol, Type] =
+          scalaType.typeConstructor.typeSymbol.
+            asType.typeParams.zip(typeArgs).toMap
+
+        val memberTypes = scalaType.members.collect {
+          case MethodSymbolTag(m) if m.isCaseAccessor =>
+            val mt = m.typeSignature match {
+              case universe.NullaryMethodType(resultType) => // for `=> T`
+                resultType
+
+              case t =>
+                t
+            }
+
+            // Resolve member type according `scalaType` type parameters
+            typeParams.getOrElse(mt.typeSymbol, mt)
         }
 
         parse(
@@ -212,7 +216,6 @@ final class ScalaParser[U <: Universe](
     case _ => parsed
   }
 
-  @silent(".*is\\ unchecked.*")
   private def scalaTypeRef(
     scalaType: Type,
     typeParams: Set[String]): ScalaTypeRef = {
@@ -255,7 +258,7 @@ final class ScalaParser[U <: Universe](
     }
 
     scalaType match {
-      case tpeRef: TypeRef => if (isCaseClass(scalaType)) {
+      case TypeRefTag(tpeRef) => if (isCaseClass(scalaType)) {
         val caseClassName = buildQualifiedIdentifier(typeSymbol)
         val typeArgs = tpeRef.args
         val typeArgRefs = typeArgs.map(scalaTypeRef(_, typeParams))
@@ -283,7 +286,7 @@ final class ScalaParser[U <: Universe](
         case innerType :: _ => tpeName match {
           case "List" | "Seq" | "Set" =>
             //println(s"?$innerType---> ${universe.appliedType(mirror.staticClass("scala.collection.Traversable"), innerType)}")
-            // TODO: Rather check type is Traversable
+            // TODO: (medium priority) Rather check type is Traversable
             SeqRef(scalaTypeRef(innerType, typeParams))
 
           case "Option" =>
@@ -323,8 +326,11 @@ final class ScalaParser[U <: Universe](
         case (_, "Double") =>
           Some(DoubleRef)
 
-        case (_, "BigDecimal") => // TODO: BigInt, BigDecimal, java.math
+        case (_, "BigDecimal") =>
           Some(BigDecimalRef)
+
+        case (_, "BigInt" | "BigInteger") =>
+          Some(BigIntegerRef)
 
         case (_, "Boolean") =>
           Some(BooleanRef)
@@ -363,8 +369,9 @@ final class ScalaParser[U <: Universe](
     scalaType <:< typeOf[AnyVal]
 
   @inline private def isEnumerationValue(scalaType: Type): Boolean = {
-    // TODO: rather compare Type (than string)
-    scalaType.typeSymbol.asClass.fullName == "scala.Enumeration.Value"
+    // TODO: (low priority) rather compare Type (than string)
+    val sym = scalaType.typeSymbol
+    sym.isClass && sym.asClass.fullName == "scala.Enumeration.Value"
   }
 
   @annotation.tailrec
@@ -384,9 +391,8 @@ final class ScalaParser[U <: Universe](
     val tpeSym = tpe.typeSymbol.asClass
 
     @annotation.tailrec
-    @silent(".*is\\ unchecked.*")
     def allSubclasses(path: Seq[Symbol], subclasses: Set[Type]): Set[Type] = path.headOption match {
-      case Some(cls: ClassSymbol) if (
+      case Some(ClassSymbolTag(cls)) if (
         tpeSym != cls && cls.selfType.baseClasses.contains(tpeSym)) => {
         val newSub: Set[Type] = if (!cls.isCaseClass) {
           logger.warning(s"cannot handle class ${cls.fullName}: no case accessor")
@@ -399,12 +405,12 @@ final class ScalaParser[U <: Universe](
         allSubclasses(path.tail, subclasses ++ newSub)
       }
 
-      case Some(o: ModuleSymbol) if (
+      case Some(ModuleSymbolTag(o)) if (
         o.companion == NoSymbol && // not a companion object
         o.typeSignature.baseClasses.contains(tpeSym)) =>
         allSubclasses(path.tail, subclasses + o.typeSignature)
 
-      case Some(o: ModuleSymbol) if (
+      case Some(ModuleSymbolTag(o)) if (
         o.companion == NoSymbol // not a companion object
       ) => allSubclasses(path.tail, subclasses)
 
