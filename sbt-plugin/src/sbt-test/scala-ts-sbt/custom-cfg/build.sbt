@@ -18,7 +18,10 @@ sourceManaged in scalatsOnCompile := {
 scalatsPrinter := classOf[scalats.CustomPrinter]
 
 // Custom type mapper
-scalatsTypeScriptTypeMappers := Seq(classOf[scalats.CustomTypeMapper])
+scalatsTypeScriptTypeMappers := Seq(
+  scalatsNullableAsOption, // Also scalatsDateAsString, scalatsNumberAsString
+  classOf[scalats.CustomTypeMapper]
+)
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO

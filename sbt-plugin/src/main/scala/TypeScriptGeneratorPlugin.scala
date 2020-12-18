@@ -76,6 +76,18 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     val scalatsTypeExcludes = settingKey[Set[String]](
       "Scala types to be excluded for ScalaTS (default: none)")
+
+    // ---
+
+    lazy val scalatsNullableAsOption =
+      classOf[TypeScriptTypeMapper.NullableAsOption]
+
+    lazy val scalatsDateAsString =
+      classOf[TypeScriptTypeMapper.DateAsString]
+
+    lazy val scalatsNumberAsString =
+      classOf[TypeScriptTypeMapper.NumberAsString]
+
   }
 
   import autoImport._
