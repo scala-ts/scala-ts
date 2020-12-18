@@ -15,13 +15,17 @@ lazy val core = project.in(file("core")).settings(
       case _                       => base / "scala-2.12-"
     }
   },
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "org.slf4j" % "slf4j-api" % "1.7.30",
-    "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.3" % Test
-  ),
+  libraryDependencies ++= {
+    val specsVer = "4.10.5"
+
+    Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
+      "org.specs2" %% "specs2-core" % specsVer % Test,
+      "org.specs2" %% "specs2-junit" % specsVer % Test)
+  },
   libraryDependencies ++= {
     if (scalaBinaryVersion.value == "2.13") {
       Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.0")

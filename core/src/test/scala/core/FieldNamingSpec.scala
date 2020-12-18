@@ -1,33 +1,35 @@
 package io.github.scalats.core
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.specs2.specification.core.Fragments
 
-final class FieldNamingSpec extends AnyFlatSpec with Matchers {
-  it should "support identity" in {
+final class FieldNamingSpec extends org.specs2.mutable.Specification {
+  "Field naming" title
+
+  "Identity naming" should {
     import FieldNaming.Identity
 
-    val fixtures = Table(
+    Fragments.foreach(Seq(
       "lorem" -> "lorem",
       "fooBar" -> "fooBar",
-      "Ipsum" -> "Ipsum")
-
-    forAll(fixtures) { (name, encoded) =>
-      Identity("Foo", name) should equal(encoded)
+      "Ipsum" -> "Ipsum")) {
+      case (name, encoded) =>
+        s"be ok for '${name}'" in {
+          Identity("Foo", name) must_=== encoded
+        }
     }
   }
 
-  it should "support snake case" in {
+  "Snake case naming" should {
     import FieldNaming.SnakeCase
 
-    val fixtures = Table(
+    Fragments.foreach(Seq(
       "lorem" -> "lorem",
       "fooBar" -> "foo_bar",
-      "Ipsum" -> "Ipsum")
-
-    forAll(fixtures) { (name, encoded) =>
-      SnakeCase("Bar", name) should equal(encoded)
+      "Ipsum" -> "Ipsum")) {
+      case (name, encoded) =>
+        s"be ok for '${name}'" in {
+          SnakeCase("Bar", name) must_=== encoded
+        }
     }
   }
 }

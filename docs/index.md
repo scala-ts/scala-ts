@@ -6,15 +6,11 @@ layout: default
 
 *scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
 
-## Release notes
-
-*New version 0.3.2* - added support for more types; added file output support.
-
-*New version 0.4.0* - added support for SBT 1.0, Either and Map.
-
 ## Usage
 
-*scala-ts* can be used either [standalone](#standalone) or as a SBT plugin.
+*scala-ts* can be used either [standalone](#standalone) or as a [SBT plugin](#sbt-plugin).
+
+TODO: Scala to TS examples
 
 ### SBT plugin
 
@@ -35,6 +31,12 @@ disablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 By default, the TypeScript files are generated on compile:
 
     sbt compile
+
+**Release notes:**
+
+*New version 0.3.2* - added support for more types; added file output support.
+
+*New version 0.4.0* - added support for SBT 1.0, Either and Map.
 
 #### Configuration
 

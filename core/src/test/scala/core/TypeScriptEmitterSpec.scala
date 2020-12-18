@@ -2,15 +2,15 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
+  "TypeScript emitter" title
 
-final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   import TypeScriptModel._
   import TranspilerResults._
 
-  it should "emit class with one primitive member" in {
-    emit(ListSet(clazz1)) should equal("""export class ScalaRuntimeFixturesTestClass1 implements IScalaRuntimeFixturesTestClass1 {
+  "Emitter" should {
+    "emit class with one primitive member" in {
+      emit(ListSet(clazz1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass1 implements IScalaRuntimeFixturesTestClass1 {
   constructor(
     public name: string
   ) {
@@ -26,17 +26,17 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit interface for a class with one primitive member" in {
-    emit(ListSet(interface1)) should equal("""export interface IScalaRuntimeFixturesTestClass1 {
+    "emit interface for a class with one primitive member" in {
+      emit(ListSet(interface1)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass1 {
   name: string;
 }
 """)
-  }
+    }
 
-  it should "emit class with generic member" in {
-    emit(ListSet(clazz2)) should equal("""export class ScalaRuntimeFixturesTestClass2<T> implements IScalaRuntimeFixturesTestClass2<T> {
+    "emit class with generic member" in {
+      emit(ListSet(clazz2)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass2<T> implements IScalaRuntimeFixturesTestClass2<T> {
   constructor(
     public name: T
   ) {
@@ -52,17 +52,17 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit interface for a class with generic member" in {
-    emit(ListSet(interface2)) should equal("""export interface IScalaRuntimeFixturesTestClass2<T> {
+    "emit interface for a class with generic member" in {
+      emit(ListSet(interface2)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass2<T> {
   name: T;
 }
 """)
-  }
+    }
 
-  it should "emit class with generic array" in {
-    emit(ListSet(clazz3)) should equal("""export class ScalaRuntimeFixturesTestClass3<T> implements IScalaRuntimeFixturesTestClass3<T> {
+    "emit class with generic array" in {
+      emit(ListSet(clazz3)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass3<T> implements IScalaRuntimeFixturesTestClass3<T> {
   constructor(
     public name: T[]
   ) {
@@ -78,17 +78,17 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit interface for a class with generic array" in {
-    emit(ListSet(interface3)) should equal("""export interface IScalaRuntimeFixturesTestClass3<T> {
+    "emit interface for a class with generic array" in {
+      emit(ListSet(interface3)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass3<T> {
   name: T[];
 }
 """)
-  }
+    }
 
-  it should "emit class for a generic case class with a optional member" in {
-    emit(ListSet(clazz5)) should equal("""export class ScalaRuntimeFixturesTestClass5<T> implements IScalaRuntimeFixturesTestClass5<T> {
+    "emit class for a generic case class with a optional member" in {
+      emit(ListSet(clazz5)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass5<T> implements IScalaRuntimeFixturesTestClass5<T> {
   constructor(
     public name: (T | null),
     public counters: { [key: string]: number }
@@ -106,18 +106,18 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit interface for a generic case class with a optional member" in {
-    emit(ListSet(interface5)) should equal("""export interface IScalaRuntimeFixturesTestClass5<T> {
+    "emit interface for a generic case class with a optional member" in {
+      emit(ListSet(interface5)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass5<T> {
   name: (T | null);
   counters: { [key: string]: number };
 }
 """)
-  }
+    }
 
-  it should "emit generic case class with disjunction" in {
-    emit(ListSet(clazz7)) should equal("""export class ScalaRuntimeFixturesTestClass7<T> implements IScalaRuntimeFixturesTestClass7<T> {
+    "emit generic case class with disjunction" in {
+      emit(ListSet(clazz7)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass7<T> implements IScalaRuntimeFixturesTestClass7<T> {
   constructor(
     public name: (ScalaRuntimeFixturesTestClass1 | ScalaRuntimeFixturesTestClass1B)
   ) {
@@ -133,10 +133,10 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit generic case class with tuple values" in {
-    emit(ListSet(clazz10)) should equal("""export class ScalaRuntimeFixturesTestClass10 implements IScalaRuntimeFixturesTestClass10 {
+    "emit generic case class with tuple values" in {
+      emit(ListSet(clazz10)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass10 implements IScalaRuntimeFixturesTestClass10 {
   constructor(
     public name: string,
     public tuple: [number],
@@ -160,25 +160,25 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit interface for a generic case class with disjunction" in {
-    emit(ListSet(interface7)) should equal("""export interface IScalaRuntimeFixturesTestClass7<T> {
+    "emit interface for a generic case class with disjunction" in {
+      emit(ListSet(interface7)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass7<T> {
   name: (IScalaRuntimeFixturesTestClass1 | IScalaRuntimeFixturesTestClass1B);
 }
 """)
-  }
+    }
 
-  it should "emit class using FieldNaming.SnakeCase" in {
-    val clazz = ClassDeclaration("Test", ClassConstructor(ListSet(
-      ClassConstructorParameter("fooBar", TypeScriptModel.StringRef),
-      ClassConstructorParameter("name", SimpleTypeRef("T")))),
-      ListSet.empty,
-      List("T"), Option.empty)
+    "emit class using FieldNaming.SnakeCase" in {
+      val clazz = ClassDeclaration("Test", ClassConstructor(ListSet(
+        ClassConstructorParameter("fooBar", TypeScriptModel.StringRef),
+        ClassConstructorParameter("name", SimpleTypeRef("T")))),
+        ListSet.empty,
+        List("T"), Option.empty)
 
-    val config = defaultConfig.copy(fieldNaming = FieldNaming.SnakeCase)
+      val config = defaultConfig.copy(fieldNaming = FieldNaming.SnakeCase)
 
-    emit(ListSet(clazz), config) should equal("""export class Test<T> implements ITest<T> {
+      emit(ListSet(clazz), config) must beTypedEqualTo("""export class Test<T> implements ITest<T> {
   constructor(
     public name: T,
     public foo_bar: string
@@ -199,10 +199,10 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit class for a singleton #1" in {
-    emit(ListSet(singleton1)) should equal("""export class ScalaRuntimeFixturesTestObject1 {
+    "emit class for a singleton #1" in {
+      emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {
   private static instance: ScalaRuntimeFixturesTestObject1;
 
   private constructor() {}
@@ -224,11 +224,11 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit class for a singleton #2" in {
-    // SCALATS1: No implements SupI
-    emit(ListSet(singleton2)) should equal("""export class ScalaRuntimeFixturesTestObject2 implements SupI {
+    "emit class for a singleton #2" in {
+      // SCALATS1: No implements SupI
+      emit(ListSet(singleton2)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject2 implements SupI {
   private static instance: ScalaRuntimeFixturesTestObject2;
 
   private constructor() {}
@@ -250,24 +250,25 @@ final class TypeScriptEmitterSpec extends AnyFlatSpec with Matchers {
   }
 }
 """)
-  }
+    }
 
-  it should "emit class as union member #1" in {
-    the[IllegalStateException].
-      thrownBy(emit(ListSet(unionMember1Clazz))) should have message (
-        "Cannot emit static members for class values: code (number)")
+    "emit class as union member #1" in {
+      emit(ListSet(unionMember1Clazz)) must throwA[IllegalStateException].like {
+        case cause =>
+          cause.getMessage must_=== "Cannot emit static members for class values: code (number)"
+      }
+    }
 
-  }
+    "emit singleton as union member #2" in {
+      emit(ListSet(unionMember2Singleton)) must throwA[IllegalStateException].
+        like {
+          case cause =>
+            cause.getMessage must_=== "Cannot emit static members for properties of singleton 'ScalaRuntimeFixturesFamilyMember2': foo (string)"
+        }
+    }
 
-  it should "emit singleton as union member #2" in {
-    the[IllegalStateException].
-      thrownBy(emit(ListSet(unionMember2Singleton))) should have message (
-        "Cannot emit static members for properties of singleton 'ScalaRuntimeFixturesFamilyMember2': foo (string)")
-
-  }
-
-  it should "emit union" in {
-    emit(ListSet(union1)) should equal("""export namespace ScalaRuntimeFixturesFamily {
+    "emit union" in {
+      emit(ListSet(union1)) must beTypedEqualTo("""export namespace ScalaRuntimeFixturesFamily {
   type Union = IScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
 
   public static fromData(data: any): ScalaRuntimeFixturesFamily {
@@ -305,6 +306,7 @@ export interface IScalaRuntimeFixturesFamily {
   foo: string;
 }
 """)
+    }
   }
 
   // ---

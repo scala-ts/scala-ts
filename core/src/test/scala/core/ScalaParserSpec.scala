@@ -4,12 +4,10 @@ import scala.collection.immutable.ListSet
 
 import scala.reflect.runtime.{ universe => runtimeUniverse }
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
 import ScalaModel._
 
-final class ScalaParserSpec extends AnyFlatSpec with Matchers {
+final class ScalaParserSpec extends org.specs2.mutable.Specification {
+  "Scala parser" title
   import ScalaParserResults._
 
   private implicit def cl: ClassLoader = getClass.getClassLoader
@@ -18,90 +16,96 @@ final class ScalaParserSpec extends AnyFlatSpec with Matchers {
     universe = runtimeUniverse,
     logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
 
-  /* TODO
-  it should "parse case class with one primitive member" in {
-    val parsed = scalaParser.parseTypes(List(
-      ScalaRuntimeFixtures.TestClass1Type))
+  "Parser" should {
+    "handle case class with one primitive member" in {
+      val parsed = scalaParser.parseTypes(List(
+        ScalaRuntimeFixtures.TestClass1Type))
 
-    parsed should contain(caseClass1)
+      parsed must contain(caseClass1)
+    }
+
+    "handle generic case class with one member" in {
+      val parsed = scalaParser.parseTypes(List(
+        ScalaRuntimeFixtures.TestClass2Type))
+
+      parsed must contain(caseClass2)
+    }
+
+    "handle generic case class with one member list of type parameter" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass3Type))
+      parsed must contain(caseClass3)
+    }
+
+    "handle generic case class with one optional member" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass5Type))
+      parsed must contain(caseClass5)
+    }
+
+    "correctly detect involved types" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass6Type))
+
+      parsed must contain(caseClass1) and {
+        parsed must contain(caseClass2)
+      } and {
+        parsed must contain(caseClass3)
+      } and {
+        parsed must contain(caseClass4)
+      } and {
+        parsed must contain(caseClass5)
+      } and {
+        parsed must contain(caseClass6)
+      } and {
+        parsed.size must_=== 6
+      }
+    }
+
+    "correctly handle either types" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass7Type))
+      parsed must contain(caseClass7)
+    }
+
+    "correctly handle case class extends AnyVal as a primitive type" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass8Type))
+      parsed must contain(caseClass8)
+    }
+
+    "correctly handle enumeration values" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass9Type))
+      parsed must contain(caseClass9)
+    }
+
+    "correctly handle tuple values" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass10Type))
+
+      parsed must contain(caseClass10)
+    }
+
+    "correctly handle case object" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject1Type))
+
+      parsed must contain(caseObject1)
+    }
+
+    "skip companion object" in {
+      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass1CompanionType))
+
+      parsed must beEmpty
+    }
+
+    "correctly handle object" in {
+      val parsed = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestObject2Type))
+
+      parsed must contain(caseObject2)
+    }
+
+    "correctly handle sealed trait as union" in {
+      val parsed = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.FamilyType))
+
+      parsed must contain(sealedFamily1)
+    }
   }
-
-  it should "parse generic case class with one member" in {
-    val parsed = scalaParser.parseTypes(List(
-      ScalaRuntimeFixtures.TestClass2Type))
-
-    parsed should contain(caseClass2)
-  }
-
-  it should "parse generic case class with one member list of type parameter" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass3Type))
-    parsed should contain(caseClass3)
-  }
-
-  it should "parse generic case class with one optional member" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass5Type))
-    parsed should contain(caseClass5)
-  }
-   */
-
-  it should "correctly detect involved types" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass6Type))
-
-    parsed should contain(caseClass1)
-    parsed should contain(caseClass2)
-    parsed should contain(caseClass3)
-    parsed should contain(caseClass4)
-    parsed should contain(caseClass5)
-    parsed should contain(caseClass6)
-    //parsed.size should equal(6)
-  }
-
-  /* TODO
-  it should "correctly handle either types" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass7Type))
-    parsed should contain(caseClass7)
-  }
-
-  it should "correctly parse case class extends AnyVal as a primitive type" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass8Type))
-    parsed should contain(caseClass8)
-  }
-
-  it should "correctly handle enumeration values" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass9Type))
-    parsed should contain(caseClass9)
-  }
-
-  it should "correctly tuple values" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass10Type))
-
-    parsed should contain(caseClass10)
-  }
-
-  it should "correctly parse case object" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject1Type))
-
-    parsed should contain(caseObject1)
-  }
-
-  it should "skip companion object" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass1CompanionType))
-
-    parsed.size should equal(0)
-  }
-
-  it should "correctly parse object" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject2Type))
-
-    parsed should contain(caseObject2)
-  }
-
-  it should "correctly parse sealed trait as union" in {
-    val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.FamilyType))
-
-    parsed should contain(sealedFamily1)
-  }
-   */
 }
 
 object ScalaRuntimeFixtures {
