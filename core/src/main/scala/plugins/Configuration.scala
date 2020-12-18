@@ -138,6 +138,7 @@ object Configuration {
       typeMappers, additionalClasspath)
   }
 
+  // TODO: (Re)move to private function in the sbt-plugin
   @SuppressWarnings(Array("NullParameter"))
   def toXml(conf: Configuration, rootName: String = "scalats"): Elem = {
     def elem(n: String, children: Seq[Elem]) =

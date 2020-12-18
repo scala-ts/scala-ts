@@ -142,12 +142,15 @@ object TranspilerResults {
 
   val interface5 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass5", ListSet(
-      Member("name", NullableType(SimpleTypeRef("T")))),
+      Member("name", NullableType(SimpleTypeRef("T"))),
+      Member("counters", MapType(StringRef, NumberRef))),
     typeParams = List("T"),
     superInterface = Option.empty)
 
   val clazz5 = ClassDeclaration(
     "ScalaRuntimeFixturesTestClass5", ClassConstructor(ListSet(
+      ClassConstructorParameter(
+        "counters", MapType(StringRef, NumberRef)),
       ClassConstructorParameter(
         "name", NullableType(SimpleTypeRef("T"))))),
     ListSet.empty,

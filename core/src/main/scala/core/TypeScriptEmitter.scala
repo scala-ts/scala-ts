@@ -235,7 +235,7 @@ final class TypeScriptEmitter(
         o.println(s"${fieldNaming(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
       }
 
-      val params = list(parameters)
+      val params = list(parameters).reverse
 
       if (!config.emitInterfaces) {
         // Class fields
@@ -294,11 +294,12 @@ final class TypeScriptEmitter(
      - Return type { [key: string]: any }
      */
 
+    o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
+
     if (config.fieldNaming == FieldNaming.Identity) {
       // optimized identity
 
       // Decoder factory: MyClass.fromData({..})
-      o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
       o.println(s"${indent}${indent}return <${name}${tparams}>(data)${lineSeparator}")
       o.println(s"${indent}}")
 
@@ -308,10 +309,9 @@ final class TypeScriptEmitter(
       o.println(s"${indent}}")
     } else {
       // Decoder factory: MyClass.fromData({..})
-      o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
       o.print(s"${indent}${indent}return new ${name}${tparams}(")
 
-      val params = list(parameters).zipWithIndex
+      val params = list(parameters).reverse.zipWithIndex
       val fieldNaming = config.fieldNaming(name, _: String)
 
       params.foreach {
@@ -383,12 +383,12 @@ final class TypeScriptEmitter(
 
       case UnknownTypeRef(typeName) => typeName
 
-      case SimpleTypeRef(param) => param
+      case tpe: SimpleTypeRef => tpe.name
 
       case NullableType(innerType) if config.optionToNullable =>
         s"(${tr(innerType)} | null)"
 
-      case NullableType(innerType) if config.optionToUndefined =>
+      case NullableType(innerType) =>
         s"(${tr(innerType)} | undefined)"
 
       case UnionType(possibilities) =>

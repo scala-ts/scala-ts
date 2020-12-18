@@ -130,7 +130,9 @@ object ScalaRuntimeFixtures {
 
   case class TestClass4[T](name: TestClass3[T])
 
-  case class TestClass5[T](name: Option[T])
+  case class TestClass5[T](
+    name: Option[T],
+    counters: Map[String, java.math.BigInteger])
 
   case class TestClass6[T](
     name: Option[TestClass5[List[Option[TestClass4[String]]]]],
@@ -216,7 +218,9 @@ object ScalaParserResults {
   val caseClass5 = CaseClass(
     identifier = QualifiedIdentifier(
       "TestClass5", List("ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", OptionRef(TypeParamRef("T")))),
+    fields = ListSet(
+      TypeMember("counters", MapRef(StringRef, BigIntegerRef)),
+      TypeMember("name", OptionRef(TypeParamRef("T")))),
     values = ListSet.empty,
     typeArgs = List("T"))
 
