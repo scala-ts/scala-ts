@@ -1,5 +1,14 @@
 package io.github.scalats.core
 
+/**
+ * Functional type to customize the field naming.
+ *
+ * {{{
+ * class CustomFieldNaming extends io.github.scalats.core.FieldNaming {
+ *   def apply(tpe: String, property: String): String = "_" + property
+ * }
+ * }}}
+ */
 trait FieldNaming extends Function2[String, String, String] {
   /**
    * Returns the encoded representation for the given field name

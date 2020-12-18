@@ -24,7 +24,7 @@ Add the following plugin to `project/plugins.sbt`:
 
 Additionally, enable (or disabled) the plugin for a specific project:
 
-```
+```ocaml
 // Enable:
 enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 

@@ -4,6 +4,11 @@ import io.github.scalats.core.TypeScriptModel.TypeRef
 
 /**
  * The implementations must be class with a no-arg constructor.
+ *
+ * See:
+ * - [[TypeScriptTypeMapper.DateAsString]]
+ * - [[TypeScriptTypeMapper.NumberAsString]]
+ * - [[TypeScriptTypeMapper.NullableAsOption]]
  */
 trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]] { self =>
 

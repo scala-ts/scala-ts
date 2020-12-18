@@ -23,8 +23,9 @@ final class PluginConfigSpec extends AnyFlatSpec with Matchers {
     }
 
     it should "write XML for default configuration" in {
-      Configuration.load(
-        Configuration.toXml(defaultCfg), logger, None) should equal(defaultCfg)
+      val xml = (<scalats><compilationRuleSet><includes/><excludes/></compilationRuleSet><typeRuleSet><includes/><excludes/></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>true</prependIPrefix><prependEnclosingClassNames>true</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>Identity</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath/></scalats>)
+
+      Configuration.load(xml, logger, None) should equal(defaultCfg)
     }
   }
 
@@ -50,9 +51,9 @@ final class PluginConfigSpec extends AnyFlatSpec with Matchers {
     }
 
     it should "write XML from full configuration" in {
-      Configuration.load(
-        Configuration.toXml(
-          customConfig), logger, None) should equal(customConfig)
+      val xml = (<scalats><compilationRuleSet><includes><include>ScalaParserSpec\.scala</include><include>Transpiler.*</include></includes><excludes><exclude>foo</exclude></excludes></compilationRuleSet><typeRuleSet><includes><include>org\.scalats\.core\..*</include></includes><excludes><exclude>.*Spec</exclude><exclude>ScalaRuntimeFixtures$</exclude><exclude>object:.*ScalaParserResults</exclude><exclude>FamilyMember(2|3)</exclude></excludes></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>false</prependIPrefix><prependEnclosingClassNames>false</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>SnakeCase</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath/></scalats>)
+
+      Configuration.load(xml, logger, None) should equal(customConfig)
     }
   }
 
@@ -67,8 +68,9 @@ final class PluginConfigSpec extends AnyFlatSpec with Matchers {
     }
 
     it should "write XML for configuration with additional classpath" in {
-      Configuration.load(
-        Configuration.toXml(cfg), logger, None) should equal(cfg)
+      val xml = (<scalats><compilationRuleSet><includes/><excludes/></compilationRuleSet><typeRuleSet><includes/><excludes/></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>true</prependIPrefix><prependEnclosingClassNames>true</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>Identity</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath><url>file:/tmp/foo1</url><url>file:/tmp/foo2</url></additionalClasspath><typeScriptTypeMappers><class>io.github.scalats.core.TypeScriptTypeMapper$Defaults$</class></typeScriptTypeMappers></scalats>)
+
+      Configuration.load(xml, logger, None) should equal(cfg)
     }
   }
 }

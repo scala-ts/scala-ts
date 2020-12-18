@@ -176,7 +176,7 @@ final class TypeScriptEmitter(
 
       o.println(" {")
 
-      list(fields).foreach { member =>
+      list(fields).reverse.foreach { member =>
         o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
       }
 

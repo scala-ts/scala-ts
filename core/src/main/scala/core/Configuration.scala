@@ -13,7 +13,7 @@ final class Configuration(
   val emitCodecs: Configuration.EmitCodecs,
   val optionToNullable: Boolean,
   val optionToUndefined: Boolean,
-  val prependIPrefix: Boolean,
+  val prependIPrefix: Boolean, // TODO: Rather interfacePrefix: Option[String]
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
   val typescriptLineSeparator: Configuration.TypeScriptLineSeparator,

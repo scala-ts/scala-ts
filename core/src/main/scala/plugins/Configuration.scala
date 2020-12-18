@@ -33,7 +33,7 @@ final class Configuration(
 
   override def hashCode: Int = tupled.hashCode
 
-  override def toString = s"""{ compilationRuleSet: $compilationRuleSet, typeRuleSet: ${typeRuleSet}, settings${tupled.toString}, printer: ${printer}, additionalClasspath: [${additionalClasspath mkString ", "}] }"""
+  override def toString = s"""{ compilationRuleSet: $compilationRuleSet, typeRuleSet: ${typeRuleSet}, settings${tupled.toString}, printer: ${printer.getClass.getName}, additionalClasspath: [${additionalClasspath mkString ", "}] }"""
 
   private[plugins] lazy val tupled =
     Tuple5(settings, compilationRuleSet, typeRuleSet,
@@ -136,40 +136,5 @@ object Configuration {
       settings,
       compilationRuleSet, typeRuleSet, printer,
       typeMappers, additionalClasspath)
-  }
-
-  // TODO: (Re)move to private function in the sbt-plugin
-  @SuppressWarnings(Array("NullParameter"))
-  def toXml(conf: Configuration, rootName: String = "scalats"): Elem = {
-    def elem(n: String, children: Seq[Elem]) =
-      new Elem(
-        prefix = null,
-        label = n,
-        attributes1 = scala.xml.Null,
-        scope = new scala.xml.NamespaceBinding(null, null, null),
-        minimizeEmpty = true,
-        children: _*)
-
-    val children = Seq.newBuilder[Elem] ++= Seq(
-      SourceRuleSet.toXml(conf.compilationRuleSet, "compilationRuleSet"),
-      SourceRuleSet.toXml(conf.typeRuleSet, "typeRuleSet"),
-      Settings.toXml(conf.settings, "settings"),
-      elem("additionalClasspath", conf.additionalClasspath.map { url =>
-        (<url>{ url }</url>)
-      }))
-
-    if (conf.printer != TypeScriptPrinter.StandardOutput) {
-      children += (<printer>{ conf.printer.getClass.getName }</printer>)
-    }
-
-    if (conf.typeScriptTypeMappers.nonEmpty) {
-      children += elem(
-        "typeScriptTypeMappers",
-        conf.typeScriptTypeMappers.map { m =>
-          (<class>{ m.getClass.getName }</class>)
-        })
-    }
-
-    elem(rootName, children.result())
   }
 }

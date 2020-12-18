@@ -4,6 +4,10 @@ name := "sbt-plugin-test-custom-cfg"
 
 version := "1.0-SNAPSHOT"
 
+scalatsEmitClasses := true // By default: false
+
+scalatsPrependIPrefix := true // By default: false (required with scalatsEmitClasses)
+
 // Custom field naming
 scalatsFieldNaming := classOf[scalats.CustomFieldNaming]
 

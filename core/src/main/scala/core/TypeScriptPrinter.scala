@@ -7,7 +7,7 @@ trait TypeScriptPrinter extends (String => PrintStream) {
 }
 
 object TypeScriptPrinter {
-  lazy val StandardOutput = new TypeScriptPrinter {
+  object StandardOutput extends TypeScriptPrinter {
     def apply(name: String) = Console.out
   }
 }

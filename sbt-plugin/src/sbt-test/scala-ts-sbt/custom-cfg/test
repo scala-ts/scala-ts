@@ -1,5 +1,7 @@
+$ absent target/_custom/scalatsBar.ts
+
 # Custom generation from Scala case class
-> compile
+> ;clean ;compile
 $ exists target/_custom/scalatsBar.ts
 
 # Check the generated files is as expected
