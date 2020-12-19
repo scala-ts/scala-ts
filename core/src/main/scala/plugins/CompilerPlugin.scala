@@ -44,6 +44,20 @@ final class CompilerPlugin(val global: Global)
         global.inform(s"{${plugin.name}} Set printer output directory: ${printerOutputDirectory.getAbsolutePath}")
       }
 
+      if (opt startsWith "sys.") {
+        // Set system property related to scala-ts passed as plugin options
+
+        val prop = opt.stripPrefix("sys.")
+
+        prop.span(_ != '=') match {
+          case (_, "") =>
+            global.inform(s"{${plugin.name}} Ignore invalid option: ${opt}")
+
+          case (key, rv) =>
+            sys.props.put(key, rv.stripPrefix("="))
+        }
+      }
+
       if (opt == "debug" || opt == "debug=true") {
         debug = true
       }

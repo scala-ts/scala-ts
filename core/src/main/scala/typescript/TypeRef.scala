@@ -65,6 +65,8 @@ case class UnknownTypeRef(name: String) extends TypeRef {
  */
 case class TupleRef(typeArgs: List[TypeRef])
   extends TypeRef with GenericTypeRef {
+
+  @SuppressWarnings(Array("ListSize"))
   def name = s"Tuple${typeArgs.size}"
 }
 
@@ -129,7 +131,7 @@ case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
  * @param valueType the type of the values
  */
 case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef {
-  private[typescript] final def requires: Set[TypeRef] =
+  private[typescript] def requires: Set[TypeRef] =
     keyType.requires ++ valueType.requires
 
   override def toString = s"Map<${keyType}, ${valueType}>"

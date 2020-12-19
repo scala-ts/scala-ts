@@ -1,3 +1,7 @@
+// Prelude ...
+// ... second line
+// ...
+
 export interface IBar {
   _name: string;
   _age: number;

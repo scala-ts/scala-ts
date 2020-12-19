@@ -19,7 +19,10 @@ sourceManaged in scalatsOnCompile := {
 }
 
 // Custom printer
-scalatsPrinter := classOf[scalats.CustomPrinter]
+scalatsPrinter := scalatsPrinterForClass[scalats.CustomPrinter]()
+
+scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
+  "// Prelude ...", "// ... second line", "// ...")
 
 // Custom type mapper
 scalatsTypeScriptTypeMappers := Seq(

@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import scala.collection.immutable.ListSet
+import scala.collection.immutable.{ ListSet, Set }
 
 import io.github.scalats.typescript._
 
@@ -12,7 +12,7 @@ import io.github.scalats.typescript._
  */
 final class TypeScriptEmitter(
   val config: Configuration,
-  out: String => PrintStream,
+  out: Function2[String, Set[TypeRef], PrintStream],
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
   import Internals.list
@@ -34,12 +34,12 @@ final class TypeScriptEmitter(
       case decl: ClassDeclaration =>
         emitClassDeclaration(decl)
 
-      case SingletonDeclaration(name, members, superInterface) =>
-        emitSingletonDeclaration(name, members, superInterface)
+      case s @ SingletonDeclaration(name, members, superInterface) =>
+        emitSingletonDeclaration(name, members, superInterface, s.requires)
 
-      case UnionDeclaration(name, fields, possibilities, superInterface) =>
+      case u @ UnionDeclaration(name, fields, possibilities, superInterface) =>
         emitUnionDeclaration(
-          name, fields, possibilities, superInterface)
+          name, fields, possibilities, superInterface, u.requires)
     }
 
   // ---
@@ -48,7 +48,8 @@ final class TypeScriptEmitter(
     name: String,
     fields: ListSet[Member],
     possibilities: ListSet[CustomTypeRef],
-    superInterface: Option[InterfaceDeclaration]): Unit = withOut(name) { o =>
+    superInterface: Option[InterfaceDeclaration],
+    requires: Set[TypeRef]): Unit = withOut(name, requires) { o =>
     // Namespace and union type
     o.println(s"export namespace $name {")
     o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
@@ -121,7 +122,8 @@ final class TypeScriptEmitter(
   private def emitSingletonDeclaration(
     name: String,
     members: ListSet[Member],
-    superInterface: Option[InterfaceDeclaration]): Unit = withOut(name) { o =>
+    superInterface: Option[InterfaceDeclaration],
+    requires: Set[TypeRef]): Unit = withOut(name, requires) { o =>
     if (members.nonEmpty) {
       def mkString = members.map {
         case Member(nme, tpe) => s"$nme ($tpe)"
@@ -168,7 +170,7 @@ final class TypeScriptEmitter(
     decl: InterfaceDeclaration): Unit = {
     val InterfaceDeclaration(name, fields, typeParams, superInterface) = decl
 
-    withOut(name) { o =>
+    withOut(name, decl.requires) { o =>
       o.print(s"export interface $name${typeParameters(typeParams)}")
 
       superInterface.foreach { iface =>
@@ -188,7 +190,7 @@ final class TypeScriptEmitter(
   private def emitEnumDeclaration(decl: EnumDeclaration): Unit = {
     val EnumDeclaration(name, values) = decl
 
-    withOut(name) { o =>
+    withOut(name, decl.requires) { o =>
       o.println(s"export enum $name {")
 
       list(values).foreach { value =>
@@ -203,7 +205,7 @@ final class TypeScriptEmitter(
     val ClassDeclaration(name, ClassConstructor(parameters),
       values, typeParams, _ /*superInterface*/ ) = decl
 
-    withOut(name) { o =>
+    withOut(name, decl.requires) { o =>
       val tparams = typeParameters(typeParams)
 
       if (values.nonEmpty) {
@@ -401,8 +403,10 @@ final class TypeScriptEmitter(
     }
   }
 
-  private def withOut[T](name: String)(f: PrintStream => T): T = {
-    lazy val print = out(name)
+  private def withOut[T](
+    name: String,
+    requires: Set[TypeRef])(f: PrintStream => T): T = {
+    lazy val print = out(name, requires)
 
     try {
       val res = f(print)
