@@ -2,10 +2,11 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
+import io.github.scalats.typescript._
+
 final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   "TypeScript emitter" title
 
-  import TypeScriptModel._
   import TranspilerResults._
 
   "Emitter" should {
@@ -171,7 +172,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     "emit class using FieldNaming.SnakeCase" in {
       val clazz = ClassDeclaration("Test", ClassConstructor(ListSet(
-        ClassConstructorParameter("fooBar", TypeScriptModel.StringRef),
+        ClassConstructorParameter("fooBar", StringRef),
         ClassConstructorParameter("name", SimpleTypeRef("T")))),
         ListSet.empty,
         List("T"), Option.empty)

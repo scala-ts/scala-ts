@@ -2,12 +2,12 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
+import io.github.scalats.typescript._
+
 /**
  * Created by Milosz on 09.06.2016.
  */
 final class Transpiler(config: Configuration) {
-  import TypeScriptModel._
-
   @inline def apply(scalaTypes: ListSet[ScalaModel.TypeDef]): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
 
   def apply(
@@ -75,7 +75,7 @@ final class Transpiler(config: Configuration) {
     superInterface: Option[InterfaceDeclaration]) = InterfaceDeclaration(
     toInterfaceName(scalaClass.identifier),
     scalaClass.fields.map { scalaMember =>
-      TypeScriptModel.Member(
+      Member(
         scalaMember.name,
         transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
     },
@@ -85,7 +85,7 @@ final class Transpiler(config: Configuration) {
   private def transpileClass(
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]) = {
-    TypeScriptModel.ClassDeclaration(
+    ClassDeclaration(
       idToString(scalaClass.identifier),
       ClassConstructor(
         scalaClass.fields map { scalaMember =>
@@ -94,7 +94,7 @@ final class Transpiler(config: Configuration) {
             transpileTypeRef(scalaMember.typeRef, inInterfaceContext = false))
         }),
       values = scalaClass.values.map { v =>
-        TypeScriptModel.Member(v.name, transpileTypeRef(v.typeRef, false))
+        Member(v.name, transpileTypeRef(v.typeRef, false))
       },
       typeParams = scalaClass.typeArgs,
       superInterface)
@@ -102,28 +102,28 @@ final class Transpiler(config: Configuration) {
 
   private def transpileTypeRef(
     scalaTypeRef: ScalaModel.TypeRef,
-    inInterfaceContext: Boolean): TypeScriptModel.TypeRef = scalaTypeRef match {
+    inInterfaceContext: Boolean): TypeRef = scalaTypeRef match {
     case ScalaModel.BigDecimalRef |
       ScalaModel.BigIntegerRef |
       ScalaModel.DoubleRef |
       ScalaModel.IntRef |
       ScalaModel.LongRef =>
-      TypeScriptModel.NumberRef
+      NumberRef
 
     case ScalaModel.BooleanRef =>
-      TypeScriptModel.BooleanRef
+      BooleanRef
 
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
-      TypeScriptModel.StringRef
+      StringRef
 
     case ScalaModel.SeqRef(innerType) =>
-      TypeScriptModel.ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
+      ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>
-      TypeScriptModel.SimpleTypeRef(idToString(id))
+      SimpleTypeRef(idToString(id))
 
     case ScalaModel.TupleRef(typeArgs) =>
-      TypeScriptModel.TupleRef(
+      TupleRef(
         typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
 
     case ScalaModel.CaseClassRef(id, typeArgs) => {
@@ -132,34 +132,34 @@ final class Transpiler(config: Configuration) {
         else idToString(id)
       }
 
-      TypeScriptModel.CustomTypeRef(
+      CustomTypeRef(
         name, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
     }
 
     case ScalaModel.DateRef =>
-      TypeScriptModel.DateRef
+      DateRef
 
     case ScalaModel.DateTimeRef =>
-      TypeScriptModel.DateTimeRef
+      DateTimeRef
 
     case ScalaModel.TypeParamRef(name) =>
-      TypeScriptModel.SimpleTypeRef(name)
+      SimpleTypeRef(name)
 
     case ScalaModel.OptionRef(innerType) =>
-      TypeScriptModel.NullableType(
+      NullableType(
         transpileTypeRef(innerType, inInterfaceContext))
 
-    case ScalaModel.MapRef(kT, vT) => TypeScriptModel.MapType(
+    case ScalaModel.MapRef(kT, vT) => MapType(
       transpileTypeRef(kT, inInterfaceContext),
       transpileTypeRef(vT, inInterfaceContext))
 
     case ScalaModel.UnionRef(possibilities) =>
-      TypeScriptModel.UnionType(possibilities.map { i =>
+      UnionType(possibilities.map { i =>
         transpileTypeRef(i, inInterfaceContext)
       })
 
     case ScalaModel.UnknownTypeRef(_) =>
-      TypeScriptModel.StringRef
+      StringRef
   }
 
   private def toInterfaceName(id: ScalaModel.QualifiedIdentifier) = {

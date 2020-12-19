@@ -2,7 +2,8 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import TypeScriptModel._
+import io.github.scalats.typescript._
+
 import ScalaParserResults._
 
 final class TranspilerSpec extends org.specs2.mutable.Specification {

@@ -4,6 +4,8 @@ import java.io.PrintStream
 
 import scala.collection.immutable.ListSet
 
+import io.github.scalats.typescript._
+
 // TODO: (low priority) Use a template engine (velocity?)
 /**
  * @param out the function to select a `PrintStream` from type name
@@ -13,7 +15,6 @@ final class TypeScriptEmitter(
   out: String => PrintStream,
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
-  import TypeScriptModel._
   import Internals.list
 
   import config.{
@@ -420,5 +421,5 @@ final class TypeScriptEmitter(
 }
 
 private[core] object TypeScriptEmitter {
-  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeScriptModel.TypeRef, Option[String]]
+  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]]
 }

@@ -1,9 +1,10 @@
 package io.github.scalats.core
 
+import io.github.scalats.typescript._
+
 final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
   "TypeScript type mapper" title
 
-  import TypeScriptModel._
   import TypeScriptTypeMapper._
 
   lazy val unresolved: Function3[String, String, TypeRef, String] =
