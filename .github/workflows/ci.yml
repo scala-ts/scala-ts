@@ -66,14 +66,13 @@ jobs:
         
     - name: 'Publish snapshot (master)'
       if: ${{ github.ref == 'refs/heads/master' }}
+      env:
+        PUBLISH_REPO_ID: "oss.sonatype.org"
+        PUBLISH_REPO_URL: "https://oss.sonatype.org/content/repositories/snapshots"
+        PUBLISH_REPO_NAME: "Sonatype Nexus Repository Manager"
+        PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
+        PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
       run: |
-        export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
-        export PUBLISH_REPO_ID="oss.sonatype.org"
-        export PUBLISH_REPO_URL="https://oss.sonatype.org/content/repositories/snapshots"
-        
-        export PUBLISH_USER="$SONATYPE_USER"
-        export PUBLISH_PASS="$SONATYPE_PASSWORD"
-
         echo -n "Publish user: MD5 = "
         echo -n "$PUBLISH_USER" | md5sum
 
