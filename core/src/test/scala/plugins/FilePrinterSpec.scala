@@ -6,7 +6,7 @@ import scala.collection.immutable.Set
 
 import scala.io.Source.fromFile
 
-import io.github.scalats.typescript.CustomTypeRef
+import io.github.scalats.typescript.{ CustomTypeRef, Declaration }
 
 final class FilePrinterSpec extends org.specs2.mutable.Specification {
   "File printer" title
@@ -28,10 +28,11 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
         withPrinter(new PrintStream(file)) { p1 =>
           p1.println("_prior")
 
-          withPrinter(printer("foo", Set.empty)) { p2 =>
+          withPrinter(printer(Declaration.Class, "foo", Set.empty)) { p2 =>
             p2.println("FOO")
 
             withPrinter(printer(
+              Declaration.Class,
               "bar", Set(CustomTypeRef("Foo", List.empty)))) { p3 =>
               p3.println("BAR")
               p3.flush()

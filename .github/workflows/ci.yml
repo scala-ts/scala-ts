@@ -72,11 +72,4 @@ jobs:
         PUBLISH_REPO_NAME: "Sonatype Nexus Repository Manager"
         PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
         PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
-      run: |
-        echo -n "Publish user: MD5 = "
-        echo -n "$PUBLISH_USER" | md5sum
-
-        echo -n "Publish password: MD5 = "
-        echo -n "$PUBLISH_PASS" | md5sum
-
-        sbt ';error ;+core/publish ;^sbt-plugin/publish'
+      run: sbt ';error ;+core/publish ;^sbt-plugin/publish'

@@ -10,6 +10,20 @@ sealed trait Declaration {
   private[scalats] def requires: Set[TypeRef]
 }
 
+object Declaration {
+  sealed trait Kind
+
+  case object Interface extends Kind
+
+  case object Class extends Kind
+
+  case object Singleton extends Kind
+
+  case object Enum extends Kind
+
+  case object Union extends Kind
+}
+
 /**
  * A [[Declaration]] member (field/property).
  *

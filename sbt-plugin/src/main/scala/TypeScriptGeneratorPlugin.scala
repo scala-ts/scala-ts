@@ -115,11 +115,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     lazy val scalatsFilePrinter: PrinterSetting =
       classOf[FilePrinter] -> Map.empty[String, String]
 
-    // TODO: scripted test
     lazy val scalatsSingleFilePrinter: PrinterSetting =
       classOf[SingleFilePrinter] -> Map.empty[String, String]
 
-    // TODO: scripted test
     def scalatsSingleFilePrinter(filename: String): PrinterSetting =
       classOf[SingleFilePrinter] -> Map("scala-ts.single-filename" -> filename)
 

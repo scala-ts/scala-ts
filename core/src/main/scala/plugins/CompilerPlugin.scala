@@ -161,6 +161,9 @@ final class CompilerPlugin(val global: Global)
 
     }
 
+    // TODO
+    //private val tracker = scala.collection.mutable.Map.empty[
+
     private def handle(
       unit: CompilationUnit,
       acceptsType: Symbol => Boolean): Unit = {

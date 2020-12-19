@@ -321,7 +321,7 @@ export interface IScalaRuntimeFixturesFamily {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(config, (_, _) => out, typeMapper)
+    val emiter = new TypeScriptEmitter(config, (_, _, _) => out, typeMapper)
 
     try {
       emiter.emit(decls)
