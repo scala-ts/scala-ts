@@ -75,9 +75,9 @@ jobs:
         export PUBLISH_PASS="$SONATYPE_PASSWORD"
 
         echo -n "Publish user: MD5 = "
-        echo -n "$PUBLISH_USER" | md5
+        echo -n "$PUBLISH_USER" | md5sum
 
         echo -n "Publish password: MD5 = "
-        echo -n "$PUBLISH_PASS" | md5
+        echo -n "$PUBLISH_PASS" | md5sum
 
         sbt ';error ;+core/publish ;^sbt-plugin/publish'
