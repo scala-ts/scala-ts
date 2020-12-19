@@ -74,5 +74,10 @@ jobs:
         export PUBLISH_USER="$SONATYPE_USER"
         export PUBLISH_PASS="$SONATYPE_PASSWORD"
 
-        sbt ';+core/publish ;^sbt-plugin/publish'
+        echo -n "Publish user: MD5 = "
+        echo -n "$PUBLISH_USER" | md5
 
+        echo -n "Publish password: MD5 = "
+        echo -n "$PUBLISH_PASS" | md5
+
+        sbt ';error ;+core/publish ;^sbt-plugin/publish'
