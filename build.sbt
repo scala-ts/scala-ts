@@ -6,7 +6,7 @@ organization in ThisBuild := "io.github.scala-ts"
 
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.3"),
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
   unmanagedSourceDirectories in Compile += {
     val base = (sourceDirectory in Compile).value
 

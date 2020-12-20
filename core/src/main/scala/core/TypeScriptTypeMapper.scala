@@ -1,6 +1,8 @@
 package io.github.scalats.core
 
-import io.github.scalats.core.TypeScriptModel.TypeRef
+import io.github.scalats.typescript
+
+import typescript.TypeRef
 
 /**
  * The implementations must be class with a no-arg constructor.
@@ -56,7 +58,7 @@ object TypeScriptTypeMapper {
       ownerType: String,
       memberName: String,
       tpe: TypeRef): Option[String] = tpe match {
-      case TypeScriptModel.NumberRef =>
+      case typescript.NumberRef =>
         Some("string")
 
       case _ =>
@@ -72,7 +74,7 @@ object TypeScriptTypeMapper {
       ownerType: String,
       memberName: String,
       tpe: TypeRef): Option[String] = tpe match {
-      case TypeScriptModel.DateRef | TypeScriptModel.DateTimeRef =>
+      case typescript.DateRef | typescript.DateTimeRef =>
         Some("string")
 
       case _ =>
@@ -83,7 +85,7 @@ object TypeScriptTypeMapper {
   lazy val dateAsString = new DateAsString()
 
   /**
-   * Maps [[TypeScriptModel.NullableType]] to `Option<T>`
+   * Maps [[typescript.NullableType]] to `Option<T>`
    * (e.g. [[https://github.com/AlexGalays/space-monad space-monad]]
    * or [[https://gcanti.github.io/fp-ts/modules/Option.ts fp-ts]])
    */
@@ -93,7 +95,7 @@ object TypeScriptTypeMapper {
       ownerType: String,
       memberName: String,
       tpe: TypeRef): Option[String] = tpe match {
-      case TypeScriptModel.NullableType(innerType) =>
+      case typescript.NullableType(innerType) =>
         Some(s"Option<${parent(ownerType, memberName, innerType)}>")
 
       case _ =>

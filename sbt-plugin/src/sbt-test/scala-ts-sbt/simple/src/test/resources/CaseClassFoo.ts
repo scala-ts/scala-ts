@@ -1,3 +1,5 @@
+import { CaseClassBar } from './CaseClassBar';
+
 export interface CaseClassFoo {
   id: string;
   name: string;
@@ -13,4 +15,5 @@ export interface CaseClassFoo {
   ts: Date;
   tuple2: [string, number];
   tuple3: [Date, Date, CaseClassFoo];
+  bar: (CaseClassBar | null);
 }

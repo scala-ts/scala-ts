@@ -8,6 +8,6 @@
     "removeComments": true
   },
   "include": [
-    "**/target/scala-ts/src_managed/**/*.ts"
+    "**/target/**/*.ts"
   ]
 }

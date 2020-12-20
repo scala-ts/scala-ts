@@ -1,11 +1,16 @@
 $ absent target/scala-ts/src_managed/CaseClassFoo.ts
+$ absent target/scala-ts/src_managed/CaseClassBar.ts
 
 # Simple generation from Scala case class
 > compile
-$ exists target/scala-ts/src_managed/CaseClassFoo.ts
 
 # Check the generated files is as expected
+
+$ exists target/scala-ts/src_managed/CaseClassFoo.ts
 $ must-mirror target/scala-ts/src_managed/CaseClassFoo.ts src/test/resources/CaseClassFoo.ts
+
+$ exists target/scala-ts/src_managed/CaseClassBar.ts
+$ must-mirror target/scala-ts/src_managed/CaseClassBar.ts src/test/resources/CaseClassBar.ts
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript

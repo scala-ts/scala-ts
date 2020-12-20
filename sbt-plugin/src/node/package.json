@@ -10,5 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "space-monad": "^1.0.0"
   }
 }
