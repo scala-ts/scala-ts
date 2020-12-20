@@ -9,5 +9,7 @@ object Main {
 
     TypeScriptGenerator.generateFromClassNames(
       Configuration(), args.toList, logger)
+
+    ()
   }
 }

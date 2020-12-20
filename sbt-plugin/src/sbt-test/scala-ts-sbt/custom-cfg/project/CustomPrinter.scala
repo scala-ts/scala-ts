@@ -1,14 +1,45 @@
 package scalats
 
+import scala.collection.immutable.Set
+
 import java.io.{ File, FileOutputStream, PrintStream }
 
-final class CustomPrinter(outDir: File)
-  extends io.github.scalats.core.TypeScriptPrinter {
+import io.github.scalats.typescript.{ Declaration,TypeRef }
+import io.github.scalats.plugins.PrinterWithPrelude
 
-  def apply(name: String): PrintStream = {
-    val n = name.stripPrefix("I") // Strip interface 'I' prefix
+final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
+  @volatile private var first = true
 
-    new PrintStream(new FileOutputStream(
+  def apply(
+    conf: io.github.scalats.core.Configuration,
+    kind: Declaration.Kind,
+    name: String,
+    requires: Set[TypeRef]): PrintStream = {
+
+    val n = kind match {
+      case Declaration.Interface =>
+        name.stripPrefix("I") // Strip interface 'I' prefix
+
+      case _ =>
+        name
+    }
+
+    val writePrelude: Boolean = {
+      if (first) {
+        first = false
+        true
+      } else {
+        false
+      }
+    }
+
+    val out = new PrintStream(new FileOutputStream(
       new File(outDir, s"scalats${n}.ts"), true))
+
+    if (writePrelude) {
+      printPrelude(out)
+    }
+
+    out
   }
 }

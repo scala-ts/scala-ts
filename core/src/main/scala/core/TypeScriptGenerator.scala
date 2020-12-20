@@ -1,5 +1,7 @@
 package io.github.scalats.core
 
+import scala.collection.immutable.ListSet
+
 import scala.reflect.api.Universe
 import scala.reflect.runtime
 
@@ -17,7 +19,8 @@ object TypeScriptGenerator {
     logger: Logger,
     out: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults,
-    classLoader: ClassLoader = getClass.getClassLoader): Unit = {
+    classLoader: ClassLoader = getClass.getClassLoader //
+  ): ListSet[ScalaParser.TypeFullId] = {
     import runtime.universe
 
     implicit def cl: ClassLoader = classLoader
@@ -27,25 +30,36 @@ object TypeScriptGenerator {
       mirror.staticClass(className).toType
     }
 
-    generate(universe)(config, types, logger, out, typeMapper)
+    generate(universe)(config, types, logger, out, typeMapper, ListSet.empty)
   }
 
+  /**
+   * Generates the TypeScript for the specified Scala `types`.
+   *
+   * @param examined the already examined type
+   * @return the Scala types for which TypeScript has been emitted
+   * (including the input `types` and the transitively required types).
+   */
   def generate[U <: Universe](universe: U)(
     config: Configuration,
     types: List[universe.Type],
     logger: Logger,
     out: TypeScriptPrinter,
-    typeMapper: TypeScriptTypeMapper)(
+    typeMapper: TypeScriptTypeMapper,
+    examined: ListSet[ScalaParser.TypeFullId])(
     implicit
-    cu: CompileUniverse[universe.type]): Unit = {
+    cu: CompileUniverse[universe.type]): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser[universe.type](universe, logger)
     val transpiler = new Transpiler(config)
 
-    val scalaTypes = scalaParser.parseTypes(types)
-    val typeScriptInterfaces = transpiler(scalaTypes)
+    val parseResult = scalaParser.parseTypes(types, examined)
+    import parseResult.{ parsed => scalaTypes }
 
+    val typeScriptTypes = transpiler(scalaTypes)
     val emiter = new TypeScriptEmitter(config, out, typeMapper)
 
-    emiter.emit(typeScriptInterfaces)
+    emiter.emit(typeScriptTypes)
+
+    parseResult.examined
   }
 }
