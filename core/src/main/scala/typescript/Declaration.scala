@@ -46,10 +46,12 @@ case class InterfaceDeclaration(
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
 
   private[scalats] def requires: Set[TypeRef] =
-    fields.flatMap(_.typeRef.requires) ++
-      superInterface.toSet.map { si: InterfaceDeclaration =>
-        CustomTypeRef(si.name, List.empty)
-      }
+    (fields.flatMap(_.typeRef.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
+      CustomTypeRef(si.name, List.empty)
+    }
 }
 
 /**
@@ -67,11 +69,15 @@ case class ClassDeclaration(
   typeParams: List[String],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
-    constructor.parameters.flatMap(_.typeRef.requires) ++
-      values.flatMap(_.typeRef.requires) ++
-      superInterface.toSet.map { si: InterfaceDeclaration =>
-        CustomTypeRef(si.name, List.empty)
-      }
+    (constructor.parameters.flatMap(_.typeRef.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ (values.flatMap(_.typeRef.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
+      CustomTypeRef(si.name, List.empty)
+    }
 }
 
 /**
@@ -102,10 +108,12 @@ case class SingletonDeclaration(
   values: ListSet[Member],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
-    values.flatMap(_.typeRef.requires) ++
-      superInterface.toSet.map { si: InterfaceDeclaration =>
-        CustomTypeRef(si.name, List.empty)
-      }
+    (values.flatMap(_.typeRef.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
+      CustomTypeRef(si.name, List.empty)
+    }
 }
 
 /**
@@ -125,9 +133,13 @@ case class UnionDeclaration(
   possibilities: ListSet[CustomTypeRef],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
-    fields.flatMap(_.typeRef.requires) ++
-      possibilities.flatMap(_.requires) ++
-      superInterface.toSet.map { si: InterfaceDeclaration =>
-        CustomTypeRef(si.name, List.empty)
-      }
+    (fields.flatMap(_.typeRef.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ (possibilities.flatMap(_.requires).filterNot {
+      case TypeRef.Named(`name`) => true /* skip self reference */
+      case _ => false
+    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
+      CustomTypeRef(si.name, List.empty)
+    }
 }

@@ -22,7 +22,8 @@ sourceManaged in scalatsOnCompile := {
 scalatsPrinter := scalatsPrinterForClass[scalats.CustomPrinter]()
 
 scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
-  "// Prelude ...", "// ... second line", "// ...")
+  "import { Option } from 'space-monad'", 
+  "// could be useful to import common types")
 
 // Custom type mapper
 scalatsTypeScriptTypeMappers := Seq(

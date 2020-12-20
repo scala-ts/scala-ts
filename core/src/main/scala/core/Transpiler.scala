@@ -8,6 +8,8 @@ import io.github.scalats.typescript._
  * Created by Milosz on 09.06.2016.
  */
 final class Transpiler(config: Configuration) {
+  // TODO: (low priority) Remove the transpiler phase?
+
   @inline def apply(scalaTypes: ListSet[ScalaModel.TypeDef]): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
 
   def apply(

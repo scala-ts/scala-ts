@@ -7,9 +7,16 @@ import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
 
 import scala.util.matching.Regex
 
+import scala.collection.immutable.ListSet
+
 import scala.xml.XML
 
-import io.github.scalats.core.{ Logger, TypeScriptGenerator, TypeScriptTypeMapper }
+import io.github.scalats.core.{
+  Logger,
+  ScalaParser,
+  TypeScriptGenerator,
+  TypeScriptTypeMapper
+}
 
 final class CompilerPlugin(val global: Global)
   extends Plugin with PluginCompat { plugin =>
@@ -161,8 +168,7 @@ final class CompilerPlugin(val global: Global)
 
     }
 
-    // TODO
-    //private val tracker = scala.collection.mutable.Map.empty[
+    @volatile private var examined = ListSet.empty[ScalaParser.TypeFullId]
 
     private def handle(
       unit: CompilationUnit,
@@ -216,12 +222,15 @@ final class CompilerPlugin(val global: Global)
         chain(config.typeScriptTypeMappers).
         getOrElse(TypeScriptTypeMapper.Defaults)
 
-      TypeScriptGenerator.generate(global)(
+      val ex = TypeScriptGenerator.generate(global)(
         config = plugin.config.settings,
         types = scalaTypes,
         logger = CompilerLogger,
         out = config.printer,
-        typeMapper = typeMapper)
+        typeMapper = typeMapper,
+        examined = examined)
+
+      examined = examined ++ ex
     }
   }
 }

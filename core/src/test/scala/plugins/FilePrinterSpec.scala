@@ -6,7 +6,7 @@ import scala.collection.immutable.Set
 
 import scala.io.Source.fromFile
 
-import io.github.scalats.typescript.{ CustomTypeRef, Declaration }
+import io.github.scalats.typescript.{ CustomTypeRef, Declaration, TypeRef }
 
 final class FilePrinterSpec extends org.specs2.mutable.Specification {
   "File printer" title
@@ -22,23 +22,26 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
       tmp.mkdirs()
 
       val file = new File(tmp, name)
-      val printer = new SingleFilePrinter(tmp)
+      val p = new SingleFilePrinter(tmp)
+      val printer = {
+        val conf = io.github.scalats.core.Configuration()
+        p(conf, Declaration.Class, _: String, _: Set[TypeRef])
+      }
 
       try {
         withPrinter(new PrintStream(file)) { p1 =>
           p1.println("_prior")
 
-          withPrinter(printer(Declaration.Class, "foo", Set.empty)) { p2 =>
+          withPrinter(printer("foo", Set.empty)) { p2 =>
             p2.println("FOO")
 
-            withPrinter(printer(
-              Declaration.Class,
-              "bar", Set(CustomTypeRef("Foo", List.empty)))) { p3 =>
-              p3.println("BAR")
-              p3.flush()
+            withPrinter(
+              printer("bar", Set(CustomTypeRef("Foo", List.empty)))) { p3 =>
+                p3.println("BAR")
+                p3.flush()
 
-              spec(file)
-            }
+                spec(file)
+              }
           }
         }
       } finally {
@@ -52,7 +55,7 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
 
     "output to the default file" in withTemp("scala.ts") { file =>
       file.getName must_=== "scala.ts" and {
-        fromFile(file).mkString must_=== "FOO\nBAR\n"
+        fromFile(file).mkString must_=== "FOO\n\nBAR\n"
       }
     }
 
@@ -60,7 +63,7 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
       withProp("scala-ts.single-filename", "single.ts") {
         withTemp("single.ts") { file =>
           file.getName must_=== "single.ts" and {
-            fromFile(file).mkString must_=== "FOO\nBAR\n"
+            fromFile(file).mkString must_=== "FOO\n\nBAR\n"
           }
         }
       }
@@ -77,7 +80,7 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
           withTemp("scala.ts") { file =>
             file.getName must_=== "scala.ts" and {
               fromFile(file).
-                mkString must_=== "// Prelude\n// ...\n\nFOO\nBAR\n"
+                mkString must_=== "// Prelude\n// ...\n\nFOO\n\nBAR\n"
             }
           }
         }

@@ -8,6 +8,21 @@ sealed trait TypeRef {
   private[typescript] def requires: Set[TypeRef]
 }
 
+object TypeRef {
+  object Named {
+    def unapply(ref: TypeRef): Option[String] = ref match {
+      case gen: GenericTypeRef =>
+        Some(gen.name)
+
+      case UnknownTypeRef(name) =>
+        Some(name)
+
+      case _ =>
+        None
+    }
+  }
+}
+
 private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
   /** The type name */
   def name: String

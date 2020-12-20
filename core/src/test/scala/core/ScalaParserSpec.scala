@@ -18,31 +18,47 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
 
   "Parser" should {
     "handle case class with one primitive member" in {
-      val parsed = scalaParser.parseTypes(List(
+      val res = scalaParser.parseTypes(List(
         ScalaRuntimeFixtures.TestClass1Type))
 
-      parsed must contain(caseClass1)
+      res.parsed must contain(caseClass1) and {
+        res.parsed must have size 1
+      }
     }
 
     "handle generic case class with one member" in {
-      val parsed = scalaParser.parseTypes(List(
+      val res = scalaParser.parseTypes(List(
         ScalaRuntimeFixtures.TestClass2Type))
 
-      parsed must contain(caseClass2)
+      res.parsed must contain(caseClass2) and {
+        res.parsed must have size 1
+      }
     }
 
     "handle generic case class with one member list of type parameter" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass3Type))
-      parsed must contain(caseClass3)
+      val res = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass3Type))
+      res.parsed must contain(caseClass3) and {
+        res.parsed must have size 1
+      }
     }
 
     "handle generic case class with one optional member" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass5Type))
-      parsed must contain(caseClass5)
+      val res = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass5Type))
+
+      res.parsed must contain(caseClass5) and {
+        res.parsed must have size 1
+      }
     }
 
-    "correctly detect involved types" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass6Type))
+    "detect involved types and skipped already examined types" in {
+      val res = scalaParser.parseTypes(List(
+        ScalaRuntimeFixtures.TestClass6Type,
+        ScalaRuntimeFixtures.TestClass4Type, // skipped as examined from 6
+        ScalaRuntimeFixtures.TestClass2Type, // skipped as examined from 6
+        ScalaRuntimeFixtures.TestClass1Type // skipped as examined from 6
+      ))
+
+      import res.parsed
 
       parsed must contain(caseClass1) and {
         parsed must contain(caseClass2)
@@ -55,55 +71,101 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       } and {
         parsed must contain(caseClass6)
       } and {
-        parsed.size must_=== 6
+        parsed must have size 6
       }
     }
 
-    "correctly handle either types" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass7Type))
-      parsed must contain(caseClass7)
+    "handle either types" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestClass7Type))
+
+      import res.parsed
+
+      parsed must contain(caseClass7) and {
+        parsed must contain(caseClass1)
+      } and {
+        parsed must contain(caseClass1B)
+      } and {
+        parsed must have size 3
+      }
     }
 
-    "correctly handle case class extends AnyVal as a primitive type" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass8Type))
-      parsed must contain(caseClass8)
+    "skip declaration ValueClass (as replaced by primitive)" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.AnyValChildType))
+
+      res.parsed must beEmpty
     }
 
-    "correctly handle enumeration values" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass9Type))
-      parsed must contain(caseClass9)
+    "handle ValueClass member as a primitive type" in {
+      val res = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass8Type))
+
+      res.parsed must contain(caseClass8) and {
+        res.parsed must have size 1
+      }
     }
 
-    "correctly handle tuple values" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass10Type))
+    "handle enumeration type" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestEnumerationType))
 
-      parsed must contain(caseClass10)
+      res.parsed must contain(testEnumeration) and {
+        res.parsed must have size 1
+      }
     }
 
-    "correctly handle case object" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestObject1Type))
+    "handle enumeration values" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestClass9Type))
 
-      parsed must contain(caseObject1)
+      res.parsed must contain(caseClass9) and {
+        res.parsed must contain(testEnumeration)
+      } and {
+        res.parsed must have size 2
+      }
+    }
+
+    "handle tuple values" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestClass10Type))
+
+      res.parsed must contain(caseClass10) and {
+        res.parsed must have size 1
+      }
+    }
+
+    "handle case object" in {
+      val res = scalaParser.parseTypes(
+        List(ScalaRuntimeFixtures.TestObject1Type))
+
+      res.parsed must contain(caseObject1) and {
+        res.parsed must have size 1
+      }
     }
 
     "skip companion object" in {
-      val parsed = scalaParser.parseTypes(List(ScalaRuntimeFixtures.TestClass1CompanionType))
+      val res = scalaParser.parseTypes(List(
+        ScalaRuntimeFixtures.TestClass1CompanionType))
 
-      parsed must beEmpty
+      res.parsed must beEmpty
     }
 
-    "correctly handle object" in {
-      val parsed = scalaParser.parseTypes(
+    "handle object" in {
+      val res = scalaParser.parseTypes(
         List(ScalaRuntimeFixtures.TestObject2Type))
 
-      parsed must contain(caseObject2)
+      res.parsed must contain(caseObject2) and {
+        res.parsed must have size 1
+      }
     }
 
-    "correctly handle sealed trait as union" in {
-      val parsed = scalaParser.parseTypes(
+    "handle sealed trait as union" in {
+      val res = scalaParser.parseTypes(
         List(ScalaRuntimeFixtures.FamilyType))
 
-      parsed must contain(sealedFamily1)
+      res.parsed must contain(sealedFamily1) and {
+        res.parsed must have size 1
+      }
     }
   }
 }
@@ -117,11 +179,17 @@ object ScalaRuntimeFixtures {
 
   val TestClass2Type = typeOf[TestClass2[_]]
   val TestClass3Type = typeOf[TestClass3[_]]
+  val TestClass4Type = typeOf[TestClass4[_]]
   val TestClass5Type = typeOf[TestClass5[_]]
   val TestClass6Type = typeOf[TestClass6[_]]
   val TestClass7Type = typeOf[TestClass7[_]]
+
+  val AnyValChildType = typeOf[AnyValChild]
   val TestClass8Type = typeOf[TestClass8]
+
   val TestClass9Type = typeOf[TestClass9]
+  val TestEnumerationType = typeOf[TestEnumeration.Value]
+
   val TestClass10Type = typeOf[TestClass10]
   val TestObject1Type = typeOf[TestObject1.type]
   val TestObject2Type = typeOf[TestObject2.type]
@@ -196,6 +264,13 @@ object ScalaParserResults {
     identifier = QualifiedIdentifier(
       "TestClass1", List("ScalaRuntimeFixtures")),
     fields = ListSet(TypeMember("name", StringRef)),
+    values = ListSet.empty,
+    typeArgs = List.empty)
+
+  val caseClass1B = CaseClass(
+    identifier = QualifiedIdentifier(
+      "TestClass1B", List("ScalaRuntimeFixtures")),
+    fields = ListSet(TypeMember("foo", StringRef)),
     values = ListSet.empty,
     typeArgs = List.empty)
 
@@ -289,6 +364,11 @@ object ScalaParserResults {
       QualifiedIdentifier("TestEnumeration", List("ScalaRuntimeFixtures"))))),
     values = ListSet.empty,
     typeArgs = List.empty)
+
+  val testEnumeration = Enumeration(
+    QualifiedIdentifier(
+      "TestEnumeration", List("ScalaRuntimeFixtures")),
+    ListSet("A", "B", "C"))
 
   val caseClass10 = CaseClass(
     identifier = QualifiedIdentifier(

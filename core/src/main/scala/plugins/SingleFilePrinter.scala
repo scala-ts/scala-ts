@@ -2,6 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import io.github.scalats.core.{ Configuration => Settings }
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 /**
@@ -15,13 +16,11 @@ final class SingleFilePrinter(outDir: File) extends PrinterWithPrelude {
 
   private val flag = new java.util.concurrent.atomic.AtomicBoolean(false)
 
-  private val tracker = scala.collection.mutable.Map.
-    empty[(Declaration.Kind, String), None.type]
-
   private lazy val filename = sys.props.getOrElse(
     "scala-ts.single-filename", "scala.ts")
 
   def apply(
+    conf: Settings,
     kind: Declaration.Kind,
     name: String,
     requires: Set[TypeRef]): PrintStream = {
@@ -37,28 +36,14 @@ final class SingleFilePrinter(outDir: File) extends PrinterWithPrelude {
       }
     }
 
-    var fresh: Boolean = false
-
-    tracker.getOrElseUpdate(kind -> name, {
-      fresh = true
-      None
-    })
-
-    def fileStream = {
-      new PrintStream(new FileOutputStream(f, append))
-    }
+    val stream = new PrintStream(new FileOutputStream(f, append))
 
     if (!append) {
-      val stream = fileStream
-
       printPrelude(stream)
-
-      stream
-    } else if (fresh) {
-      fileStream
     } else {
-      // Skip already output'ed declaration
-      new PrintStream(io.github.scalats.core.NullOutputStream)
+      stream.println()
     }
+
+    stream
   }
 }

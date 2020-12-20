@@ -12,7 +12,7 @@ import io.github.scalats.typescript._
  */
 final class TypeScriptEmitter(
   val config: Configuration,
-  out: Function3[Declaration.Kind, String, Set[TypeRef], PrintStream],
+  out: TypeScriptEmitter.Printer,
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
   import Internals.list
@@ -408,7 +408,7 @@ final class TypeScriptEmitter(
     decl: Declaration.Kind,
     name: String,
     requires: Set[TypeRef])(f: PrintStream => T): T = {
-    lazy val print = out(decl, name, requires)
+    lazy val print = out(config, decl, name, requires)
 
     try {
       val res = f(print)
@@ -428,4 +428,7 @@ final class TypeScriptEmitter(
 
 private[core] object TypeScriptEmitter {
   type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]]
+
+  /* See `TypeScriptPrinter` */
+  type Printer = Function4[Configuration, Declaration.Kind, String, Set[TypeRef], PrintStream]
 }

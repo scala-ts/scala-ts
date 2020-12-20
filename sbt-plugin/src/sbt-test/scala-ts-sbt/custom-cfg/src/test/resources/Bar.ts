@@ -1,6 +1,5 @@
-// Prelude ...
-// ... second line
-// ...
+import { Option } from 'space-monad'
+// could be useful to import common types
 
 export interface IBar {
   _name: string;

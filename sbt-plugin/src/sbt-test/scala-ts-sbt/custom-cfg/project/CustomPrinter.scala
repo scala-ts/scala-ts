@@ -11,6 +11,7 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
   @volatile private var first = true
 
   def apply(
+    conf: io.github.scalats.core.Configuration,
     kind: Declaration.Kind,
     name: String,
     requires: Set[TypeRef]): PrintStream = {

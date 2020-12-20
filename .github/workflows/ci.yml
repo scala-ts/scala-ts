@@ -32,7 +32,7 @@ jobs:
         path: $HOME/.sbt
         key: ${{ runner.os }}-sbt-cache-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
-    - name: 'Check code quality'
+    - name: 'Check code quality' # TODO: Separate job
       run: |
         sbt ';warn ;scalafixAll -check ;scalariformFormat ;test:scalariformFormat'
         
