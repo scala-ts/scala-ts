@@ -2,7 +2,8 @@
 
 *ScalaTS* generate TypeScript from Scala.
 
-It's helpful when working with REST-ful Scala backend and TypeScript frontend. Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
+Help to integrate REST-ful Scala backend and TypeScript frontend.
+Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
 ## Usage
 
@@ -11,7 +12,7 @@ It's helpful when working with REST-ful Scala backend and TypeScript frontend. H
 See:
 
 - [Usage details](docs/index.md#usage)
-- Blog post: [Scala-ts: Scala to TypeScript code generator*](http://codewithstyle.info/scala-ts-scala-typescript-code-generator/) at Code with Style.
+- Blog post: [Scala-ts: Scala to TypeScript code generator](http://codewithstyle.info/scala-ts-scala-typescript-code-generator/) at Code with Style.
 
 ## Build manually
 
