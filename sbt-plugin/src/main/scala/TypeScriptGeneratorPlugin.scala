@@ -19,7 +19,7 @@ import _root_.io.github.scalats.plugins.{ FilePrinter, SingleFilePrinter, Source
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
-  override def trigger = allRequirements
+  override def trigger = noTrigger
 
   // TODO: Check the documentation index.md
   object autoImport {
@@ -259,8 +259,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
             includes = scalatsSourceIncludes.value,
             excludes = scalatsSourceExcludes.value),
           typeRuleSet = SourceRuleSet(
-            includes = scalatsSourceIncludes.value,
-            excludes = scalatsSourceExcludes.value),
+            includes = scalatsTypeIncludes.value,
+            excludes = scalatsTypeExcludes.value),
           printer = printer,
           typeScriptTypeMappers = typeMappers,
           additionalClasspath = Seq(sbtProjectClassUrl))

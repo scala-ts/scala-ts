@@ -18,7 +18,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile a case class with one primitive member" in {
       val result = defaultTranspiler(ListSet(caseClass1))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface1)
       } and {
         result must contain(clazz1)
@@ -28,7 +28,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile a generic class with one member" in {
       val result = defaultTranspiler(ListSet(caseClass2))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface2)
       } and {
         result must contain(clazz2)
@@ -38,7 +38,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile a generic case class with one member list of type parameter" in {
       val result = defaultTranspiler(ListSet(caseClass3))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface3)
       } and {
         result must contain(clazz3)
@@ -48,7 +48,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile a generic case class with one optional member" in {
       val result = defaultTranspiler(ListSet(caseClass5))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface5)
       } and {
         result must contain(clazz5)
@@ -58,7 +58,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile disjunction types" in {
       val result = defaultTranspiler(ListSet(caseClass7))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface7)
       } and {
         result must contain(clazz7)
@@ -68,7 +68,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile Tuple types" in {
       val result = defaultTranspiler(ListSet(caseClass10))
 
-      result.size must_=== 2 and {
+      result must have size 2 and {
         result must contain(interface10)
       } and {
         result must contain(clazz10)
@@ -78,7 +78,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile case object" in {
       val result = defaultTranspiler(ListSet(caseObject1))
 
-      result.size must_=== 1 and {
+      result must have size 1 and {
         result must contain(singleton1)
       }
     }
@@ -89,7 +89,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
         Some(InterfaceDeclaration(
           "SupI", ListSet.empty, List.empty[String], Option.empty)))
 
-      result.size must_=== 1 and {
+      result must have size 1 and {
         result must contain(singleton2)
       }
     }
@@ -97,7 +97,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "correctly transpile sealed trait as union" in {
       val result = defaultTranspiler(ListSet(sealedFamily1))
 
-      result.size must_=== 5 and {
+      result must have size 5 and {
         result must contain(union1)
       } and {
         result must contain(unionMember1Clazz)

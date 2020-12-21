@@ -28,9 +28,8 @@ final class Transpiler(config: Configuration) {
           transpileInterface(scalaClass, superInterface)) ++ clazz
       }
 
-      case ScalaModel.Enumeration(id, values) => {
+      case ScalaModel.EnumerationDef(id, values) =>
         ListSet[Declaration](EnumDeclaration(idToString(id), values))
-      }
 
       case ScalaModel.CaseObject(id, members) => {
         val values = members.map { scalaMember =>

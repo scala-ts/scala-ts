@@ -72,6 +72,7 @@ final class Configuration(
 
 object Configuration {
   import scala.xml._
+  import io.github.scalats.tsconfig.ConfigFactory // TODO: Replace XML
 
   val DefaultTypeScriptIndent = "  "
 

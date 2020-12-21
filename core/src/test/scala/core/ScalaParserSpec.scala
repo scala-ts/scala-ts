@@ -365,7 +365,7 @@ object ScalaParserResults {
     values = ListSet.empty,
     typeArgs = List.empty)
 
-  val testEnumeration = Enumeration(
+  val testEnumeration = EnumerationDef(
     QualifiedIdentifier(
       "TestEnumeration", List("ScalaRuntimeFixtures")),
     ListSet("A", "B", "C"))

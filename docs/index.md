@@ -16,16 +16,13 @@ TODO: Scala to TS examples
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % {{site.latest_release}})
+    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % "{{site.latest_release}}")
 
 Additionally, enable (or disabled) the plugin for a specific project:
 
 ```ocaml
 // Enable:
 enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
-
-// Disable:
-disablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
 By default, the TypeScript files are generated on compile:
