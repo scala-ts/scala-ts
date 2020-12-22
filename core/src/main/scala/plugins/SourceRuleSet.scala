@@ -2,8 +2,6 @@ package io.github.scalats.plugins
 
 import scala.collection.immutable.Set
 
-import scala.xml._
-
 final class SourceRuleSet(
   val includes: Set[String],
   val excludes: Set[String]) {
@@ -20,35 +18,33 @@ final class SourceRuleSet(
   private[plugins] lazy val tupled = includes -> excludes
 }
 
+@com.github.ghik.silencer.silent(".*JavaConverters.*")
 object SourceRuleSet {
+  import scala.collection.JavaConverters._
+  import io.github.scalats.tsconfig.{ ConfigFactory, Config }
+
   def apply(
     includes: Set[String] = Set.empty,
     excludes: Set[String] = Set.empty): SourceRuleSet =
     new SourceRuleSet(includes, excludes)
 
-  def load(xml: Node): SourceRuleSet = new SourceRuleSet(
-    includes = (xml \ "includes" \ "include").map(_.text).toSet,
-    excludes = (xml \ "excludes" \ "exclude").map(_.text).toSet)
+  def load(conf: Config): SourceRuleSet = {
+    @inline def strings(key: String): Iterable[String] =
+      conf.getStringList(key).asScala
+
+    new SourceRuleSet(
+      includes = strings("includes").toSet,
+      excludes = strings("excludes").toSet)
+  }
 
   @SuppressWarnings(Array("NullParameter"))
-  def toXml(ruleSet: SourceRuleSet, name: String): Elem = {
-    def elem(n: String, children: Seq[Elem]) =
-      new Elem(
-        prefix = null,
-        label = n,
-        attributes1 = scala.xml.Null,
-        scope = new scala.xml.NamespaceBinding(null, null, null),
-        minimizeEmpty = true,
-        children: _*)
+  def toConfig(ruleSet: SourceRuleSet): Config = {
+    import java.util.Arrays
+    val repr = new java.util.HashMap[String, Any](2)
 
-    elem(
-      name,
-      Seq(
-        elem("includes", ruleSet.includes.toSeq.map { i =>
-          <include>{ i }</include>
-        }),
-        elem("excludes", ruleSet.excludes.toSeq.map { i =>
-          <exclude>{ i }</exclude>
-        })))
+    repr.put("includes", Arrays.asList(ruleSet.includes.toSeq: _*))
+    repr.put("excludes", Arrays.asList(ruleSet.excludes.toSeq: _*))
+
+    ConfigFactory.parseMap(repr)
   }
 }

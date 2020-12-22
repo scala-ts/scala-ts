@@ -21,7 +21,7 @@ final class Configuration(
   val discriminator: Configuration.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters"))
-  private[core] def copy(
+  private[scalats] def copy(
     emitInterfaces: Boolean = this.emitInterfaces,
     emitClasses: Boolean = this.emitClasses,
     emitCodecs: Configuration.EmitCodecs = this.emitCodecs,
@@ -71,8 +71,11 @@ final class Configuration(
 }
 
 object Configuration {
-  import scala.xml._
-  import io.github.scalats.tsconfig.ConfigFactory // TODO: Replace XML
+  import io.github.scalats.tsconfig.{
+    ConfigFactory,
+    Config,
+    ConfigException
+  }
 
   val DefaultTypeScriptIndent = "  "
 
@@ -103,64 +106,77 @@ object Configuration {
       discriminator)
 
   def load(
-    xml: Elem,
+    config: Config,
     logger: Logger,
     cl: Option[ClassLoader] = None): Configuration = {
+
+    def opt[T](key: String)(get: String => T): Option[T] = try {
+      Option(get(key))
+    } catch {
+      case NonFatal(_: ConfigException.Missing) =>
+        Option.empty[T]
+
+      case NonFatal(cause) => {
+        logger.warning(s"Fails to get $key: ${cause.getMessage}")
+        Option.empty[T]
+      }
+    }
+
     @inline def bool(nme: String, default: Boolean): Boolean =
-      (xml \ nme).headOption.fold(default)(_.text != "false")
+      opt(nme)(config.getBoolean(_)).getOrElse(default)
+
+    @inline def str(nme: String): Option[String] =
+      opt(nme)(config.getString(_))
 
     val emitInterfaces = bool("emitInterfaces", true)
     val emitClasses = bool("emitClasses", false)
-    val emitCodecs = bool("emitCodecs", true)
+    val emitCodecs = new EmitCodecs(bool("emitCodecs", true))
 
     val optionToNullable = bool("optionToNullable", true)
     val optionToUndefined = bool("optionToUndefined", false)
     val prependIPrefix = bool("prependIPrefix", true)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
-    val typescriptIndent = (xml \ "typescriptIndent").
-      headOption.fold(DefaultTypeScriptIndent)(_.text)
+    val typescriptIndent: String =
+      str("typescriptIndent").getOrElse(DefaultTypeScriptIndent)
 
-    val typescriptLineSeparator = (xml \ "typescriptLineSeparator").
-      headOption.fold(TypeScriptSemiColon) { n =>
-        new TypeScriptLineSeparator(n.text)
+    val typescriptLineSeparator: TypeScriptLineSeparator =
+      str("typescriptLineSeparator").fold(TypeScriptSemiColon) {
+        new TypeScriptLineSeparator(_)
       }
 
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
 
-    val fieldNaming: FieldNaming =
-      (xml \ "fieldNaming").headOption.map(_.text).flatMap {
-        case "SnakeCase" =>
-          Some(FieldNaming.SnakeCase)
+    val fieldNaming: FieldNaming = str("fieldNaming").flatMap {
+      case "SnakeCase" =>
+        Some(FieldNaming.SnakeCase)
 
-        case "Identity" =>
-          Some(FieldNaming.Identity)
+      case "Identity" =>
+        Some(FieldNaming.Identity)
 
-        case className =>
-          try {
-            Option(loadClass(className).
-              asSubclass(classOf[FieldNaming]).
-              getDeclaredConstructor().newInstance())
+      case className =>
+        try {
+          Option(loadClass(className).
+            asSubclass(classOf[FieldNaming]).
+            getDeclaredConstructor().newInstance())
 
-          } catch {
-            case NonFatal(_) =>
-              logger.warning(s"Fails to load custom field naming: ${className}")
-              None
-          }
+        } catch {
+          case NonFatal(_) =>
+            logger.warning(s"Fails to load custom field naming: ${className}")
+            None
+        }
 
-      }.getOrElse {
-        FieldNaming.Identity
-      }
+    }.getOrElse {
+      FieldNaming.Identity
+    }
 
     val discriminator: Discriminator =
-      (xml \ "discriminator").headOption.map { n =>
-        new Discriminator(n.text)
-      }.getOrElse(DefaultDiscriminator)
+      str("discriminator").fold(DefaultDiscriminator) { new Discriminator(_) }
 
     new Configuration(
       emitInterfaces,
       emitClasses,
-      new EmitCodecs(emitCodecs),
+      emitCodecs,
       optionToNullable,
       optionToUndefined,
       prependIPrefix,
@@ -173,7 +189,7 @@ object Configuration {
   }
 
   @SuppressWarnings(Array("NullParameter"))
-  def toXml(conf: Configuration, rootName: String = "scalats"): Elem = {
+  def toConfig(conf: Configuration, prefix: Option[String] = None): Config = {
     val fieldNaming: String = conf.fieldNaming match {
       case FieldNaming.SnakeCase =>
         "SnakeCase"
@@ -185,23 +201,35 @@ object Configuration {
         custom.getClass.getName
     }
 
-    new Elem(
-      prefix = null,
-      label = rootName,
-      attributes1 = scala.xml.Null,
-      scope = new scala.xml.NamespaceBinding(null, null, null),
-      minimizeEmpty = true,
-      <emitInterfaces>{ conf.emitInterfaces }</emitInterfaces>,
-      <emitClasses>{ conf.emitClasses }</emitClasses>,
-      <emitCodecs>{ conf.emitCodecs.enabled }</emitCodecs>,
-      <optionToNullable>{ conf.optionToNullable }</optionToNullable>,
-      <optionToUndefined>{ conf.optionToUndefined }</optionToUndefined>,
-      <prependIPrefix>{ conf.prependIPrefix }</prependIPrefix>,
-      <prependEnclosingClassNames>{ conf.prependEnclosingClassNames }</prependEnclosingClassNames>,
-      <typescriptIndent>{ conf.typescriptIndent }</typescriptIndent>,
-      <typescriptLineSeparator>{ conf.typescriptLineSeparator }</typescriptLineSeparator>,
-      <fieldNaming>{ fieldNaming }</fieldNaming>,
-      <discriminator>{ conf.discriminator.text }</discriminator>)
+    val repr = new java.util.HashMap[String, Any](11)
+    val p = prefix.fold("") { s => s"${s}." }
+
+    repr.put(s"${p}emitInterfaces", conf.emitInterfaces)
+    repr.put(s"${p}emitClasses", conf.emitClasses)
+    repr.put(s"${p}emitCodecs", conf.emitCodecs.enabled)
+    repr.put(s"${p}optionToNullable", conf.optionToNullable)
+    repr.put(s"${p}optionToUndefined", conf.optionToUndefined)
+
+    repr.put(s"${p}prependIPrefix", conf.prependIPrefix)
+
+    repr.put(
+      s"${p}prependEnclosingClassNames",
+      conf.prependEnclosingClassNames)
+
+    repr.put(
+      s"${p}typescriptIndent",
+      conf.typescriptIndent)
+
+    repr.put(
+      s"${p}typescriptLineSeparator",
+      conf.typescriptLineSeparator.value)
+
+    repr.put(s"${p}fieldNaming", fieldNaming)
+
+    repr.put(
+      s"${p}discriminator", conf.discriminator.text)
+
+    ConfigFactory.parseMap(repr)
   }
 
   // ---

@@ -70,9 +70,10 @@ lazy val core = project.in(file("core")).settings(
   },
   packageBin in Compile := crossTarget.value / (
     assemblyJarName in assembly).value,
+  makePom := makePom.dependsOn(assembly).value,
   mainClass in assembly := Some("io.github.scalats.Main"),
   mainClass in (Compile, run) := (mainClass in assembly).value
-).dependsOn(shaded)
+)
 
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
   enablePlugins(SbtPlugin).
@@ -88,7 +89,6 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
     ),
     compile in Compile := (compile in Compile).dependsOn(
       core / publishLocal).value,
-    // TODO: core / publishLocal on update?
     scriptedBufferLog := false,
     sourceGenerators in Compile += Def.task {
       val groupId = organization.value

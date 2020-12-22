@@ -1,48 +1,35 @@
 package io.github.scalats.core
 
-import scala.xml.XML
+import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class CoreConfigSpec extends org.specs2.mutable.Specification {
   "Core configuration" title
 
-  val fullXml = Seq(
-    "<scalats>",
-    "<emitInterfaces>true</emitInterfaces>",
-    "<emitClasses>false</emitClasses>",
-    "<emitCodecs>true</emitCodecs>",
-    "<optionToNullable>true</optionToNullable>",
-    "<optionToUndefined>false</optionToUndefined>",
-    "<prependIPrefix>true</prependIPrefix>",
-    "<prependEnclosingClassNames>true</prependEnclosingClassNames>",
-    "<typescriptIndent>\t</typescriptIndent>",
-    "<typescriptLineSeparator>;</typescriptLineSeparator>",
-    "<fieldNaming>Identity</fieldNaming>",
-    "<discriminator>_type</discriminator>",
-    "</scalats>").mkString("")
+  import ConfigRenderOptions.concise
+
+  val fullConf = """{"discriminator":"_type","emitClasses":false,"emitCodecs":true,"emitInterfaces":true,"fieldNaming":"Identity","optionToNullable":true,"optionToUndefined":false,"prependEnclosingClassNames":true,"prependIPrefix":true,"typescriptIndent":"\t","typescriptLineSeparator":";"}"""
 
   "Fully defined configuration" should {
-    "be loaded from XML" in {
+    "be loaded" in {
       val cfg = Configuration.load(
-        XML loadString fullXml,
+        ConfigFactory parseString fullConf,
         Logger(org.slf4j.LoggerFactory getLogger getClass))
 
       cfg must_=== Configuration(typescriptIndent = "\t")
     }
 
-    "be written as XML" in {
-      Configuration.toXml(
-        Configuration(typescriptIndent = "\t")).toString must_=== fullXml
+    "be written" in {
+      Configuration.toConfig(Configuration(typescriptIndent = "\t")).
+        root().render(concise) must_=== fullConf
     }
   }
 
   "Configuration with custom field naming" should {
-    "be loaded from XML" in {
-      val source = s"""<scalats>
-  <fieldNaming>${classOf[CustomFieldNaming].getName}</fieldNaming>
-</scalats>"""
+    "be loaded" in {
+      val source = s"""fieldNaming = "${classOf[CustomFieldNaming].getName}""""
 
       val cfg = Configuration.load(
-        XML loadString source,
+        ConfigFactory.parseString(source),
         Logger(org.slf4j.LoggerFactory getLogger getClass))
 
       cfg must_=== Configuration(fieldNaming = new CustomFieldNaming)

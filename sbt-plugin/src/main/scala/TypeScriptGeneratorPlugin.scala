@@ -1,5 +1,7 @@
 package io.github.scalats.sbt
 
+import java.io.PrintWriter
+
 import java.net.URL
 
 import scala.util.control.NonFatal
@@ -15,7 +17,16 @@ import _root_.io.github.scalats.core.{
   TypeScriptPrinter,
   TypeScriptTypeMapper
 }
-import _root_.io.github.scalats.plugins.{ FilePrinter, SingleFilePrinter, SourceRuleSet }
+import _root_.io.github.scalats.plugins.{
+  FilePrinter,
+  SingleFilePrinter,
+  SourceRuleSet
+}
+import _root_.io.github.scalats.tsconfig.{
+  Config,
+  ConfigFactory,
+  ConfigRenderOptions
+}
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
@@ -81,17 +92,19 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsDiscriminator = settingKey[String](
       "Name for the discriminator field")
 
-    val scalatsSourceIncludes = settingKey[Set[String]](
+    val scalatsSourceIncludes = settingKey[Set[String]]( // TODO: Regex
       "Scala sources to be included for ScalaTS (default: '.*'")
 
     val scalatsSourceExcludes = settingKey[Set[String]](
       "Scala sources to be excluded for ScalaTS (default: none)")
 
+    private val typeRegex = "Regular expressions on type full names; Can be prefixed with either 'object:' or 'class:' (for class or trait)"
+
     val scalatsTypeIncludes = settingKey[Set[String]](
-      "Scala types to be included for ScalaTS (default '.*'")
+      s"Scala types to be included for ScalaTS; $typeRegex (default '.*'")
 
     val scalatsTypeExcludes = settingKey[Set[String]](
-      "Scala types to be excluded for ScalaTS (default: none)")
+      s"Scala types to be excluded for ScalaTS; $typeRegex (default: none)")
 
     // ---
 
@@ -140,10 +153,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     sourceManaged in scalatsOnCompile := {
       target.value / "scala-ts" / "src_managed"
     },
-    scalatsCompilerPluginConf := (target in Compile).value / "plugin-conf.xml",
+    scalatsCompilerPluginConf := {
+      (target in Compile).value / "scala-ts.conf"
+    },
     scalatsPrepare := {
       val logger = streams.value.log
       import Settings.EmitCodecs
+
+      var out: PrintWriter = null
 
       try {
         val sbtScalaVer: String = {
@@ -251,9 +268,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
         val confFile = scalatsCompilerPluginConf.value.getAbsolutePath
 
-        logger.info(s"Saving XML configuration to '${confFile}' ...")
+        logger.info(
+          s"Saving compiler plugin configuration to '${confFile}' ...")
 
-        val conf = xmlConfiguration(
+        val conf = compilerPluginConf(
           settings = settings,
           compilationRuleSet = SourceRuleSet(
             includes = scalatsSourceIncludes.value,
@@ -265,7 +283,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           typeScriptTypeMappers = typeMappers,
           additionalClasspath = Seq(sbtProjectClassUrl))
 
-        scala.xml.XML.save(filename = confFile, node = conf)
+        out = new PrintWriter(confFile)
+
+        out.print(conf.root.render(ConfigRenderOptions.concise))
+        out.flush()
 
         true
       } catch {
@@ -274,6 +295,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           cause.printStackTrace()
 
           false
+      } finally {
+        if (out != null) {
+          try {
+            out.close()
+          } catch {
+            case NonFatal(_) =>
+          }
+        }
       }
     },
     scalacOptions in Compile ++= {
@@ -333,47 +362,41 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsFieldNaming := FieldNaming.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text)
 
-  import scala.xml.Elem
-
   @SuppressWarnings(Array("NullParameter"))
-  private def xmlConfiguration(
+  private def compilerPluginConf(
     settings: Settings,
     compilationRuleSet: SourceRuleSet,
     typeRuleSet: SourceRuleSet,
     printer: Class[_ <: TypeScriptPrinter],
     typeScriptTypeMappers: Seq[Class[_ <: TypeScriptTypeMapper]],
-    additionalClasspath: Seq[URL]): Elem = {
-    val rootName = "scalats"
+    additionalClasspath: Seq[URL]): Config = {
 
-    def elem(n: String, children: Seq[Elem]) =
-      new Elem(
-        prefix = null,
-        label = n,
-        attributes1 = scala.xml.Null,
-        scope = new scala.xml.NamespaceBinding(null, null, null),
-        minimizeEmpty = true,
-        children: _*)
+    import java.util.Arrays
 
-    val children = Seq.newBuilder[Elem] ++= Seq(
-      SourceRuleSet.toXml(compilationRuleSet, "compilationRuleSet"),
-      SourceRuleSet.toXml(typeRuleSet, "typeRuleSet"),
-      Settings.toXml(settings, "settings"),
-      elem("additionalClasspath", additionalClasspath.map { url =>
-        (<url>{ url }</url>)
-      }))
+    val repr = new java.util.HashMap[String, Any](6)
+
+    repr.put(
+      "compilationRuleSet",
+      SourceRuleSet.toConfig(compilationRuleSet).root)
+
+    repr.put("typeRuleSet", SourceRuleSet.toConfig(typeRuleSet).root)
+    repr.put("settings", Settings.toConfig(settings).root)
+
+    repr.put(
+      "additionalClasspath",
+      Arrays.asList(additionalClasspath.map(_.toString): _*))
 
     if (printer != TypeScriptPrinter.StandardOutput.getClass) {
-      children += (<printer>{ printer.getName }</printer>)
+      repr.put("printer", printer.getName)
     }
 
     if (typeScriptTypeMappers.nonEmpty) {
-      children += elem(
+      repr.put(
         "typeScriptTypeMappers",
-        typeScriptTypeMappers.map { cls =>
-          (<class>{ cls.getName }</class>)
-        })
+        Arrays.asList(typeScriptTypeMappers.map(_.getName): _*))
+
     }
 
-    elem(rootName, children.result())
+    ConfigFactory.parseMap(repr)
   }
 }

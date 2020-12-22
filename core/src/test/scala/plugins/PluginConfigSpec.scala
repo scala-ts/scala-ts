@@ -4,74 +4,158 @@ import java.net.URL
 
 import scala.collection.immutable.Set
 
-import scala.xml.XML
-
 import io.github.scalats.core.{ Configuration => Settings, FieldNaming, Logger }
+import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class PluginConfigSpec extends org.specs2.mutable.Specification {
   "Plugin configuration" title
 
   lazy val logger = Logger(org.slf4j.LoggerFactory getLogger getClass)
 
+  val compilationRuleSet = SourceRuleSet(
+    includes = Set("ScalaParserSpec\\.scala", "Transpiler.*"),
+    excludes = Set("foo"))
+
+  val typeRuleSet = SourceRuleSet(
+    includes = Set("org\\.scalats\\.core\\..*"),
+    excludes = Set(".*Spec", f"ScalaRuntimeFixtures$$", "object:.*ScalaParserResults", "FamilyMember(2|3)"))
+
   "Configuration" should {
     {
-      lazy val xml = XML.loadString("<scalats></scalats>")
       val defaultCfg = Configuration()
 
       "be loaded from minimal" in {
-        Configuration.load(xml, logger, None) must_=== defaultCfg
+        Configuration.load(
+          ConfigFactory.empty(), logger, None) must_=== defaultCfg
       }
 
-      "be written XML with defaults" in {
-        val xml = (<scalats><compilationRuleSet><includes/><excludes/></compilationRuleSet><typeRuleSet><includes/><excludes/></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>true</prependIPrefix><prependEnclosingClassNames>true</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>Identity</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath/></scalats>)
+      "be written with defaults" in {
+        val source = ConfigFactory.parseString("""settings {
+  emitInterfaces = true
+  emitClasses = false
+  emitCodecs = true
+  optionToNullable = true
+  optionToUndefined = false
+  prependIPrefix = true
+  prependEnclosingClassNames = true
+  typescriptIndent = "  "
+  typescriptLineSeparator = ";"
+  fieldNaming = "Identity"
+  discriminator = "_dis"
+}""")
 
-        Configuration.load(xml, logger, None) must_=== defaultCfg
+        Configuration.load(source, logger, None) must_=== defaultCfg.
+          withSettings(defaultCfg.settings.copy(
+            discriminator = new Settings.Discriminator("_dis")))
+
       }
     }
 
     {
-      lazy val xml = XML.load(getClass getResourceAsStream "/plugin-conf.xml")
       val customConfig = Configuration(
-        compilationRuleSet = SourceRuleSet(
-          includes = Set("ScalaParserSpec\\.scala", "Transpiler.*"),
-          excludes = Set("foo")),
-        typeRuleSet = SourceRuleSet(
-          includes = Set("org\\.scalats\\.core\\..*"),
-          excludes = Set(".*Spec", f"ScalaRuntimeFixtures$$", "object:.*ScalaParserResults", "FamilyMember(2|3)")),
+        compilationRuleSet = compilationRuleSet,
+        typeRuleSet = typeRuleSet,
         settings = Settings(
           typescriptIndent = "  ",
           prependIPrefix = false,
           prependEnclosingClassNames = false,
           fieldNaming = FieldNaming.SnakeCase))
 
-      "be loaded from fully defined XML" in {
-        val cfg = Configuration.load(xml, logger, None)
+      "be loaded from fully defined" in {
+        val cfg = Configuration.load(
+          ConfigFactory.parseURL(getClass getResource "/plugin.conf"),
+          logger, None)
 
         cfg must_=== customConfig
       }
 
-      "be fully defined and written as XML" in {
-        val xml = (<scalats><compilationRuleSet><includes><include>ScalaParserSpec\.scala</include><include>Transpiler.*</include></includes><excludes><exclude>foo</exclude></excludes></compilationRuleSet><typeRuleSet><includes><include>org\.scalats\.core\..*</include></includes><excludes><exclude>.*Spec</exclude><exclude>ScalaRuntimeFixtures$</exclude><exclude>object:.*ScalaParserResults</exclude><exclude>FamilyMember(2|3)</exclude></excludes></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>false</prependIPrefix><prependEnclosingClassNames>false</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>SnakeCase</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath/></scalats>)
+      "be fully defined and written" in {
+        val source = ConfigFactory.parseString("""
+compilationRuleSet {
+  includes = [ "ScalaParserSpec\\.scala", "Transpiler.*" ]
+  excludes = [ "foo" ]
+}
 
-        Configuration.load(xml, logger, None) must_=== customConfig
+typeRuleSet {
+  includes = [ "org\\.scalats\\.core\\..*" ]
+  excludes = [ 
+    ".*Spec", "ScalaRuntimeFixtures$", 
+    "object:.*ScalaParserResults",
+    "FamilyMember(2|3)"
+  ]
+}
+
+settings {
+  emitInterfaces = true
+  emitClasses = false
+  emitCodecs = true
+  optionToNullable = true
+  optionToUndefined = false
+  prependIPrefix = false
+  prependEnclosingClassNames = false
+  typescriptIndent = "  "
+  typescriptLineSeparator = ";"
+  fieldNaming = "SnakeCase"
+  discriminator = "_type"
+}
+""")
+
+        Configuration.load(source, logger, None) must_=== customConfig
       }
     }
 
     {
-      lazy val xml = XML.loadString("<scalats><additionalClasspath><url>file:///tmp/foo1</url><url>file:///tmp/foo2</url></additionalClasspath></scalats>")
+      lazy val source = ConfigFactory.parseString(
+        """additionalClasspath = [ "file:///tmp/foo1", "file:///tmp/foo2" ]""")
+
       val cfg = Configuration(additionalClasspath = Seq(
         new URL("file:///tmp/foo1"),
         new URL("file:///tmp/foo2")))
 
-      "be loaded from XML with additional classpath" in {
-        Configuration.load(xml, logger, None) must_=== cfg
+      "be loaded with additional classpath" in {
+        Configuration.load(source, logger, None) must_=== cfg
       }
 
-      "be written as XML with additional classpath" in {
-        val xml = (<scalats><compilationRuleSet><includes/><excludes/></compilationRuleSet><typeRuleSet><includes/><excludes/></typeRuleSet><settings><emitInterfaces>true</emitInterfaces><emitClasses>false</emitClasses><emitCodecs>true</emitCodecs><optionToNullable>true</optionToNullable><optionToUndefined>false</optionToUndefined><prependIPrefix>true</prependIPrefix><prependEnclosingClassNames>true</prependEnclosingClassNames><typescriptIndent>  </typescriptIndent><typescriptLineSeparator>;</typescriptLineSeparator><fieldNaming>Identity</fieldNaming><discriminator>_type</discriminator></settings><additionalClasspath><url>file:/tmp/foo1</url><url>file:/tmp/foo2</url></additionalClasspath><typeScriptTypeMappers><class>io.github.scalats.core.TypeScriptTypeMapper$Defaults$</class></typeScriptTypeMappers></scalats>)
+      "be written with additional classpath" in {
+        val source = ConfigFactory.parseString("""
+settings {
+  emitInterfaces = true
+  emitClasses = false
+  emitCodecs = true
+  optionToNullable = true
+  optionToUndefined = false
+  prependIPrefix = true
+  prependEnclosingClassNames = true
+  typescriptIndent = "  "
+  typescriptLineSeparator = ";"
+  fieldNaming = "Identity"
+  discriminator = "_type"
+}
 
-        Configuration.load(xml, logger, None) must_=== cfg
+additionalClasspath = [ "file:/tmp/foo1", "file:/tmp/foo2" ]
+typeScriptTypeMappers = [
+  "io.github.scalats.core.TypeScriptTypeMapper$Defaults$"
+]""")
+
+        Configuration.load(source, logger, None) must_=== cfg
       }
+    }
+  }
+
+  "Source rule set" should {
+    "be loaded" in {
+      val source = ConfigFactory.parseString("""
+includes = [ "ScalaParserSpec\\.scala", "Transpiler.*" ]
+excludes = [ "foo" ]""")
+
+      SourceRuleSet.load(source) must_=== compilationRuleSet
+    }
+
+    "be written" in {
+      import ConfigRenderOptions.concise
+
+      SourceRuleSet.toConfig(typeRuleSet).
+        root.render(concise) must_=== """{"excludes":[".*Spec","ScalaRuntimeFixtures$","object:.*ScalaParserResults","FamilyMember(2|3)"],"includes":["org\\.scalats\\.core\\..*"]}"""
     }
   }
 }
