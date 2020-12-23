@@ -4,7 +4,7 @@ import java.net.URL
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.core.{FieldNaming, Logger, Settings}
+import io.github.scalats.core.{ FieldNaming, Logger, Settings }
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class ConfigurationSpec extends org.specs2.mutable.Specification {
