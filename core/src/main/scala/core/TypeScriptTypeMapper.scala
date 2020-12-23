@@ -14,19 +14,19 @@ import typescript.TypeRef
  * - [[TypeScriptTypeMapper.NumberAsString]]
  * - [[TypeScriptTypeMapper.NullableAsOption]]
  */
-trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]] { self =>
+trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]] { self =>
 
   /**
    * @param parent the parent/fallback mapper
    * @param ownerType the name of the type which declared the member
-   * @param memberName the name of the member
+   * @param member the name of the member
    * @param tpe a reference to the TypeScript type transpiled from Scala
    * @return Some TypeScript type, or none
    */
   def apply(
     parent: TypeScriptTypeMapper.Resolved,
     ownerType: String,
-    memberName: String,
+    member: TypeScriptField,
     tpe: TypeRef): Option[String]
 
   def andThen(m: TypeScriptTypeMapper): TypeScriptTypeMapper =
@@ -34,24 +34,24 @@ trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, Stri
       @inline def apply(
         parent: TypeScriptTypeMapper.Resolved,
         ownerType: String,
-        memberName: String,
+        member: TypeScriptField,
         tpe: TypeRef): Option[String] =
-        self(parent, ownerType, memberName, tpe).
-          orElse(m(parent, ownerType, memberName, tpe))
+        self(parent, ownerType, member, tpe).
+          orElse(m(parent, ownerType, member, tpe))
     }
 }
 
 object TypeScriptTypeMapper {
   import com.github.ghik.silencer.silent
 
-  /** `(ownerType, memberName, type) => TypeScript type` */
-  type Resolved = Function3[String, String, TypeRef, String]
+  /** `(ownerType, member, type) => TypeScript type` */
+  type Resolved = Function3[String, TypeScriptField, TypeRef, String]
 
   object Defaults extends TypeScriptTypeMapper {
     @silent @inline def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef) = Option.empty[String]
   }
 
@@ -60,10 +60,10 @@ object TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.ArrayRef(innerType) =>
-        Some(s"Array<${parent(ownerType, memberName, innerType)}>")
+        Some(s"Array<${parent(ownerType, member, innerType)}>")
 
       case _ => None
     }
@@ -76,10 +76,10 @@ object TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.ArrayRef(innerType) =>
-        Some(s"${parent(ownerType, memberName, innerType)}[]")
+        Some(s"${parent(ownerType, member, innerType)}[]")
 
       case _ => None
     }
@@ -91,7 +91,7 @@ object TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.NumberRef =>
         Some("string")
@@ -107,7 +107,7 @@ object TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.DateRef | typescript.DateTimeRef =>
         Some("string")
@@ -128,10 +128,10 @@ object TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
       ownerType: String,
-      memberName: String,
+      member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.NullableType(innerType) =>
-        Some(s"Option<${parent(ownerType, memberName, innerType)}>")
+        Some(s"Option<${parent(ownerType, member, innerType)}>")
 
       case _ =>
         None

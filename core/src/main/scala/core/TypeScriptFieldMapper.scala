@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.typescript.TypeRef
+import io.github.scalats.typescript.{ NullableType, TypeRef }
 
 /**
  * Functional type to customize the field naming and access.
@@ -40,7 +40,6 @@ trait TypeScriptFieldMapper
     ownerType: String,
     propertyName: String,
     propertyType: TypeRef): TypeScriptField
-  // TODO: Si type Nullable et config.optionToUndefined, positionné omitable:true
 
 }
 
@@ -51,7 +50,7 @@ object TypeScriptFieldMapper {
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: TypeRef) = TypeScriptField(propertyName, Set.empty)
+      propertyType: TypeRef) = TypeScriptField(propertyName, flags(settings, propertyType))
   }
 
   /**
@@ -93,7 +92,17 @@ object TypeScriptFieldMapper {
       }
 
       // builds the final string
-      TypeScriptField(result.toString(), Set.empty)
+      TypeScriptField(result.toString(), flags(settings, propertyType))
     }
   }
+
+  /** Returns the default flags according the type and settings. */
+  def flags(settings: Settings, tpe: TypeRef): Set[TypeScriptField.Flag] =
+    tpe match {
+      case NullableType(_) if settings.optionToUndefined =>
+        Set(TypeScriptField.omitable)
+
+      case _ =>
+        Set.empty[TypeScriptField.Flag]
+    }
 }

@@ -73,7 +73,7 @@ object Settings {
 
   def apply(
     emitCodecs: EmitCodecs = EmitCodecsEnabled,
-    optionToNullable: Boolean = true,
+    optionToNullable: Boolean = true, // TODO: default false, undefined = true
     optionToUndefined: Boolean = false,
     prependIPrefix: Boolean = true,
     prependEnclosingClassNames: Boolean = true,

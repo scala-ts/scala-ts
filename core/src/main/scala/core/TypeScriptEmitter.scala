@@ -112,15 +112,22 @@ final class TypeScriptEmitter(
       o.println(" {")
 
       // Abstract fields - common to all the subtypes
-      list(fields).foreach { member =>
-        val tsField = config.fieldMapper(
-          config, name, member.name, member.typeRef)
-
-        o.println(s"${indent}${tsField.name}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
-      }
+      list(fields).foreach(emitField(o, name, _))
 
       o.println("}")
     }
+
+  private def emitField(o: PrintStream, name: String, member: Member): Unit = {
+    val tsField = config.fieldMapper(
+      config, name, member.name, member.typeRef)
+
+    val nameSuffix: String = {
+      if (tsField.flags contains TypeScriptField.omitable) "?"
+      else ""
+    }
+
+    o.println(s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(name, tsField, member.typeRef)}${lineSeparator}")
+  }
 
   private def emitSingletonDeclaration(
     name: String,
@@ -183,12 +190,7 @@ final class TypeScriptEmitter(
 
       o.println(" {")
 
-      list(fields).reverse.foreach { member =>
-        val tsField = config.fieldMapper(
-          config, name, member.name, member.typeRef)
-
-        o.println(s"${indent}${tsField.name}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
-      }
+      list(fields).reverse.foreach(emitField(o, name, _))
 
       o.println("}")
     }
@@ -362,16 +364,16 @@ final class TypeScriptEmitter(
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
-    (ownerType: String, memberName: String, typeRef: TypeRef) =>
-      typeMapper(resolvedTypeMapper, ownerType, memberName, typeRef).
-        getOrElse(defaultTypeMapping(ownerType, memberName, typeRef))
+    (ownerType: String, member: TypeScriptField, typeRef: TypeRef) =>
+      typeMapper(resolvedTypeMapper, ownerType, member, typeRef).
+        getOrElse(defaultTypeMapping(ownerType, member, typeRef))
   }
 
   private def defaultTypeMapping(
     ownerType: String,
-    memberName: String,
+    member: TypeScriptField,
     typeRef: TypeRef): String = {
-    val tr = resolvedTypeMapper(ownerType, memberName, _: TypeRef)
+    val tr = resolvedTypeMapper(ownerType, member, _: TypeRef)
 
     typeRef match {
       case NumberRef => "number"
@@ -436,7 +438,7 @@ final class TypeScriptEmitter(
 }
 
 private[core] object TypeScriptEmitter {
-  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]]
+  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]]
 
   /* See `TypeScriptPrinter` */
   type Printer = Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream]
