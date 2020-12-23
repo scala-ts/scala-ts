@@ -24,7 +24,7 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
       val file = new File(tmp, name)
       val p = new SingleFilePrinter(tmp)
       val printer = {
-        val conf = io.github.scalats.core.Configuration()
+        val conf = io.github.scalats.core.Settings()
         p(conf, Declaration.Class, _: String, _: Set[TypeRef])
       }
 

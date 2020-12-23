@@ -7,8 +7,8 @@ import java.net.URL
 import scala.util.control.NonFatal
 
 import io.github.scalats.core.{
-  Configuration => Settings,
   Logger,
+  Settings,
   TypeScriptPrinter,
   TypeScriptTypeMapper
 }

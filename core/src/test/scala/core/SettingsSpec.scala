@@ -2,37 +2,37 @@ package io.github.scalats.core
 
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
-final class CoreConfigSpec extends org.specs2.mutable.Specification {
-  "Core configuration" title
+final class SettingsSpec extends org.specs2.mutable.Specification {
+  "Settings" title
 
   import ConfigRenderOptions.concise
 
-  val fullConf = """{"discriminator":"_type","emitClasses":false,"emitCodecs":true,"emitInterfaces":true,"fieldNaming":"Identity","optionToNullable":true,"optionToUndefined":false,"prependEnclosingClassNames":true,"prependIPrefix":true,"typescriptIndent":"\t","typescriptLineSeparator":";"}"""
+  val fullConf = """{"discriminator":"_type","emitCodecs":true,"fieldNaming":"Identity","optionToNullable":true,"optionToUndefined":false,"prependEnclosingClassNames":true,"prependIPrefix":true,"typescriptIndent":"\t","typescriptLineSeparator":";"}"""
 
-  "Fully defined configuration" should {
+  "Fully defined settings" should {
     "be loaded" in {
-      val cfg = Configuration.load(
+      val cfg = Settings.load(
         ConfigFactory parseString fullConf,
         Logger(org.slf4j.LoggerFactory getLogger getClass))
 
-      cfg must_=== Configuration(typescriptIndent = "\t")
+      cfg must_=== Settings(typescriptIndent = "\t")
     }
 
     "be written" in {
-      Configuration.toConfig(Configuration(typescriptIndent = "\t")).
+      Settings.toConfig(Settings(typescriptIndent = "\t")).
         root().render(concise) must_=== fullConf
     }
   }
 
-  "Configuration with custom field naming" should {
+  "Settings with custom field naming" should {
     "be loaded" in {
       val source = s"""fieldNaming = "${classOf[CustomFieldNaming].getName}""""
 
-      val cfg = Configuration.load(
+      val cfg = Settings.load(
         ConfigFactory.parseString(source),
         Logger(org.slf4j.LoggerFactory getLogger getClass))
 
-      cfg must_=== Configuration(fieldNaming = new CustomFieldNaming)
+      cfg must_=== Settings(fieldNaming = new CustomFieldNaming)
     }
   }
 }

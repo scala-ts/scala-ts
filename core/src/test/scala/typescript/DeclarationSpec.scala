@@ -35,23 +35,6 @@ final class DeclarationSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "be resolved as empty set for class" >> {
-      Fragments.foreach(Seq[ClassDeclaration](
-        clazz1, clazz2, clazz3, clazz5, clazz10)) { c =>
-        c.name in {
-          c.requires must beEmpty
-        }
-      }
-    }
-
-    "be resolved for class" >> {
-      clazz7.name in {
-        clazz7.requires must_=== Set(
-          CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
-          CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty))
-      }
-    }
-
     "be resolved for singleton" >> {
       singleton1.name in {
         singleton1.requires must beEmpty

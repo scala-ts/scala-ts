@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
-import io.github.scalats.core.{ Configuration => Settings }
+import io.github.scalats.core.Settings
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 // TODO: Printer that gather class and interface (need to pass `Declaration` or `TypeRef` instead of just `name: String`)

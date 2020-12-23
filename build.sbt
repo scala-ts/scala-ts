@@ -88,7 +88,7 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
     compile in Compile := (compile in Compile).dependsOn(
-      core / publishLocal).value,
+      core / publishLocal).value, // TODO: Make only `scripted` dependsOn core publishLocal
     scriptedBufferLog := false,
     sourceGenerators in Compile += Def.task {
       val groupId = organization.value

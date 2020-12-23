@@ -6,10 +6,6 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
-scalatsEmitClasses := true // By default: false
-
-scalatsPrependIPrefix := true // By default: false (required with scalatsEmitClasses)
-
 // Custom field naming
 scalatsFieldNaming := classOf[scalats.CustomFieldNaming]
 

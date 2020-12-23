@@ -7,7 +7,7 @@ import io.github.scalats.typescript._
 /**
  * Created by Milosz on 09.06.2016.
  */
-final class Transpiler(config: Configuration) {
+final class Transpiler(config: Settings) {
   // TODO: (low priority) Remove the transpiler phase?
 
   @inline def apply(scalaTypes: ListSet[ScalaModel.TypeDef]): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
@@ -17,6 +17,7 @@ final class Transpiler(config: Configuration) {
     superInterface: Option[InterfaceDeclaration]): ListSet[Declaration] =
     scalaTypes.flatMap {
       case scalaClass: ScalaModel.CaseClass => {
+        /* TODO: (medium priority) Remove
         val clazz = {
           if (config.emitClasses) {
             ListSet[Declaration](transpileClass(scalaClass, superInterface))
@@ -24,8 +25,8 @@ final class Transpiler(config: Configuration) {
         }
 
         if (!config.emitInterfaces) clazz
-        else ListSet[Declaration](
-          transpileInterface(scalaClass, superInterface)) ++ clazz
+        else*/ ListSet[Declaration](
+          transpileInterface(scalaClass, superInterface)) //++ clazz // TODO: (medium priority) Remove
       }
 
       case ScalaModel.EnumerationDef(id, values) =>
@@ -73,16 +74,20 @@ final class Transpiler(config: Configuration) {
 
   private def transpileInterface(
     scalaClass: ScalaModel.CaseClass,
-    superInterface: Option[InterfaceDeclaration]) = InterfaceDeclaration(
-    toInterfaceName(scalaClass.identifier),
-    scalaClass.fields.map { scalaMember =>
-      Member(
-        scalaMember.name,
-        transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
-    },
-    typeParams = scalaClass.typeArgs,
-    superInterface = superInterface)
+    superInterface: Option[InterfaceDeclaration]) = {
+    // TODO: (medium priority) Transpile values? (see former transpileClass)
+    InterfaceDeclaration(
+      toInterfaceName(scalaClass.identifier),
+      scalaClass.fields.map { scalaMember =>
+        Member(
+          scalaMember.name,
+          transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
+      },
+      typeParams = scalaClass.typeArgs,
+      superInterface = superInterface)
+  }
 
+  /* TODO: (medium priority) Remove
   private def transpileClass(
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]) = {
@@ -100,6 +105,7 @@ final class Transpiler(config: Configuration) {
       typeParams = scalaClass.typeArgs,
       superInterface)
   }
+   */
 
   private def transpileTypeRef(
     scalaTypeRef: ScalaModel.TypeRef,

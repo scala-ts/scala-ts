@@ -11,7 +11,7 @@ import io.github.scalats.typescript._
  * @param out the function to select a `PrintStream` from type name
  */
 final class TypeScriptEmitter(
-  val config: Configuration,
+  val config: Settings,
   out: TypeScriptEmitter.Printer,
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
@@ -31,8 +31,10 @@ final class TypeScriptEmitter(
       case decl: EnumDeclaration =>
         emitEnumDeclaration(decl)
 
+      /* TODO: (medium priority) Remove
       case decl: ClassDeclaration =>
         emitClassDeclaration(decl)
+         */
 
       case s @ SingletonDeclaration(name, members, superInterface) =>
         emitSingletonDeclaration(name, members, superInterface, s.requires)
@@ -202,6 +204,7 @@ final class TypeScriptEmitter(
     }
   }
 
+  /* TODO: (medium priority) Remove
   private def emitClassDeclaration(decl: ClassDeclaration): Unit = {
     val ClassDeclaration(name, ClassConstructor(parameters),
       values, typeParams, _ /*superInterface*/ ) = decl
@@ -347,6 +350,7 @@ final class TypeScriptEmitter(
       o.println(s"${indent}}")
     }
   }
+   */
 
   // ---
 
@@ -392,6 +396,7 @@ final class TypeScriptEmitter(
       case NullableType(innerType) if config.optionToNullable =>
         s"(${tr(innerType)} | null)"
 
+      // TODO: omitable prop?: <innerType>
       case NullableType(innerType) =>
         s"(${tr(innerType)} | undefined)"
 
@@ -430,5 +435,5 @@ private[core] object TypeScriptEmitter {
   type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]]
 
   /* See `TypeScriptPrinter` */
-  type Printer = Function4[Configuration, Declaration.Kind, String, Set[TypeRef], PrintStream]
+  type Printer = Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream]
 }

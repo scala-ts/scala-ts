@@ -11,67 +11,54 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
 
   import TranspilerResults._
 
-  val defaultTranspiler: Transpiler =
-    new Transpiler(Configuration(emitClasses = true))
+  val defaultTranspiler: Transpiler = new Transpiler(Settings())
 
   "Transpiler" should {
     "transpile a case class with one primitive member" in {
       val result = defaultTranspiler(ListSet(caseClass1))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface1)
-      } and {
-        result must contain(clazz1)
       }
     }
 
     "transpile a generic class with one member" in {
       val result = defaultTranspiler(ListSet(caseClass2))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface2)
-      } and {
-        result must contain(clazz2)
       }
     }
 
     "transpile a generic case class with one member list of type parameter" in {
       val result = defaultTranspiler(ListSet(caseClass3))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface3)
-      } and {
-        result must contain(clazz3)
       }
     }
 
     "transpile a generic case class with one optional member" in {
       val result = defaultTranspiler(ListSet(caseClass5))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface5)
-      } and {
-        result must contain(clazz5)
       }
     }
 
     "transpile disjunction types" in {
       val result = defaultTranspiler(ListSet(caseClass7))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface7)
-      } and {
-        result must contain(clazz7)
       }
     }
 
     "transpile Tuple types" in {
       val result = defaultTranspiler(ListSet(caseClass10))
 
-      result must have size 2 and {
+      result must have size 1 and {
         result must contain(interface10)
-      } and {
-        result must contain(clazz10)
       }
     }
 
@@ -97,10 +84,8 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "correctly transpile sealed trait as union" in {
       val result = defaultTranspiler(ListSet(sealedFamily1))
 
-      result must have size 5 and {
+      result must have size 4 and {
         result must contain(union1)
-      } and {
-        result must contain(unionMember1Clazz)
       } and {
         result must contain(unionMember2Singleton)
       } and {
@@ -126,24 +111,9 @@ object TranspilerResults {
     "IScalaRuntimeFixturesTestClass1",
     ListSet(Member("name", StringRef)), List.empty, Option.empty)
 
-  val clazz1 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass1",
-    ClassConstructor(ListSet(ClassConstructorParameter("name", StringRef))),
-    ListSet.empty,
-    typeParams = List.empty,
-    superInterface = Option.empty)
-
   val interface2 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass2",
     ListSet(Member("name", SimpleTypeRef("T"))),
-    typeParams = List("T"),
-    superInterface = Option.empty)
-
-  val clazz2 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass2",
-    ClassConstructor(ListSet(
-      ClassConstructorParameter("name", SimpleTypeRef("T")))),
-    ListSet.empty,
     typeParams = List("T"),
     superInterface = Option.empty)
 
@@ -153,27 +123,10 @@ object TranspilerResults {
     typeParams = List("T"),
     superInterface = Option.empty)
 
-  val clazz3 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass3", ClassConstructor(ListSet(
-      ClassConstructorParameter("name", ArrayRef(SimpleTypeRef("T"))))),
-    ListSet.empty,
-    typeParams = List("T"),
-    superInterface = Option.empty)
-
   val interface5 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass5", ListSet(
       Member("counters", MapType(StringRef, NumberRef)),
       Member("name", NullableType(SimpleTypeRef("T")))),
-    typeParams = List("T"),
-    superInterface = Option.empty)
-
-  val clazz5 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass5", ClassConstructor(ListSet(
-      ClassConstructorParameter(
-        "counters", MapType(StringRef, NumberRef)),
-      ClassConstructorParameter(
-        "name", NullableType(SimpleTypeRef("T"))))),
-    ListSet.empty,
     typeParams = List("T"),
     superInterface = Option.empty)
 
@@ -185,15 +138,6 @@ object TranspilerResults {
     typeParams = List("T"),
     superInterface = Option.empty)
 
-  val clazz7 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass7", ClassConstructor(ListSet(
-      ClassConstructorParameter("name", UnionType(ListSet(
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty)))))),
-    ListSet.empty,
-    typeParams = List("T"),
-    superInterface = Option.empty)
-
   val interface10 = InterfaceDeclaration(
     "IScalaRuntimeFixturesTestClass10", ListSet(
       Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
@@ -201,20 +145,6 @@ object TranspilerResults {
       Member("tupleA", TupleRef(List(StringRef, NumberRef))),
       Member("tuple", TupleRef(List(NumberRef))),
       Member("name", StringRef)),
-    typeParams = List.empty,
-    superInterface = None)
-
-  val clazz10 = ClassDeclaration(
-    "ScalaRuntimeFixturesTestClass10", ClassConstructor(ListSet(
-      ClassConstructorParameter(
-        "tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
-      ClassConstructorParameter(
-        "tupleB", TupleRef(List(StringRef, NumberRef))),
-      ClassConstructorParameter(
-        "tupleA", TupleRef(List(StringRef, NumberRef))),
-      ClassConstructorParameter("tuple", TupleRef(List(NumberRef))),
-      ClassConstructorParameter("name", StringRef))),
-    ListSet.empty,
     typeParams = List.empty,
     superInterface = None)
 
@@ -239,15 +169,6 @@ object TranspilerResults {
     ListSet(Member("foo", StringRef)),
     typeParams = List.empty[String],
     superInterface = Option.empty)
-
-  val unionMember1Clazz = ClassDeclaration(
-    "ScalaRuntimeFixturesFamilyMember1",
-    constructor = ClassConstructor(ListSet(
-      ClassConstructorParameter(
-        "foo", StringRef))),
-    values = ListSet(Member("code", NumberRef)),
-    typeParams = List.empty,
-    superInterface = Some(unionIface))
 
   val unionMember2Singleton = SingletonDeclaration(
     "ScalaRuntimeFixturesFamilyMember2",

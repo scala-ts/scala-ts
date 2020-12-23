@@ -7,35 +7,29 @@ import scala.util.control.NonFatal
 /**
  * Created by Milosz on 09.12.2016.
  */
-final class Configuration(
-  val emitInterfaces: Boolean,
-  val emitClasses: Boolean,
-  val emitCodecs: Configuration.EmitCodecs,
+final class Settings(
+  val emitCodecs: Settings.EmitCodecs,
   val optionToNullable: Boolean,
   val optionToUndefined: Boolean,
-  val prependIPrefix: Boolean, // TODO: Rather interfacePrefix: Option[String]
+  val prependIPrefix: Boolean, // TODO: (low) Rather type naming
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
-  val typescriptLineSeparator: Configuration.TypeScriptLineSeparator,
+  val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
   val fieldNaming: FieldNaming,
-  val discriminator: Configuration.Discriminator) {
+  val discriminator: Settings.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters"))
   private[scalats] def copy(
-    emitInterfaces: Boolean = this.emitInterfaces,
-    emitClasses: Boolean = this.emitClasses,
-    emitCodecs: Configuration.EmitCodecs = this.emitCodecs,
+    emitCodecs: Settings.EmitCodecs = this.emitCodecs,
     optionToNullable: Boolean = this.optionToNullable,
     optionToUndefined: Boolean = this.optionToUndefined,
     prependIPrefix: Boolean = this.prependIPrefix,
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
-    typescriptLineSeparator: Configuration.TypeScriptLineSeparator = this.typescriptLineSeparator,
+    typescriptLineSeparator: Settings.TypeScriptLineSeparator = this.typescriptLineSeparator,
     fieldNaming: FieldNaming = this.fieldNaming,
-    discriminator: Configuration.Discriminator = this.discriminator): Configuration =
-    new Configuration(
-      emitInterfaces,
-      emitClasses,
+    discriminator: Settings.Discriminator = this.discriminator): Settings =
+    new Settings(
       emitCodecs,
       optionToNullable,
       optionToUndefined,
@@ -47,7 +41,7 @@ final class Configuration(
       discriminator)
 
   override def equals(that: Any): Boolean = that match {
-    case other: Configuration => tupled == other.tupled
+    case other: Settings => tupled == other.tupled
 
     case _ => false
   }
@@ -56,9 +50,7 @@ final class Configuration(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple11(
-    emitInterfaces,
-    emitClasses,
+  private lazy val tupled = Tuple9(
     emitCodecs,
     optionToNullable,
     optionToUndefined,
@@ -70,7 +62,7 @@ final class Configuration(
     discriminator)
 }
 
-object Configuration {
+object Settings {
   import io.github.scalats.tsconfig.{
     ConfigFactory,
     Config,
@@ -79,10 +71,7 @@ object Configuration {
 
   val DefaultTypeScriptIndent = "  "
 
-  @SuppressWarnings(Array("MaxParameters"))
   def apply(
-    emitInterfaces: Boolean = true,
-    emitClasses: Boolean = false,
     emitCodecs: EmitCodecs = EmitCodecsEnabled,
     optionToNullable: Boolean = true,
     optionToUndefined: Boolean = false,
@@ -91,10 +80,8 @@ object Configuration {
     typescriptIndent: String = DefaultTypeScriptIndent,
     typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
     fieldNaming: FieldNaming = FieldNaming.Identity,
-    discriminator: Discriminator = DefaultDiscriminator): Configuration =
-    new Configuration(
-      emitInterfaces,
-      emitClasses,
+    discriminator: Discriminator = DefaultDiscriminator): Settings =
+    new Settings(
       emitCodecs,
       optionToNullable,
       optionToUndefined,
@@ -108,7 +95,7 @@ object Configuration {
   def load(
     config: Config,
     logger: Logger,
-    cl: Option[ClassLoader] = None): Configuration = {
+    cl: Option[ClassLoader] = None): Settings = {
 
     def opt[T](key: String)(get: String => T): Option[T] = try {
       Option(get(key))
@@ -128,8 +115,6 @@ object Configuration {
     @inline def str(nme: String): Option[String] =
       opt(nme)(config.getString(_))
 
-    val emitInterfaces = bool("emitInterfaces", true)
-    val emitClasses = bool("emitClasses", false)
     val emitCodecs = new EmitCodecs(bool("emitCodecs", true))
 
     val optionToNullable = bool("optionToNullable", true)
@@ -173,9 +158,7 @@ object Configuration {
     val discriminator: Discriminator =
       str("discriminator").fold(DefaultDiscriminator) { new Discriminator(_) }
 
-    new Configuration(
-      emitInterfaces,
-      emitClasses,
+    new Settings(
       emitCodecs,
       optionToNullable,
       optionToUndefined,
@@ -188,8 +171,7 @@ object Configuration {
 
   }
 
-  @SuppressWarnings(Array("NullParameter"))
-  def toConfig(conf: Configuration, prefix: Option[String] = None): Config = {
+  def toConfig(conf: Settings, prefix: Option[String] = None): Config = {
     val fieldNaming: String = conf.fieldNaming match {
       case FieldNaming.SnakeCase =>
         "SnakeCase"
@@ -204,8 +186,6 @@ object Configuration {
     val repr = new java.util.HashMap[String, Any](11)
     val p = prefix.fold("") { s => s"${s}." }
 
-    repr.put(s"${p}emitInterfaces", conf.emitInterfaces)
-    repr.put(s"${p}emitClasses", conf.emitClasses)
     repr.put(s"${p}emitCodecs", conf.emitCodecs.enabled)
     repr.put(s"${p}optionToNullable", conf.optionToNullable)
     repr.put(s"${p}optionToUndefined", conf.optionToUndefined)

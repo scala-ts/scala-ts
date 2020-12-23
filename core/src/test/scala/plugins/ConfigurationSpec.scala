@@ -4,10 +4,10 @@ import java.net.URL
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.core.{ Configuration => Settings, FieldNaming, Logger }
+import io.github.scalats.core.{FieldNaming, Logger, Settings}
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
-final class PluginConfigSpec extends org.specs2.mutable.Specification {
+final class ConfigurationSpec extends org.specs2.mutable.Specification {
   "Plugin configuration" title
 
   lazy val logger = Logger(org.slf4j.LoggerFactory getLogger getClass)
