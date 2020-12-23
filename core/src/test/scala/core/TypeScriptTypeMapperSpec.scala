@@ -11,6 +11,18 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
     (_, _, _) => "_tpe_"
 
   "Mapper" should {
+    "map array" >> {
+      "as Array" in {
+        arrayAsGeneric(unresolved, "_", "_", ArrayRef(NumberRef)).
+          aka("TypeScript type") must beSome("Array<_tpe_>")
+      }
+
+      "as brackets" in {
+        arrayAsBrackets(unresolved, "_", "_", ArrayRef(NumberRef)).
+          aka("TypeScript type") must beSome("_tpe_[]")
+      }
+    }
+
     "map nullable as Option" in {
       nullableAsOption(
         unresolved, "_", "_", NullableType(StringRef)) must beTypedEqualTo(

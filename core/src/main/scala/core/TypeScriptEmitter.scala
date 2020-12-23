@@ -379,7 +379,7 @@ final class TypeScriptEmitter(
       case DateRef | DateTimeRef => "Date"
 
       case ArrayRef(innerType) =>
-        s"${tr(innerType)}[]"
+        s"ReadonlyArray<${tr(innerType)}>"
 
       case TupleRef(params) =>
         params.map(tr).mkString("[", ", ", "]")

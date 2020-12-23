@@ -8,6 +8,8 @@ import typescript.TypeRef
  * The implementations must be class with a no-arg constructor.
  *
  * See:
+ * - [[TypeScriptTypeMapper.ArrayAsGeneric]]
+ * - [[TypeScriptTypeMapper.ArrayAsBrackets]]
  * - [[TypeScriptTypeMapper.DateAsString]]
  * - [[TypeScriptTypeMapper.NumberAsString]]
  * - [[TypeScriptTypeMapper.NullableAsOption]]
@@ -42,6 +44,7 @@ trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, Stri
 object TypeScriptTypeMapper {
   import com.github.ghik.silencer.silent
 
+  /** `(ownerType, memberName, type) => TypeScript type` */
   type Resolved = Function3[String, String, TypeRef, String]
 
   object Defaults extends TypeScriptTypeMapper {
@@ -51,6 +54,38 @@ object TypeScriptTypeMapper {
       memberName: String,
       tpe: TypeRef) = Option.empty[String]
   }
+
+  /** Emit Array as `Array<T>` */
+  final class ArrayAsGeneric extends TypeScriptTypeMapper {
+    def apply(
+      parent: TypeScriptTypeMapper.Resolved,
+      ownerType: String,
+      memberName: String,
+      tpe: TypeRef): Option[String] = tpe match {
+      case typescript.ArrayRef(innerType) =>
+        Some(s"Array<${parent(ownerType, memberName, innerType)}>")
+
+      case _ => None
+    }
+  }
+
+  lazy val arrayAsGeneric = new ArrayAsGeneric()
+
+  /** Emit Array as `T[]` */
+  final class ArrayAsBrackets extends TypeScriptTypeMapper {
+    def apply(
+      parent: TypeScriptTypeMapper.Resolved,
+      ownerType: String,
+      memberName: String,
+      tpe: TypeRef): Option[String] = tpe match {
+      case typescript.ArrayRef(innerType) =>
+        Some(s"${parent(ownerType, memberName, innerType)}[]")
+
+      case _ => None
+    }
+  }
+
+  lazy val arrayAsBrackets = new ArrayAsBrackets()
 
   final class NumberAsString extends TypeScriptTypeMapper {
     def apply(

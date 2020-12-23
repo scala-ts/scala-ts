@@ -26,7 +26,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     "emit interface for a class with generic array" in {
       emit(ListSet(interface3)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass3<T> {
-  name: T[];
+  name: ReadonlyArray<T>;
 }
 """)
     }
