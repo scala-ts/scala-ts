@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import scala.util.control.NonFatal
 
-// TODO: Per-type options: nullable, fieldNaming, emitCodecs (by annotation on such type?)
+// TODO: Per-type options: nullable, fieldMapper, emitCodecs (by annotation on such type?)
 
 /**
  * Created by Milosz on 09.12.2016.
@@ -15,7 +15,7 @@ final class Settings(
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
   val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
-  val fieldNaming: FieldNaming,
+  val fieldMapper: TypeScriptFieldMapper,
   val discriminator: Settings.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters"))
@@ -27,7 +27,7 @@ final class Settings(
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
     typescriptLineSeparator: Settings.TypeScriptLineSeparator = this.typescriptLineSeparator,
-    fieldNaming: FieldNaming = this.fieldNaming,
+    fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
     discriminator: Settings.Discriminator = this.discriminator): Settings =
     new Settings(
       emitCodecs,
@@ -37,7 +37,7 @@ final class Settings(
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming,
+      fieldMapper,
       discriminator)
 
   override def equals(that: Any): Boolean = that match {
@@ -58,7 +58,7 @@ final class Settings(
     prependEnclosingClassNames,
     typescriptIndent,
     typescriptLineSeparator,
-    fieldNaming,
+    fieldMapper,
     discriminator)
 }
 
@@ -79,7 +79,7 @@ object Settings {
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
     typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
-    fieldNaming: FieldNaming = FieldNaming.Identity,
+    fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
     discriminator: Discriminator = DefaultDiscriminator): Settings =
     new Settings(
       emitCodecs,
@@ -89,7 +89,7 @@ object Settings {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming,
+      fieldMapper,
       discriminator)
 
   def load(
@@ -132,17 +132,17 @@ object Settings {
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
 
-    val fieldNaming: FieldNaming = str("fieldNaming").flatMap {
+    val fieldMapper: TypeScriptFieldMapper = str("fieldMapper").flatMap {
       case "SnakeCase" =>
-        Some(FieldNaming.SnakeCase)
+        Some(TypeScriptFieldMapper.SnakeCase)
 
       case "Identity" =>
-        Some(FieldNaming.Identity)
+        Some(TypeScriptFieldMapper.Identity)
 
       case className =>
         try {
           Option(loadClass(className).
-            asSubclass(classOf[FieldNaming]).
+            asSubclass(classOf[TypeScriptFieldMapper]).
             getDeclaredConstructor().newInstance())
 
         } catch {
@@ -152,7 +152,7 @@ object Settings {
         }
 
     }.getOrElse {
-      FieldNaming.Identity
+      TypeScriptFieldMapper.Identity
     }
 
     val discriminator: Discriminator =
@@ -166,17 +166,17 @@ object Settings {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
-      fieldNaming,
+      fieldMapper,
       discriminator)
 
   }
 
   def toConfig(conf: Settings, prefix: Option[String] = None): Config = {
-    val fieldNaming: String = conf.fieldNaming match {
-      case FieldNaming.SnakeCase =>
+    val fieldMapper: String = conf.fieldMapper match {
+      case TypeScriptFieldMapper.SnakeCase =>
         "SnakeCase"
 
-      case FieldNaming.Identity =>
+      case TypeScriptFieldMapper.Identity =>
         "Identity"
 
       case custom =>
@@ -204,7 +204,7 @@ object Settings {
       s"${p}typescriptLineSeparator",
       conf.typescriptLineSeparator.value)
 
-    repr.put(s"${p}fieldNaming", fieldNaming)
+    repr.put(s"${p}fieldMapper", fieldMapper)
 
     repr.put(
       s"${p}discriminator", conf.discriminator.text)

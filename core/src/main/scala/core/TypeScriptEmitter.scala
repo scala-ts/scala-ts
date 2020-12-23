@@ -112,10 +112,11 @@ final class TypeScriptEmitter(
       o.println(" {")
 
       // Abstract fields - common to all the subtypes
-      val fieldNaming = config.fieldNaming(name, _: String)
-
       list(fields).foreach { member =>
-        o.println(s"${indent}${fieldNaming(member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
+        val tsField = config.fieldMapper(
+          config, name, member.name, member.typeRef)
+
+        o.println(s"${indent}${tsField.name}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
       }
 
       o.println("}")
@@ -183,7 +184,10 @@ final class TypeScriptEmitter(
       o.println(" {")
 
       list(fields).reverse.foreach { member =>
-        o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
+        val tsField = config.fieldMapper(
+          config, name, member.name, member.typeRef)
+
+        o.println(s"${indent}${tsField.name}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
       }
 
       o.println("}")
@@ -230,7 +234,7 @@ final class TypeScriptEmitter(
 
       o.println(" {")
 
-      val fieldNaming = config.fieldNaming(name, _: String)
+      val fieldMapper = config.fieldMapper(name, _: String)
 
       list(values).foreach { v =>
         o.print(indent)
@@ -239,7 +243,7 @@ final class TypeScriptEmitter(
           o.print("public ")
         }
 
-        o.println(s"${fieldNaming(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
+        o.println(s"${fieldMapper(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
       }
 
       val params = list(parameters).reverse
@@ -268,13 +272,13 @@ final class TypeScriptEmitter(
             o.print("public ")
           }
 
-          o.print(s"${fieldNaming(parameter.name)}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}")
+          o.print(s"${fieldMapper(parameter.name)}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}")
       }
 
       o.println(s"\n${indent}) {")
 
       params.foreach { parameter =>
-        val nme = fieldNaming(parameter.name)
+        val nme = fieldMapper(parameter.name)
 
         o.println(s"${indent}${indent}this.${nme} = ${nme}${lineSeparator}")
       }
@@ -303,7 +307,7 @@ final class TypeScriptEmitter(
 
     o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
 
-    if (config.fieldNaming == FieldNaming.Identity) {
+    if (config.fieldMapper == TypeScriptFieldMapper.Identity) {
       // optimized identity
 
       // Decoder factory: MyClass.fromData({..})
@@ -319,11 +323,11 @@ final class TypeScriptEmitter(
       o.print(s"${indent}${indent}return new ${name}${tparams}(")
 
       val params = list(parameters).reverse.zipWithIndex
-      val fieldNaming = config.fieldNaming(name, _: String)
+      val fieldMapper = config.fieldMapper(name, _: String)
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = fieldNaming(parameter.name)
+          val encoded = fieldMapper(parameter.name)
 
           if (index > 0) o.print(", ")
 
@@ -339,11 +343,11 @@ final class TypeScriptEmitter(
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = fieldNaming(parameter.name)
+          val encoded = fieldMapper(parameter.name)
 
           if (index > 0) o.print(",\n")
 
-          o.print(s"${indent}${indent}${indent}${encoded}: instance.${fieldNaming(parameter.name)}")
+          o.print(s"${indent}${indent}${indent}${encoded}: instance.${fieldMapper(parameter.name)}")
       }
 
       o.println(s"\n${indent}${indent}}${lineSeparator}")

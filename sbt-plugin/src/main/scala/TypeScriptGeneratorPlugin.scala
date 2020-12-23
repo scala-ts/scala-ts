@@ -12,7 +12,7 @@ import sbt._
 import sbt.Keys._
 
 import _root_.io.github.scalats.core.{
-  FieldNaming,
+  TypeScriptFieldMapper,
   Settings,
   TypeScriptPrinter,
   TypeScriptTypeMapper
@@ -83,7 +83,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsTypescriptLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')")
 
-    val scalatsFieldNaming = settingKey[Class[_ <: FieldNaming]]("Conversions for the field names (default: Identity)")
+    val scalatsTypeScriptFieldMapper = settingKey[Class[_ <: TypeScriptFieldMapper]]("Conversions for the field names (default: Identity)")
 
     // TODO: (medium priority) scripted test
     val scalatsDiscriminator = settingKey[String](
@@ -185,16 +185,16 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           t.toURI.toURL
         }
 
-        val fieldNaming: FieldNaming = {
-          val Identity = FieldNaming.Identity.getClass
-          val SnakeCase = FieldNaming.SnakeCase.getClass
+        val fieldMapper: TypeScriptFieldMapper = {
+          val Identity = TypeScriptFieldMapper.Identity.getClass
+          val SnakeCase = TypeScriptFieldMapper.SnakeCase.getClass
 
-          scalatsFieldNaming.value match {
+          scalatsTypeScriptFieldMapper.value match {
             case Identity =>
-              FieldNaming.Identity
+              TypeScriptFieldMapper.Identity
 
             case SnakeCase =>
-              FieldNaming.SnakeCase
+              TypeScriptFieldMapper.SnakeCase
 
             case cls =>
               cls.getDeclaredConstructor().newInstance()
@@ -211,7 +211,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           scalatsTypescriptIndent.value,
           new Settings.TypeScriptLineSeparator(
             scalatsTypescriptLineSeparator.value),
-          fieldNaming,
+          fieldMapper,
           new Settings.Discriminator(scalatsDiscriminator.value))
 
         // Printer
@@ -347,7 +347,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsTypescriptIndent := "  ",
     scalatsTypescriptLineSeparator := ";",
     //scalatsEmitCodecs := false, // TODO: (medium priority)
-    scalatsFieldNaming := FieldNaming.Identity.getClass,
+    scalatsTypeScriptFieldMapper := TypeScriptFieldMapper.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text)
 
   @SuppressWarnings(Array("NullParameter"))

@@ -4,7 +4,7 @@ import java.net.URL
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.core.{ FieldNaming, Logger, Settings }
+import io.github.scalats.core.{ Logger, Settings, TypeScriptFieldMapper }
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class ConfigurationSpec extends org.specs2.mutable.Specification {
@@ -40,7 +40,7 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
-  fieldNaming = "Identity"
+  fieldMapper = "Identity"
   discriminator = "_dis"
 }""")
 
@@ -59,7 +59,7 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
           typescriptIndent = "  ",
           prependIPrefix = false,
           prependEnclosingClassNames = false,
-          fieldNaming = FieldNaming.SnakeCase))
+          fieldMapper = TypeScriptFieldMapper.SnakeCase))
 
       "be loaded from fully defined" in {
         val cfg = Configuration.load(
@@ -95,7 +95,7 @@ settings {
   prependEnclosingClassNames = false
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
-  fieldNaming = "SnakeCase"
+  fieldMapper = "SnakeCase"
   discriminator = "_type"
 }
 """)
@@ -128,7 +128,7 @@ settings {
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
-  fieldNaming = "Identity"
+  fieldMapper = "Identity"
   discriminator = "_type"
 }
 

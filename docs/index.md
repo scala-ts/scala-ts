@@ -51,7 +51,7 @@ export interface Event {
   id: string;
   changed: Date;
   type: string;
-  messages: Tagged<Message[]>;
+  messages: Tagged<ReadonlyArray<Message>>;
 }
 
 export interface Message {
@@ -104,7 +104,7 @@ TODO: scalatsDebug false
 
 TODO: `sourceManaged in scalatsOnCompile` - the directory to initialize the printer with (output directory)
 
-TODO: Custom field naming in `project/` + `scalatsFieldNaming := classOf[scalats.CustomFieldNaming]`
+TODO: Custom field naming in `project/` + `scalatsTypeScriptFieldMapper := classOf[scalats.CustomTypeScriptFieldMapper]`
 
 TODO: Custom printer in `project/`
 

@@ -7,7 +7,7 @@ version := "1.0-SNAPSHOT"
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
 // Custom field naming
-scalatsFieldNaming := classOf[scalats.CustomFieldNaming]
+scalatsTypeScriptFieldMapper := classOf[scalats.CustomFieldMapper]
 
 // Overwrite the directory the printer is initialized with
 sourceManaged in scalatsOnCompile := {
