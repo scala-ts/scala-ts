@@ -99,7 +99,7 @@ object TypeScriptFieldMapper {
   /** Returns the default flags according the type and settings. */
   def flags(settings: Settings, tpe: TypeRef): Set[TypeScriptField.Flag] =
     tpe match {
-      case NullableType(_) if settings.optionToUndefined =>
+      case NullableType(_) if !settings.optionToNullable =>
         Set(TypeScriptField.omitable)
 
       case _ =>

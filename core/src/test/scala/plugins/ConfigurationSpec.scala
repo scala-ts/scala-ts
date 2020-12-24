@@ -35,7 +35,6 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  optionToUndefined = true
   prependIPrefix = true
   prependEnclosingClassNames = true
   typescriptIndent = "  "
@@ -90,7 +89,6 @@ settings {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  optionToUndefined = true
   prependIPrefix = false
   prependEnclosingClassNames = false
   typescriptIndent = "  "
@@ -123,7 +121,6 @@ settings {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  optionToUndefined = true
   prependIPrefix = true
   prependEnclosingClassNames = true
   typescriptIndent = "  "

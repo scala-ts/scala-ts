@@ -6,11 +6,12 @@ import scala.util.control.NonFatal
 
 /**
  * Created by Milosz on 09.12.2016.
+ *
+ * @param optionToNullable `T | null`
  */
 final class Settings(
   val emitCodecs: Settings.EmitCodecs,
-  val optionToNullable: Boolean, // TODO: (medium priority) Merge optionToX
-  val optionToUndefined: Boolean,
+  val optionToNullable: Boolean,
   val prependIPrefix: Boolean, // TODO: (low) Rather type naming
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
@@ -22,7 +23,6 @@ final class Settings(
   private[scalats] def copy(
     emitCodecs: Settings.EmitCodecs = this.emitCodecs,
     optionToNullable: Boolean = this.optionToNullable,
-    optionToUndefined: Boolean = this.optionToUndefined,
     prependIPrefix: Boolean = this.prependIPrefix,
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
@@ -32,7 +32,6 @@ final class Settings(
     new Settings(
       emitCodecs,
       optionToNullable,
-      optionToUndefined,
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
@@ -50,10 +49,9 @@ final class Settings(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple9(
+  private lazy val tupled = Tuple8(
     emitCodecs,
     optionToNullable,
-    optionToUndefined,
     prependIPrefix,
     prependEnclosingClassNames,
     typescriptIndent,
@@ -74,7 +72,6 @@ object Settings {
   def apply(
     emitCodecs: EmitCodecs = EmitCodecsEnabled,
     optionToNullable: Boolean = false,
-    optionToUndefined: Boolean = true,
     prependIPrefix: Boolean = true,
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
@@ -84,7 +81,6 @@ object Settings {
     new Settings(
       emitCodecs,
       optionToNullable,
-      optionToUndefined,
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
@@ -118,7 +114,6 @@ object Settings {
     val emitCodecs = new EmitCodecs(bool("emitCodecs", true))
 
     val optionToNullable = bool("optionToNullable", false)
-    val optionToUndefined = bool("optionToUndefined", true)
     val prependIPrefix = bool("prependIPrefix", true)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
     val typescriptIndent: String =
@@ -161,7 +156,6 @@ object Settings {
     new Settings(
       emitCodecs,
       optionToNullable,
-      optionToUndefined,
       prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
@@ -188,7 +182,6 @@ object Settings {
 
     repr.put(s"${p}emitCodecs", conf.emitCodecs.enabled)
     repr.put(s"${p}optionToNullable", conf.optionToNullable)
-    repr.put(s"${p}optionToUndefined", conf.optionToUndefined)
 
     repr.put(s"${p}prependIPrefix", conf.prependIPrefix)
 

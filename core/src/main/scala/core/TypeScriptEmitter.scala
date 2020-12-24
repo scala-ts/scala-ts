@@ -404,7 +404,7 @@ final class TypeScriptEmitter(
 
       case NullableType(innerType) if (
         member.flags contains TypeScriptField.omitable) => {
-        // omitable and optionalToUndefined
+        // omitable and !optionToNullable
         tr(innerType)
       }
 

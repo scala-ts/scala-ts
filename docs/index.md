@@ -15,6 +15,8 @@ layout: default
 **Example #:** Generic [case class](https://docs.scala-lang.org/tour/case-classes.html) `Tagged[T]`.
 
 ```scala
+package scalats.examples
+
 case class Tagged[T](tag: String, value: T)
 ```
 
@@ -30,7 +32,12 @@ export interface Tagged<T> {
 **Example #:** Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and Value class `EventType`.
 
 ```scala
-final class EventType private (val name: String) extends AnyVal
+package scalats.examples
+
+import java.util.Locale
+import java.time.OffsetDateTime
+
+final class EventType(val name: String) extends AnyVal
 
 case class Event(
     id: String,
@@ -39,7 +46,7 @@ case class Event(
     messages: Tagged[Seq[TextMessage]])
 
 case class TextMessage(
-    format: TextFormat,
+    format: String,
     language: Locale,
     text: String)
 ```
@@ -60,6 +67,8 @@ export interface Message {
   text: string;
 }
 ```
+
+> `Locale` type is provided a transpiler as `string`.
 
 TODO: Scala to TS examples: union, enumeration
 
