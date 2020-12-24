@@ -402,7 +402,12 @@ final class TypeScriptEmitter(
       case NullableType(innerType) if config.optionToNullable =>
         s"(${tr(innerType)} | null)"
 
-      // TODO: omitable prop?: <innerType>
+      case NullableType(innerType) if (
+        member.flags contains TypeScriptField.omitable) => {
+        // omitable and optionalToUndefined
+        tr(innerType)
+      }
+
       case NullableType(innerType) =>
         s"(${tr(innerType)} | undefined)"
 

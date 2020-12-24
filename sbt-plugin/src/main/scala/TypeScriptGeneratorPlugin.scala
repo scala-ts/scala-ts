@@ -11,12 +11,7 @@ import scala.reflect.ClassTag
 import sbt._
 import sbt.Keys._
 
-import _root_.io.github.scalats.core.{
-  TypeScriptFieldMapper,
-  Settings,
-  TypeScriptPrinter,
-  TypeScriptTypeMapper
-}
+import _root_.io.github.scalats.core.{ Settings, TypeScriptFieldMapper, TypeScriptPrinter, TypeScriptTypeMapper }
 import _root_.io.github.scalats.plugins.{
   FilePrinter,
   SingleFilePrinter,

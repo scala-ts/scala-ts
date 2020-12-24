@@ -9,7 +9,7 @@ import scala.util.control.NonFatal
  */
 final class Settings(
   val emitCodecs: Settings.EmitCodecs,
-  val optionToNullable: Boolean,
+  val optionToNullable: Boolean, // TODO: (medium priority) Merge optionToX
   val optionToUndefined: Boolean,
   val prependIPrefix: Boolean, // TODO: (low) Rather type naming
   val prependEnclosingClassNames: Boolean,

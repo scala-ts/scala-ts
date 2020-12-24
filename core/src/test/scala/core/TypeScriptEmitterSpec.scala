@@ -33,7 +33,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     "emit interface for a generic case class with a optional member" in {
       emit(ListSet(interface5)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass5<T> {
-  name?: (T | undefined);
+  name?: T;
   counters: { [key: string]: number };
 }
 """)

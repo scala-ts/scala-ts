@@ -2,9 +2,9 @@ package io.github.scalats.core
 
 import scala.collection.immutable.Set
 
-import org.specs2.specification.core.Fragments
-
 import io.github.scalats.typescript.NumberRef
+
+import org.specs2.specification.core.Fragments
 
 final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
   "Field mapper" title

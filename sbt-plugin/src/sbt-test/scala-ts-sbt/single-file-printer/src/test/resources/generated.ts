@@ -11,6 +11,6 @@ export interface Lorem {
 
 export interface Foo {
   name: string;
-  bar: (Bar | null);
+  bar?: Bar;
   score: ReadonlyArray<string>;
 }

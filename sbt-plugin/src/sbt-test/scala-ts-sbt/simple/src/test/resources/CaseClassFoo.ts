@@ -17,5 +17,5 @@ export interface CaseClassFoo {
   ts: Date;
   tuple2: [string, number];
   tuple3: [Date, Date, CaseClassFoo];
-  bar: (CaseClassBar | null);
+  bar?: CaseClassBar;
 }
