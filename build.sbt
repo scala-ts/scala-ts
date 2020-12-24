@@ -4,9 +4,27 @@ name := "scala-ts"
 
 organization in ThisBuild := "io.github.scala-ts"
 
+lazy val shaded = project.in(file("shaded")).settings(
+  name := "scala-ts-shaded",
+  crossPaths := false,
+  autoScalaLibrary := false,
+  libraryDependencies += "com.typesafe" % "config" % "1.4.1",
+  assemblyShadeRules in assembly := Seq(
+    ShadeRule.rename(
+      "com.typesafe.config.**" -> "io.github.scalats.tsconfig.@1").inAll
+  ),
+  publish := ({}),
+  publishTo := None,
+)
+
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
   crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
+  unmanagedJars in Compile += {
+    val jarName = (shaded / assembly / assemblyJarName).value
+
+    (shaded / target).value / jarName
+  },
   unmanagedSourceDirectories in Compile += {
     val base = (sourceDirectory in Compile).value
 
@@ -15,6 +33,7 @@ lazy val core = project.in(file("core")).settings(
       case _                       => base / "scala-2.12-"
     }
   },
+  compile in Compile := (compile in Compile).dependsOn(shaded / assembly).value,
   libraryDependencies ++= {
     val specsVer = "4.10.5"
 
@@ -26,16 +45,34 @@ lazy val core = project.in(file("core")).settings(
       "org.specs2" %% "specs2-core" % specsVer % Test,
       "org.specs2" %% "specs2-junit" % specsVer % Test)
   },
-  libraryDependencies ++= {
-    if (scalaBinaryVersion.value == "2.13") {
-      Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.0")
-    } else {
-      Seq.empty
+  assemblyExcludedJars in assembly := {
+    (fullClasspath in assembly).value.filterNot {
+      _.data.getName startsWith "scala-ts-shaded"
     }
   },
-  mainClass in (Compile, run) := Some("io.github.scalats.Main"),
-  compile in Test := (compile in Test).dependsOn(
-    packageBin in Compile/* make sure plugin.jar is available */).value
+  pomPostProcess := XmlUtil.transformPomDependencies { dep =>
+    (dep \ "groupId").headOption.map(_.text) match {
+      case Some(
+        "com.sksamuel.scapegoat" | // plugin there (compile time only)
+          "com.github.ghik" // plugin there (compile time only)
+      ) =>
+        None
+
+      case Some("io.github.scala-ts") =>
+        Some(dep).filter { _ =>
+          (dep \ "artifactId").headOption.
+            exists(_ startsWith "scala-ts-shaded")
+        }
+
+      case _ =>
+        Some(dep)
+    }
+  },
+  packageBin in Compile := crossTarget.value / (
+    assemblyJarName in assembly).value,
+  makePom := makePom.dependsOn(assembly).value,
+  mainClass in assembly := Some("io.github.scalats.Main"),
+  mainClass in (Compile, run) := (mainClass in assembly).value
 )
 
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
@@ -50,9 +87,12 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       s"-Dscala-ts.version=${version.value}",
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
-    compile in Compile := (compile in Compile).dependsOn(
-      core / publishLocal).value,
-    // TODO: core / publishLocal on update?
+    unmanagedJars in Compile += {
+      val jarName = (shaded / assembly / assemblyJarName).value
+
+      (shaded / target).value / jarName
+    },
+    scripted := scripted.dependsOn(publishLocal in core).evaluated,
     scriptedBufferLog := false,
     sourceGenerators in Compile += Def.task {
       val groupId = organization.value
@@ -83,4 +123,4 @@ lazy val root = (project in file("."))
     publish := ({}),
     publishTo := None,
   )
-  .aggregate(core, `sbt-plugin`)
+  .aggregate(shaded, core, `sbt-plugin`)

@@ -6,11 +6,9 @@ import java.net.URL
 
 import scala.util.control.NonFatal
 
-import scala.xml._
-
 import io.github.scalats.core.{
-  Configuration => Settings,
   Logger,
+  Settings,
   TypeScriptPrinter,
   TypeScriptTypeMapper
 }
@@ -35,12 +33,20 @@ final class Configuration(
 
   override def toString = s"""{ compilationRuleSet: $compilationRuleSet, typeRuleSet: ${typeRuleSet}, settings${tupled.toString}, printer: ${printer.getClass.getName}, additionalClasspath: [${additionalClasspath mkString ", "}] }"""
 
+  def withSettings(settings: Settings): Configuration =
+    new Configuration(settings, this.compilationRuleSet, this.typeRuleSet,
+      this.printer, this.typeScriptTypeMappers, this.additionalClasspath)
+
   private[plugins] lazy val tupled =
     Tuple5(settings, compilationRuleSet, typeRuleSet,
       printer, additionalClasspath)
 }
 
+@com.github.ghik.silencer.silent(".*JavaConverters.*")
 object Configuration {
+  import scala.collection.JavaConverters._
+  import io.github.scalats.tsconfig.{ Config, ConfigException }
+
   def apply(
     settings: Settings = Settings(),
     compilationRuleSet: SourceRuleSet = SourceRuleSet(),
@@ -57,28 +63,52 @@ object Configuration {
    * Loads the plugin configuration from given XML.
    */
   def load(
-    xml: Elem,
+    config: Config,
     logger: Logger,
     printerOutputDirectory: Option[File]): Configuration = {
+    def opt[T](key: String)(get: String => T): Option[T] = try {
+      Option(get(key))
+    } catch {
+      case NonFatal(_: ConfigException.Missing) =>
+        Option.empty[T]
+
+      case NonFatal(cause) => {
+        logger.warning(s"Fails to get $key: ${cause.getMessage}")
+        Option.empty[T]
+      }
+    }
+
+    @inline def subConf(nme: String): Option[Config] =
+      opt(nme)(config.getConfig(_))
+
+    @inline def strings(key: String): Iterable[String] = try {
+      config.getStringList(key).asScala
+    } catch {
+      case NonFatal(_: ConfigException.Missing) =>
+        List.empty[String]
+
+      case NonFatal(cause) => {
+        logger.warning(s"Fails to get $key: ${cause.getMessage}")
+        List.empty[String]
+      }
+    }
+
     val compilationRuleSet: SourceRuleSet =
-      (xml \ "compilationRuleSet").headOption.fold(
-        SourceRuleSet())(SourceRuleSet.load)
+      subConf("compilationRuleSet").fold(SourceRuleSet())(SourceRuleSet.load)
 
     val typeRuleSet: SourceRuleSet =
-      (xml \ "typeRuleSet").headOption.fold(
-        SourceRuleSet())(SourceRuleSet.load)
+      subConf("typeRuleSet").fold(SourceRuleSet())(SourceRuleSet.load)
 
     val additionalClasspath: Seq[URL] =
-      (xml \ "additionalClasspath").headOption.toSeq.
-        flatMap(_ \ "url").flatMap { n =>
-          try {
-            Option(new URL(n.text))
-          } catch {
-            case NonFatal(_) =>
-              logger.warning(s"Invalid URL in additional classpath: ${n.text}")
-              Seq.empty[URL]
-          }
+      strings("additionalClasspath").flatMap { n =>
+        try {
+          Option(new URL(n))
+        } catch {
+          case NonFatal(_) =>
+            logger.warning(s"Invalid URL in additional classpath: ${n}")
+            Seq.empty[URL]
         }
+      }.toSeq
 
     val additionalClassLoader: Option[ClassLoader] = {
       if (additionalClasspath.isEmpty) None
@@ -89,17 +119,17 @@ object Configuration {
       }
     }
 
-    val settings: Settings = (xml \ "settings").headOption match {
-      case Some(e: Elem) =>
-        Settings.load(e, logger, additionalClassLoader)
+    val settings: Settings = subConf("settings") match {
+      case Some(conf) =>
+        Settings.load(conf, logger, additionalClassLoader)
 
       case _ => Settings()
     }
 
     def customPrinter: Option[TypeScriptPrinter] =
-      (xml \ "printer").headOption.map { pc =>
+      opt("printer")(config.getString(_)).map { pc =>
         val printerClass = additionalClassLoader.fold[Class[_]](
-          Class.forName(pc.text))(_.loadClass(pc.text)).
+          Class.forName(pc))(_.loadClass(pc)).
           asSubclass(classOf[TypeScriptPrinter])
 
         def newInstance() = printerClass.getDeclaredConstructor().newInstance()
@@ -124,13 +154,13 @@ object Configuration {
     val printer = customPrinter.getOrElse(TypeScriptPrinter.StandardOutput)
 
     def typeMappers: Seq[TypeScriptTypeMapper] =
-      (xml \ "typeScriptTypeMappers" \ "class").map { tm =>
+      strings("typeScriptTypeMappers").map { tm =>
         val mapperClass = additionalClassLoader.fold[Class[_]](
-          Class.forName(tm.text))(_.loadClass(tm.text)).
+          Class.forName(tm))(_.loadClass(tm)).
           asSubclass(classOf[TypeScriptTypeMapper])
 
         mapperClass.getDeclaredConstructor().newInstance()
-      }
+      }.toSeq
 
     new Configuration(
       settings,

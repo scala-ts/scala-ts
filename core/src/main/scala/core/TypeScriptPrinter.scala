@@ -6,7 +6,7 @@ import scala.collection.immutable.Set
 
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
-trait TypeScriptPrinter extends Function4[Configuration, Declaration.Kind, String, Set[TypeRef], PrintStream] {
+trait TypeScriptPrinter extends Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream] {
 
   /**
    * Resolves the printer to be used to the specified type
@@ -18,7 +18,7 @@ trait TypeScriptPrinter extends Function4[Configuration, Declaration.Kind, Strin
    * @param requires the type required by the current declaration
    */
   def apply(
-    configuration: Configuration,
+    configuration: Settings,
     kind: Declaration.Kind,
     name: String,
     requires: Set[TypeRef]): PrintStream
@@ -27,7 +27,7 @@ trait TypeScriptPrinter extends Function4[Configuration, Declaration.Kind, Strin
 object TypeScriptPrinter {
   object StandardOutput extends TypeScriptPrinter {
     def apply(
-      configuration: Configuration,
+      configuration: Settings,
       kind: Declaration.Kind,
       name: String,
       requires: Set[TypeRef]): PrintStream = Console.out
