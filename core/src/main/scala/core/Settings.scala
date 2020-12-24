@@ -73,8 +73,8 @@ object Settings {
 
   def apply(
     emitCodecs: EmitCodecs = EmitCodecsEnabled,
-    optionToNullable: Boolean = true, // TODO: default false, undefined = true
-    optionToUndefined: Boolean = false,
+    optionToNullable: Boolean = false,
+    optionToUndefined: Boolean = true,
     prependIPrefix: Boolean = true,
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
@@ -117,8 +117,8 @@ object Settings {
 
     val emitCodecs = new EmitCodecs(bool("emitCodecs", true))
 
-    val optionToNullable = bool("optionToNullable", true)
-    val optionToUndefined = bool("optionToUndefined", false)
+    val optionToNullable = bool("optionToNullable", false)
+    val optionToUndefined = bool("optionToUndefined", true)
     val prependIPrefix = bool("prependIPrefix", true)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
     val typescriptIndent: String =
