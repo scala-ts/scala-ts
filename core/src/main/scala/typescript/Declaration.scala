@@ -54,14 +54,13 @@ case class InterfaceDeclaration(
     }
 }
 
-/**
+/* TODO: (medium priority) Remove
  * A class declaration.
  *
  * @param constructor the class constructor
  * @param values the class invariants values
  * @param typeParams the type parameters for the interface
  * @param superInterface the super interface (if any)
- */
 case class ClassDeclaration(
   name: String,
   constructor: ClassConstructor,
@@ -80,22 +79,19 @@ case class ClassDeclaration(
     }
 }
 
-/**
  * A class constructor.
  *
  * @param parameters the parameter for the class constructor
- */
 case class ClassConstructor(parameters: ListSet[ClassConstructorParameter])
 
-/**
  * A parameter for a class constructor.
  *
  * @param name the parameter name
  * @param typeRef the reference to the parameter type
- */
 case class ClassConstructorParameter(
   name: String,
   typeRef: TypeRef)
+ */
 
 /**
  * A singleton declaration.

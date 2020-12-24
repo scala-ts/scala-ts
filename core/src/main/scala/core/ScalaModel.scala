@@ -26,7 +26,7 @@ object ScalaModel {
     fields: ListSet[TypeMember],
     possibilities: ListSet[TypeDef]) extends TypeDef
 
-  case class Enumeration(
+  case class EnumerationDef(
     identifier: QualifiedIdentifier,
     values: ListSet[String]) extends TypeDef
 

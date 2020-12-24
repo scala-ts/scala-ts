@@ -1,6 +1,6 @@
 package io.github.scalats
 
-import io.github.scalats.core.{ Configuration, Logger, TypeScriptGenerator }
+import io.github.scalats.core.{ Logger, Settings, TypeScriptGenerator }
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -8,7 +8,7 @@ object Main {
       org.slf4j.LoggerFactory getLogger TypeScriptGenerator.getClass)
 
     TypeScriptGenerator.generateFromClassNames(
-      Configuration(), args.toList, logger)
+      Settings(), args.toList, logger)
 
     ()
   }

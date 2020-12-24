@@ -10,47 +10,9 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   import TranspilerResults._
 
   "Emitter" should {
-    "emit class with one primitive member" in {
-      emit(ListSet(clazz1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass1 implements IScalaRuntimeFixturesTestClass1 {
-  constructor(
-    public name: string
-  ) {
-    this.name = name;
-  }
-
-  public static fromData(data: any): ScalaRuntimeFixturesTestClass1 {
-    return <ScalaRuntimeFixturesTestClass1>(data);
-  }
-
-  public static toData(instance: ScalaRuntimeFixturesTestClass1): any {
-    return instance;
-  }
-}
-""")
-    }
-
     "emit interface for a class with one primitive member" in {
       emit(ListSet(interface1)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass1 {
   name: string;
-}
-""")
-    }
-
-    "emit class with generic member" in {
-      emit(ListSet(clazz2)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass2<T> implements IScalaRuntimeFixturesTestClass2<T> {
-  constructor(
-    public name: T
-  ) {
-    this.name = name;
-  }
-
-  public static fromData<T>(data: any): ScalaRuntimeFixturesTestClass2<T> {
-    return <ScalaRuntimeFixturesTestClass2<T>>(data);
-  }
-
-  public static toData<T>(instance: ScalaRuntimeFixturesTestClass2<T>): any {
-    return instance;
-  }
 }
 """)
     }
@@ -62,103 +24,17 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 """)
     }
 
-    "emit class with generic array" in {
-      emit(ListSet(clazz3)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass3<T> implements IScalaRuntimeFixturesTestClass3<T> {
-  constructor(
-    public name: T[]
-  ) {
-    this.name = name;
-  }
-
-  public static fromData<T>(data: any): ScalaRuntimeFixturesTestClass3<T> {
-    return <ScalaRuntimeFixturesTestClass3<T>>(data);
-  }
-
-  public static toData<T>(instance: ScalaRuntimeFixturesTestClass3<T>): any {
-    return instance;
-  }
-}
-""")
-    }
-
     "emit interface for a class with generic array" in {
       emit(ListSet(interface3)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass3<T> {
-  name: T[];
-}
-""")
-    }
-
-    "emit class for a generic case class with a optional member" in {
-      emit(ListSet(clazz5)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass5<T> implements IScalaRuntimeFixturesTestClass5<T> {
-  constructor(
-    public name: (T | null),
-    public counters: { [key: string]: number }
-  ) {
-    this.name = name;
-    this.counters = counters;
-  }
-
-  public static fromData<T>(data: any): ScalaRuntimeFixturesTestClass5<T> {
-    return <ScalaRuntimeFixturesTestClass5<T>>(data);
-  }
-
-  public static toData<T>(instance: ScalaRuntimeFixturesTestClass5<T>): any {
-    return instance;
-  }
+  name: ReadonlyArray<T>;
 }
 """)
     }
 
     "emit interface for a generic case class with a optional member" in {
       emit(ListSet(interface5)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass5<T> {
-  name: (T | null);
+  name?: T;
   counters: { [key: string]: number };
-}
-""")
-    }
-
-    "emit generic case class with disjunction" in {
-      emit(ListSet(clazz7)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass7<T> implements IScalaRuntimeFixturesTestClass7<T> {
-  constructor(
-    public name: (ScalaRuntimeFixturesTestClass1 | ScalaRuntimeFixturesTestClass1B)
-  ) {
-    this.name = name;
-  }
-
-  public static fromData<T>(data: any): ScalaRuntimeFixturesTestClass7<T> {
-    return <ScalaRuntimeFixturesTestClass7<T>>(data);
-  }
-
-  public static toData<T>(instance: ScalaRuntimeFixturesTestClass7<T>): any {
-    return instance;
-  }
-}
-""")
-    }
-
-    "emit generic case class with tuple values" in {
-      emit(ListSet(clazz10)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestClass10 implements IScalaRuntimeFixturesTestClass10 {
-  constructor(
-    public name: string,
-    public tuple: [number],
-    public tupleA: [string, number],
-    public tupleB: [string, number],
-    public tupleC: [string, string, number]
-  ) {
-    this.name = name;
-    this.tuple = tuple;
-    this.tupleA = tupleA;
-    this.tupleB = tupleB;
-    this.tupleC = tupleC;
-  }
-
-  public static fromData(data: any): ScalaRuntimeFixturesTestClass10 {
-    return <ScalaRuntimeFixturesTestClass10>(data);
-  }
-
-  public static toData(instance: ScalaRuntimeFixturesTestClass10): any {
-    return instance;
-  }
 }
 """)
     }
@@ -166,38 +42,6 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     "emit interface for a generic case class with disjunction" in {
       emit(ListSet(interface7)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass7<T> {
   name: (IScalaRuntimeFixturesTestClass1 | IScalaRuntimeFixturesTestClass1B);
-}
-""")
-    }
-
-    "emit class using FieldNaming.SnakeCase" in {
-      val clazz = ClassDeclaration("Test", ClassConstructor(ListSet(
-        ClassConstructorParameter("fooBar", StringRef),
-        ClassConstructorParameter("name", SimpleTypeRef("T")))),
-        ListSet.empty,
-        List("T"), Option.empty)
-
-      val config = defaultConfig.copy(fieldNaming = FieldNaming.SnakeCase)
-
-      emit(ListSet(clazz), config) must beTypedEqualTo("""export class Test<T> implements ITest<T> {
-  constructor(
-    public name: T,
-    public foo_bar: string
-  ) {
-    this.name = name;
-    this.foo_bar = foo_bar;
-  }
-
-  public static fromData<T>(data: any): Test<T> {
-    return new Test<T>(data.name, data.foo_bar);
-  }
-
-  public static toData<T>(instance: Test<T>): any {
-    return {
-      name: instance.name,
-      foo_bar: instance.foo_bar
-    };
-  }
 }
 """)
     }
@@ -253,13 +97,6 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 """)
     }
 
-    "emit class as union member #1" in {
-      emit(ListSet(unionMember1Clazz)) must throwA[IllegalStateException].like {
-        case cause =>
-          cause.getMessage must_=== "Cannot emit static members for class values: code (number)"
-      }
-    }
-
     "emit singleton as union member #2" in {
       emit(ListSet(unionMember2Singleton)) must throwA[IllegalStateException].
         like {
@@ -312,11 +149,11 @@ export interface IScalaRuntimeFixturesFamily {
 
   // ---
 
-  private lazy val defaultConfig = Configuration(emitClasses = true)
+  private lazy val defaultConfig = Settings()
 
   def emit(
     decls: ListSet[Declaration],
-    config: Configuration = defaultConfig,
+    config: Settings = defaultConfig,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)

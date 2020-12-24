@@ -14,7 +14,7 @@ object TypeScriptGenerator {
    * Generates TypeScript from specified runtime classes.
    */
   def generateFromClassNames(
-    config: Configuration,
+    config: Settings,
     classNames: List[String],
     logger: Logger,
     out: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
@@ -41,7 +41,7 @@ object TypeScriptGenerator {
    * (including the input `types` and the transitively required types).
    */
   def generate[U <: Universe](universe: U)(
-    config: Configuration,
+    config: Settings,
     types: List[universe.Type],
     logger: Logger,
     out: TypeScriptPrinter,

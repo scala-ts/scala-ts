@@ -11,7 +11,7 @@ import io.github.scalats.typescript._
  * @param out the function to select a `PrintStream` from type name
  */
 final class TypeScriptEmitter(
-  val config: Configuration,
+  val config: Settings,
   out: TypeScriptEmitter.Printer,
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
@@ -31,8 +31,10 @@ final class TypeScriptEmitter(
       case decl: EnumDeclaration =>
         emitEnumDeclaration(decl)
 
+      /* TODO: (medium priority) Remove
       case decl: ClassDeclaration =>
         emitClassDeclaration(decl)
+         */
 
       case s @ SingletonDeclaration(name, members, superInterface) =>
         emitSingletonDeclaration(name, members, superInterface, s.requires)
@@ -110,14 +112,22 @@ final class TypeScriptEmitter(
       o.println(" {")
 
       // Abstract fields - common to all the subtypes
-      val fieldNaming = config.fieldNaming(name, _: String)
-
-      list(fields).foreach { member =>
-        o.println(s"${indent}${fieldNaming(member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
-      }
+      list(fields).foreach(emitField(o, name, _))
 
       o.println("}")
     }
+
+  private def emitField(o: PrintStream, name: String, member: Member): Unit = {
+    val tsField = config.fieldMapper(
+      config, name, member.name, member.typeRef)
+
+    val nameSuffix: String = {
+      if (tsField.flags contains TypeScriptField.omitable) "?"
+      else ""
+    }
+
+    o.println(s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(name, tsField, member.typeRef)}${lineSeparator}")
+  }
 
   private def emitSingletonDeclaration(
     name: String,
@@ -180,9 +190,7 @@ final class TypeScriptEmitter(
 
       o.println(" {")
 
-      list(fields).reverse.foreach { member =>
-        o.println(s"${indent}${config.fieldNaming(name, member.name)}: ${resolvedTypeMapper(name, member.name, member.typeRef)}${lineSeparator}")
-      }
+      list(fields).reverse.foreach(emitField(o, name, _))
 
       o.println("}")
     }
@@ -202,6 +210,7 @@ final class TypeScriptEmitter(
     }
   }
 
+  /* TODO: (medium priority) Remove
   private def emitClassDeclaration(decl: ClassDeclaration): Unit = {
     val ClassDeclaration(name, ClassConstructor(parameters),
       values, typeParams, _ /*superInterface*/ ) = decl
@@ -227,7 +236,7 @@ final class TypeScriptEmitter(
 
       o.println(" {")
 
-      val fieldNaming = config.fieldNaming(name, _: String)
+      val fieldMapper = config.fieldMapper(name, _: String)
 
       list(values).foreach { v =>
         o.print(indent)
@@ -236,7 +245,7 @@ final class TypeScriptEmitter(
           o.print("public ")
         }
 
-        o.println(s"${fieldNaming(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
+        o.println(s"${fieldMapper(v.name)}: ${resolvedTypeMapper(name, v.name, v.typeRef)}${lineSeparator}")
       }
 
       val params = list(parameters).reverse
@@ -265,13 +274,13 @@ final class TypeScriptEmitter(
             o.print("public ")
           }
 
-          o.print(s"${fieldNaming(parameter.name)}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}")
+          o.print(s"${fieldMapper(parameter.name)}: ${resolvedTypeMapper(name, parameter.name, parameter.typeRef)}")
       }
 
       o.println(s"\n${indent}) {")
 
       params.foreach { parameter =>
-        val nme = fieldNaming(parameter.name)
+        val nme = fieldMapper(parameter.name)
 
         o.println(s"${indent}${indent}this.${nme} = ${nme}${lineSeparator}")
       }
@@ -300,7 +309,7 @@ final class TypeScriptEmitter(
 
     o.println(s"\n${indent}public static fromData${tparams}(data: any): ${name}${tparams} {")
 
-    if (config.fieldNaming == FieldNaming.Identity) {
+    if (config.fieldMapper == TypeScriptFieldMapper.Identity) {
       // optimized identity
 
       // Decoder factory: MyClass.fromData({..})
@@ -316,11 +325,11 @@ final class TypeScriptEmitter(
       o.print(s"${indent}${indent}return new ${name}${tparams}(")
 
       val params = list(parameters).reverse.zipWithIndex
-      val fieldNaming = config.fieldNaming(name, _: String)
+      val fieldMapper = config.fieldMapper(name, _: String)
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = fieldNaming(parameter.name)
+          val encoded = fieldMapper(parameter.name)
 
           if (index > 0) o.print(", ")
 
@@ -336,17 +345,18 @@ final class TypeScriptEmitter(
 
       params.foreach {
         case (parameter, index) =>
-          val encoded = fieldNaming(parameter.name)
+          val encoded = fieldMapper(parameter.name)
 
           if (index > 0) o.print(",\n")
 
-          o.print(s"${indent}${indent}${indent}${encoded}: instance.${fieldNaming(parameter.name)}")
+          o.print(s"${indent}${indent}${indent}${encoded}: instance.${fieldMapper(parameter.name)}")
       }
 
       o.println(s"\n${indent}${indent}}${lineSeparator}")
       o.println(s"${indent}}")
     }
   }
+   */
 
   // ---
 
@@ -354,16 +364,16 @@ final class TypeScriptEmitter(
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
-    (ownerType: String, memberName: String, typeRef: TypeRef) =>
-      typeMapper(resolvedTypeMapper, ownerType, memberName, typeRef).
-        getOrElse(defaultTypeMapping(ownerType, memberName, typeRef))
+    (ownerType: String, member: TypeScriptField, typeRef: TypeRef) =>
+      typeMapper(resolvedTypeMapper, ownerType, member, typeRef).
+        getOrElse(defaultTypeMapping(ownerType, member, typeRef))
   }
 
   private def defaultTypeMapping(
     ownerType: String,
-    memberName: String,
+    member: TypeScriptField,
     typeRef: TypeRef): String = {
-    val tr = resolvedTypeMapper(ownerType, memberName, _: TypeRef)
+    val tr = resolvedTypeMapper(ownerType, member, _: TypeRef)
 
     typeRef match {
       case NumberRef => "number"
@@ -375,7 +385,7 @@ final class TypeScriptEmitter(
       case DateRef | DateTimeRef => "Date"
 
       case ArrayRef(innerType) =>
-        s"${tr(innerType)}[]"
+        s"ReadonlyArray<${tr(innerType)}>"
 
       case TupleRef(params) =>
         params.map(tr).mkString("[", ", ", "]")
@@ -391,6 +401,12 @@ final class TypeScriptEmitter(
 
       case NullableType(innerType) if config.optionToNullable =>
         s"(${tr(innerType)} | null)"
+
+      case NullableType(innerType) if (
+        member.flags contains TypeScriptField.omitable) => {
+        // omitable and !optionToNullable
+        tr(innerType)
+      }
 
       case NullableType(innerType) =>
         s"(${tr(innerType)} | undefined)"
@@ -427,8 +443,8 @@ final class TypeScriptEmitter(
 }
 
 private[core] object TypeScriptEmitter {
-  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, String, TypeRef, Option[String]]
+  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]]
 
   /* See `TypeScriptPrinter` */
-  type Printer = Function4[Configuration, Declaration.Kind, String, Set[TypeRef], PrintStream]
+  type Printer = Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream]
 }

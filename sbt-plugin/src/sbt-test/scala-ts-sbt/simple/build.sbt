@@ -4,6 +4,9 @@ name := "sbt-plugin-test-simple"
 
 version := "1.0-SNAPSHOT"
 
+// TODO: Another scripted test without enable to check the default behaviour
+enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
+
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO
   val logger = streams.value.log

@@ -1,5 +1,7 @@
 package io.github.scalats.sbt
 
+import java.io.PrintWriter
+
 import java.net.URL
 
 import scala.util.control.NonFatal
@@ -9,17 +11,21 @@ import scala.reflect.ClassTag
 import sbt._
 import sbt.Keys._
 
-import _root_.io.github.scalats.core.{
-  Configuration => Settings,
-  FieldNaming,
-  TypeScriptPrinter,
-  TypeScriptTypeMapper
+import _root_.io.github.scalats.core.{ Settings, TypeScriptFieldMapper, TypeScriptPrinter, TypeScriptTypeMapper }
+import _root_.io.github.scalats.plugins.{
+  FilePrinter,
+  SingleFilePrinter,
+  SourceRuleSet
 }
-import _root_.io.github.scalats.plugins.{ FilePrinter, SingleFilePrinter, SourceRuleSet }
+import _root_.io.github.scalats.tsconfig.{
+  Config,
+  ConfigFactory,
+  ConfigRenderOptions
+}
 
 object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
-  override def trigger = allRequirements
+  override def trigger = noTrigger
 
   // TODO: Check the documentation index.md
   object autoImport {
@@ -40,26 +46,20 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsCompilerPluginConf = settingKey[File](
       "Path to the configuration file generated for the compiler plugin")
 
-    val scalatsEmitInterfaces = settingKey[Boolean](
-      "Generate interface declarations")
-
-    val scalatsEmitClasses = settingKey[Boolean]("Generate class declarations")
-
+    /* TODO: (medium priority)
     val scalatsEmitCodecs = settingKey[Boolean](
       "EXPERIMENTAL: Generate the codec functions fromData/toData for TypeScript classes")
+     */
 
     val scalatsOptionToNullable = settingKey[Boolean](
       "Option types will be compiled to 'type | null'")
-
-    val scalatsOptionToUndefined = settingKey[Boolean](
-      "Option types will be compiled to 'type | undefined'")
 
     val scalatsPrinter =
       settingKey[PrinterSetting](
         "Class implementing 'TypeScriptPrinter' to print the generated TypeScript code according the Scala type (default: io.github.scalats.plugins.FilePrinter) (with system properties to be passed in `scalacOptions`)")
 
     val scalatsPrinterPrelude =
-      settingKey[Option[PrinterPrelude]]("Prelude for printer supporting it (e.g. `scalatsFilePrinter` or `scalatsSingleFilePrinter`); Either an in-memory string, or a source URL")
+      settingKey[Option[PrinterPrelude]]("Prelude for printer supporting it (e.g. `scalatsFilePrinter` or `scalatsSingleFilePrinter`); Either an in-memory string (see `scalatsPrinterInMemoryPrelude`), or a source URL (see `scalatsPrinterUrlPrelude`)")
 
     val scalatsTypeScriptTypeMappers = settingKey[Seq[Class[_ <: TypeScriptTypeMapper]]]("Class implementing 'TypeScriptTypeMapper' to customize the mapping (default: None)")
 
@@ -75,23 +75,25 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsTypescriptLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')")
 
-    val scalatsFieldNaming = settingKey[Class[_ <: FieldNaming]]("Conversions for the field names if 'scalatsEmitCodecs' (default: Identity)")
+    val scalatsTypeScriptFieldMapper = settingKey[Class[_ <: TypeScriptFieldMapper]]("Conversions for the field names (default: Identity)")
 
     // TODO: (medium priority) scripted test
     val scalatsDiscriminator = settingKey[String](
       "Name for the discriminator field")
 
-    val scalatsSourceIncludes = settingKey[Set[String]](
+    val scalatsSourceIncludes = settingKey[Set[String]]( // TODO: Regex
       "Scala sources to be included for ScalaTS (default: '.*'")
 
     val scalatsSourceExcludes = settingKey[Set[String]](
       "Scala sources to be excluded for ScalaTS (default: none)")
 
+    private val typeRegex = "Regular expressions on type full names; Can be prefixed with either 'object:' or 'class:' (for class or trait)"
+
     val scalatsTypeIncludes = settingKey[Set[String]](
-      "Scala types to be included for ScalaTS (default '.*'")
+      s"Scala types to be included for ScalaTS; $typeRegex (default '.*'")
 
     val scalatsTypeExcludes = settingKey[Set[String]](
-      "Scala types to be excluded for ScalaTS (default: none)")
+      s"Scala types to be excluded for ScalaTS; $typeRegex (default: none)")
 
     // ---
 
@@ -140,10 +142,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     sourceManaged in scalatsOnCompile := {
       target.value / "scala-ts" / "src_managed"
     },
-    scalatsCompilerPluginConf := (target in Compile).value / "plugin-conf.xml",
+    scalatsCompilerPluginConf := {
+      (target in Compile).value / "scala-ts.conf"
+    },
     scalatsPrepare := {
       val logger = streams.value.log
       import Settings.EmitCodecs
+
+      var out: PrintWriter = null
 
       try {
         val sbtScalaVer: String = {
@@ -171,41 +177,32 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           t.toURI.toURL
         }
 
-        val fieldNaming: FieldNaming = {
-          val Identity = FieldNaming.Identity.getClass
-          val SnakeCase = FieldNaming.SnakeCase.getClass
+        val fieldMapper: TypeScriptFieldMapper = {
+          val Identity = TypeScriptFieldMapper.Identity.getClass
+          val SnakeCase = TypeScriptFieldMapper.SnakeCase.getClass
 
-          scalatsFieldNaming.value match {
+          scalatsTypeScriptFieldMapper.value match {
             case Identity =>
-              FieldNaming.Identity
+              TypeScriptFieldMapper.Identity
 
             case SnakeCase =>
-              FieldNaming.SnakeCase
+              TypeScriptFieldMapper.SnakeCase
 
             case cls =>
               cls.getDeclaredConstructor().newInstance()
           }
         }
 
-        if ((scalatsEmitClasses.value && scalatsEmitInterfaces.value) &&
-          !scalatsPrependIPrefix.value) {
-
-          logger.warn(s"Both 'scalatsEmitClasses' and 'scalatsEmitInterfaces' are enabled, without `scalatsPrependIPrefix := true` this can lead to invalid generation")
-        }
-
         // Overall settings
         val settings = Settings(
-          scalatsEmitInterfaces.value,
-          scalatsEmitClasses.value,
-          new EmitCodecs(scalatsEmitCodecs.value),
+          new EmitCodecs(false), // TODO: (medium priority) scalatsEmitCodecs.value
           scalatsOptionToNullable.value,
-          scalatsOptionToUndefined.value,
           scalatsPrependIPrefix.value,
           scalatsPrependEnclosingClassNames.value,
           scalatsTypescriptIndent.value,
           new Settings.TypeScriptLineSeparator(
             scalatsTypescriptLineSeparator.value),
-          fieldNaming,
+          fieldMapper,
           new Settings.Discriminator(scalatsDiscriminator.value))
 
         // Printer
@@ -251,21 +248,25 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
         val confFile = scalatsCompilerPluginConf.value.getAbsolutePath
 
-        logger.info(s"Saving XML configuration to '${confFile}' ...")
+        logger.info(
+          s"Saving compiler plugin configuration to '${confFile}' ...")
 
-        val conf = xmlConfiguration(
+        val conf = compilerPluginConf(
           settings = settings,
           compilationRuleSet = SourceRuleSet(
             includes = scalatsSourceIncludes.value,
             excludes = scalatsSourceExcludes.value),
           typeRuleSet = SourceRuleSet(
-            includes = scalatsSourceIncludes.value,
-            excludes = scalatsSourceExcludes.value),
+            includes = scalatsTypeIncludes.value,
+            excludes = scalatsTypeExcludes.value),
           printer = printer,
           typeScriptTypeMappers = typeMappers,
           additionalClasspath = Seq(sbtProjectClassUrl))
 
-        scala.xml.XML.save(filename = confFile, node = conf)
+        out = new PrintWriter(confFile)
+
+        out.print(conf.root.render(ConfigRenderOptions.concise))
+        out.flush()
 
         true
       } catch {
@@ -274,6 +275,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           cause.printStackTrace()
 
           false
+      } finally {
+        if (out != null) {
+          try {
+            out.close()
+          } catch {
+            case NonFatal(_) =>
+          }
+        }
       }
     },
     scalacOptions in Compile ++= {
@@ -319,61 +328,53 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsTypeIncludes := Set(".*"),
     scalatsTypeExcludes := Set.empty[String],
     scalatsPrinter := scalatsFilePrinter,
-    scalatsPrinterPrelude := Option.empty[PrinterPrelude],
+    scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
+      s"// Generated by ScalaTS ${version}: https://scala-ts.github.io/scala-ts/"),
     scalatsTypeScriptTypeMappers := Seq.empty[Class[_ <: TypeScriptTypeMapper]],
-    scalatsOptionToNullable := true,
-    scalatsOptionToUndefined := false,
+    scalatsOptionToNullable := false,
     scalatsPrependIPrefix := false,
     scalatsPrependEnclosingClassNames := false,
     scalatsTypescriptIndent := "  ",
     scalatsTypescriptLineSeparator := ";",
-    scalatsEmitInterfaces := true,
-    scalatsEmitClasses := false,
-    scalatsEmitCodecs := false,
-    scalatsFieldNaming := FieldNaming.Identity.getClass,
+    //scalatsEmitCodecs := false, // TODO: (medium priority)
+    scalatsTypeScriptFieldMapper := TypeScriptFieldMapper.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text)
 
-  import scala.xml.Elem
-
   @SuppressWarnings(Array("NullParameter"))
-  private def xmlConfiguration(
+  private def compilerPluginConf(
     settings: Settings,
     compilationRuleSet: SourceRuleSet,
     typeRuleSet: SourceRuleSet,
     printer: Class[_ <: TypeScriptPrinter],
     typeScriptTypeMappers: Seq[Class[_ <: TypeScriptTypeMapper]],
-    additionalClasspath: Seq[URL]): Elem = {
-    val rootName = "scalats"
+    additionalClasspath: Seq[URL]): Config = {
 
-    def elem(n: String, children: Seq[Elem]) =
-      new Elem(
-        prefix = null,
-        label = n,
-        attributes1 = scala.xml.Null,
-        scope = new scala.xml.NamespaceBinding(null, null, null),
-        minimizeEmpty = true,
-        children: _*)
+    import java.util.Arrays
 
-    val children = Seq.newBuilder[Elem] ++= Seq(
-      SourceRuleSet.toXml(compilationRuleSet, "compilationRuleSet"),
-      SourceRuleSet.toXml(typeRuleSet, "typeRuleSet"),
-      Settings.toXml(settings, "settings"),
-      elem("additionalClasspath", additionalClasspath.map { url =>
-        (<url>{ url }</url>)
-      }))
+    val repr = new java.util.HashMap[String, Any](6)
+
+    repr.put(
+      "compilationRuleSet",
+      SourceRuleSet.toConfig(compilationRuleSet).root)
+
+    repr.put("typeRuleSet", SourceRuleSet.toConfig(typeRuleSet).root)
+    repr.put("settings", Settings.toConfig(settings).root)
+
+    repr.put(
+      "additionalClasspath",
+      Arrays.asList(additionalClasspath.map(_.toString): _*))
 
     if (printer != TypeScriptPrinter.StandardOutput.getClass) {
-      children += (<printer>{ printer.getName }</printer>)
+      repr.put("printer", printer.getName)
     }
 
     if (typeScriptTypeMappers.nonEmpty) {
-      children += elem(
+      repr.put(
         "typeScriptTypeMappers",
-        typeScriptTypeMappers.map { cls =>
-          (<class>{ cls.getName }</class>)
-        })
+        Arrays.asList(typeScriptTypeMappers.map(_.getName): _*))
+
     }
 
-    elem(rootName, children.result())
+    ConfigFactory.parseMap(repr)
   }
 }

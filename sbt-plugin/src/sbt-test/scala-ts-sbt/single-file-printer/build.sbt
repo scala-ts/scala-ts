@@ -4,7 +4,7 @@ name := "sbt-plugin-test-single-file-printer"
 
 version := "1.0-SNAPSHOT"
 
-scalatsEmitInterfaces := true
+enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
 scalatsPrinter := scalatsSingleFilePrinter("generated.ts")
 

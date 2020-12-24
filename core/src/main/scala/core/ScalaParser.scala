@@ -230,7 +230,7 @@ final class ScalaParser[U <: Universe](
         fullId(enumerationValueType) +
         fullId(enumerationObject.typeSignature)),
       parsed = Some[TypeDef](
-        Enumeration(identifier, ListSet(values.toSeq: _*))))
+        EnumerationDef(identifier, ListSet(values.toSeq: _*))))
   }
 
   private def parseCaseClass(

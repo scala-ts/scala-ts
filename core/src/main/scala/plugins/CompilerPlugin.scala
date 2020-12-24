@@ -9,14 +9,13 @@ import scala.util.matching.Regex
 
 import scala.collection.immutable.ListSet
 
-import scala.xml.XML
-
 import io.github.scalats.core.{
   Logger,
   ScalaParser,
   TypeScriptGenerator,
   TypeScriptTypeMapper
 }
+import io.github.scalats.tsconfig.ConfigFactory
 
 final class CompilerPlugin(val global: Global)
   extends Plugin with PluginCompat { plugin =>
@@ -72,7 +71,7 @@ final class CompilerPlugin(val global: Global)
 
     if (configPath != null) {
       config = Configuration.load(
-        XML.loadFile(configPath),
+        ConfigFactory.parseFile(new File(configPath)),
         Logger(global),
         Option(printerOutputDirectory))
 

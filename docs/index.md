@@ -4,28 +4,85 @@ layout: default
 
 # Scala-ts
 
-*scala-ts* is a simple tool which can generate TypeScript interfaces and classes from Scala case classes.
+*scala-ts* is a simple tool which can generate [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
 
 ## Usage
 
 *scala-ts* can be used either [standalone](#standalone) or as a [SBT plugin](#sbt-plugin).
 
-TODO: Scala to TS examples
+### Examples
+
+**Example #:** Generic [case class](https://docs.scala-lang.org/tour/case-classes.html) `Tagged[T]`.
+
+```scala
+package scalats.examples
+
+case class Tagged[T](tag: String, value: T)
+```
+
+*Generated TypeScript:*
+
+```typescript
+export interface Tagged<T> {
+  tag: string;
+  value: T;
+}
+```
+
+**Example #:** Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and Value class `EventType`.
+
+```scala
+package scalats.examples
+
+import java.util.Locale
+import java.time.OffsetDateTime
+
+final class EventType(val name: String) extends AnyVal
+
+case class Event(
+    id: String,
+    changed: OffsetDateTime,
+    `type`: EventType,
+    messages: Tagged[Seq[TextMessage]])
+
+case class TextMessage(
+    format: String,
+    language: Locale,
+    text: String)
+```
+
+*Generated TypeScript:* Note that the [Value class] `EventType` is exported as the inner type (there `string` for `val name: String`).
+
+```typescript
+export interface Event {
+  id: string;
+  changed: Date;
+  type: string;
+  messages: Tagged<ReadonlyArray<Message>>;
+}
+
+export interface Message {
+  format: string;
+  language: string;
+  text: string;
+}
+```
+
+> `Locale` type is provided a transpiler as `string`.
+
+TODO: Scala to TS examples: union, enumeration
 
 ### SBT plugin
 
 Add the following plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % {{site.latest_release}})
+    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % "{{site.latest_release}}")
 
 Additionally, enable (or disabled) the plugin for a specific project:
 
 ```ocaml
 // Enable:
 enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
-
-// Disable:
-disablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
 By default, the TypeScript files are generated on compile:
@@ -40,10 +97,10 @@ By default, the TypeScript files are generated on compile:
 
 #### Configuration
 
-The [compiler plugin settings](#compiler-plugin) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsEmitClasses` SBT setting corresponds to the compiler plugin setting `emitClasses`.
+The [compiler plugin settings](#compiler-plugin) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsTypescriptIndent` SBT setting corresponds to the compiler plugin setting `typescriptIndent`.
 
 ```ocaml
-scalatsEmitClasses := true
+scalatsTypescriptIndent := "\t"
 ```
 
 The SBT plugins also has some specific settings.
@@ -56,7 +113,7 @@ TODO: scalatsDebug false
 
 TODO: `sourceManaged in scalatsOnCompile` - the directory to initialize the printer with (output directory)
 
-TODO: Custom field naming in `project/` + `scalatsFieldNaming := classOf[scalats.CustomFieldNaming]`
+TODO: Custom field naming in `project/` + `scalatsTypeScriptFieldMapper := classOf[scalats.CustomTypeScriptFieldMapper]`
 
 TODO: Custom printer in `project/`
 
@@ -69,8 +126,6 @@ TODO: Custom printer in `project/`
 
 The following generator settings can be specified as XML in the plugin configuration (see [examples](../core/src/test/resources/plugin-conf.xml)).
 
-- `emitInterfaces` - Generate interface declarations (default: `true`)
-- `emitClasses` - Generate class declarations (default: `false`)
 - `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 - `optionToUndefined` - Translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
 - `prependIPrefix` - Prepend `I` prefix to generated interfaces (default: `true`)
