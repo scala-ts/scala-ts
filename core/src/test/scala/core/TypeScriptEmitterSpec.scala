@@ -11,28 +11,28 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
   "Emitter" should {
     "emit interface for a class with one primitive member" in {
-      emit(ListSet(interface1)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass1 {
+      emit(ListSet(interface1)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass1 {
   name: string;
 }
 """)
     }
 
     "emit interface for a class with generic member" in {
-      emit(ListSet(interface2)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass2<T> {
+      emit(ListSet(interface2)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass2<T> {
   name: T;
 }
 """)
     }
 
     "emit interface for a class with generic array" in {
-      emit(ListSet(interface3)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass3<T> {
+      emit(ListSet(interface3)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass3<T> {
   name: ReadonlyArray<T>;
 }
 """)
     }
 
     "emit interface for a generic case class with a optional member" in {
-      emit(ListSet(interface5)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass5<T> {
+      emit(ListSet(interface5)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass5<T> {
   name?: T;
   counters: { [key: string]: number };
 }
@@ -40,8 +40,9 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     }
 
     "emit interface for a generic case class with disjunction" in {
-      emit(ListSet(interface7)) must beTypedEqualTo("""export interface IScalaRuntimeFixturesTestClass7<T> {
-  name: (IScalaRuntimeFixturesTestClass1 | IScalaRuntimeFixturesTestClass1B);
+      // TODO: Add example to documentation
+      emit(ListSet(interface7)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass7<T> {
+  name: (ScalaRuntimeFixturesTestClass1 | ScalaRuntimeFixturesTestClass1B);
 }
 """)
     }
@@ -107,11 +108,11 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     "emit union" in {
       emit(ListSet(union1)) must beTypedEqualTo("""export namespace ScalaRuntimeFixturesFamily {
-  type Union = IScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
+  type Union = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
 
   public static fromData(data: any): ScalaRuntimeFixturesFamily {
     switch (data._type) {
-      case "IScalaRuntimeFixturesFamilyMember1": {
+      case "ScalaRuntimeFixturesFamilyMember1": {
         return ScalaRuntimeFixturesFamilyMember1.fromData(data);
       }
       case "ScalaRuntimeFixturesFamilyMember2": {
@@ -124,9 +125,9 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   }
 
   public static toData(instance: ScalaRuntimeFixturesFamily): any {
-    if (instance instanceof IScalaRuntimeFixturesFamilyMember1) {
+    if (instance instanceof ScalaRuntimeFixturesFamilyMember1) {
       const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
-      data['_type'] = "IScalaRuntimeFixturesFamilyMember1";
+      data['_type'] = "ScalaRuntimeFixturesFamilyMember1";
       return data;
     } else if (instance instanceof ScalaRuntimeFixturesFamilyMember2) {
       const data = ScalaRuntimeFixturesFamilyMember2.toData(instance);
@@ -140,7 +141,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   }
 }
 
-export interface IScalaRuntimeFixturesFamily {
+export interface ScalaRuntimeFixturesFamily {
   foo: string;
 }
 """)

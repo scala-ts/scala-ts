@@ -12,7 +12,7 @@ final class DeclarationSpec extends org.specs2.mutable.Specification {
 
     "be resolved for union type" in {
       union1.requires must_=== Set(
-        CustomTypeRef("IScalaRuntimeFixturesFamilyMember1", List.empty),
+        CustomTypeRef("ScalaRuntimeFixturesFamilyMember1", List.empty),
         CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", List.empty),
         CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", List.empty))
     }
@@ -30,8 +30,8 @@ final class DeclarationSpec extends org.specs2.mutable.Specification {
     "be resolved for interface" >> {
       interface7.name in {
         interface7.requires must_=== Set(
-          CustomTypeRef("IScalaRuntimeFixturesTestClass1", List.empty),
-          CustomTypeRef("IScalaRuntimeFixturesTestClass1B", List.empty))
+          CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
+          CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty))
       }
     }
 

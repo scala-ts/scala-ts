@@ -12,7 +12,47 @@ layout: default
 
 ### Examples
 
-**Example #:** Generic [case class](https://docs.scala-lang.org/tour/case-classes.html) `Tagged[T]`.
+**Example #1:** Simple [case class](https://docs.scala-lang.org/tour/case-classes.html) `Incident`.
+
+```scala
+package scalats.examples
+
+case class Incident(id: String, message: String)
+```
+
+*Generated TypeScript:*
+
+```typescript
+export interface Incident {
+  id: string;
+  message: string;
+}
+```
+
+**Example #2:** Case class `Station` with `Option`al field `lastIncident`.
+
+```scala
+package scalats.examples
+
+case class Station(
+    id: String,
+    name: String,
+    lastIncident: Option[Incident])
+```
+
+*Generated TypeScript:*
+
+```typescript
+export interface Station {
+  id: string;
+  name: string;
+  lastIncident?: Incident;
+}
+```
+
+> See settings `optionToNullable` bellow in [configuration](#Configuration) documentation.
+
+**Example #:** Generic case class `Tagged[T]`.
 
 ```scala
 package scalats.examples
@@ -69,6 +109,7 @@ export interface Message {
 ```
 
 > `Locale` type is provided a transpiler as `string`.
+
 
 TODO: Scala to TS examples: union, enumeration
 

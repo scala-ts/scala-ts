@@ -3,6 +3,7 @@ package io.github.scalats.core
 import scala.util.control.NonFatal
 
 // TODO: Per-type options: nullable, fieldMapper, emitCodecs (by annotation on such type?)
+// TODO: (medium priority) Type naming
 
 /**
  * Created by Milosz on 09.12.2016.
@@ -12,7 +13,6 @@ import scala.util.control.NonFatal
 final class Settings(
   val emitCodecs: Settings.EmitCodecs,
   val optionToNullable: Boolean,
-  val prependIPrefix: Boolean, // TODO: (low) Rather type naming
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
   val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
@@ -23,7 +23,6 @@ final class Settings(
   private[scalats] def copy(
     emitCodecs: Settings.EmitCodecs = this.emitCodecs,
     optionToNullable: Boolean = this.optionToNullable,
-    prependIPrefix: Boolean = this.prependIPrefix,
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
     typescriptLineSeparator: Settings.TypeScriptLineSeparator = this.typescriptLineSeparator,
@@ -32,7 +31,6 @@ final class Settings(
     new Settings(
       emitCodecs,
       optionToNullable,
-      prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
@@ -49,10 +47,9 @@ final class Settings(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple8(
+  private lazy val tupled = Tuple7(
     emitCodecs,
     optionToNullable,
-    prependIPrefix,
     prependEnclosingClassNames,
     typescriptIndent,
     typescriptLineSeparator,
@@ -72,7 +69,6 @@ object Settings {
   def apply(
     emitCodecs: EmitCodecs = EmitCodecsEnabled,
     optionToNullable: Boolean = false,
-    prependIPrefix: Boolean = true,
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
     typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
@@ -81,7 +77,6 @@ object Settings {
     new Settings(
       emitCodecs,
       optionToNullable,
-      prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
@@ -114,7 +109,6 @@ object Settings {
     val emitCodecs = new EmitCodecs(bool("emitCodecs", true))
 
     val optionToNullable = bool("optionToNullable", false)
-    val prependIPrefix = bool("prependIPrefix", true)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
     val typescriptIndent: String =
       str("typescriptIndent").getOrElse(DefaultTypeScriptIndent)
@@ -156,7 +150,6 @@ object Settings {
     new Settings(
       emitCodecs,
       optionToNullable,
-      prependIPrefix,
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
@@ -182,8 +175,6 @@ object Settings {
 
     repr.put(s"${p}emitCodecs", conf.emitCodecs.enabled)
     repr.put(s"${p}optionToNullable", conf.optionToNullable)
-
-    repr.put(s"${p}prependIPrefix", conf.prependIPrefix)
 
     repr.put(
       s"${p}prependEnclosingClassNames",

@@ -52,6 +52,7 @@ final class TypeScriptEmitter(
     superInterface: Option[InterfaceDeclaration],
     requires: Set[TypeRef]): Unit = withOut(
     Declaration.Union, name, requires) { o =>
+      // TODO: Fix and test
       // Namespace and union type
       o.println(s"export namespace $name {")
       o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
@@ -66,7 +67,7 @@ final class TypeScriptEmitter(
         o.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
 
         children.foreach { sub =>
-          val clazz = if (sub.name startsWith "I") sub.name.drop(1) else sub.name
+          val clazz = sub.name
 
           o.println(s"""${indent}${indent}${indent}case "${naming(sub.name)}": {""")
           o.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data)${lineSeparator}")
@@ -103,7 +104,7 @@ final class TypeScriptEmitter(
       o.println("}")
 
       // Union interface
-      o.print(s"\nexport interface I${name}")
+      o.print(s"\nexport interface ${name}")
 
       superInterface.foreach { iface =>
         o.print(s" extends I${iface.name}")

@@ -169,10 +169,8 @@ final class Transpiler(config: Settings) {
       StringRef
   }
 
-  private def toInterfaceName(id: ScalaModel.QualifiedIdentifier) = {
-    val prefix = if (config.prependIPrefix) "I" else ""
-    s"${prefix}${idToString(id)}"
-  }
+  @inline private def toInterfaceName(id: ScalaModel.QualifiedIdentifier) =
+    idToString(id)
 
   private def idToString(identifier: ScalaModel.QualifiedIdentifier): String = {
     if (config.prependEnclosingClassNames) {
