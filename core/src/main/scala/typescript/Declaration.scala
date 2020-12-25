@@ -132,9 +132,6 @@ case class UnionDeclaration(
     (fields.flatMap(_.typeRef.requires).filterNot {
       case TypeRef.Named(`name`) => true /* skip self reference */
       case _ => false
-    }) ++ (possibilities.flatMap(_.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
     }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
       CustomTypeRef(si.name, List.empty)
     }

@@ -132,8 +132,7 @@ case class NullableType(innerType: TypeRef) extends TypeRef {
  * Reference to a union type (e.g. `string | number`)
  */
 case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
-  @inline private[typescript] def requires =
-    possibilities.flatMap(_.requires)
+  @inline private[typescript] def requires = Set.empty[TypeRef]
 
   override def toString: String =
     io.github.scalats.core.Internals.list(possibilities).mkString(" | ")

@@ -110,8 +110,47 @@ export interface Message {
 
 > `Locale` type is provided a transpiler as `string`.
 
+**Example #:** Sealed trait/family `Transport`
 
-TODO: Scala to TS examples: union, enumeration
+```scala
+sealed trait Transport {
+  def name: String
+}
+
+case class TrainLine(
+    name: String,
+    startStationId: String,
+    endStationId: String)
+    extends Transport
+
+case class BusLine(
+    id: Int,
+    name: String,
+    stopIds: Seq[String])
+    extends Transport
+```
+
+*Generated TypeScript:*
+
+```typescript
+export interface TrainLine extends Transport {
+  name: string;
+  startStationId: string;
+  endStationId: string;
+}
+
+export interface BusLine extends Transport {
+  id: number;
+  name: string;
+  stopIds: ReadonlyArray<string>;
+}
+
+export interface Transport {
+  name: string;
+}
+```
+
+TODO: Scala to TS examples: enumeration
 
 ### SBT plugin
 
@@ -129,6 +168,8 @@ enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 By default, the TypeScript files are generated on compile:
 
     sbt compile
+
+*See [examples](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt)*
 
 **Release notes:**
 

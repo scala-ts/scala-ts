@@ -17,10 +17,7 @@ final class TypeScriptEmitter(
 
   import Internals.list
 
-  import config.{
-    discriminator => discriminatorName,
-    typescriptIndent => indent
-  }
+  import config.{ typescriptIndent => indent }
   import config.typescriptLineSeparator.{ value => lineSeparator }
 
   def emit(declarations: ListSet[Declaration]): Unit =
@@ -39,8 +36,9 @@ final class TypeScriptEmitter(
       case s @ SingletonDeclaration(name, members, superInterface) =>
         emitSingletonDeclaration(name, members, superInterface, s.requires)
 
-      case u @ UnionDeclaration(name, fields, possibilities, superInterface) =>
-        emitUnionDeclaration(name, fields, possibilities, superInterface, u.requires)
+      case u @ UnionDeclaration(
+        name, fields, _ /*possibilities*/ , superInterface) =>
+        emitUnionDeclaration(name, fields, superInterface, u.requires)
     }
 
   // ---
@@ -48,66 +46,14 @@ final class TypeScriptEmitter(
   private def emitUnionDeclaration(
     name: String,
     fields: ListSet[Member],
-    possibilities: ListSet[CustomTypeRef],
     superInterface: Option[InterfaceDeclaration],
     requires: Set[TypeRef]): Unit = withOut(
     Declaration.Union, name, requires) { o =>
-      // TODO: Fix and test
-      // Namespace and union type
-      o.println(s"export namespace $name {")
-      o.println(s"""${indent}type Union = ${possibilities.map(_.name) mkString " | "}${lineSeparator}""")
-
-      if (config.emitCodecs.enabled) {
-        // TODO: Config
-        val naming: String => String = identity[String](_)
-        val children = list(possibilities)
-
-        // Decoder factory: MyClass.fromData({..})
-        o.println(s"\n${indent}public static fromData(data: any): ${name} {")
-        o.println(s"${indent}${indent}switch (data.${discriminatorName}) {")
-
-        children.foreach { sub =>
-          val clazz = sub.name
-
-          o.println(s"""${indent}${indent}${indent}case "${naming(sub.name)}": {""")
-          o.println(s"${indent}${indent}${indent}${indent}return ${clazz}.fromData(data)${lineSeparator}")
-          o.println(s"${indent}${indent}${indent}}")
-        }
-
-        o.println(s"${indent}${indent}}")
-        o.println(s"${indent}}")
-
-        // Encoder
-        o.println(s"\n${indent}public static toData(instance: ${name}): any {")
-
-        children.zipWithIndex.foreach {
-          case (sub, index) =>
-            o.print(s"${indent}${indent}")
-
-            if (index > 0) {
-              o.print("} else ")
-            }
-
-            val clazz =
-              if (sub.name startsWith "I") sub.name.drop(1) else sub.name
-
-            o.println(s"if (instance instanceof ${sub.name}) {")
-            o.println(s"${indent}${indent}${indent}const data = ${clazz}.toData(instance)${lineSeparator}")
-            o.println(s"""${indent}${indent}${indent}data['$discriminatorName'] = "${naming(sub.name)}"${lineSeparator}""")
-            o.println(s"${indent}${indent}${indent}return data${lineSeparator}")
-        }
-
-        o.println(s"${indent}${indent}}")
-        o.println(s"${indent}}")
-      }
-
-      o.println("}")
-
       // Union interface
-      o.print(s"\nexport interface ${name}")
+      o.print(s"export interface ${name}")
 
       superInterface.foreach { iface =>
-        o.print(s" extends I${iface.name}")
+        o.print(s" extends ${iface.name}")
       }
 
       o.println(" {")

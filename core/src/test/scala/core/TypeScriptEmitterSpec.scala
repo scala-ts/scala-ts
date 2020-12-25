@@ -107,41 +107,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     }
 
     "emit union" in {
-      emit(ListSet(union1)) must beTypedEqualTo("""export namespace ScalaRuntimeFixturesFamily {
-  type Union = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
-
-  public static fromData(data: any): ScalaRuntimeFixturesFamily {
-    switch (data._type) {
-      case "ScalaRuntimeFixturesFamilyMember1": {
-        return ScalaRuntimeFixturesFamilyMember1.fromData(data);
-      }
-      case "ScalaRuntimeFixturesFamilyMember2": {
-        return ScalaRuntimeFixturesFamilyMember2.fromData(data);
-      }
-      case "ScalaRuntimeFixturesFamilyMember3": {
-        return ScalaRuntimeFixturesFamilyMember3.fromData(data);
-      }
-    }
-  }
-
-  public static toData(instance: ScalaRuntimeFixturesFamily): any {
-    if (instance instanceof ScalaRuntimeFixturesFamilyMember1) {
-      const data = ScalaRuntimeFixturesFamilyMember1.toData(instance);
-      data['_type'] = "ScalaRuntimeFixturesFamilyMember1";
-      return data;
-    } else if (instance instanceof ScalaRuntimeFixturesFamilyMember2) {
-      const data = ScalaRuntimeFixturesFamilyMember2.toData(instance);
-      data['_type'] = "ScalaRuntimeFixturesFamilyMember2";
-      return data;
-    } else if (instance instanceof ScalaRuntimeFixturesFamilyMember3) {
-      const data = ScalaRuntimeFixturesFamilyMember3.toData(instance);
-      data['_type'] = "ScalaRuntimeFixturesFamilyMember3";
-      return data;
-    }
-  }
-}
-
-export interface ScalaRuntimeFixturesFamily {
+      emit(ListSet(union1)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesFamily {
   foo: string;
 }
 """)
