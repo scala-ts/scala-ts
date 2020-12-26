@@ -16,6 +16,7 @@ final class Settings(
   val prependEnclosingClassNames: Boolean,
   val typescriptIndent: String,
   val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
+  val typeNaming: TypeScriptTypeNaming,
   val fieldMapper: TypeScriptFieldMapper,
   val discriminator: Settings.Discriminator) {
 
@@ -26,6 +27,7 @@ final class Settings(
     prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
     typescriptIndent: String = this.typescriptIndent,
     typescriptLineSeparator: Settings.TypeScriptLineSeparator = this.typescriptLineSeparator,
+    typeNaming: TypeScriptTypeNaming = this.typeNaming,
     fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
     discriminator: Settings.Discriminator = this.discriminator): Settings =
     new Settings(
@@ -34,6 +36,7 @@ final class Settings(
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
+      typeNaming,
       fieldMapper,
       discriminator)
 
@@ -47,12 +50,13 @@ final class Settings(
 
   override def toString = tupled.toString
 
-  private lazy val tupled = Tuple7(
+  private lazy val tupled = Tuple8(
     emitCodecs,
     optionToNullable,
     prependEnclosingClassNames,
     typescriptIndent,
     typescriptLineSeparator,
+    typeNaming,
     fieldMapper,
     discriminator)
 }
@@ -72,6 +76,7 @@ object Settings {
     prependEnclosingClassNames: Boolean = true,
     typescriptIndent: String = DefaultTypeScriptIndent,
     typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
+    typeNaming: TypeScriptTypeNaming = TypeScriptTypeNaming.Identity,
     fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
     discriminator: Discriminator = DefaultDiscriminator): Settings =
     new Settings(
@@ -80,6 +85,7 @@ object Settings {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
+      typeNaming,
       fieldMapper,
       discriminator)
 
@@ -121,6 +127,26 @@ object Settings {
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
 
+    val typeNaming: TypeScriptTypeNaming = str("typeNaming").flatMap {
+      case "Identity" =>
+        Some(TypeScriptTypeNaming.Identity)
+
+      case className =>
+        try {
+          Option(loadClass(className).
+            asSubclass(classOf[TypeScriptTypeNaming]).
+            getDeclaredConstructor().newInstance())
+
+        } catch {
+          case NonFatal(_) =>
+            logger.warning(s"Fails to load custom field naming: ${className}")
+            None
+        }
+
+    }.getOrElse {
+      TypeScriptTypeNaming.Identity
+    }
+
     val fieldMapper: TypeScriptFieldMapper = str("fieldMapper").flatMap {
       case "SnakeCase" =>
         Some(TypeScriptFieldMapper.SnakeCase)
@@ -153,12 +179,21 @@ object Settings {
       prependEnclosingClassNames,
       typescriptIndent,
       typescriptLineSeparator,
+      typeNaming,
       fieldMapper,
       discriminator)
 
   }
 
   def toConfig(conf: Settings, prefix: Option[String] = None): Config = {
+    val typeNaming: String = conf.typeNaming match {
+      case TypeScriptTypeNaming.Identity =>
+        "Identity"
+
+      case custom =>
+        custom.getClass.getName
+    }
+
     val fieldMapper: String = conf.fieldMapper match {
       case TypeScriptFieldMapper.SnakeCase =>
         "SnakeCase"
@@ -188,6 +223,7 @@ object Settings {
       s"${p}typescriptLineSeparator",
       conf.typescriptLineSeparator.value)
 
+    repr.put(s"${p}typeNaming", typeNaming)
     repr.put(s"${p}fieldMapper", fieldMapper)
 
     repr.put(

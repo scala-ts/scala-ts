@@ -1,5 +1,8 @@
 $ absent target/scala-ts/src_managed/CaseClassFoo.ts
 $ absent target/scala-ts/src_managed/CaseClassBar.ts
+$ absent target/scala-ts/src_managed/Transport.ts
+$ absent target/scala-ts/src_managed/BusLine.ts
+$ absent target/scala-ts/src_managed/TrainLine.ts
 
 # Simple generation from Scala case class
 > compile
@@ -12,6 +15,15 @@ $ must-mirror target/scala-ts/src_managed/CaseClassFoo.ts src/test/resources/Cas
 
 $ exists target/scala-ts/src_managed/CaseClassBar.ts
 $ must-mirror target/scala-ts/src_managed/CaseClassBar.ts src/test/resources/CaseClassBar.ts
+
+$ exists target/scala-ts/src_managed/Transport.ts
+$ must-mirror target/scala-ts/src_managed/Transport.ts src/test/resources/Transport.ts
+
+$ exists target/scala-ts/src_managed/BusLine.ts
+$ must-mirror target/scala-ts/src_managed/BusLine.ts src/test/resources/BusLine.ts
+
+$ exists target/scala-ts/src_managed/TrainLine.ts
+$ must-mirror target/scala-ts/src_managed/TrainLine.ts src/test/resources/TrainLine.ts
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript

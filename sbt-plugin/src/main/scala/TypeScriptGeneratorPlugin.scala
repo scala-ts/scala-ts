@@ -11,7 +11,14 @@ import scala.reflect.ClassTag
 import sbt._
 import sbt.Keys._
 
-import _root_.io.github.scalats.core.{ Settings, TypeScriptFieldMapper, TypeScriptPrinter, TypeScriptTypeMapper }
+import _root_.io.github.scalats.core.{
+  Settings,
+  TypeScriptFieldMapper,
+  TypeScriptPrinter,
+  TypeScriptTypeMapper,
+  TypeScriptTypeNaming
+}
+
 import _root_.io.github.scalats.plugins.{
   FilePrinter,
   SingleFilePrinter,
@@ -71,6 +78,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     val scalatsTypescriptLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')")
+
+    val scalatsTypeScriptTypeNaming = settingKey[Class[_ <: TypeScriptTypeNaming]]("Conversions for the field names (default: Identity)")
 
     val scalatsTypeScriptFieldMapper = settingKey[Class[_ <: TypeScriptFieldMapper]]("Conversions for the field names (default: Identity)")
 
@@ -174,6 +183,18 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           t.toURI.toURL
         }
 
+        val typeNaming: TypeScriptTypeNaming = {
+          val Identity = TypeScriptTypeNaming.Identity.getClass
+
+          scalatsTypeScriptTypeNaming.value match {
+            case Identity =>
+              TypeScriptTypeNaming.Identity
+
+            case cls =>
+              cls.getDeclaredConstructor().newInstance()
+          }
+        }
+
         val fieldMapper: TypeScriptFieldMapper = {
           val Identity = TypeScriptFieldMapper.Identity.getClass
           val SnakeCase = TypeScriptFieldMapper.SnakeCase.getClass
@@ -198,6 +219,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           scalatsTypescriptIndent.value,
           new Settings.TypeScriptLineSeparator(
             scalatsTypescriptLineSeparator.value),
+          typeNaming,
           fieldMapper,
           new Settings.Discriminator(scalatsDiscriminator.value))
 
@@ -332,6 +354,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsTypescriptIndent := "  ",
     scalatsTypescriptLineSeparator := ";",
     //scalatsEmitCodecs := false, // TODO: (medium priority)
+    scalatsTypeScriptTypeNaming := TypeScriptTypeNaming.Identity.getClass,
     scalatsTypeScriptFieldMapper := TypeScriptFieldMapper.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text)
 

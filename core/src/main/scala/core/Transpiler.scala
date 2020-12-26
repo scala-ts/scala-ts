@@ -51,7 +51,7 @@ final class Transpiler(config: Settings) {
         }
 
         val unionRef = InterfaceDeclaration(
-          toInterfaceName(id),
+          idToString(id),
           ifaceFields, List.empty[String], superInterface)
 
         apply(possibilities, Some(unionRef)) + UnionDeclaration(
@@ -63,10 +63,10 @@ final class Transpiler(config: Settings) {
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
               CustomTypeRef(
-                toInterfaceName(pid), tpeArgs.map { SimpleTypeRef(_) })
+                idToString(pid), tpeArgs.map { SimpleTypeRef(_) })
 
             case m =>
-              CustomTypeRef(toInterfaceName(m.identifier), List.empty)
+              CustomTypeRef(idToString(m.identifier), List.empty)
           },
           superInterface)
       }
@@ -77,7 +77,7 @@ final class Transpiler(config: Settings) {
     superInterface: Option[InterfaceDeclaration]) = {
     // TODO: (medium priority) Transpile values? (see former transpileClass)
     InterfaceDeclaration(
-      toInterfaceName(scalaClass.identifier),
+      idToString(scalaClass.identifier),
       scalaClass.fields.map { scalaMember =>
         Member(
           scalaMember.name,
@@ -135,7 +135,7 @@ final class Transpiler(config: Settings) {
 
     case ScalaModel.CaseClassRef(id, typeArgs) => {
       val name = {
-        if (inInterfaceContext) toInterfaceName(id)
+        if (inInterfaceContext) idToString(id)
         else idToString(id)
       }
 
@@ -165,12 +165,9 @@ final class Transpiler(config: Settings) {
         transpileTypeRef(i, inInterfaceContext)
       })
 
-    case ScalaModel.UnknownTypeRef(_) =>
-      StringRef
+    case ScalaModel.UnknownTypeRef(id) =>
+      UnknownTypeRef(idToString(id))
   }
-
-  @inline private def toInterfaceName(id: ScalaModel.QualifiedIdentifier) =
-    idToString(id)
 
   private def idToString(identifier: ScalaModel.QualifiedIdentifier): String = {
     if (config.prependEnclosingClassNames) {

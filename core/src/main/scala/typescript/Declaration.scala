@@ -8,6 +8,8 @@ sealed trait Declaration {
   def name: String
 
   private[scalats] def requires: Set[TypeRef]
+
+  private[scalats] def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
 object Declaration {
@@ -46,52 +48,14 @@ case class InterfaceDeclaration(
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
 
   private[scalats] def requires: Set[TypeRef] =
-    (fields.flatMap(_.typeRef.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
-    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
-      CustomTypeRef(si.name, List.empty)
-    }
+    fields.flatMap(_.typeRef.requires).
+      filterNot(_.name == name) ++ superInterface.
+      toSet.map { i: InterfaceDeclaration => i.reference }
+
+  private[scalats] override def reference: TypeRef =
+    CustomTypeRef(name, typeParams.map(SimpleTypeRef(_)))
+
 }
-
-/* TODO: (medium priority) Remove
- * A class declaration.
- *
- * @param constructor the class constructor
- * @param values the class invariants values
- * @param typeParams the type parameters for the interface
- * @param superInterface the super interface (if any)
-case class ClassDeclaration(
-  name: String,
-  constructor: ClassConstructor,
-  values: ListSet[Member],
-  typeParams: List[String],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration {
-  private[scalats] def requires: Set[TypeRef] =
-    (constructor.parameters.flatMap(_.typeRef.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
-    }) ++ (values.flatMap(_.typeRef.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
-    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
-      CustomTypeRef(si.name, List.empty)
-    }
-}
-
- * A class constructor.
- *
- * @param parameters the parameter for the class constructor
-case class ClassConstructor(parameters: ListSet[ClassConstructorParameter])
-
- * A parameter for a class constructor.
- *
- * @param name the parameter name
- * @param typeRef the reference to the parameter type
-case class ClassConstructorParameter(
-  name: String,
-  typeRef: TypeRef)
- */
 
 /**
  * A singleton declaration.
@@ -104,12 +68,9 @@ case class SingletonDeclaration(
   values: ListSet[Member],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
-    (values.flatMap(_.typeRef.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
-    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
-      CustomTypeRef(si.name, List.empty)
-    }
+    values.flatMap(_.typeRef.requires).
+      filterNot(_.name == name) ++ superInterface.
+      toSet.map { i: InterfaceDeclaration => i.reference }
 }
 
 /**
@@ -129,10 +90,7 @@ case class UnionDeclaration(
   possibilities: ListSet[CustomTypeRef],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
-    (fields.flatMap(_.typeRef.requires).filterNot {
-      case TypeRef.Named(`name`) => true /* skip self reference */
-      case _ => false
-    }) ++ superInterface.toSet.map { si: InterfaceDeclaration =>
-      CustomTypeRef(si.name, List.empty)
-    }
+    fields.flatMap(_.typeRef.requires).
+      filterNot(_.name == name) ++ superInterface.
+      toSet.map { i: InterfaceDeclaration => i.reference }
 }

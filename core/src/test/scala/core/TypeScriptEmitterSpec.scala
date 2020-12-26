@@ -60,14 +60,6 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     return ScalaRuntimeFixturesTestObject1.instance;
   }
-
-  public static fromData(data: any): ScalaRuntimeFixturesTestObject1 {
-    return ScalaRuntimeFixturesTestObject1.instance;
-  }
-
-  public static toData(instance: ScalaRuntimeFixturesTestObject1): any {
-    return instance;
-  }
 }
 """)
     }
@@ -85,14 +77,6 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     }
 
     return ScalaRuntimeFixturesTestObject2.instance;
-  }
-
-  public static fromData(data: any): ScalaRuntimeFixturesTestObject2 {
-    return ScalaRuntimeFixturesTestObject2.instance;
-  }
-
-  public static toData(instance: ScalaRuntimeFixturesTestObject2): any {
-    return instance;
   }
 }
 """)

@@ -9,7 +9,7 @@ final class SettingsSpec extends org.specs2.mutable.Specification {
 
   import ConfigRenderOptions.concise
 
-  val fullConf = """{"discriminator":"_type","emitCodecs":true,"fieldMapper":"Identity","optionToNullable":false,"prependEnclosingClassNames":true,"typescriptIndent":"\t","typescriptLineSeparator":";"}"""
+  val fullConf = """{"discriminator":"_type","emitCodecs":true,"fieldMapper":"Identity","optionToNullable":false,"prependEnclosingClassNames":true,"typeNaming":"Identity","typescriptIndent":"\t","typescriptLineSeparator":";"}"""
 
   "Fully defined settings" should {
     "be loaded" in {

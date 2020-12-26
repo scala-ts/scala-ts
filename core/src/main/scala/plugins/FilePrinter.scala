@@ -15,18 +15,17 @@ final class FilePrinter(outDir: File) extends PrinterWithPrelude {
     requires: Set[TypeRef]): PrintStream = {
 
     import conf.{ typescriptLineSeparator => sep }
+    val typeNaming = conf.typeNaming(conf, _: TypeRef)
 
     val f = new File(outDir, s"${name}.ts")
     val stream = new PrintStream(new FileOutputStream(f, true))
 
     printPrelude(stream)
 
-    requires.foreach {
-      case TypeRef.Named(n) =>
-        stream.println(s"import { ${n} } from './${n}'${sep}")
+    requires.foreach { tpe =>
+      val tpeName = typeNaming(tpe)
 
-      case _ =>
-        ()
+      stream.println(s"import { ${tpeName} } from './${tpeName}'${sep}")
     }
 
     if (requires.nonEmpty) {

@@ -2,25 +2,15 @@ package io.github.scalats.typescript
 
 import scala.collection.immutable.{ ListSet, Set }
 
+import io.github.scalats.core.Internals
+
 /** Reference to a builtin type or one declared elsewhere. */
 sealed trait TypeRef {
   /* See `Declaration.requires` */
   private[typescript] def requires: Set[TypeRef]
-}
 
-object TypeRef {
-  object Named {
-    def unapply(ref: TypeRef): Option[String] = ref match {
-      case gen: GenericTypeRef =>
-        Some(gen.name)
-
-      case UnknownTypeRef(name) =>
-        Some(name)
-
-      case _ =>
-        None
-    }
-  }
+  /** The type name */
+  def name: String
 }
 
 private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
@@ -60,6 +50,8 @@ case class CustomTypeRef(
  */
 case class ArrayRef(innerType: TypeRef) extends TypeRef {
   @inline private[typescript] def requires = innerType.requires
+
+  lazy val name = "Array"
 
   override def toString = s"Array<${innerType.toString}>"
 }
@@ -125,6 +117,8 @@ case object DateTimeRef extends SimpleTypeRef("DateTime")
 case class NullableType(innerType: TypeRef) extends TypeRef {
   @inline private[typescript] def requires = innerType.requires
 
+  lazy val name = s"${innerType.name} | undefined"
+
   override def toString = s"Nullable<${innerType.toString}>"
 }
 
@@ -134,8 +128,10 @@ case class NullableType(innerType: TypeRef) extends TypeRef {
 case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
   @inline private[typescript] def requires = Set.empty[TypeRef]
 
+  lazy val name = Internals.list(possibilities.map(_.name)).mkString(" | ")
+
   override def toString: String =
-    io.github.scalats.core.Internals.list(possibilities).mkString(" | ")
+    Internals.list(possibilities).mkString(" | ")
 }
 
 /**
@@ -147,6 +143,8 @@ case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
 case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef {
   private[typescript] def requires: Set[TypeRef] =
     keyType.requires ++ valueType.requires
+
+  lazy val name = s"{ [key: ${keyType.name}]: ${valueType.name} }"
 
   override def toString = s"Map<${keyType}, ${valueType}>"
 }

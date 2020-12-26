@@ -4,7 +4,7 @@ import scala.collection.immutable.Set
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
-import io.github.scalats.typescript.{ Declaration,TypeRef }
+import io.github.scalats.typescript.{ Declaration, TypeRef }
 import io.github.scalats.plugins.PrinterWithPrelude
 
 final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
@@ -16,14 +16,6 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
     name: String,
     requires: Set[TypeRef]): PrintStream = {
 
-    val n = kind match {
-      case Declaration.Interface =>
-        name.stripPrefix("I") // Strip interface 'I' prefix
-
-      case _ =>
-        name
-    }
-
     val writePrelude: Boolean = {
       if (first) {
         first = false
@@ -34,10 +26,23 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
     }
 
     val out = new PrintStream(new FileOutputStream(
-      new File(outDir, s"scalats${n}.ts"), true))
+      new File(outDir, s"scalats${name}.ts"), true))
 
     if (writePrelude) {
       printPrelude(out)
+    }
+
+    val typeNaming = conf.typeNaming(conf, _: TypeRef)
+    import conf.{ typescriptLineSeparator => sep }
+
+    requires.foreach { tpe =>
+      val tpeName = typeNaming(tpe)
+
+      out.println(s"import { ${tpeName} } from './${tpeName}'${sep}")
+    }
+
+    if (requires.nonEmpty) {
+      out.println()
     }
 
     out

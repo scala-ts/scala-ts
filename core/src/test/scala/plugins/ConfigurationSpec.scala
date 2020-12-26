@@ -38,6 +38,7 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_dis"
 }""")
@@ -90,6 +91,7 @@ settings {
   prependEnclosingClassNames = false
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "SnakeCase"
   discriminator = "_type"
 }
@@ -121,6 +123,7 @@ settings {
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_type"
 }
