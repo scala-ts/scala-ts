@@ -5,9 +5,9 @@ import scala.collection.immutable.Set
 import java.io.{ File, FileOutputStream, PrintStream }
 
 import io.github.scalats.typescript.{ Declaration, TypeRef }
-import io.github.scalats.plugins.PrinterWithPrelude
+import io.github.scalats.plugins.BasePrinter
 
-final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
+final class CustomPrinter(outDir: File) extends BasePrinter {
   @volatile private var first = true
 
   def apply(
@@ -32,17 +32,8 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
       printPrelude(out)
     }
 
-    val typeNaming = conf.typeNaming(conf, _: TypeRef)
-    import conf.{ typescriptLineSeparator => sep }
-
-    requires.foreach { tpe =>
-      val tpeName = typeNaming(tpe)
-
-      out.println(s"import { ${tpeName} } from './${tpeName}'${sep}")
-    }
-
-    if (requires.nonEmpty) {
-      out.println()
+    printImports(conf, requires, out) { tpe =>
+      s"./scalats${tpe.name}"
     }
 
     out

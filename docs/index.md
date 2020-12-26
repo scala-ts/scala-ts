@@ -52,7 +52,7 @@ export interface Station {
 
 > See settings `optionToNullable` bellow in [configuration](#Configuration) documentation.
 
-**Example #:** Generic case class `Tagged[T]`.
+**Example #3:** Generic case class `Tagged[T]`.
 
 ```scala
 package scalats.examples
@@ -69,7 +69,7 @@ export interface Tagged<T> {
 }
 ```
 
-**Example #:** Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and Value class `EventType`.
+**Example #4:** Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and Value class `EventType`.
 
 ```scala
 package scalats.examples
@@ -110,9 +110,11 @@ export interface Message {
 
 > `Locale` type is provided a transpiler as `string`.
 
-**Example #:** Sealed trait/family `Transport`
+**Example #5:** Sealed trait/family `Transport`
 
 ```scala
+package scalats.examples
+
 sealed trait Transport {
   def name: String
 }
@@ -150,7 +152,16 @@ export interface Transport {
 }
 ```
 
-TODO: Scala to TS examples: enumeration
+**Example #6:** Enumeration
+
+```scala
+package scalats.examples
+
+object Severity extends Enumeration {
+  type Severity = Value
+  val Low, Medium, High = Value
+}
+```
 
 ### SBT plugin
 
@@ -158,16 +169,18 @@ Add the following plugin to `project/plugins.sbt`:
 
     addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % "{{site.latest_release}}")
 
-Additionally, enable (or disabled) the plugin for a specific project:
+Additionally, enable the plugin for a specific project:
 
 ```ocaml
-// Enable:
+// Disabled by default
 enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
 ```
 
-By default, the TypeScript files are generated on compile:
+The TypeScript files are generated on compile.
 
     sbt compile
+
+By default, the TypeScript generation is executed in directory `target/scala-ts/src_managed` (see `sourceManaged in scalatsOnCompile` in [configuration](#configuration)).
 
 *See [examples](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt)*
 
@@ -204,9 +217,9 @@ TODO: Custom printer in `project/`
 *scala-ts* can be configured as a Scalac compiler plugin using the following options.
 
 - `-Xplugin:/path/to/scala-ts-core.jar`
-- `-P:scalats:configuration=/path/to/plugin-conf.xml`
+- `-P:scalats:configuration=/path/to/plugin.conf`
 
-The following generator settings can be specified as XML in the plugin configuration (see [examples](../core/src/test/resources/plugin-conf.xml)).
+The following generator settings can be specified as [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) in the plugin configuration (see [examples](../core/src/test/resources/plugin-conf.xml)).
 
 - `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
 - `optionToUndefined` - Translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
@@ -225,19 +238,24 @@ Also the following build options can be configured.
 
 A rule set such as `compilationRuleSet` is described with multiple include and/or excludes rules:
 
-```xml
-<scalats>
-  <compilationRuleSet>
-    <includes>
-      <include>ScalaParserSpec\.scala</include>
-      <include>Transpiler.*</include>
-    </includes>
+```
+compilationRuleSet {
+   includes = [ "ScalaParserSpec\\.scala", "Transpiler.*" ]
+   excludes = [ "foo" ]
+}
 
-    <excludes>
-      <exclude>foo</exclude>
-    </excludes>
-  </compilationRuleSet>
-</scalats>
+typeRuleSet {
+  # Regular expressions on type full names.
+  # Can be prefixed with either 'object:' or 'class:' (for class or trait).
+  includes = [ "org\\.scalats\\.core\\..*" ]
+
+  excludes = [
+    ".*Spec", 
+    "ScalaRuntimeFixtures$", 
+    "object:.*ScalaParserResults", 
+    "FamilyMember(2|3)"
+  ]
+}
 ```
 
 Optionally the following argument can be passed.

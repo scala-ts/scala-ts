@@ -1,6 +1,8 @@
 import { Option } from 'space-monad'
 // could be useful to import common types
 
+import { TSTransport } from './scalatsTransport';
+
 export interface TSBar {
   _name: string;
   _age: number;
