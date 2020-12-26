@@ -1,11 +1,24 @@
 $ absent target/_custom/scalatsBar.ts
+$ absent target/_custom/scalatsTransport.ts
+$ absent target/_custom/scalatsBusLine.ts
+$ absent target/_custom/scalatsTrainLine.ts
 
 # Custom generation from Scala case class
 > ;clean ;compile
-$ exists target/_custom/scalatsBar.ts
 
 # Check the generated files is as expected
+
+$ exists target/_custom/scalatsBar.ts
 $ must-mirror target/_custom/scalatsBar.ts src/test/resources/Bar.ts
+
+$ exists target/_custom/scalatsTransport.ts
+$ must-mirror target/_custom/scalatsTransport.ts src/test/resources/Transport.ts
+
+$ exists target/_custom/scalatsBusLine.ts
+$ must-mirror target/_custom/scalatsBusLine.ts src/test/resources/BusLine.ts
+
+$ exists target/_custom/scalatsTrainLine.ts
+$ must-mirror target/_custom/scalatsTrainLine.ts src/test/resources/TrainLine.ts
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript

@@ -91,7 +91,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       } and {
 
         val member1Interface = InterfaceDeclaration(
-          "IScalaRuntimeFixturesFamilyMember1",
+          "ScalaRuntimeFixturesFamilyMember1",
           ListSet(Member("foo", StringRef)),
           List.empty, Some(unionIface))
 
@@ -108,38 +108,38 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
 
 object TranspilerResults {
   val interface1 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass1",
+    "ScalaRuntimeFixturesTestClass1",
     ListSet(Member("name", StringRef)), List.empty, Option.empty)
 
   val interface2 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass2",
+    "ScalaRuntimeFixturesTestClass2",
     ListSet(Member("name", SimpleTypeRef("T"))),
     typeParams = List("T"),
     superInterface = Option.empty)
 
   val interface3 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass3",
+    "ScalaRuntimeFixturesTestClass3",
     ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
     typeParams = List("T"),
     superInterface = Option.empty)
 
   val interface5 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass5", ListSet(
+    "ScalaRuntimeFixturesTestClass5", ListSet(
       Member("counters", MapType(StringRef, NumberRef)),
       Member("name", NullableType(SimpleTypeRef("T")))),
     typeParams = List("T"),
     superInterface = Option.empty)
 
   val interface7 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass7", ListSet(
+    "ScalaRuntimeFixturesTestClass7", ListSet(
       Member("name", UnionType(ListSet(
-        CustomTypeRef("IScalaRuntimeFixturesTestClass1", List.empty),
-        CustomTypeRef("IScalaRuntimeFixturesTestClass1B", List.empty))))),
+        CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
+        CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty))))),
     typeParams = List("T"),
     superInterface = Option.empty)
 
   val interface10 = InterfaceDeclaration(
-    "IScalaRuntimeFixturesTestClass10", ListSet(
+    "ScalaRuntimeFixturesTestClass10", ListSet(
       Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
       Member("tupleB", TupleRef(List(StringRef, NumberRef))),
       Member("tupleA", TupleRef(List(StringRef, NumberRef))),
@@ -159,13 +159,13 @@ object TranspilerResults {
     name = "ScalaRuntimeFixturesFamily",
     fields = ListSet(Member("foo", StringRef)),
     possibilities = ListSet(
-      CustomTypeRef("IScalaRuntimeFixturesFamilyMember1", List.empty),
+      CustomTypeRef("ScalaRuntimeFixturesFamilyMember1", List.empty),
       CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", List.empty),
       CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", List.empty)),
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(
-    s"IScalaRuntimeFixtures${sealedFamily1.identifier.name}",
+    s"ScalaRuntimeFixtures${sealedFamily1.identifier.name}",
     ListSet(Member("foo", StringRef)),
     typeParams = List.empty[String],
     superInterface = Option.empty)

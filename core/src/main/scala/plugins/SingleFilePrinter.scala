@@ -12,7 +12,7 @@ import io.github.scalats.typescript.{ Declaration, TypeRef }
  * A custom file name can be specified using the `scala-ts.single-filename`
  * system property.
  */
-final class SingleFilePrinter(outDir: File) extends PrinterWithPrelude {
+final class SingleFilePrinter(outDir: File) extends BasePrinter {
 
   private val flag = new java.util.concurrent.atomic.AtomicBoolean(false)
 

@@ -371,7 +371,7 @@ final class ScalaParser[U <: Universe](
         case (_, "Long") =>
           Some(LongRef)
 
-        case (_, "Double") =>
+        case (_, "Float" | "Double") =>
           Some(DoubleRef)
 
         case (_, "BigDecimal") =>

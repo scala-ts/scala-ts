@@ -9,6 +9,9 @@ enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 // Custom option transpiling
 scalatsOptionToNullable := true
 
+// Custom type naming
+scalatsTypeScriptTypeNaming := classOf[scalats.CustomTypeNaming]
+
 // Custom field naming
 scalatsTypeScriptFieldMapper := classOf[scalats.CustomFieldMapper]
 

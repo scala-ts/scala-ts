@@ -11,27 +11,16 @@ final class DeclarationSpec extends org.specs2.mutable.Specification {
     import io.github.scalats.core.TranspilerResults._
 
     "be resolved for union type" in {
-      union1.requires must_=== Set(
-        CustomTypeRef("IScalaRuntimeFixturesFamilyMember1", List.empty),
-        CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", List.empty),
-        CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", List.empty))
+      union1.requires must beEmpty
     }
 
     "be resolved as an empty set for interface" >> {
       Fragments.foreach(Seq[InterfaceDeclaration](
-        interface1, interface2, interface3, interface5,
+        interface1, interface2, interface3, interface5, interface7,
         unionIface, interface10)) { i =>
         i.name in {
           i.requires must beEmpty
         }
-      }
-    }
-
-    "be resolved for interface" >> {
-      interface7.name in {
-        interface7.requires must_=== Set(
-          CustomTypeRef("IScalaRuntimeFixturesTestClass1", List.empty),
-          CustomTypeRef("IScalaRuntimeFixturesTestClass1B", List.empty))
       }
     }
 
