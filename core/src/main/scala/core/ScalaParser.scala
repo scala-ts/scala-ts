@@ -8,10 +8,10 @@ import scala.collection.immutable.ListSet
 
 import scala.reflect.api.Universe
 
-final class ScalaParser[U <: Universe](
-  val universe: U, logger: Logger)(
+final class ScalaParser[Uni <: Universe](
+  val universe: Uni, logger: Logger)(
   implicit
-  cu: CompileUniverse[U]) {
+  cu: CompileUniverse[Uni]) {
 
   import universe.{
     ClassSymbolTag,
@@ -20,9 +20,10 @@ final class ScalaParser[U <: Universe](
     ModuleSymbolTag,
     NoSymbol,
     NullaryMethodTypeTag,
-    SingleTypeApi,
     Symbol,
+    symbolOf,
     Type,
+    TypeName,
     TypeRefTag,
     typeOf
   }
@@ -98,35 +99,57 @@ final class ScalaParser[U <: Universe](
       Result(examined, parsed)
   }
 
+  private lazy val enumerationTypeSym: Symbol =
+    symbolOf[scala.Enumeration]
+
   private def parseType(
     tpe: Type,
-    examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = tpe match {
-    case _: SingleTypeApi =>
-      parseObject(tpe, examined)
+    examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    val tpeSym = tpe.typeSymbol
 
-    case _ if (tpe.getClass.getName contains "ModuleType" /*Workaround*/ ) =>
-      parseObject(tpe, examined)
-
-    case _ if (tpe.typeSymbol.isClass) => {
-      // TODO: Special case for ValueClass; See #ValueClass_1
-
-      val classSym = tpe.typeSymbol.asClass
-
-      if (classSym.isTrait && classSym.isSealed && tpe.typeParams.isEmpty) {
-        parseSealedUnion(tpe, examined)
-      } else if (isCaseClass(tpe)) {
-        parseCaseClass(tpe, examined)
-      } else if (isEnumerationValue(tpe)) {
+    tpe match {
+      case _ if (tpeSym.isModuleClass &&
+        tpe.baseClasses.contains(enumerationTypeSym)) =>
         parseEnumeration(tpe, examined)
-      } else {
+
+      case _ if (tpeSym.isModuleClass &&
+        !tpeSym.fullName.startsWith("scala.")) =>
+        parseObject(tpe, examined)
+
+      case _ if (tpeSym.isClass) => {
+        // TODO: Special case for ValueClass; See #ValueClass_1
+
+        val classSym = tpeSym.asClass
+
+        if (classSym.isTrait && classSym.isSealed && tpe.typeParams.isEmpty) {
+          parseSealedUnion(tpe, examined)
+        } else if (isCaseClass(tpe)) {
+          parseCaseClass(tpe, examined)
+        } else if (isEnumerationValue(tpe)) {
+          val e: Option[Symbol] = try {
+            Some(mirror.staticModule(fullId(tpe) stripSuffix ".Value"))
+          } catch {
+            case scala.util.control.NonFatal(_) =>
+              None
+          }
+
+          e match {
+            case Some(enumerationObject) =>
+              parseEnumeration(enumerationObject.typeSignature, examined)
+
+            case _ =>
+              Result(examined, Option.empty[TypeDef])
+          }
+        } else {
+          Result(examined + fullId(tpe), Option.empty[TypeDef])
+        }
+      }
+
+      case _ => {
+        logger.warning(s"Unsupported Scala type: ${tpeSym.fullName}")
+
         Result(examined + fullId(tpe), Option.empty[TypeDef])
       }
-    }
-
-    case _ => {
-      logger.warning(s"Unsupported Scala type: ${tpe.typeSymbol.fullName}")
-
-      Result(examined + fullId(tpe), Option.empty[TypeDef])
     }
   }
 
@@ -165,7 +188,8 @@ final class ScalaParser[U <: Universe](
       Result(examined + fullId(tpe), Option.empty[TypeDef])
     } else {
       def members = tpe.decls.collect {
-        case Field(MethodSymbolTag(m)) => member(m, List.empty)
+        case Field(MethodSymbolTag(m)) =>
+          member(m, List.empty)
       }
 
       val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
@@ -211,24 +235,24 @@ final class ScalaParser[U <: Universe](
   }
 
   private def parseEnumeration(
-    enumerationValueType: Type,
+    enumerationType: Type,
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
-    val name = enumerationValueType.toString.stripSuffix(".Value")
-    val enumerationObject = mirror.staticModule(name)
-    //val enumerationObject = enumerationValueType.typeSymbol.owner
+    val enumerationObject = enumerationType.typeSymbol
     val identifier = buildQualifiedIdentifier(enumerationObject)
 
-    val values = enumerationObject.info.decls.filter { decl =>
+    lazy val enumerationValueSym = enumerationType.member(TypeName("Value"))
+
+    val values = enumerationType.decls.filter { decl =>
       decl.isPublic && decl.isMethod &&
         decl.asMethod.isGetter &&
-        decl.asMethod.returnType =:= enumerationValueType
+        decl.asMethod.returnType.typeSymbol == enumerationValueSym
 
     }.map(_.asTerm.name.toString.trim)
 
     Result(
       examined = (examined +
-        fullId(enumerationValueType) +
-        fullId(enumerationObject.typeSignature)),
+        fullId(enumerationValueSym.typeSignature) +
+        fullId(enumerationType)),
       parsed = Some[TypeDef](
         EnumerationDef(identifier, ListSet(values.toSeq: _*))))
   }
@@ -296,8 +320,7 @@ final class ScalaParser[U <: Universe](
           val enumerationObject = mirror.staticModule(
             fullId(scalaType) stripSuffix ".Value")
 
-          EnumerationRef(
-            identifier = buildQualifiedIdentifier(enumerationObject))
+          EnumerationRef(buildQualifiedIdentifier(enumerationObject))
         }
 
         case _ =>

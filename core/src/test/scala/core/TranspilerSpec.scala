@@ -62,6 +62,14 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       }
     }
 
+    "transpile enumeration" in {
+      val result = defaultTranspiler(ListSet(testEnumeration))
+
+      result must have size 1 and {
+        result must contain(enum1)
+      }
+    }
+
     "transpile case object" in {
       val result = defaultTranspiler(ListSet(caseObject1))
 
@@ -70,7 +78,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "correctly transpile object" in {
+    "transpile object" in {
       val result = defaultTranspiler(
         ListSet(caseObject2),
         Some(InterfaceDeclaration(
@@ -81,7 +89,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "correctly transpile sealed trait as union" in {
+    "transpile sealed trait as union" in {
       val result = defaultTranspiler(ListSet(sealedFamily1))
 
       result must have size 4 and {
@@ -154,6 +162,10 @@ object TranspilerResults {
   val singleton2 = SingletonDeclaration(
     "ScalaRuntimeFixturesTestObject2", ListSet.empty, Some(
       InterfaceDeclaration("SupI", ListSet.empty, List.empty[String], None)))
+
+  val enum1 = EnumDeclaration(
+    "ScalaRuntimeFixturesTestEnumeration",
+    ListSet("A", "B", "C"))
 
   val union1 = UnionDeclaration(
     name = "ScalaRuntimeFixturesFamily",
