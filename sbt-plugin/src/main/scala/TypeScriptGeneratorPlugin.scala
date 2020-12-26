@@ -18,7 +18,6 @@ import _root_.io.github.scalats.core.{
   TypeScriptTypeMapper,
   TypeScriptTypeNaming
 }
-
 import _root_.io.github.scalats.plugins.{
   FilePrinter,
   SingleFilePrinter,
