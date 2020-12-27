@@ -105,23 +105,25 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "handle enumeration type" in {
-      val res = scalaParser.parseTypes(
-        List(ScalaRuntimeFixtures.TestEnumerationType))
+    "handle enumeration" >> {
+      "type declaration" in {
+        val res = scalaParser.parseTypes(
+          List(ScalaRuntimeFixtures.TestEnumerationType))
 
-      res.parsed must contain(testEnumeration) and {
-        res.parsed must have size 1
+        res.parsed must contain(testEnumeration) and {
+          res.parsed must have size 1
+        }
       }
-    }
 
-    "handle enumeration values" in {
-      val res = scalaParser.parseTypes(
-        List(ScalaRuntimeFixtures.TestClass9Type))
+      "as member in class" in {
+        val res = scalaParser.parseTypes(
+          List(ScalaRuntimeFixtures.TestClass9Type))
 
-      res.parsed must contain(caseClass9) and {
-        res.parsed must contain(testEnumeration)
-      } and {
-        res.parsed must have size 2
+        res.parsed must contain(caseClass9) and {
+          res.parsed must contain(testEnumeration)
+        } and {
+          res.parsed must have size 2
+        }
       }
     }
 
@@ -188,7 +190,7 @@ object ScalaRuntimeFixtures {
   val TestClass8Type = typeOf[TestClass8]
 
   val TestClass9Type = typeOf[TestClass9]
-  val TestEnumerationType = typeOf[TestEnumeration.Value]
+  val TestEnumerationType = typeOf[TestEnumeration.type]
 
   val TestClass10Type = typeOf[TestClass10]
   val TestObject1Type = typeOf[TestObject1.type]

@@ -2,13 +2,13 @@
 layout: default
 ---
 
-# Scala-ts
+# Scala-TS
 
-*scala-ts* is a simple tool which can generate [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
+*Scala-TS* is a simple tool which can generate [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
 
 ## Usage
 
-*scala-ts* can be used either [standalone](#standalone) or as a [SBT plugin](#sbt-plugin).
+*Scala-TS* can be used either [standalone](#standalone) or as a [SBT plugin](#sbt-plugin).
 
 ### Examples
 
@@ -152,14 +152,28 @@ export interface Transport {
 }
 ```
 
-**Example #6:** Enumeration
+**Example #6:** [Scala Enumeration](https://www.scala-lang.org/api/current/scala/Enumeration.html)
 
 ```scala
 package scalats.examples
 
-object Severity extends Enumeration {
-  type Severity = Value
-  val Low, Medium, High = Value
+object WeekDay extends Enumeration {
+  type WeekDay = Value
+  val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
+}
+```
+
+*Generated TypeScript:*
+
+```typescript
+export enum WeekDay {
+  Mon = 'Mon',
+  Tue = 'Tue',
+  Wed = 'Wed',
+  Thu = 'Thu',
+  Fri = 'Fri',
+  Sat = 'Sat',
+  Sun = 'Sun'
 }
 ```
 
@@ -214,7 +228,7 @@ TODO: Custom printer in `project/`
 
 ### Compiler plugin
 
-*scala-ts* can be configured as a Scalac compiler plugin using the following options.
+*Scala-TS* can be configured as a Scalac compiler plugin using the following options.
 
 - `-Xplugin:/path/to/scala-ts-core.jar`
 - `-P:scalats:configuration=/path/to/plugin.conf`
