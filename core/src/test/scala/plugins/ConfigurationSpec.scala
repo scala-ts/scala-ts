@@ -35,10 +35,10 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  prependIPrefix = true
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_dis"
 }""")
@@ -56,7 +56,6 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
         typeRuleSet = typeRuleSet,
         settings = Settings(
           typescriptIndent = "  ",
-          prependIPrefix = false,
           prependEnclosingClassNames = false,
           fieldMapper = TypeScriptFieldMapper.SnakeCase))
 
@@ -89,10 +88,10 @@ settings {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  prependIPrefix = false
   prependEnclosingClassNames = false
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "SnakeCase"
   discriminator = "_type"
 }
@@ -121,10 +120,10 @@ settings {
   emitClasses = false
   emitCodecs = true
   optionToNullable = false
-  prependIPrefix = true
   prependEnclosingClassNames = true
   typescriptIndent = "  "
   typescriptLineSeparator = ";"
+  typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_type"
 }

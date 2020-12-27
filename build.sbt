@@ -20,11 +20,7 @@ lazy val shaded = project.in(file("shaded")).settings(
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
   crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
-  unmanagedJars in Compile += {
-    val jarName = (shaded / assembly / assemblyJarName).value
-
-    (shaded / target).value / jarName
-  },
+  unmanagedJars in Compile += (shaded / assembly).value,
   unmanagedSourceDirectories in Compile += {
     val base = (sourceDirectory in Compile).value
 
@@ -33,7 +29,6 @@ lazy val core = project.in(file("core")).settings(
       case _                       => base / "scala-2.12-"
     }
   },
-  compile in Compile := (compile in Compile).dependsOn(shaded / assembly).value,
   libraryDependencies ++= {
     val specsVer = "4.10.5"
 

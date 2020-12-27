@@ -34,7 +34,7 @@ jobs:
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
-        sbt ';warn ;shaded/assembly ;scalafixAll -check ;scalariformFormat ;test:scalariformFormat'
+        sbt ';warn ;scalafixAll -check ;scalariformFormat ;test:scalariformFormat'
         
         git diff --exit-code || (
           echo "ERROR: Scalariform check failed, see differences above."

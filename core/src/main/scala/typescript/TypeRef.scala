@@ -2,25 +2,15 @@ package io.github.scalats.typescript
 
 import scala.collection.immutable.{ ListSet, Set }
 
+import io.github.scalats.core.Internals
+
 /** Reference to a builtin type or one declared elsewhere. */
 sealed trait TypeRef {
   /* See `Declaration.requires` */
-  private[typescript] def requires: Set[TypeRef]
-}
+  private[scalats] def requires: Set[TypeRef]
 
-object TypeRef {
-  object Named {
-    def unapply(ref: TypeRef): Option[String] = ref match {
-      case gen: GenericTypeRef =>
-        Some(gen.name)
-
-      case UnknownTypeRef(name) =>
-        Some(name)
-
-      case _ =>
-        None
-    }
-  }
+  /** The type name */
+  def name: String
 }
 
 private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
@@ -35,7 +25,7 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
     else s"""${name}${typeArgs.mkString("<", ", ", ">")}"""
   }
 
-  private[typescript] def requires: Set[TypeRef] =
+  def requires: Set[TypeRef] =
     typeArgs.toSet.flatMap { ta: TypeRef => ta.requires }
 
 }
@@ -49,7 +39,7 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
 case class CustomTypeRef(
   name: String,
   typeArgs: List[TypeRef]) extends TypeRef with GenericTypeRef {
-  override private[typescript] def requires: Set[TypeRef] =
+  override def requires: Set[TypeRef] =
     super.requires + this
 }
 
@@ -59,7 +49,9 @@ case class CustomTypeRef(
  * @param innerType the element type (e.g. `string` for `Array<string>`)
  */
 case class ArrayRef(innerType: TypeRef) extends TypeRef {
-  @inline private[typescript] def requires = innerType.requires
+  @inline def requires = innerType.requires
+
+  lazy val name = "Array"
 
   override def toString = s"Array<${innerType.toString}>"
 }
@@ -68,7 +60,7 @@ case class ArrayRef(innerType: TypeRef) extends TypeRef {
  * Type which kind is unknown/unsupported.
  */
 case class UnknownTypeRef(name: String) extends TypeRef {
-  private[typescript] def requires = Set.empty[TypeRef]
+  def requires = ListSet[TypeRef](this)
 
   override def toString = s"unknown<$name>"
 }
@@ -86,7 +78,7 @@ case class TupleRef(typeArgs: List[TypeRef])
 }
 
 private[scalats] sealed class SimpleTypeRef(val name: String) extends TypeRef {
-  @inline private[typescript] def requires = Set.empty[TypeRef]
+  @inline def requires = Set.empty[TypeRef]
 
   @inline override def toString = name
 
@@ -123,7 +115,9 @@ case object DateTimeRef extends SimpleTypeRef("DateTime")
  * @param innerType the inner type (e.g. `string` for nullable string)
  */
 case class NullableType(innerType: TypeRef) extends TypeRef {
-  @inline private[typescript] def requires = innerType.requires
+  @inline def requires = innerType.requires
+
+  lazy val name = s"${innerType.name} | undefined"
 
   override def toString = s"Nullable<${innerType.toString}>"
 }
@@ -132,11 +126,12 @@ case class NullableType(innerType: TypeRef) extends TypeRef {
  * Reference to a union type (e.g. `string | number`)
  */
 case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
-  @inline private[typescript] def requires =
-    possibilities.flatMap(_.requires)
+  @inline def requires = Set.empty[TypeRef]
+
+  lazy val name = Internals.list(possibilities.map(_.name)).mkString(" | ")
 
   override def toString: String =
-    io.github.scalats.core.Internals.list(possibilities).mkString(" | ")
+    Internals.list(possibilities).mkString(" | ")
 }
 
 /**
@@ -146,8 +141,10 @@ case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
  * @param valueType the type of the values
  */
 case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef {
-  private[typescript] def requires: Set[TypeRef] =
+  def requires: Set[TypeRef] =
     keyType.requires ++ valueType.requires
+
+  lazy val name = s"{ [key: ${keyType.name}]: ${valueType.name} }"
 
   override def toString = s"Map<${keyType}, ${valueType}>"
 }

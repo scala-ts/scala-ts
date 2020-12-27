@@ -4,10 +4,10 @@ import scala.collection.immutable.Set
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
-import io.github.scalats.typescript.{ Declaration,TypeRef }
-import io.github.scalats.plugins.PrinterWithPrelude
+import io.github.scalats.typescript.{ Declaration, TypeRef }
+import io.github.scalats.plugins.BasePrinter
 
-final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
+final class CustomPrinter(outDir: File) extends BasePrinter {
   @volatile private var first = true
 
   def apply(
@@ -15,14 +15,6 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
     kind: Declaration.Kind,
     name: String,
     requires: Set[TypeRef]): PrintStream = {
-
-    val n = kind match {
-      case Declaration.Interface =>
-        name.stripPrefix("I") // Strip interface 'I' prefix
-
-      case _ =>
-        name
-    }
 
     val writePrelude: Boolean = {
       if (first) {
@@ -34,10 +26,14 @@ final class CustomPrinter(outDir: File) extends PrinterWithPrelude {
     }
 
     val out = new PrintStream(new FileOutputStream(
-      new File(outDir, s"scalats${n}.ts"), true))
+      new File(outDir, s"scalats${name}.ts"), true))
 
     if (writePrelude) {
       printPrelude(out)
+    }
+
+    printImports(conf, requires, out) { tpe =>
+      s"./scalats${tpe.name}"
     }
 
     out
