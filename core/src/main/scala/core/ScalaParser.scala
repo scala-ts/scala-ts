@@ -14,6 +14,7 @@ final class ScalaParser[Uni <: Universe](
   cu: CompileUniverse[Uni]) {
 
   import universe.{
+    appliedType,
     ClassSymbolTag,
     MethodSymbol,
     MethodSymbolTag,
@@ -288,6 +289,17 @@ final class ScalaParser[Uni <: Universe](
       sym.name.toString, scalaTypeRef(
         sym.returnType.map(_.dealias), typeParams.toSet))
 
+  // ---
+
+  private lazy val iterableSymbol: Symbol =
+    mirror.staticClass("_root_.scala.collection.Iterable")
+
+  private lazy val optionSymbol: Symbol =
+    mirror.staticClass("_root_.scala.Option")
+
+  private lazy val tuple1Symbol: Symbol =
+    mirror.staticClass("_root_.scala.Tuple1")
+
   private def scalaTypeRef(
     scalaType: Type,
     typeParams: Set[String]): ScalaTypeRef = {
@@ -337,7 +349,7 @@ final class ScalaParser[Uni <: Universe](
         CaseClassRef(caseClassName, typeArgRefs)
       } else (tpeRef.args) match {
         case args @ (a :: b :: _) => tpeName match {
-          case "Either" =>
+          case "Either" => // TODO: (medium priority) Check type
             UnionRef(ListSet(
               scalaTypeRef(a, typeParams),
               scalaTypeRef(b, typeParams)))
@@ -354,21 +366,17 @@ final class ScalaParser[Uni <: Universe](
             unknown
         }
 
-        case innerType :: _ => tpeName match {
-          case "List" | "Seq" | "Set" =>
-            //println(s"?$innerType---> ${universe.appliedType(mirror.staticClass("scala.collection.Traversable"), innerType)}")
-            // TODO: (medium priority) Rather check type is Traversable
-            SeqRef(scalaTypeRef(innerType, typeParams))
+        case innerType :: _ if (
+          scalaType <:< appliedType(optionSymbol, innerType)) =>
+          OptionRef(scalaTypeRef(innerType, typeParams))
 
-          case "Option" =>
-            OptionRef(scalaTypeRef(innerType, typeParams))
+        case innerType :: _ if (
+          scalaType <:< appliedType(iterableSymbol, innerType)) =>
+          CollectionRef(scalaTypeRef(innerType, typeParams))
 
-          case "Tuple1" if (typeSymbol.fullName startsWith "scala.") =>
-            TupleRef(List(scalaTypeRef(innerType, typeParams)))
-
-          case _ =>
-            unknown
-        }
+        case innerType :: _ if (
+          scalaType <:< appliedType(tuple1Symbol, innerType)) =>
+          TupleRef(List(scalaTypeRef(innerType, typeParams)))
 
         case args if (typeSymbol.fullName startsWith "scala.Tuple") =>
           TupleRef(args.map(a => scalaTypeRef(a, typeParams)))
@@ -384,6 +392,7 @@ final class ScalaParser[Uni <: Universe](
   }
 
   private object Scalar {
+    // TODO: (medium priority) Check type symbol
     def unapply(scalaType: Type): Option[ScalaTypeRef] = {
       val tpeName: String = scalaType.typeSymbol.name.toString
 

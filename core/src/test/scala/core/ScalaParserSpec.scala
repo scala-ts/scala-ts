@@ -286,7 +286,7 @@ object ScalaParserResults {
   val caseClass3 = CaseClass(
     identifier = QualifiedIdentifier(
       "TestClass3", List("ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", SeqRef(TypeParamRef("T")))),
+    fields = ListSet(TypeMember("name", CollectionRef(TypeParamRef("T")))),
     values = ListSet.empty,
     typeArgs = List("T"))
 
@@ -329,7 +329,7 @@ object ScalaParserResults {
         CaseClassRef(
           QualifiedIdentifier(
             "TestClass5", List("ScalaRuntimeFixtures")),
-          typeArgs = List(SeqRef(OptionRef(
+          typeArgs = List(CollectionRef(OptionRef(
             CaseClassRef(
               QualifiedIdentifier(
                 "TestClass4", List("ScalaRuntimeFixtures")),

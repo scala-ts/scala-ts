@@ -123,7 +123,7 @@ final class Transpiler(config: Settings) {
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
       StringRef
 
-    case ScalaModel.SeqRef(innerType) =>
+    case ScalaModel.CollectionRef(innerType) =>
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>

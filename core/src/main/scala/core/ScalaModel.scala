@@ -50,7 +50,7 @@ object ScalaModel {
     identifier: QualifiedIdentifier,
     typeArgs: List[TypeRef]) extends TypeRef
 
-  case class SeqRef(innerType: TypeRef) extends TypeRef
+  case class CollectionRef(innerType: TypeRef) extends TypeRef
 
   case class TypeMember(name: String, typeRef: TypeRef)
 
