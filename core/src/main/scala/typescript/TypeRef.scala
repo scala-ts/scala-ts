@@ -57,15 +57,6 @@ case class ArrayRef(innerType: TypeRef) extends TypeRef {
 }
 
 /**
- * Type which kind is unknown/unsupported.
- */
-case class UnknownTypeRef(name: String) extends TypeRef {
-  def requires = ListSet[TypeRef](this)
-
-  override def toString = s"unknown<$name>"
-}
-
-/**
  * Reference to a type of tuple (e.g. `[string, int]`).
  *
  * @param typeArgs the types for the tuple elements

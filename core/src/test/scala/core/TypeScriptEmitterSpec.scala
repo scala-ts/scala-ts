@@ -83,16 +83,21 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     }
 
     "emit singleton as union member #2" in {
-      emit(ListSet(unionMember2Singleton)) must throwA[IllegalStateException].
-        like {
-          case cause =>
-            cause.getMessage must_=== "Cannot emit static members for properties of singleton 'ScalaRuntimeFixturesFamilyMember2': foo (string)"
-        }
+      emit(ListSet(unionMember2Singleton)) must startWith("// WARNING: Cannot emit static members for properties of singleton 'ScalaRuntimeFixturesFamilyMember2': foo (string)")
     }
 
     "emit union" in {
       emit(ListSet(union1)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesFamily {
   foo: string;
+}
+""")
+    }
+
+    "emit enumeration" in {
+      emit(ListSet(enum1)) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
+  A = 'A',
+  B = 'B',
+  C = 'C'
 }
 """)
     }

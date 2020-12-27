@@ -84,7 +84,7 @@ final class TypeScriptEmitter(
           case Member(nme, tpe) => s"$nme ($tpe)"
         }.mkString(", ")
 
-        throw new IllegalStateException(s"Cannot emit static members for properties of singleton '$name': ${mkString}")
+        o.println(s"// WARNING: Cannot emit static members for properties of singleton '$name': ${mkString}")
       }
 
       val tpeName = typeNaming(decl.reference)
@@ -151,10 +151,16 @@ final class TypeScriptEmitter(
     withOut(Declaration.Enum, name, decl.requires) { o =>
       o.println(s"export enum ${typeNaming(decl.reference)} {")
 
-      list(values).foreach { value =>
-        o.println(s"${indent}${value} = '${value}',")
+      list(values).zipWithIndex.foreach {
+        case (value, idx) =>
+          if (idx > 0) {
+            o.println(",")
+          }
+
+          o.print(s"${indent}${value} = '${value}'")
       }
 
+      o.println()
       o.println("}")
     }
   }
@@ -196,9 +202,6 @@ final class TypeScriptEmitter(
 
       case custom @ CustomTypeRef(_, params) =>
         s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
-
-      case unknown @ UnknownTypeRef(_) =>
-        typeNaming(unknown)
 
       case tpe: SimpleTypeRef =>
         typeNaming(tpe)

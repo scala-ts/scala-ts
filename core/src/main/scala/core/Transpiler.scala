@@ -166,7 +166,7 @@ final class Transpiler(config: Settings) {
       })
 
     case ScalaModel.UnknownTypeRef(id) =>
-      UnknownTypeRef(idToString(id))
+      CustomTypeRef(idToString(id), List.empty)
   }
 
   private def idToString(identifier: ScalaModel.QualifiedIdentifier): String = {
