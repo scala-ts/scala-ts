@@ -9,7 +9,7 @@ sealed trait Declaration {
 
   private[scalats] def requires: Set[TypeRef]
 
-  private[scalats] def reference: TypeRef = CustomTypeRef(name, List.empty)
+  def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
 object Declaration {
@@ -52,7 +52,7 @@ case class InterfaceDeclaration(
       filterNot(_.name == name) ++ superInterface.
       toSet.map { i: InterfaceDeclaration => i.reference }
 
-  private[scalats] override def reference: TypeRef =
+  override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(SimpleTypeRef(_)))
 
 }

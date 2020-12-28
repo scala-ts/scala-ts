@@ -2,6 +2,7 @@ $ absent target/_custom/scalatsBar.ts
 $ absent target/_custom/scalatsTransport.ts
 $ absent target/_custom/scalatsBusLine.ts
 $ absent target/_custom/scalatsTrainLine.ts
+$ absent target/_custom/WeekDay.ts
 
 # Custom generation from Scala case class
 > ;clean ;compile
@@ -19,6 +20,9 @@ $ must-mirror target/_custom/scalatsBusLine.ts src/test/resources/BusLine.ts
 
 $ exists target/_custom/scalatsTrainLine.ts
 $ must-mirror target/_custom/scalatsTrainLine.ts src/test/resources/TrainLine.ts
+
+$ exists target/_custom/scalatsWeekDay.ts
+$ must-mirror target/_custom/scalatsWeekDay.ts src/test/resources/WeekDay.ts
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript

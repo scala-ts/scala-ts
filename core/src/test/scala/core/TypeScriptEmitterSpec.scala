@@ -93,11 +93,22 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 """)
     }
 
-    "emit enumeration" in {
-      emit(ListSet(enum1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C'
+    "emit enumeration" >> {
+      "as union" in {
+        emit(ListSet(enum1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C'
 
 export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ]
 """)
+      }
+
+      "as enum" in {
+        emit(ListSet(enum1), declMapper = TypeScriptDeclarationMapper.enumerationAsEnum) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
+  A = 'A',
+  B = 'B',
+  C = 'C'
+}
+""")
+      }
     }
   }
 
@@ -108,11 +119,15 @@ export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ]
   def emit(
     decls: ListSet[Declaration],
     config: Settings = defaultConfig,
+    declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(config, (_, _, _, _) => out, typeMapper)
+    val emiter = new TypeScriptEmitter(
+      config, (_, _, _, _) => out,
+      declMapper,
+      typeMapper)
 
     try {
       emiter.emit(decls)

@@ -29,6 +29,12 @@ scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
   "import { Option } from 'space-monad'", 
   "// could be useful to import common types")
 
+// Custom declaration mapper (before type mapper)
+scalatsTypeScriptDeclarationMappers := Seq(
+  scalatsEnumerationAsEnum,
+  classOf[scalats.CustomDeclarationMapper]
+)
+
 // Custom type mapper
 scalatsTypeScriptTypeMappers := Seq(
   scalatsNullableAsOption, // Also scalatsDateAsString, scalatsNumberAsString

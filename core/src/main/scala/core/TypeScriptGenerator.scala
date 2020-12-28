@@ -7,17 +7,31 @@ import scala.reflect.runtime
 
 /**
  * Created by Milosz on 11.06.2016.
+ *
+ * @define settingsParam the generator settings
+ * @define loggerParam the generator logger
+ * @define printerParam the printer to output the generated TypeScript
+ * @define declMapperParam the function to mapper the transpiled declaration
+ * @define typeMapperParam the function to mapper the transpiled types to TypeScript code (if the standard emitter is used)
  */
 object TypeScriptGenerator {
 
   /**
    * Generates TypeScript from specified runtime classes.
+   *
+   * @param settings $settingsParam
+   * @param classNames the names of Scala classes to be generated as TypeScript
+   * @param logger $loggerParam
+   * @param printer $printerParam
+   * @param declMapper $declMapperParam
+   * @param typeMapper $typeMapperParam
    */
   def generateFromClassNames(
-    config: Settings,
+    settings: Settings,
     classNames: List[String],
     logger: Logger,
-    out: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
+    printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
+    declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults,
     classLoader: ClassLoader = getClass.getClassLoader //
   ): ListSet[ScalaParser.TypeFullId] = {
@@ -30,33 +44,43 @@ object TypeScriptGenerator {
       mirror.staticClass(className).toType
     }
 
-    generate(universe)(config, types, logger, out, typeMapper, ListSet.empty)
+    generate(universe)(
+      settings, types, logger, declMapper,
+      typeMapper, printer, ListSet.empty)
   }
 
   /**
    * Generates the TypeScript for the specified Scala `types`.
    *
+   * @param settings $settingsParam
+   * @param types the Scala types to be generated as TypeScript
+   * @param logger $loggerParam
+   * @param declMapper $declMapperParam
+   * @param typeMapper $typeMapperParam
+   * @param printer $printerParam
    * @param examined the already examined type
    * @return the Scala types for which TypeScript has been emitted
    * (including the input `types` and the transitively required types).
    */
   def generate[U <: Universe](universe: U)(
-    config: Settings,
+    settings: Settings,
     types: List[universe.Type],
     logger: Logger,
-    out: TypeScriptPrinter,
+    declMapper: TypeScriptDeclarationMapper,
     typeMapper: TypeScriptTypeMapper,
+    printer: TypeScriptPrinter,
     examined: ListSet[ScalaParser.TypeFullId])(
     implicit
     cu: CompileUniverse[universe.type]): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser[universe.type](universe, logger)
-    val transpiler = new Transpiler(config)
+    val transpiler = new Transpiler(settings)
 
     val parseResult = scalaParser.parseTypes(types, examined)
     import parseResult.{ parsed => scalaTypes }
 
     val typeScriptTypes = transpiler(scalaTypes)
-    val emiter = new TypeScriptEmitter(config, out, typeMapper)
+    val emiter = new TypeScriptEmitter(
+      settings, printer, declMapper, typeMapper)
 
     emiter.emit(typeScriptTypes)
 

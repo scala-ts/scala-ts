@@ -12,6 +12,7 @@ import scala.collection.immutable.ListSet
 import io.github.scalats.core.{
   Logger,
   ScalaParser,
+  TypeScriptDeclarationMapper,
   TypeScriptGenerator,
   TypeScriptTypeMapper
 }
@@ -217,16 +218,21 @@ final class CompilerPlugin(val global: Global)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
+      val declMapper = TypeScriptDeclarationMapper.
+        chain(config.typeScriptDeclarationMappers).
+        getOrElse(TypeScriptDeclarationMapper.Defaults)
+
       val typeMapper = TypeScriptTypeMapper.
         chain(config.typeScriptTypeMappers).
         getOrElse(TypeScriptTypeMapper.Defaults)
 
       val ex = TypeScriptGenerator.generate(global)(
-        config = plugin.config.settings,
+        settings = plugin.config.settings,
         types = scalaTypes,
         logger = CompilerLogger,
-        out = config.printer,
+        declMapper = declMapper,
         typeMapper = typeMapper,
+        printer = config.printer,
         examined = examined)
 
       examined = examined ++ ex

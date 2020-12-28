@@ -13,11 +13,12 @@ import io.github.scalats.typescript._
 final class TypeScriptEmitter(
   val settings: Settings,
   out: TypeScriptEmitter.Printer,
+  declarationMapper: TypeScriptEmitter.DeclarationMapper,
   typeMapper: TypeScriptEmitter.TypeMapper) {
 
   import Internals.list
 
-  import settings.{ typescriptIndent => indent }
+  import settings.{ fieldMapper, typescriptIndent => indent }
   import settings.typescriptLineSeparator.{ value => lineSeparator }
 
   def emit(declarations: ListSet[Declaration]): Unit =
@@ -39,32 +40,35 @@ final class TypeScriptEmitter(
 
   private val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
-  private def emitUnionDeclaration(
-    decl: UnionDeclaration): Unit = {
+  private val declMapper: Function2[Declaration, PrintStream, Option[Unit]] =
+    declarationMapper(
+      settings, resolvedTypeMapper, fieldMapper, _: Declaration, _: PrintStream)
 
+  private def emitUnionDeclaration(decl: UnionDeclaration): Unit = {
     val UnionDeclaration(name, fields, _, superInterface) = decl
     import decl.requires
 
     withOut(Declaration.Union, name, requires) { o =>
-      // Union interface
-      o.print(s"export interface ${typeNaming(decl.reference)}")
+      declMapper(decl, o).getOrElse {
+        // Union interface
+        o.print(s"export interface ${typeNaming(decl.reference)}")
 
-      superInterface.foreach { iface =>
-        o.print(s" extends ${typeNaming(iface.reference)}")
+        superInterface.foreach { iface =>
+          o.print(s" extends ${typeNaming(iface.reference)}")
+        }
+
+        o.println(" {")
+
+        // Abstract fields - common to all the subtypes
+        list(fields).foreach(emitField(o, name, _))
+
+        o.println("}")
       }
-
-      o.println(" {")
-
-      // Abstract fields - common to all the subtypes
-      list(fields).foreach(emitField(o, name, _))
-
-      o.println("}")
     }
   }
 
   private def emitField(o: PrintStream, name: String, member: Member): Unit = {
-    val tsField = settings.fieldMapper(
-      settings, name, member.name, member.typeRef)
+    val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
     val nameSuffix: String = {
       if (tsField.flags contains TypeScriptField.omitable) "?"
@@ -79,50 +83,52 @@ final class TypeScriptEmitter(
     import decl.requires
 
     withOut(Declaration.Singleton, name, requires) { o =>
-      if (members.nonEmpty) {
-        def mkString = members.map {
-          case Member(nme, tpe) => s"$nme ($tpe)"
-        }.mkString(", ")
+      declMapper(decl, o).getOrElse {
+        if (members.nonEmpty) {
+          def mkString = members.map {
+            case Member(nme, tpe) => s"$nme ($tpe)"
+          }.mkString(", ")
 
-        o.println(s"// WARNING: Cannot emit static members for properties of singleton '$name': ${mkString}")
-      }
+          o.println(s"// WARNING: Cannot emit static members for properties of singleton '$name': ${mkString}")
+        }
 
-      val tpeName = typeNaming(decl.reference)
+        val tpeName = typeNaming(decl.reference)
 
-      // Class definition
-      o.print(s"export class ${tpeName}")
+        // Class definition
+        o.print(s"export class ${tpeName}")
 
-      superInterface.filter(_ => members.isEmpty).foreach { iface =>
-        o.print(s" implements ${typeNaming(iface.reference)}")
-      }
+        superInterface.filter(_ => members.isEmpty).foreach { iface =>
+          o.print(s" implements ${typeNaming(iface.reference)}")
+        }
 
-      o.println(" {")
+        o.println(" {")
 
-      o.println(s"${indent}private static instance: $tpeName${lineSeparator}\n")
+        o.println(s"${indent}private static instance: $tpeName${lineSeparator}\n")
 
-      o.println(s"${indent}private constructor() {}\n")
-      o.println(s"${indent}public static getInstance() {")
-      o.println(s"${indent}${indent}if (!${tpeName}.instance) {")
-      o.println(s"${indent}${indent}${indent}${tpeName}.instance = new ${tpeName}()${lineSeparator}")
-      o.println(s"${indent}${indent}}\n")
-      o.println(s"${indent}${indent}return ${tpeName}.instance${lineSeparator}")
-      o.println(s"${indent}}")
-
-      /* TODO: (medium priority)
-      if (settings.emitCodecs.enabled) {
-        // Decoder factory: MyClass.fromData({..})
-        o.println(s"\n${indent}public static fromData(data: any): ${name} {")
-        o.println(s"${indent}${indent}return ${name}.instance${lineSeparator}")
+        o.println(s"${indent}private constructor() {}\n")
+        o.println(s"${indent}public static getInstance() {")
+        o.println(s"${indent}${indent}if (!${tpeName}.instance) {")
+        o.println(s"${indent}${indent}${indent}${tpeName}.instance = new ${tpeName}()${lineSeparator}")
+        o.println(s"${indent}${indent}}\n")
+        o.println(s"${indent}${indent}return ${tpeName}.instance${lineSeparator}")
         o.println(s"${indent}}")
 
-        // Encoder
-        o.println(s"\n${indent}public static toData(instance: ${name}): any {")
-        o.println(s"${indent}${indent}return instance${lineSeparator}")
-        o.println(s"${indent}}")
-      }
-       */
+        /* TODO: (medium priority)
+         if (settings.emitCodecs.enabled) {
+         // Decoder factory: MyClass.fromData({..})
+         o.println(s"\n${indent}public static fromData(data: any): ${name} {")
+         o.println(s"${indent}${indent}return ${name}.instance${lineSeparator}")
+         o.println(s"${indent}}")
 
-      o.println("}")
+         // Encoder
+         o.println(s"\n${indent}public static toData(instance: ${name}): any {")
+         o.println(s"${indent}${indent}return instance${lineSeparator}")
+         o.println(s"${indent}}")
+         }
+         */
+
+        o.println("}")
+      }
     }
   }
 
@@ -131,17 +137,19 @@ final class TypeScriptEmitter(
     val InterfaceDeclaration(name, fields, typeParams, superInterface) = decl
 
     withOut(Declaration.Interface, name, decl.requires) { o =>
-      o.print(s"export interface ${typeNaming(decl.reference)}${typeParameters(typeParams)}")
+      declMapper(decl, o).getOrElse {
+        o.print(s"export interface ${typeNaming(decl.reference)}${typeParameters(typeParams)}")
 
-      superInterface.foreach { iface =>
-        o.print(s" extends ${typeNaming(iface.reference)}")
+        superInterface.foreach { iface =>
+          o.print(s" extends ${typeNaming(iface.reference)}")
+        }
+
+        o.println(" {")
+
+        list(fields).reverse.foreach(emitField(o, name, _))
+
+        o.println("}")
       }
-
-      o.println(" {")
-
-      list(fields).reverse.foreach(emitField(o, name, _))
-
-      o.println("}")
     }
   }
 
@@ -149,29 +157,15 @@ final class TypeScriptEmitter(
     val EnumDeclaration(name, values) = decl
 
     withOut(Declaration.Enum, name, decl.requires) { o =>
-      /* TODO: extension
-      o.println(s"export enum ${typeNaming(decl.reference)} {")
+      declMapper(decl, o).getOrElse {
+        val tpeName = typeNaming(decl.reference)
+        val vs = list(values).map(v => s"'${v}'")
 
-      list(values).zipWithIndex.foreach {
-        case (value, idx) =>
-          if (idx > 0) {
-            o.println(",")
-          }
-
-          o.print(s"${indent}${value} = '${value}'")
+        o.println(s"""export type ${tpeName} = ${vs mkString " | "}""")
+        o.println()
+        o.print(s"export const ${tpeName}Values = ")
+        o.println(vs.mkString("[ ", ", ", " ]"))
       }
-
-      o.println()
-      o.println("}")
-       */
-
-      val tpeName = typeNaming(decl.reference)
-      val vs = list(values).map(v => s"'${v}'")
-
-      o.println(s"""export type ${tpeName} = ${vs mkString " | "}""")
-      o.println()
-      o.println(
-        s"""export const ${tpeName}Values = ${vs.mkString("[ ", ", ", " ]")}""")
     }
   }
 
@@ -259,7 +253,9 @@ final class TypeScriptEmitter(
   }
 }
 
-private[core] object TypeScriptEmitter {
+private[scalats] object TypeScriptEmitter {
+  type DeclarationMapper = Function5[Settings, TypeScriptTypeMapper.Resolved, TypeScriptFieldMapper, Declaration, PrintStream, Option[Unit]]
+
   type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]]
 
   /* See `TypeScriptPrinter` */

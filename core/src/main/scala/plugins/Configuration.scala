@@ -9,19 +9,23 @@ import scala.util.control.NonFatal
 import io.github.scalats.core.{
   Logger,
   Settings,
+  TypeScriptDeclarationMapper,
   TypeScriptPrinter,
   TypeScriptTypeMapper
 }
 
 /**
+ * @param settings the generator settings
  * @param compilationRuleSet the rule set to filter the Scala compilation units
  * @param typeRuleSet the rule set to filter the types from accepted compilation units (see [[compilationRuleSet]])
+ * @param printer the printer to output the generated TypeScript
  */
 final class Configuration(
   val settings: Settings,
   val compilationRuleSet: SourceRuleSet,
   val typeRuleSet: SourceRuleSet,
   val printer: TypeScriptPrinter,
+  val typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper],
   val typeScriptTypeMappers: Seq[TypeScriptTypeMapper],
   val additionalClasspath: Seq[URL]) {
   override def equals(that: Any): Boolean = that match {
@@ -35,7 +39,8 @@ final class Configuration(
 
   def withSettings(settings: Settings): Configuration =
     new Configuration(settings, this.compilationRuleSet, this.typeRuleSet,
-      this.printer, this.typeScriptTypeMappers, this.additionalClasspath)
+      this.printer, this.typeScriptDeclarationMappers,
+      this.typeScriptTypeMappers, this.additionalClasspath)
 
   private[plugins] lazy val tupled =
     Tuple5(settings, compilationRuleSet, typeRuleSet,
@@ -52,12 +57,14 @@ object Configuration {
     compilationRuleSet: SourceRuleSet = SourceRuleSet(),
     typeRuleSet: SourceRuleSet = SourceRuleSet(),
     printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
-    typeScriptTypeMappers: Seq[TypeScriptTypeMapper] = Seq(TypeScriptTypeMapper.Defaults),
+    typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper] = Seq.empty,
+    typeScriptTypeMappers: Seq[TypeScriptTypeMapper] = Seq.empty, //(TypeScriptTypeMapper.Defaults),
     additionalClasspath: Seq[URL] = Seq.empty): Configuration =
     new Configuration(
       settings,
       compilationRuleSet, typeRuleSet,
-      printer, typeScriptTypeMappers, additionalClasspath)
+      printer, typeScriptDeclarationMappers, typeScriptTypeMappers,
+      additionalClasspath)
 
   /**
    * Loads the plugin configuration from given XML.
@@ -162,9 +169,18 @@ object Configuration {
         mapperClass.getDeclaredConstructor().newInstance()
       }.toSeq
 
+    def declarationMappers: Seq[TypeScriptDeclarationMapper] =
+      strings("typeScriptDeclarationMappers").map { tm =>
+        val mapperClass = additionalClassLoader.fold[Class[_]](
+          Class.forName(tm))(_.loadClass(tm)).
+          asSubclass(classOf[TypeScriptDeclarationMapper])
+
+        mapperClass.getDeclaredConstructor().newInstance()
+      }.toSeq
+
     new Configuration(
       settings,
       compilationRuleSet, typeRuleSet, printer,
-      typeMappers, additionalClasspath)
+      declarationMappers, typeMappers, additionalClasspath)
   }
 }
