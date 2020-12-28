@@ -149,6 +149,7 @@ final class TypeScriptEmitter(
     val EnumDeclaration(name, values) = decl
 
     withOut(Declaration.Enum, name, decl.requires) { o =>
+      /* TODO: extension
       o.println(s"export enum ${typeNaming(decl.reference)} {")
 
       list(values).zipWithIndex.foreach {
@@ -162,6 +163,15 @@ final class TypeScriptEmitter(
 
       o.println()
       o.println("}")
+       */
+
+      val tpeName = typeNaming(decl.reference)
+      val vs = list(values).map(v => s"'${v}'")
+
+      o.println(s"""export type ${tpeName} = ${vs mkString " | "}""")
+      o.println()
+      o.println(
+        s"""export const ${tpeName}Values = ${vs.mkString("[ ", ", ", " ]")}""")
     }
   }
 

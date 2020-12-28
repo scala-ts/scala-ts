@@ -94,11 +94,9 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     }
 
     "emit enumeration" in {
-      emit(ListSet(enum1)) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
-  A = 'A',
-  B = 'B',
-  C = 'C'
-}
+      emit(ListSet(enum1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C'
+
+export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ]
 """)
     }
   }

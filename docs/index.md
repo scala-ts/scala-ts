@@ -20,7 +20,7 @@ package scalats.examples
 case class Incident(id: String, message: String)
 ```
 
-*Generated TypeScript:*
+*Generated TypeScript:* [Interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) `Incident`
 
 ```typescript
 export interface Incident {
@@ -163,18 +163,13 @@ object WeekDay extends Enumeration {
 }
 ```
 
-*Generated TypeScript:*
+*Generated TypeScript:* [union](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html) `WeekDay`
 
 ```typescript
-export enum WeekDay {
-  Mon = 'Mon',
-  Tue = 'Tue',
-  Wed = 'Wed',
-  Thu = 'Thu',
-  Fri = 'Fri',
-  Sat = 'Sat',
-  Sun = 'Sun'
-}
+export type WeekDay = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
+
+export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
+// Useful to iterate the values
 ```
 
 ### SBT plugin
@@ -285,21 +280,32 @@ A standalone assembly can be directly downloaded from the corresponding [release
 
 In previous example, `com.example.ExampleDto` is the Scala class for which the TypeScript must be generated.
 
-## Type support
+## Type reference
 
-Currently *scala-ts* supports the following types of case class members:
+*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](#examples)).
 
-- `Int`, `Double`, `Boolean`, `String`, `Long`
-- `List`, `Seq`, `Set`, `Map`
+| Scala         | TypeScript    |
+| ------------- | ------------- |
+| Case class    | Interface     |
+| Sealed family | Interface     |
+| Enumeration   | Enum          |
+| Value class   | *Inner value* |
+
+*Scala-TS* support the following scalar types for the members/fields in the transpiled declaration.
+
+| Scala                                             | TypeScript |
+| ------------------------------------------------- | ---------- |
+| `Boolean`                                         | `boolean`  |
+| `Byte`, `Double`, `Float`, `Int`, `Long`, `Short` | `number`   |
+| `BigDecimal`, `BigInt`, `BigInteger`              | `number`   |
+| `String`, `UUID`                                  | `string`   |
+| `Date`, `Instant`, `Timestamp`                    | `Date`     |
+| `LocalDate`, `LocalDateTime`                      | `Date`     |
+| `ZonedDateTime`, `OffsetDateTime`                 | `Date`     |
+
+
+- `List`, `Seq`, `Set`, `Map`, `Tuple`
 - `Option`, `Either`
-- `LocalDate`, `LocalDateTime`, `Instant`, `Timestamp`, `ZonedDateTime`
-- `BigDecimal` (mapped to TypeScript's `number`)
-- `UUID` (mapped to TypeScript's `string`)
-- value classes
-- enumeration values
-- generic types
-- references to other case classes
-- (case) objects, as singleton class
-- sealed traits, as union type
 
 TODO: Table for mapping between Scala / TS types
+TODO: TypeScriptTypeMapper
