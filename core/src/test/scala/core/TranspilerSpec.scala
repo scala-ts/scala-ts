@@ -108,7 +108,8 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
         result must contain(
           SingletonDeclaration(
             "ScalaRuntimeFixturesFamilyMember3",
-            ListSet(Member("foo", StringRef)), Some(unionIface)))
+            ListSet(Value("foo", StringRef, "\"lorem\"")),
+            Some(unionIface)))
       }
     }
   }
@@ -160,8 +161,11 @@ object TranspilerResults {
     "ScalaRuntimeFixturesTestObject1", ListSet.empty, Option.empty)
 
   val singleton2 = SingletonDeclaration(
-    "ScalaRuntimeFixturesTestObject2", ListSet.empty, Some(
-      InterfaceDeclaration("SupI", ListSet.empty, List.empty[String], None)))
+    "ScalaRuntimeFixturesTestObject2", ListSet(
+      Value("name", StringRef, "\"Foo\""),
+      Value("code", NumberRef, "1")),
+    superInterface = Some(InterfaceDeclaration(
+      "SupI", ListSet.empty, List.empty[String], None)))
 
   val enum1 = EnumDeclaration(
     "ScalaRuntimeFixturesTestEnumeration",
@@ -184,6 +188,7 @@ object TranspilerResults {
 
   val unionMember2Singleton = SingletonDeclaration(
     "ScalaRuntimeFixturesFamilyMember2",
-    ListSet(Member("foo", StringRef)), Some(unionIface))
+    ListSet(Value("foo", StringRef, "\"bar\"")),
+    Some(unionIface))
 
 }

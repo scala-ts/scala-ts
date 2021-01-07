@@ -14,12 +14,12 @@ object ScalaModel {
   case class CaseClass(
     identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
-    values: ListSet[TypeMember],
+    values: ListSet[TypeInvariant],
     typeArgs: List[String]) extends TypeDef
 
   case class CaseObject(
     identifier: QualifiedIdentifier,
-    values: ListSet[TypeMember]) extends TypeDef
+    values: ListSet[TypeInvariant]) extends TypeDef
 
   case class SealedUnion(
     identifier: QualifiedIdentifier,
@@ -52,7 +52,55 @@ object ScalaModel {
 
   case class CollectionRef(innerType: TypeRef) extends TypeRef
 
-  case class TypeMember(name: String, typeRef: TypeRef)
+  sealed class TypeMember(
+    val name: String,
+    val typeRef: TypeRef) {
+    private lazy val tupled = name -> typeRef
+
+    override def toString = s"TypeMember${tupled.toString}"
+
+    override def hashCode: Int = tupled.hashCode
+
+    override def equals(that: Any): Boolean = that match {
+      case other: TypeMember =>
+        this.tupled == other.tupled
+
+      case _ =>
+        false
+    }
+  }
+
+  object TypeMember {
+    @inline def apply(name: String, typeRef: TypeRef): TypeMember =
+      new TypeMember(name, typeRef)
+  }
+
+  final class TypeInvariant(
+    name: String,
+    typeRef: TypeRef,
+    val value: String) extends TypeMember(name, typeRef) {
+
+    private lazy val tupled = Tuple3(name, typeRef, value)
+
+    override def toString = s"TypeInvariant${tupled.toString}"
+
+    override def hashCode: Int = tupled.hashCode
+
+    override def equals(that: Any): Boolean = that match {
+      case other: TypeInvariant =>
+        this.tupled == other.tupled
+
+      case _ =>
+        false
+    }
+  }
+
+  object TypeInvariant {
+    @inline def apply(
+      name: String,
+      typeRef: TypeRef,
+      value: String): TypeInvariant = new TypeInvariant(name, typeRef, value)
+  }
 
   case class UnknownTypeRef(identifier: QualifiedIdentifier) extends TypeRef
 

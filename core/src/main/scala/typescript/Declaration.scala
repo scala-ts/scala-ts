@@ -27,7 +27,7 @@ object Declaration {
 }
 
 /**
- * A [[Declaration]] member (field/property).
+ * A member [[Declaration]] (field/property).
  *
  * @param name the member name
  * @param typeRef the reference for the member type
@@ -58,6 +58,18 @@ case class InterfaceDeclaration(
 }
 
 /**
+ * A value [[Declaration]].
+ *
+ * @param name the member name
+ * @param typeRef the reference for the member type
+ * @param rawValue
+ */
+case class Value(
+  name: String,
+  typeRef: TypeRef,
+  rawValue: String)
+
+/**
  * A singleton declaration.
  *
  * @param values the invariant values
@@ -65,7 +77,7 @@ case class InterfaceDeclaration(
  */
 case class SingletonDeclaration(
   name: String,
-  values: ListSet[Member],
+  values: ListSet[Value],
   superInterface: Option[InterfaceDeclaration]) extends Declaration {
   private[scalats] def requires: Set[TypeRef] =
     values.flatMap(_.typeRef.requires).

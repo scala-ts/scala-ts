@@ -3,7 +3,7 @@ package io.github.scalats.core
 import scala.collection.immutable.ListSet
 
 import scala.reflect.api.Universe
-import scala.reflect.runtime
+//import scala.reflect.runtime
 
 /**
  * Created by Milosz on 11.06.2016.
@@ -16,7 +16,7 @@ import scala.reflect.runtime
  */
 object TypeScriptGenerator {
 
-  /**
+  /*
    * Generates TypeScript from specified runtime classes.
    *
    * @param settings $settingsParam
@@ -25,7 +25,6 @@ object TypeScriptGenerator {
    * @param printer $printerParam
    * @param declMapper $declMapperParam
    * @param typeMapper $typeMapperParam
-   */
   def generateFromClassNames(
     settings: Settings,
     classNames: List[String],
@@ -48,6 +47,7 @@ object TypeScriptGenerator {
       settings, types, logger, declMapper,
       typeMapper, printer, ListSet.empty)
   }
+   */
 
   /**
    * Generates the TypeScript for the specified Scala `types`.
@@ -64,7 +64,8 @@ object TypeScriptGenerator {
    */
   def generate[U <: Universe](universe: U)(
     settings: Settings,
-    types: List[universe.Type],
+    types: List[(universe.Type, universe.Tree)],
+    symtab: Map[String, (universe.Type, universe.Tree)],
     logger: Logger,
     declMapper: TypeScriptDeclarationMapper,
     typeMapper: TypeScriptTypeMapper,
@@ -75,7 +76,7 @@ object TypeScriptGenerator {
     val scalaParser = new ScalaParser[universe.type](universe, logger)
     val transpiler = new Transpiler(settings)
 
-    val parseResult = scalaParser.parseTypes(types, examined)
+    val parseResult = scalaParser.parseTypes(types, symtab, examined)
     import parseResult.{ parsed => scalaTypes }
 
     val typeScriptTypes = transpiler(scalaTypes)

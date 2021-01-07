@@ -175,9 +175,55 @@ final class CompilerPlugin(val global: Global)
       acceptsType: Symbol => Boolean): Unit = {
 
       @annotation.tailrec
-      def go(syms: Seq[Symbol], tpes: List[Type]): List[Type] =
-        syms.headOption match {
-          case Some(sym) => {
+      def traverse(
+        trees: Seq[Tree],
+        tpes: List[(String, (Type, Tree))]): Map[String, (Type, Tree)] =
+        trees.headOption match {
+          case Some(tree) => {
+            import tree.{ symbol => sym }
+
+            if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
+              val tpe = sym.typeSignature
+              lazy val kind: String = if (sym.isModule) "object" else "class"
+
+              if (acceptsType(sym)) {
+                if (plugin.debug) {
+                  global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
+                }
+
+                def entry = sym.fullName -> (tpe -> tree)
+
+                if (sym.isModule) {
+                  traverse(tree.children ++: trees.tail, entry :: tpes)
+                } else {
+                  traverse(trees.tail, entry :: tpes)
+                }
+              } else {
+                if (plugin.debug) {
+                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                }
+
+                if (sym.isModule) {
+                  traverse(tree.children ++: trees.tail, tpes)
+                } else {
+                  traverse(trees.tail, tpes)
+                }
+              }
+            } else {
+              traverse(trees.tail, tpes)
+            }
+          }
+
+          case _ =>
+            tpes.toMap
+        }
+
+      @annotation.tailrec
+      def go(trees: Seq[Tree], tpes: List[(Type, Tree)]): List[(Type, Tree)] =
+        trees.headOption match {
+          case Some(tree) => {
+            import tree.{ symbol => sym }
+
             if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
               val tpe = sym.typeSignature
               lazy val kind: String = if (sym.isModule) "object" else "class"
@@ -188,9 +234,9 @@ final class CompilerPlugin(val global: Global)
                 }
 
                 if (sym.isModule) {
-                  go(tpe.members ++: syms.tail, tpe :: tpes)
+                  go(tree.children ++: trees.tail, (tpe -> tree) :: tpes)
                 } else {
-                  go(syms.tail, tpe :: tpes)
+                  go(trees.tail, (tpe -> tree) :: tpes)
                 }
               } else {
                 if (plugin.debug) {
@@ -198,13 +244,13 @@ final class CompilerPlugin(val global: Global)
                 }
 
                 if (sym.isModule) {
-                  go(tpe.members ++: syms.tail, tpes)
+                  go(tree.children ++: trees.tail, tpes)
                 } else {
-                  go(syms.tail, tpes)
+                  go(trees.tail, tpes)
                 }
               }
             } else {
-              go(syms.tail, tpes)
+              go(trees.tail, tpes)
             }
           }
 
@@ -212,7 +258,9 @@ final class CompilerPlugin(val global: Global)
             tpes.reverse
         }
 
-      val scalaTypes: List[Type] = go(unit.body.children.map(_.symbol), Nil)
+      val symtab = traverse(unit.body.children, Nil)
+
+      val scalaTypes: List[(Type, Tree)] = go(unit.body.children, Nil)
 
       object CompilerLogger extends io.github.scalats.core.Logger {
         def warning(msg: => String): Unit = plugin.warning(msg)
@@ -229,6 +277,7 @@ final class CompilerPlugin(val global: Global)
       val ex = TypeScriptGenerator.generate(global)(
         settings = plugin.config.settings,
         types = scalaTypes,
+        symtab = symtab,
         logger = CompilerLogger,
         declMapper = declMapper,
         typeMapper = typeMapper,

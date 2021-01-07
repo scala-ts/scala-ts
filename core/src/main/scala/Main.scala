@@ -1,3 +1,4 @@
+/* TODO: Remove
 package io.github.scalats
 
 import io.github.scalats.core.{ Logger, Settings, TypeScriptGenerator }
@@ -13,3 +14,4 @@ object Main {
     ()
   }
 }
+ */

@@ -79,29 +79,31 @@ final class TypeScriptEmitter(
   }
 
   private def emitSingletonDeclaration(decl: SingletonDeclaration): Unit = {
-    val SingletonDeclaration(name, members, superInterface) = decl
+    val SingletonDeclaration(name, values, superInterface) = decl
     import decl.requires
 
     withOut(Declaration.Singleton, name, requires) { o =>
       declMapper(decl, o).getOrElse {
-        if (members.nonEmpty) {
-          def mkString = members.map {
-            case Member(nme, tpe) => s"$nme ($tpe)"
-          }.mkString(", ")
-
-          o.println(s"// WARNING: Cannot emit static members for properties of singleton '$name': ${mkString}")
-        }
-
         val tpeName = typeNaming(decl.reference)
 
         // Class definition
         o.print(s"export class ${tpeName}")
 
-        superInterface.filter(_ => members.isEmpty).foreach { iface =>
+        superInterface /*.filter(_ => values.isEmpty)*/ .foreach { iface =>
           o.print(s" implements ${typeNaming(iface.reference)}")
         }
 
         o.println(" {")
+
+        if (values.nonEmpty) {
+          list(values).foreach {
+            case Value(nme, tpe, v) =>
+              o.println(
+                s"${indent}public $nme: $tpe = $v${lineSeparator}")
+          }
+
+          o.println()
+        }
 
         o.println(s"${indent}private static instance: $tpeName${lineSeparator}\n")
 

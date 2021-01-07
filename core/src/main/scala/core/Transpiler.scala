@@ -34,9 +34,10 @@ final class Transpiler(config: Settings) {
 
       case ScalaModel.CaseObject(id, members) => {
         val values = members.map { scalaMember =>
-          Member(
+          Value(
             scalaMember.name,
-            transpileTypeRef(scalaMember.typeRef, false))
+            transpileTypeRef(scalaMember.typeRef, false),
+            scalaMember.value)
         }
 
         ListSet[Declaration](

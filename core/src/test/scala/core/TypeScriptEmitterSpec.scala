@@ -66,7 +66,10 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 
     "emit class for a singleton #2" in {
       // SCALATS1: No implements SupI
-      emit(ListSet(singleton2)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject2 implements SupI {
+      emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
+  public name: string = "Foo";
+  public code: number = 1;
+
   private static instance: ScalaRuntimeFixturesTestObject2;
 
   private constructor() {}
@@ -79,11 +82,26 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
     return ScalaRuntimeFixturesTestObject2.instance;
   }
 }
-""")
+"""
     }
 
     "emit singleton as union member #2" in {
-      emit(ListSet(unionMember2Singleton)) must startWith("// WARNING: Cannot emit static members for properties of singleton 'ScalaRuntimeFixturesFamilyMember2': foo (string)")
+      emit(ListSet(unionMember2Singleton)) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
+  public foo: string = "bar";
+
+  private static instance: ScalaRuntimeFixturesFamilyMember2;
+
+  private constructor() {}
+
+  public static getInstance() {
+    if (!ScalaRuntimeFixturesFamilyMember2.instance) {
+      ScalaRuntimeFixturesFamilyMember2.instance = new ScalaRuntimeFixturesFamilyMember2();
+    }
+
+    return ScalaRuntimeFixturesFamilyMember2.instance;
+  }
+}
+"""
     }
 
     "emit union" in {

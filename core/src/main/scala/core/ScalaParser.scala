@@ -1,5 +1,7 @@
 package io.github.scalats.core
 
+import scala.util.control.NonFatal
+
 /**
  * Created by Milosz on 09.06.2016.
  */
@@ -16,6 +18,7 @@ final class ScalaParser[Uni <: Universe](
   import universe.{
     appliedType,
     ClassSymbolTag,
+    LiteralTag,
     MethodSymbol,
     MethodSymbolTag,
     ModuleSymbolTag,
@@ -23,10 +26,13 @@ final class ScalaParser[Uni <: Universe](
     NullaryMethodTypeTag,
     Symbol,
     symbolOf,
+    TermSymbolTag,
+    Tree,
     Type,
     TypeName,
     TypeRefTag,
-    typeOf
+    typeOf,
+    ValOrDefDefTag
   }
 
   private lazy val mirror = cu.defaultMirror(universe)
@@ -34,22 +40,21 @@ final class ScalaParser[Uni <: Universe](
   import ScalaModel.{ TypeRef => ScalaTypeRef, _ }
   import ScalaParser.{ Result, TypeFullId }
 
-  def parseTypes(types: List[Type]): Result[ListSet, TypeFullId] =
-    parse(types, ListSet.empty[TypeFullId], ListSet.empty[TypeDef])
-
   private[scalats] def parseTypes(
-    types: List[Type],
+    types: List[(Type, Tree)],
+    symtab: Map[String, (Type, Tree)],
     examined: ListSet[TypeFullId]): Result[ListSet, TypeFullId] =
-    parse(types, examined, ListSet.empty[TypeDef])
+    parse(types, symtab, examined, ListSet.empty[TypeDef])
 
   // ---
 
   @annotation.tailrec
   private def parse(
-    types: List[Type],
+    types: List[(Type, Tree)],
+    symtab: Map[String, (Type, Tree)],
     examined: ListSet[TypeFullId],
     parsed: ListSet[TypeDef]): Result[ListSet, TypeFullId] = types match {
-    case scalaType :: tail => {
+    case (tpe @ (scalaType, tree)) :: tail => {
       if (examined.contains(fullId(scalaType)) ||
         scalaType.typeSymbol.isParameter) {
         // Skip already examined type (or a type parameter)
@@ -57,6 +62,7 @@ final class ScalaParser[Uni <: Universe](
 
         parse(
           tail,
+          symtab,
           /*res.*/ examined,
           parsed /* ++ res.parsed*/ )
 
@@ -73,7 +79,7 @@ final class ScalaParser[Uni <: Universe](
             asType.typeParams.zip(typeArgs).toMap
 
         val memberTypes = scalaType.members.collect {
-          case MethodSymbolTag(m) if m.isCaseAccessor =>
+          case MethodSymbolTag(m) if m.isCaseAccessor => {
             val mt = m.typeSignature match {
               case universe.NullaryMethodType(resultType) => // for `=> T`
                 resultType
@@ -83,13 +89,54 @@ final class ScalaParser[Uni <: Universe](
             }
 
             // Resolve member type according `scalaType` type parameters
-            typeParams.getOrElse(mt.typeSymbol, mt)
+            m.name.toString.trim -> typeParams.getOrElse(mt.typeSymbol, mt)
+          }
+
+          case TermSymbolTag(t) if (t.isVal) => {
+            val tt = t.typeSignature
+
+            t.name.toString.trim -> typeParams.getOrElse(tt.typeSymbol, tt)
+          }
+        }.toMap
+
+        @annotation.tailrec
+        def walk(
+          forest: Seq[Tree],
+          syms: Map[String, (Type, Tree)]): List[(Type, Tree)] =
+          forest.headOption match {
+            case Some(ValOrDefDefTag(tr)) => {
+              val k = tr.name.toString.trim
+
+              if (!syms.contains(k)) {
+                memberTypes.get(k) match {
+                  case Some(tp) =>
+                    walk(forest.tail, syms + (k -> (tp -> tr)))
+
+                  case _ =>
+                    walk(forest.tail, syms)
+                }
+              } else {
+                walk(forest.tail, syms)
+              }
+            }
+
+            case Some(tr) =>
+              walk(tr.children ++: forest.tail, syms)
+
+            case _ =>
+              syms.values.toList
+          }
+
+        val members = walk(Seq(tree), Map.empty)
+        val res = parseType(tpe, symtab, examined)
+
+        val mappedTypeArgs = typeArgs.flatMap { st =>
+          symtab.get(fullId(st).takeWhile(_ != '['))
         }
 
-        val res = parseType(scalaType, examined)
-
         parse(
-          memberTypes ++: typeArgs ++: tail,
+          members ++: mappedTypeArgs ++: tail,
+          symtab,
           res.examined,
           parsed ++ res.parsed)
 
@@ -104,14 +151,17 @@ final class ScalaParser[Uni <: Universe](
     symbolOf[scala.Enumeration]
 
   private def parseType(
-    tpe: Type,
+    tpe: (Type, Tree),
+    symtab: Map[String, (Type, Tree)],
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
-    val tpeSym = tpe.typeSymbol
+    val tpeSym = tpe._1.typeSymbol
 
-    tpe match {
+    import tpe.{ _1 => scalaType }
+
+    scalaType match {
       case _ if (tpeSym.isModuleClass &&
-        tpe.baseClasses.contains(enumerationTypeSym)) =>
-        parseEnumeration(tpe, examined)
+        scalaType.baseClasses.contains(enumerationTypeSym)) =>
+        parseEnumeration(scalaType, examined)
 
       case _ if (tpeSym.isModuleClass &&
         !tpeSym.fullName.startsWith("scala.")) =>
@@ -122,15 +172,16 @@ final class ScalaParser[Uni <: Universe](
 
         val classSym = tpeSym.asClass
 
-        if (classSym.isTrait && classSym.isSealed && tpe.typeParams.isEmpty) {
-          parseSealedUnion(tpe, examined)
-        } else if (isCaseClass(tpe)) {
+        if (classSym.isTrait && classSym.isSealed &&
+          scalaType.typeParams.isEmpty) {
+          parseSealedUnion(scalaType, symtab, examined)
+        } else if (isCaseClass(scalaType)) {
           parseCaseClass(tpe, examined)
-        } else if (isEnumerationValue(tpe)) {
+        } else if (isEnumerationValue(scalaType)) {
           val e: Option[Symbol] = try {
-            Some(mirror.staticModule(fullId(tpe) stripSuffix ".Value"))
+            Some(mirror.staticModule(fullId(scalaType) stripSuffix ".Value"))
           } catch {
-            case scala.util.control.NonFatal(_) =>
+            case NonFatal(_) =>
               None
           }
 
@@ -142,14 +193,14 @@ final class ScalaParser[Uni <: Universe](
               Result(examined, Option.empty[TypeDef])
           }
         } else {
-          Result(examined + fullId(tpe), Option.empty[TypeDef])
+          Result(examined + fullId(scalaType), Option.empty[TypeDef])
         }
       }
 
       case _ => {
         logger.warning(s"Unsupported Scala type: ${tpeSym.fullName}")
 
-        Result(examined + fullId(tpe), Option.empty[TypeDef])
+        Result(examined + fullId(scalaType), Option.empty[TypeDef])
       }
     }
   }
@@ -175,36 +226,82 @@ final class ScalaParser[Uni <: Universe](
 
   private val skipCompanion = true // TODO: (low priority) Configurable
 
+  @annotation.tailrec
+  private def typeInvariants(
+    declNames: Set[String],
+    forest: Seq[Tree],
+    vs: List[TypeInvariant]): ListSet[TypeInvariant] =
+    forest.headOption match {
+      case Some(ValOrDefDefTag(tr)) => {
+        val k = tr.name.toString.trim
+
+        if (declNames contains k) {
+          val mt: Type =
+            tr.symbol.typeSignature match {
+              case universe.NullaryMethodType(resultType) => // for `=> T`
+                resultType
+
+              case t =>
+                t
+            }
+
+          tr.rhs match {
+            case LiteralTag(v) =>
+              typeInvariants(
+                declNames,
+                tr.children ++: forest.tail,
+                TypeInvariant(
+                  name = k,
+                  typeRef = scalaTypeRef(mt.dealias, Set.empty),
+                  value = v.toString) :: vs)
+
+            case _ =>
+              typeInvariants(declNames, tr.children ++: forest.tail, vs)
+          }
+        } else {
+          typeInvariants(declNames, tr.children ++: forest.tail, vs)
+        }
+      }
+
+      case Some(tr) =>
+        typeInvariants(declNames, tr.children ++: forest.tail, vs)
+
+      case _ =>
+        ListSet.empty ++ vs //.reverse
+    }
+
   private def parseObject(
-    tpe: Type,
+    tpe: (Type, Tree),
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    val scalaType = tpe._1
+
     def classExists: Boolean = try {
-      Option(mirror staticClass tpe.typeSymbol.fullName).nonEmpty
+      Option(mirror staticClass scalaType.typeSymbol.fullName).nonEmpty
     } catch {
       case scala.util.control.NonFatal(_) =>
         false
     }
 
     if (skipCompanion && classExists) {
-      Result(examined + fullId(tpe), Option.empty[TypeDef])
+      Result(examined + fullId(scalaType), Option.empty[TypeDef])
     } else {
-      def members = tpe.decls.collect {
-        case Field(MethodSymbolTag(m)) =>
-          member(m, List.empty)
-      }
+      lazy val declNames: Set[String] = scalaType.decls.collect {
+        case Field(MethodSymbolTag(m)) => m.name.toString
+      }.toSet
 
-      val identifier = buildQualifiedIdentifier(tpe.typeSymbol)
+      val identifier = buildQualifiedIdentifier(scalaType.typeSymbol)
 
       Result(
-        examined = (examined + fullId(tpe)),
+        examined = (examined + fullId(scalaType)),
         parsed = Some[TypeDef](CaseObject(
           identifier.copy(name = identifier.name stripSuffix ".type"),
-          ListSet.empty ++ members)))
+          typeInvariants(declNames, Seq(tpe._2), List.empty))))
     }
   }
 
   private def parseSealedUnion(
     tpe: Type,
+    symtab: Map[String, (Type, Tree)],
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
     // TODO: (low priority) Check & warn there is no type parameters for a union type
 
@@ -215,9 +312,14 @@ final class ScalaParser[Uni <: Universe](
     }
 
     directKnownSubclasses(tpe) match {
-      case possibilities @ (_ :: _) => {
+      case ps @ (_ :: _) => {
+        val possibilities = ps.flatMap { pt =>
+          symtab.get(fullId(pt))
+        }
+
         val res = parse(
           possibilities,
+          symtab,
           examined,
           ListSet.empty[TypeDef])
 
@@ -259,20 +361,25 @@ final class ScalaParser[Uni <: Universe](
   }
 
   private def parseCaseClass(
-    caseClassType: Type,
+    tpe: (Type, Tree),
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    import tpe.{ _1 => caseClassType }
+
     val typeParams = caseClassType.typeConstructor.
       dealias.typeParams.map(_.name.decodedName.toString)
 
+    lazy val declNames: Set[String] = caseClassType.decls.collect {
+      case Field(MethodSymbolTag(m)) => m.name.toString
+    }.toSet
+
+    val values = typeInvariants(declNames, Seq(tpe._2), List.empty)
+
     // Members
     def members = caseClassType.members.collect {
-      case Field(MethodSymbolTag(m)) if m.isCaseAccessor =>
+      case Field(MethodSymbolTag(m)) if (
+        m.isCaseAccessor && !values.exists(_.name == m.name.toString.trim)) =>
         member(m, typeParams)
     }.toList
-
-    def values = caseClassType.decls.collect {
-      case Field(MethodSymbolTag(m)) => member(m, typeParams)
-    }.filterNot(members.contains)
 
     Result(
       examined = examined + fullId(caseClassType),
@@ -285,7 +392,7 @@ final class ScalaParser[Uni <: Universe](
 
   @inline private def member(
     sym: MethodSymbol, typeParams: List[String]) =
-    TypeMember(
+    new TypeMember(
       sym.name.toString, scalaTypeRef(
         sym.returnType.map(_.dealias), typeParams.toSet))
 
