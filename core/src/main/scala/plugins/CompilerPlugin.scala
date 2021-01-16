@@ -14,6 +14,7 @@ import io.github.scalats.core.{
   ScalaParser,
   TypeScriptDeclarationMapper,
   TypeScriptGenerator,
+  TypeScriptImportResolver,
   TypeScriptTypeMapper
 }
 import io.github.scalats.tsconfig.ConfigFactory
@@ -175,94 +176,81 @@ final class CompilerPlugin(val global: Global)
       acceptsType: Symbol => Boolean): Unit = {
 
       @annotation.tailrec
-      def traverse(
+      def traverse[Acc](
         trees: Seq[Tree],
-        tpes: List[(String, (Type, Tree))]): Map[String, (Type, Tree)] =
+        acc: Acc,
+        examined: List[Type] = List.empty)(
+        f: ((Type, Tree), Acc) => Acc): Acc =
         trees.headOption match {
           case Some(tree) => {
             import tree.{ symbol => sym }
 
-            if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
+            if (sym != null && !(sym.fullName.startsWith("java.") ||
+              sym.fullName.startsWith("scala.")) &&
+              ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)) {
+
               val tpe = sym.typeSignature
               lazy val kind: String = if (sym.isModule) "object" else "class"
 
-              if (acceptsType(sym)) {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
-                }
+              val b = Seq.newBuilder[Tree]
 
-                def entry = sym.fullName -> (tpe -> tree)
+              tree.filter(_ != tree).foreach { b += _ }
 
-                if (sym.isModule) {
-                  traverse(tree.children ++: trees.tail, entry :: tpes)
+              val newTrees: Seq[Tree] = { // TODO: Check
+                //if (!sym.isModule) trees.tail
+                //else tree.children ++: trees.tail
+
+                b.result() ++: trees.tail
+              }
+
+              val accepted = (
+                ClassDefTag.unapply(tree).nonEmpty ||
+                ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
+
+              val add = !examined.contains(tpe) && accepted
+
+              val newAcc = {
+                if (add) {
+                  if (plugin.debug) {
+                    global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
+                  }
+
+                  f(tpe -> tree, acc)
                 } else {
-                  traverse(trees.tail, entry :: tpes)
-                }
-              } else {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
-                }
+                  if (!accepted && plugin.debug) {
+                    global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                  }
 
-                if (sym.isModule) {
-                  traverse(tree.children ++: trees.tail, tpes)
-                } else {
-                  traverse(trees.tail, tpes)
+                  acc
                 }
               }
+
+              val newEx = {
+                if (add) tpe :: examined
+                else examined
+              }
+
+              traverse(newTrees, newAcc, newEx)(f)
             } else {
-              traverse(trees.tail, tpes)
+              traverse(trees.tail, acc, examined)(f)
             }
           }
 
           case _ =>
-            tpes.toMap
+            acc
         }
 
-      @annotation.tailrec
-      def go(trees: Seq[Tree], tpes: List[(Type, Tree)]): List[(Type, Tree)] =
-        trees.headOption match {
-          case Some(tree) => {
-            import tree.{ symbol => sym }
+      val symtab = (traverse(
+        unit.body.children, List.empty[(String, (Type, Tree))]) {
+          case ((tpe, tree), acc) =>
+            tree.symbol.fullName -> (tpe -> tree) :: acc
+        }).toMap
 
-            if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
-              val tpe = sym.typeSignature
-              lazy val kind: String = if (sym.isModule) "object" else "class"
-
-              if (acceptsType(sym)) {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
-                }
-
-                if (sym.isModule) {
-                  go(tree.children ++: trees.tail, (tpe -> tree) :: tpes)
-                } else {
-                  go(trees.tail, (tpe -> tree) :: tpes)
-                }
-              } else {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
-                }
-
-                if (sym.isModule) {
-                  go(tree.children ++: trees.tail, tpes)
-                } else {
-                  go(trees.tail, tpes)
-                }
-              }
-            } else {
-              go(trees.tail, tpes)
-            }
-          }
-
-          case _ =>
-            tpes.reverse
-        }
-
-      val symtab = traverse(unit.body.children, Nil)
-
-      val scalaTypes: List[(Type, Tree)] = go(unit.body.children, Nil)
+      val scalaTypes: List[(Type, Tree)] = (traverse(
+        unit.body.children, List.empty[(Type, Tree)]) { _ :: _ }).reverse
 
       object CompilerLogger extends io.github.scalats.core.Logger {
+        def info(msg: => String): Unit = plugin.global.inform(msg)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
@@ -274,11 +262,16 @@ final class CompilerPlugin(val global: Global)
         chain(config.typeScriptTypeMappers).
         getOrElse(TypeScriptTypeMapper.Defaults)
 
+      val importResolver = TypeScriptImportResolver.
+        chain(config.typeScriptImportResolvers).
+        getOrElse(TypeScriptImportResolver.Defaults)
+
       val ex = TypeScriptGenerator.generate(global)(
         settings = plugin.config.settings,
         types = scalaTypes,
         symtab = symtab,
         logger = CompilerLogger,
+        importResolver = importResolver,
         declMapper = declMapper,
         typeMapper = typeMapper,
         printer = config.printer,

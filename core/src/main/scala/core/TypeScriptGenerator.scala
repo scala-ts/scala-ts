@@ -55,6 +55,7 @@ object TypeScriptGenerator {
    * @param settings $settingsParam
    * @param types the Scala types to be generated as TypeScript
    * @param logger $loggerParam
+   * @param importResolver the import resolver to be used
    * @param declMapper $declMapperParam
    * @param typeMapper $typeMapperParam
    * @param printer $printerParam
@@ -62,11 +63,13 @@ object TypeScriptGenerator {
    * @return the Scala types for which TypeScript has been emitted
    * (including the input `types` and the transitively required types).
    */
+  @SuppressWarnings(Array("MaxParameters"))
   def generate[U <: Universe](universe: U)(
     settings: Settings,
     types: List[(universe.Type, universe.Tree)],
     symtab: Map[String, (universe.Type, universe.Tree)],
     logger: Logger,
+    importResolver: TypeScriptImportResolver,
     declMapper: TypeScriptDeclarationMapper,
     typeMapper: TypeScriptTypeMapper,
     printer: TypeScriptPrinter,
@@ -81,7 +84,7 @@ object TypeScriptGenerator {
 
     val typeScriptTypes = transpiler(scalaTypes)
     val emiter = new TypeScriptEmitter(
-      settings, printer, declMapper, typeMapper)
+      settings, printer, importResolver, declMapper, typeMapper)
 
     emiter.emit(typeScriptTypes)
 

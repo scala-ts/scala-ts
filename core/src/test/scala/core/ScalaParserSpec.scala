@@ -240,7 +240,7 @@ object ScalaRuntimeFixtures {
   implicit val mirror = runtimeUniverse.runtimeMirror(getClass.getClassLoader)
   import runtimeUniverse._
 
-  private val tb = {
+  private lazy val tb = {
     import scala.tools.reflect._
 
     runtimeUniverse.rootMirror.mkToolBox()
@@ -250,7 +250,12 @@ object ScalaRuntimeFixtures {
     tb.typecheck(tree)
   } catch {
     case scala.util.control.NonFatal(_) =>
-      tb.typecheck(tree)
+      try {
+        tb.typecheck(tree)
+      } catch {
+        case scala.util.control.NonFatal(_) =>
+          tb.typecheck(tree)
+      }
   }
 
   case class TestClass1(name: String)
@@ -378,10 +383,12 @@ object ScalaRuntimeFixtures {
 
   val TestObject2Type = typeOf[TestObject2.type]
 
-  lazy val TestObject2Tree: Tree = typecheck(q"""object TestObject2 {
-    val name = "Foo"
-    def code = 1
-  }""")
+  lazy val TestObject2Tree: Tree = typecheck(q"""
+    class Foo(val name: String)
+
+    object TestObject2 extends Foo("Foo") {
+      def code = 1
+    }""").children.drop(1).head
 
   sealed trait Family {
     def foo: String

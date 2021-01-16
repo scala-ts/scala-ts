@@ -53,7 +53,8 @@ final class Transpiler(config: Settings) {
 
         val unionRef = InterfaceDeclaration(
           idToString(id),
-          ifaceFields, List.empty[String], superInterface)
+          ifaceFields, List.empty[String], superInterface,
+          union = true)
 
         apply(possibilities, Some(unionRef)) + UnionDeclaration(
           idToString(id),
@@ -85,7 +86,8 @@ final class Transpiler(config: Settings) {
           transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
       },
       typeParams = scalaClass.typeArgs,
-      superInterface = superInterface)
+      superInterface = superInterface,
+      union = false)
   }
 
   /* TODO: (medium priority) Remove

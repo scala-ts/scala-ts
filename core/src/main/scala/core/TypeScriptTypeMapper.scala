@@ -55,7 +55,7 @@ object TypeScriptTypeMapper {
       tpe: TypeRef) = Option.empty[String]
   }
 
-  /** Emit Array as `Array<T>` */
+  /** Emits Array as `Array<T>` */
   final class ArrayAsGeneric extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
@@ -71,7 +71,7 @@ object TypeScriptTypeMapper {
 
   lazy val arrayAsGeneric = new ArrayAsGeneric()
 
-  /** Emit Array as `T[]` */
+  /** Emits Array as `T[]` */
   final class ArrayAsBrackets extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,

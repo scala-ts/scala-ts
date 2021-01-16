@@ -10,11 +10,12 @@ import io.github.scalats.core.{
 }
 
 import io.github.scalats.typescript.{
-  Declaration, UnionDeclaration, TypeRef
+  Declaration, InterfaceDeclaration, UnionDeclaration, TypeRef
 }
 
 final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
   def apply(
+    parent: TypeScriptDeclarationMapper.Resolved,
     settings: Settings,
     typeMapper: TypeScriptTypeMapper.Resolved,
     fieldMapper: TypeScriptFieldMapper,
@@ -39,6 +40,9 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
 
         out.println("}")
       }
+
+    case decl: InterfaceDeclaration =>
+      Some(parent(decl, out))
 
     case _ =>
       None

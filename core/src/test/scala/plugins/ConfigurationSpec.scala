@@ -129,14 +129,22 @@ settings {
 }
 
 additionalClasspath = [ "file:/tmp/foo1", "file:/tmp/foo2" ]
+
 typeScriptTypeMappers = [
   "io.github.scalats.core.TypeScriptTypeMapper$Defaults$"
-]""")
+]
+
+typeScriptImportResolvers = [
+  "io.github.scalats.core.TypeScriptImportResolver$Defaults$"
+]
+""")
 
         Configuration.load(source, logger, None) must_=== cfg
       }
     }
   }
+
+  // TODO: Import resolver
 
   "Source rule set" should {
     "be loaded" in {

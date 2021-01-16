@@ -10,8 +10,9 @@ import io.github.scalats.typescript.Declaration
  * See:
  * - [[TypeScriptDeclarationMapper.EnumerationAsEnum]]
  */
-trait TypeScriptDeclarationMapper extends Function5[Settings, TypeScriptTypeMapper.Resolved, TypeScriptFieldMapper, Declaration, PrintStream, Option[Unit]] { self =>
+trait TypeScriptDeclarationMapper extends Function6[TypeScriptDeclarationMapper.Resolved, Settings, TypeScriptTypeMapper.Resolved, TypeScriptFieldMapper, Declaration, PrintStream, Option[Unit]] { self =>
   /**
+   * @param parent the parent declaration mapper
    * @param settings the current settings
    * @param typeMapper the resolved type mapper
    * @param fieldMapper the field mapper
@@ -20,6 +21,7 @@ trait TypeScriptDeclarationMapper extends Function5[Settings, TypeScriptTypeMapp
    * @return Some print operation, or None if `declaration` is not handled
    */
   def apply(
+    parent: TypeScriptDeclarationMapper.Resolved,
     settings: Settings,
     typeMapper: TypeScriptTypeMapper.Resolved,
     fieldMapper: TypeScriptFieldMapper,
@@ -29,24 +31,36 @@ trait TypeScriptDeclarationMapper extends Function5[Settings, TypeScriptTypeMapp
   def andThen(m: TypeScriptDeclarationMapper): TypeScriptDeclarationMapper =
     new TypeScriptDeclarationMapper {
       @inline def apply(
+        parent: TypeScriptDeclarationMapper.Resolved,
         settings: Settings,
         typeMapper: TypeScriptTypeMapper.Resolved,
         fieldMapper: TypeScriptFieldMapper,
         declaration: Declaration,
         out: PrintStream): Option[Unit] =
-        self(settings, typeMapper, fieldMapper, declaration, out).
-          orElse(m(settings, typeMapper, fieldMapper, declaration, out))
+        self(parent, settings, typeMapper, fieldMapper, declaration, out).
+          orElse(m(parent, settings, typeMapper, fieldMapper, declaration, out))
     }
 }
 
 object TypeScriptDeclarationMapper {
-  import io.github.scalats.typescript.{ EnumDeclaration, TypeRef }
+  import io.github.scalats.typescript.{
+    EnumDeclaration,
+    InterfaceDeclaration,
+    SingletonDeclaration,
+    TypeRef,
+    UnionDeclaration,
+    Value
+  }
+
   import Internals.list
+
+  type Resolved = Function2[Declaration, PrintStream, Unit]
 
   //import com.github.ghik.silencer.silent
 
   object Defaults extends TypeScriptDeclarationMapper {
     def apply(
+      parent: Resolved,
       settings: Settings,
       typeMapper: TypeScriptTypeMapper.Resolved,
       fieldMapper: TypeScriptFieldMapper,
@@ -60,6 +74,7 @@ object TypeScriptDeclarationMapper {
    */
   final class EnumerationAsEnum extends TypeScriptDeclarationMapper {
     def apply(
+      parent: Resolved,
       settings: Settings,
       typeMapper: TypeScriptTypeMapper.Resolved,
       fieldMapper: TypeScriptFieldMapper,
@@ -90,6 +105,89 @@ object TypeScriptDeclarationMapper {
   }
 
   lazy val enumerationAsEnum = new EnumerationAsEnum()
+
+  /**
+   * Maps `SingletonDeclaration` as TypeScript `const` and [[https://www.typescriptlang.org/docs/handbook/literal-types.html literal type]] (super interface is ignored).
+   *
+   * - If the singleton doesn't declare any value, uses its name as literal.
+   * - If the singleton declares a single value, uses it content as literal.
+   * - If the singleton declared multiple values, uses them as literal object.
+   */
+  final class SingletonAsLiteral extends TypeScriptDeclarationMapper {
+    def apply(
+      parent: Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream): Option[Unit] = declaration match {
+      case decl @ SingletonDeclaration(name, values, _) => Some {
+        val constValue: String = values.headOption match {
+          case Some(Value(_, _, raw)) => {
+            if (values.size > 1) {
+              values.map {
+                case Value(n, _, r) => s"${n}: $r"
+              }.mkString("{ ", ", ", " }")
+            } else {
+              raw
+            }
+          }
+
+          case _ =>
+            s"'${name}'"
+        }
+
+        import settings.{ typescriptLineSeparator => lineSep }
+
+        val singleName = settings.typeNaming(settings, decl.reference)
+
+        out.println(s"""export const ${singleName}Inhabitant = $constValue${lineSep}
+
+export type ${singleName} = typeof ${singleName}Inhabitant${lineSep}""")
+      }
+
+      case _ =>
+        None
+    }
+  }
+
+  lazy val singletonAsLiteral = new SingletonAsLiteral()
+
+  /**
+   * Maps `UnionDeclaration` as simple TypeScript [[https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html#union-types union type]]
+   * (rather than interface as default).
+   *
+   * Declared fields and super interface are ignored.
+   */
+  final class UnionAsSimpleUnion extends TypeScriptDeclarationMapper {
+    def apply(
+      parent: Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream): Option[Unit] = declaration match {
+      case decl @ UnionDeclaration(_, _, possibilities, _) => Some {
+        val typeNaming = settings.typeNaming(settings, _: TypeRef)
+
+        out.print(s"export type ${typeNaming(decl.reference)} = ")
+        out.print(possibilities.map(typeNaming).toSeq.sorted mkString " | ")
+        out.println(settings.typescriptLineSeparator)
+      }
+
+      case decl @ InterfaceDeclaration(_, _, _, Some(
+        InterfaceDeclaration(_, _, _, _, true)
+        ), false) => {
+        // Ignore super interface for interface member of union
+        Some(parent(decl.copy(superInterface = None), out))
+      }
+
+      case _ =>
+        None
+    }
+  }
+
+  lazy val unionAsSimpleUnion = new UnionAsSimpleUnion()
 
   def chain(multi: Seq[TypeScriptDeclarationMapper]): Option[TypeScriptDeclarationMapper] = {
     @scala.annotation.tailrec def go(

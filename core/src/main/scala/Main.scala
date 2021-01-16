@@ -1,4 +1,4 @@
-/* TODO: Remove
+/* TODO: Remove or Refactor with ToolBox
 package io.github.scalats
 
 import io.github.scalats.core.{ Logger, Settings, TypeScriptGenerator }

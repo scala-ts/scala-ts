@@ -2,10 +2,6 @@ package io.github.scalats.core
 
 import scala.util.control.NonFatal
 
-/**
- * Created by Milosz on 09.06.2016.
- */
-
 import scala.collection.immutable.ListSet
 
 import scala.reflect.api.Universe
@@ -22,7 +18,6 @@ final class ScalaParser[Uni <: Universe](
     MethodSymbol,
     MethodSymbolTag,
     ModuleSymbolTag,
-    NoSymbol,
     NullaryMethodTypeTag,
     Symbol,
     symbolOf,
@@ -158,21 +153,24 @@ final class ScalaParser[Uni <: Universe](
 
     import tpe.{ _1 => scalaType }
 
-    scalaType match {
+    if (tpeSym.fullName.startsWith("scala.") &&
+      !tpeSym.fullName.startsWith("scala.Enumeration.")) {
+      logger.info(s"Skip Scala type: ${tpeSym.fullName}")
+
+      Result(examined + fullId(scalaType), Option.empty[TypeDef])
+    } else scalaType match {
       case _ if (tpeSym.isModuleClass &&
         scalaType.baseClasses.contains(enumerationTypeSym)) =>
         parseEnumeration(scalaType, examined)
 
-      case _ if (tpeSym.isModuleClass &&
-        !tpeSym.fullName.startsWith("scala.")) =>
+      case _ if (tpeSym.isModuleClass) =>
         parseObject(tpe, examined)
 
       case _ if (tpeSym.isClass) => {
         // TODO: Special case for ValueClass; See #ValueClass_1
-
         val classSym = tpeSym.asClass
 
-        if (classSym.isTrait && classSym.isSealed &&
+        if (classSym.isAbstract /*isTrait*/ && classSym.isSealed &&
           scalaType.typeParams.isEmpty) {
           parseSealedUnion(scalaType, symtab, examined)
         } else if (isCaseClass(scalaType)) {
@@ -273,7 +271,7 @@ final class ScalaParser[Uni <: Universe](
   private def parseObject(
     tpe: (Type, Tree),
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
-    val scalaType = tpe._1
+    import tpe.{ _1 => scalaType }
 
     def classExists: Boolean = try {
       Option(mirror staticClass scalaType.typeSymbol.fullName).nonEmpty
@@ -289,13 +287,81 @@ final class ScalaParser[Uni <: Universe](
         case Field(MethodSymbolTag(m)) => m.name.toString
       }.toSet
 
+      @annotation.tailrec
+      def findCtor(trees: Seq[Tree]): Option[Tree] =
+        trees.headOption match {
+          case Some(t) =>
+            t.symbol match {
+              case MethodSymbolTag(ctor) if ctor.isConstructor =>
+                Some(t)
+
+              case _ =>
+                findCtor(t.children ++: trees.tail)
+            }
+
+          case _ =>
+            None
+        }
+
+      lazy val memberNames: Set[String] = scalaType.members.collect {
+        case Field(MethodSymbolTag(m)) => m.name.toString
+      }.toSet
+
+      @annotation.tailrec
+      def invariants(
+        trees: Seq[Tree],
+        decls: Set[String],
+        values: List[TypeInvariant]): (Set[String], ListSet[TypeInvariant]) =
+        trees.headOption match {
+          case Some(universe.ApplyTag(m)) if (
+            m.exists {
+              case universe.SuperTag(_) =>
+                true
+
+              case _ =>
+                false
+            } && m.symbol.isConstructor) => {
+            ((m.symbol.info.paramLists.flatten zip m.args).collectFirst {
+              case (s, a) if (memberNames contains s.name.toString) =>
+                s -> a
+            }) match {
+              case Some((s, a)) => {
+                val nme = s.name.toString
+
+                invariants(trees.tail, decls - nme,
+                  TypeInvariant(
+                    name = nme,
+                    typeRef = scalaTypeRef(s.typeSignature, Set.empty),
+                    value = a.toString) :: values)
+              }
+
+              case _ =>
+                invariants(trees.tail, decls, values)
+            }
+          }
+
+          case Some(t) =>
+            invariants(t.children ++: trees.tail, decls, values)
+
+          case _ =>
+            decls -> (ListSet.empty[TypeInvariant] ++ values.reverse)
+        }
+
+      val (decls, values) = findCtor(Seq(tpe._2)) match {
+        case Some(ctor) =>
+          invariants(ctor.children, declNames, List.empty)
+
+        case _ =>
+          declNames -> ListSet.empty[TypeInvariant]
+      }
+
       val identifier = buildQualifiedIdentifier(scalaType.typeSymbol)
 
       Result(
         examined = (examined + fullId(scalaType)),
         parsed = Some[TypeDef](CaseObject(
           identifier.copy(name = identifier.name stripSuffix ".type"),
-          typeInvariants(declNames, Seq(tpe._2), List.empty))))
+          values ++ typeInvariants(decls, Seq(tpe._2), List.empty))))
     }
   }
 
@@ -331,9 +397,10 @@ final class ScalaParser[Uni <: Universe](
             res.parsed)))
       }
 
-      case _ => Result(
-        examined = examined + fullId(tpe),
-        parsed = Option.empty[TypeDef])
+      case _ =>
+        Result(
+          examined = examined + fullId(tpe),
+          parsed = Option.empty[TypeDef])
     }
   }
 
@@ -578,33 +645,35 @@ final class ScalaParser[Uni <: Universe](
     val tpeSym = tpe.typeSymbol.asClass
 
     @annotation.tailrec
-    def allSubclasses(path: Seq[Symbol], subclasses: Set[Type]): Set[Type] = path.headOption match {
-      case Some(ClassSymbolTag(cls)) if (
-        tpeSym != cls && cls.selfType.baseClasses.contains(tpeSym)) => {
-        val newSub: Set[Type] = if (!cls.isCaseClass) {
-          logger.warning(s"cannot handle class ${cls.fullName}: no case accessor")
-          Set.empty
-        } else if (cls.typeParams.nonEmpty) {
-          logger.warning(s"cannot handle class ${cls.fullName}: type parameter not supported")
-          Set.empty
-        } else Set(cls.selfType)
+    def allSubclasses(path: Seq[Symbol], subclasses: Set[Type]): Set[Type] =
+      path.headOption match {
+        case Some(ClassSymbolTag(cls)) if (
+          tpeSym != cls && cls.selfType.baseClasses.contains(tpeSym)) => {
+          val newSub: Set[Type] = if (!cls.isCaseClass) {
+            logger.warning(s"cannot handle class ${cls.fullName}: no case accessor")
+            Set.empty
+          } else if (cls.typeParams.nonEmpty) {
+            logger.warning(s"cannot handle class ${cls.fullName}: type parameter not supported")
+            Set.empty
+          } else Set(cls.selfType)
 
-        allSubclasses(path.tail, subclasses ++ newSub)
+          allSubclasses(path.tail, subclasses ++ newSub)
+        }
+
+        case Some(ModuleSymbolTag(o)) if (
+          o.typeSignature.baseClasses.contains(tpeSym)) =>
+          allSubclasses(path.tail, subclasses + o.typeSignature)
+
+        case Some(ModuleSymbolTag(o)) =>
+          allSubclasses(
+            o.typeSignature.decls ++: path.tail,
+            subclasses)
+
+        case Some(_) =>
+          allSubclasses(path.tail, subclasses)
+
+        case _ => subclasses
       }
-
-      case Some(ModuleSymbolTag(o)) if (
-        o.companion == NoSymbol && // not a companion object
-        o.typeSignature.baseClasses.contains(tpeSym)) =>
-        allSubclasses(path.tail, subclasses + o.typeSignature)
-
-      case Some(ModuleSymbolTag(o)) if (
-        o.companion == NoSymbol // not a companion object
-      ) => allSubclasses(path.tail, subclasses)
-
-      case Some(_) => allSubclasses(path.tail, subclasses)
-
-      case _ => subclasses
-    }
 
     if (tpeSym.isSealed && tpeSym.isAbstract) {
       allSubclasses(tpeSym.owner.typeSignature.decls.toSeq, Set.empty).toList

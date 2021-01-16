@@ -47,8 +47,9 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
 """)
     }
 
-    "emit class for a singleton #1" in {
-      emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {
+    "for singleton" >> {
+      "emit class #1" in {
+        emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {
   private static instance: ScalaRuntimeFixturesTestObject1;
 
   private constructor() {}
@@ -62,11 +63,11 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   }
 }
 """)
-    }
+      }
 
-    "emit class for a singleton #2" in {
-      // SCALATS1: No implements SupI
-      emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
+      "emit class #2" in {
+        // SCALATS1: No implements SupI
+        emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
   public code: number = 1;
 
@@ -83,10 +84,10 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   }
 }
 """
-    }
+      }
 
-    "emit singleton as union member #2" in {
-      emit(ListSet(unionMember2Singleton)) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
+      "emit class #3" in {
+        emit(ListSet(unionMember2Singleton)) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
   public foo: string = "bar";
 
   private static instance: ScalaRuntimeFixturesFamilyMember2;
@@ -102,13 +103,77 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   }
 }
 """
+      }
+
+      "emit literal types" >> {
+        val barVal = Value(
+          name = "bar",
+          typeRef = StringRef,
+          rawValue = "\"lorem\"")
+
+        "using singleton name" in {
+          val obj = SingletonDeclaration(
+            name = "Foo",
+            values = ListSet.empty,
+            superInterface = Option.empty)
+
+          emit(
+            ListSet(obj),
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = 'Foo';
+
+export type Foo = typeof FooInhabitant;
+"""
+        }
+
+        "with string value" in {
+          val obj = SingletonDeclaration(
+            name = "Foo",
+            values = ListSet(barVal),
+            superInterface = Option.empty)
+
+          emit(
+            ListSet(obj),
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = "lorem";
+
+export type Foo = typeof FooInhabitant;
+"""
+        }
+
+        "with object value" in {
+          val obj = SingletonDeclaration(
+            name = "Foo",
+            values = ListSet(
+              barVal,
+              Value(
+                name = "ipsum",
+                typeRef = NumberRef,
+                rawValue = "2")),
+            superInterface = Option.empty)
+
+          emit(
+            ListSet(obj),
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = { bar: "lorem", ipsum: 2 };
+
+export type Foo = typeof FooInhabitant;
+"""
+        }
+      }
     }
 
-    "emit union" in {
-      emit(ListSet(union1)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesFamily {
+    "emit union" >> {
+      "as interface" in {
+        emit(ListSet(union1)) must_=== """export interface ScalaRuntimeFixturesFamily {
   foo: string;
 }
-""")
+"""
+      }
+
+      "as union" in {
+        emit(
+          ListSet(union1, unionIface),
+          declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion) must_=== """export type ScalaRuntimeFixturesFamily = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
+"""
+      }
     }
 
     "emit enumeration" >> {
@@ -138,12 +203,14 @@ export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ]
     decls: ListSet[Declaration],
     config: Settings = defaultConfig,
     declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
+    importResolver: TypeScriptImportResolver = TypeScriptImportResolver.Defaults,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
     val emiter = new TypeScriptEmitter(
       config, (_, _, _, _) => out,
+      importResolver,
       declMapper,
       typeMapper)
 

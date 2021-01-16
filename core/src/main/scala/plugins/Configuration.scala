@@ -6,10 +6,13 @@ import java.net.URL
 
 import scala.util.control.NonFatal
 
+import scala.reflect.ClassTag
+
 import io.github.scalats.core.{
   Logger,
   Settings,
   TypeScriptDeclarationMapper,
+  TypeScriptImportResolver,
   TypeScriptPrinter,
   TypeScriptTypeMapper
 }
@@ -25,6 +28,7 @@ final class Configuration(
   val compilationRuleSet: SourceRuleSet,
   val typeRuleSet: SourceRuleSet,
   val printer: TypeScriptPrinter,
+  val typeScriptImportResolvers: Seq[TypeScriptImportResolver],
   val typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper],
   val typeScriptTypeMappers: Seq[TypeScriptTypeMapper],
   val additionalClasspath: Seq[URL]) {
@@ -39,7 +43,8 @@ final class Configuration(
 
   def withSettings(settings: Settings): Configuration =
     new Configuration(settings, this.compilationRuleSet, this.typeRuleSet,
-      this.printer, this.typeScriptDeclarationMappers,
+      this.printer, this.typeScriptImportResolvers,
+      this.typeScriptDeclarationMappers,
       this.typeScriptTypeMappers, this.additionalClasspath)
 
   private[plugins] lazy val tupled =
@@ -57,13 +62,16 @@ object Configuration {
     compilationRuleSet: SourceRuleSet = SourceRuleSet(),
     typeRuleSet: SourceRuleSet = SourceRuleSet(),
     printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
+    typeScriptImportResolvers: Seq[TypeScriptImportResolver] = Seq.empty,
     typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper] = Seq.empty,
     typeScriptTypeMappers: Seq[TypeScriptTypeMapper] = Seq.empty, //(TypeScriptTypeMapper.Defaults),
     additionalClasspath: Seq[URL] = Seq.empty): Configuration =
     new Configuration(
       settings,
-      compilationRuleSet, typeRuleSet,
-      printer, typeScriptDeclarationMappers, typeScriptTypeMappers,
+      compilationRuleSet, typeRuleSet, printer,
+      typeScriptImportResolvers,
+      typeScriptDeclarationMappers,
+      typeScriptTypeMappers,
       additionalClasspath)
 
   /**
@@ -85,20 +93,10 @@ object Configuration {
       }
     }
 
+    val strs = strings(logger, config, _: String)
+
     @inline def subConf(nme: String): Option[Config] =
       opt(nme)(config.getConfig(_))
-
-    @inline def strings(key: String): Iterable[String] = try {
-      config.getStringList(key).asScala
-    } catch {
-      case NonFatal(_: ConfigException.Missing) =>
-        List.empty[String]
-
-      case NonFatal(cause) => {
-        logger.warning(s"Fails to get $key: ${cause.getMessage}")
-        List.empty[String]
-      }
-    }
 
     val compilationRuleSet: SourceRuleSet =
       subConf("compilationRuleSet").fold(SourceRuleSet())(SourceRuleSet.load)
@@ -107,7 +105,7 @@ object Configuration {
       subConf("typeRuleSet").fold(SourceRuleSet())(SourceRuleSet.load)
 
     val additionalClasspath: Seq[URL] =
-      strings("additionalClasspath").flatMap { n =>
+      strs("additionalClasspath").flatMap { n =>
         try {
           Option(new URL(n))
         } catch {
@@ -160,27 +158,55 @@ object Configuration {
 
     val printer = customPrinter.getOrElse(TypeScriptPrinter.StandardOutput)
 
-    def typeMappers: Seq[TypeScriptTypeMapper] =
-      strings("typeScriptTypeMappers").map { tm =>
-        val mapperClass = additionalClassLoader.fold[Class[_]](
-          Class.forName(tm))(_.loadClass(tm)).
-          asSubclass(classOf[TypeScriptTypeMapper])
+    def insts[T: ClassTag](key: String): Seq[T] =
+      instances[T](logger, config, additionalClassLoader, key)
 
-        mapperClass.getDeclaredConstructor().newInstance()
-      }.toSeq
+    def typeMappers: Seq[TypeScriptTypeMapper] =
+      insts[TypeScriptTypeMapper]("typeScriptTypeMappers")
+
+    def importResolvers: Seq[TypeScriptImportResolver] =
+      insts[TypeScriptImportResolver]("typeScriptImportResolvers")
 
     def declarationMappers: Seq[TypeScriptDeclarationMapper] =
-      strings("typeScriptDeclarationMappers").map { tm =>
-        val mapperClass = additionalClassLoader.fold[Class[_]](
-          Class.forName(tm))(_.loadClass(tm)).
-          asSubclass(classOf[TypeScriptDeclarationMapper])
-
-        mapperClass.getDeclaredConstructor().newInstance()
-      }.toSeq
+      insts[TypeScriptDeclarationMapper]("typeScriptDeclarationMappers")
 
     new Configuration(
       settings,
       compilationRuleSet, typeRuleSet, printer,
-      declarationMappers, typeMappers, additionalClasspath)
+      importResolvers, declarationMappers, typeMappers, additionalClasspath)
   }
+
+  @inline private def strings(
+    logger: Logger,
+    config: Config,
+    key: String): Iterable[String] = try {
+    config.getStringList(key).asScala
+  } catch {
+    case NonFatal(_: ConfigException.Missing) =>
+      List.empty[String]
+
+    case NonFatal(cause) => {
+      logger.warning(s"Fails to get $key: ${cause.getMessage}")
+      List.empty[String]
+    }
+  }
+
+  @inline private def instances[T](
+    logger: Logger,
+    config: Config,
+    classLoader: Option[ClassLoader],
+    key: String)(implicit ct: ClassTag[T]): Seq[T] =
+    strings(logger, config, key).flatMap { nme =>
+      val cls = classLoader.fold[Class[_]](
+        Class.forName(nme))(_.loadClass(nme)).
+        asSubclass(ct.runtimeClass)
+
+      cls.getDeclaredConstructor().newInstance() match {
+        case `ct`(instance) =>
+          Seq[T](instance)
+
+        case _ => Seq.empty[T]
+      }
+    }.toSeq
+
 }

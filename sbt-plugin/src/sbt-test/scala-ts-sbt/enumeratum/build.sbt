@@ -1,10 +1,15 @@
 organization := "io.github.scala-ts"
 
-name := "sbt-plugin-test-simple"
+name := "sbt-plugin-test-enumeratum"
 
 version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
+
+libraryDependencies ++= Seq(
+  "com.beachape" %% "enumeratum" % "1.6.1")
+
+scalatsUnionWithLiteral
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO
