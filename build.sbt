@@ -30,7 +30,7 @@ lazy val core = project.in(file("core")).settings(
     }
   },
   libraryDependencies ++= {
-    val specsVer = "4.10.5"
+    val specsVer = "4.10.6"
 
     Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
