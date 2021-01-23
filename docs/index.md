@@ -8,11 +8,15 @@ layout: default
 
 ## Usage
 
-*Scala-TS* can be used either [standalone](#standalone) or as a [SBT plugin](#sbt-plugin).
+*Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
 
 ### Examples
 
-**Example #1:** Simple [case class](https://docs.scala-lang.org/tour/case-classes.html) `Incident`.
+*Scala-TS* handle various cases and can be configured in many ways.
+
+#### Example 1
+
+A simple [case class](https://docs.scala-lang.org/tour/case-classes.html) `Incident`.
 
 ```scala
 package scalats.examples
@@ -20,7 +24,7 @@ package scalats.examples
 case class Incident(id: String, message: String)
 ```
 
-*Generated TypeScript:*
+*Generated TypeScript:* [Interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) `Incident`
 
 ```typescript
 export interface Incident {
@@ -29,7 +33,9 @@ export interface Incident {
 }
 ```
 
-**Example #2:** Case class `Station` with `Option`al field `lastIncident`.
+#### Example 2
+
+Case class `Station` with `Option`al field `lastIncident`.
 
 ```scala
 package scalats.examples
@@ -50,9 +56,11 @@ export interface Station {
 }
 ```
 
-> See settings `optionToNullable` bellow in [configuration](#Configuration) documentation.
+> See `TypeScriptTypeMapper.NullableAsOption` with setting `typeScriptTypeMappers` bellow in [configuration](#Configuration) documentation.
 
-**Example #3:** Generic case class `Tagged[T]`.
+#### Example 3
+
+Generic case class `Tagged[T]`.
 
 ```scala
 package scalats.examples
@@ -69,7 +77,9 @@ export interface Tagged<T> {
 }
 ```
 
-**Example #4:** Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and Value class `EventType`.
+#### Example 4
+
+Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and [Value class](https://docs.scala-lang.org/overviews/core/value-classes.html) `EventType`.
 
 ```scala
 package scalats.examples
@@ -91,7 +101,7 @@ case class TextMessage(
     text: String)
 ```
 
-*Generated TypeScript:* Note that the [Value class] `EventType` is exported as the inner type (there `string` for `val name: String`).
+*Generated TypeScript:* Note that the Value class `EventType` is exported as the inner type (there `string` for `val name: String`).
 
 ```typescript
 export interface Event {
@@ -110,7 +120,9 @@ export interface Message {
 
 > `Locale` type is provided a transpiler as `string`.
 
-**Example #5:** Sealed trait/family `Transport`
+#### Example 5
+
+[Sealed trait](https://docs.scala-lang.org/tour/traits.html#subtyping)/family `Transport`; By default, sealed trait is generated using inheritance.
 
 ```scala
 package scalats.examples
@@ -152,7 +164,62 @@ export interface Transport {
 }
 ```
 
-**Example #6:** [Scala Enumeration](https://www.scala-lang.org/api/current/scala/Enumeration.html)
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/simple/)
+
+#### Example 6
+
+Sealed trait/family as [TypeScript union type](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html).
+
+Using `scalatsUnionWithLiteral` settings (which setup appropriate declaration mapper and import resolvers), a Scala sealed family representing a union type can be generated as TypeScript union type.
+
+```scala
+package scalats.examples
+
+sealed trait Greeting
+
+object Greeting {
+  case object Hello extends Greeting
+  case object GoodBye extends Greeting
+  case object Hi extends Greeting
+  case object Bye extends Greeting
+
+  case class Whatever(word: String) extends Greeting
+}
+```
+
+*Generated TypeScript:*
+
+```typescript
+export const ByeInhabitant = 'Bye';
+
+export type Bye = typeof ByeInhabitant;
+
+export const GoodByeInhabitant = 'GoodBye';
+
+export type GoodBye = typeof GoodByeInhabitant;
+
+export const HelloInhabitant = 'Hello';
+
+export type Hello = typeof HelloInhabitant;
+
+export const HiInhabitant = 'Hi';
+
+export type Hi = typeof HiInhabitant;
+
+export interface Whatever {
+  word: string;
+}
+
+export type Greeting = Bye | GoodBye | Hello | Hi | Whatever;
+```
+
+> See `scalatsUnionWithLiteral` SBT settings, `TypeScriptDeclarationMapper.SingletonAsLiteral` and `TypeScriptDeclarationMapper.UnionAsSimpleUnion` for setting `typeScriptDeclarationMappers`, and `TypeScriptImportResolver.UnionWithLiteralSingleton` and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
+
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
+
+#### Example 7
+
+[Scala Enumeration](https://www.scala-lang.org/api/current/scala/Enumeration.html).
 
 ```scala
 package scalats.examples
@@ -163,19 +230,43 @@ object WeekDay extends Enumeration {
 }
 ```
 
-*Generated TypeScript:*
+*Generated TypeScript:* [union](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html) `WeekDay`
 
 ```typescript
-export enum WeekDay {
-  Mon = 'Mon',
-  Tue = 'Tue',
-  Wed = 'Wed',
-  Thu = 'Thu',
-  Fri = 'Fri',
-  Sat = 'Sat',
-  Sun = 'Sun'
-}
+export type WeekDay = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
+
+export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
+// Useful to iterate the values
 ```
+
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/single-file-printer/)
+
+#### Example 8
+
+Scala [Singleton objects](https://docs.scala-lang.org/tour/singleton-objects.html) as TypeScript [Literal types](https://www.typescriptlang.org/docs/handbook/literal-types.html).
+
+```scala
+package scalats.examples
+
+sealed abstract class State(val entryName: String)
+
+case object Alabama extends State("AL")
+case object Alaska extends State("AK")
+```
+
+*Generated TypeScript:* `entryName` is transpiled as literal.
+
+```
+export const AlabamaInhabitant = "AL";
+
+export type Alabama = typeof AlabamaInhabitant;
+
+export const AlaskaInhabitant = "AK";
+
+export type Alaska = typeof AlaskaInhabitant;
+```
+
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/)
 
 ### SBT plugin
 
@@ -277,29 +368,33 @@ Optionally the following argument can be passed.
 - `-P:scalats:debug` - Enable debug.
 - `-P:scalats:printerOutputDirectory=/path/to/base` - Path to a base directory to initialize a custom printer with.
 
-### Standalone
+## Type reference
 
-A standalone assembly can be directly downloaded from the corresponding [release](https://github.com/scala-ts/scala-ts/releases), and executed from CLI:
+*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](#examples)).
 
-    java -jar "/path/to/scala-ts-assembly-$VERSION.jar" "com.example.ExampleDto"
+| Scala         | TypeScript    |
+| ------------- | ------------- |
+| Case class    | Interface     |
+| Sealed family | Interface     |
+| Enumeration   | Enum          |
+| Value class   | *Inner value* |
 
-In previous example, `com.example.ExampleDto` is the Scala class for which the TypeScript must be generated.
+*Scala-TS* support the following scalar types for the members/fields in the transpiled declaration.
 
-## Type support
+| Scala                                             | TypeScript |
+| ------------------------------------------------- | ---------- |
+| `Boolean`                                         | `boolean`  |
+| `Byte`, `Double`, `Float`, `Int`, `Long`, `Short` | `number`   |
+| `BigDecimal`, `BigInt`, `BigInteger`              | `number`   |
+| `String`, `UUID`                                  | `string`   |
+| `Date`, `Instant`, `Timestamp`                    | `Date`     |
+| `LocalDate`, `LocalDateTime`                      | `Date`     |
+| `ZonedDateTime`, `OffsetDateTime`                 | `Date`     |
 
-Currently *scala-ts* supports the following types of case class members:
 
-- `Int`, `Double`, `Boolean`, `String`, `Long`
-- `List`, `Seq`, `Set`, `Map`
+- `List`, `Seq`, `Set`, `Map`, `Tuple`
 - `Option`, `Either`
-- `LocalDate`, `LocalDateTime`, `Instant`, `Timestamp`, `ZonedDateTime`
-- `BigDecimal` (mapped to TypeScript's `number`)
-- `UUID` (mapped to TypeScript's `string`)
-- value classes
-- enumeration values
-- generic types
-- references to other case classes
-- (case) objects, as singleton class
-- sealed traits, as union type
 
 TODO: Table for mapping between Scala / TS types
+TODO: TypeScriptTypeMapper
+TODO: TypeScriptDeclarationMapper = enumerationAsEnum, singletonAsLiteral, scalatsUnionAsSimpleUnion, scalatsUnionWithLiteral

@@ -1,15 +1,13 @@
 package io.github.scalats.typescript
 
-import scala.collection.immutable.{ ListSet, Set }
+import scala.collection.immutable.ListSet
 
 /** A TypeScript type declaration */
 sealed trait Declaration {
   /** The type name */
   def name: String
 
-  private[scalats] def requires: Set[TypeRef]
-
-  private[scalats] def reference: TypeRef = CustomTypeRef(name, List.empty)
+  def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
 object Declaration {
@@ -24,10 +22,21 @@ object Declaration {
   case object Enum extends Kind
 
   case object Union extends Kind
+
+  object Kind {
+    def unapply(repr: String): Option[Kind] = repr match {
+      case "interface" => Some(Interface)
+      case "class" => Some(Class)
+      case "singleton" => Some(Singleton)
+      case "enum" => Some(Enum)
+      case "union" => Some(Union)
+      case _ => None
+    }
+  }
 }
 
 /**
- * A [[Declaration]] member (field/property).
+ * A member [[Declaration]] (field/property).
  *
  * @param name the member name
  * @param typeRef the reference for the member type
@@ -40,22 +49,30 @@ case class Member(name: String, typeRef: TypeRef)
  * @param fields the interface fields
  * @param typeParams the type parameters for the interface
  * @param superInterface the super interface (if any)
+ * @param union this interface represents a union type
  */
 case class InterfaceDeclaration(
   name: String,
   fields: ListSet[Member],
   typeParams: List[String],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration {
-
-  private[scalats] def requires: Set[TypeRef] =
-    fields.flatMap(_.typeRef.requires).
-      filterNot(_.name == name) ++ superInterface.
-      toSet.map { i: InterfaceDeclaration => i.reference }
-
-  private[scalats] override def reference: TypeRef =
+  superInterface: Option[InterfaceDeclaration],
+  union: Boolean) extends Declaration {
+  override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(SimpleTypeRef(_)))
 
 }
+
+/**
+ * A value [[Declaration]].
+ *
+ * @param name the member name
+ * @param typeRef the reference for the member type
+ * @param rawValue
+ */
+case class Value(
+  name: String,
+  typeRef: TypeRef,
+  rawValue: String)
 
 /**
  * A singleton declaration.
@@ -65,13 +82,8 @@ case class InterfaceDeclaration(
  */
 case class SingletonDeclaration(
   name: String,
-  values: ListSet[Member],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration {
-  private[scalats] def requires: Set[TypeRef] =
-    values.flatMap(_.typeRef.requires).
-      filterNot(_.name == name) ++ superInterface.
-      toSet.map { i: InterfaceDeclaration => i.reference }
-}
+  values: ListSet[Value],
+  superInterface: Option[InterfaceDeclaration]) extends Declaration
 
 /**
  * A declaration for an enumerated type.
@@ -80,17 +92,10 @@ case class SingletonDeclaration(
  */
 case class EnumDeclaration(
   name: String,
-  values: ListSet[String]) extends Declaration {
-  @inline private[scalats] def requires = Set.empty[TypeRef]
-}
+  values: ListSet[String]) extends Declaration
 
 case class UnionDeclaration(
   name: String,
   fields: ListSet[Member],
   possibilities: ListSet[CustomTypeRef],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration {
-  private[scalats] def requires: Set[TypeRef] =
-    fields.flatMap(_.typeRef.requires).
-      filterNot(_.name == name) ++ superInterface.
-      toSet.map { i: InterfaceDeclaration => i.reference }
-}
+  superInterface: Option[InterfaceDeclaration]) extends Declaration

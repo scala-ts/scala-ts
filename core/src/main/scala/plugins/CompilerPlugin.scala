@@ -12,7 +12,9 @@ import scala.collection.immutable.ListSet
 import io.github.scalats.core.{
   Logger,
   ScalaParser,
+  TypeScriptDeclarationMapper,
   TypeScriptGenerator,
+  TypeScriptImportResolver,
   TypeScriptTypeMapper
 }
 import io.github.scalats.tsconfig.ConfigFactory
@@ -174,59 +176,105 @@ final class CompilerPlugin(val global: Global)
       acceptsType: Symbol => Boolean): Unit = {
 
       @annotation.tailrec
-      def go(syms: Seq[Symbol], tpes: List[Type]): List[Type] =
-        syms.headOption match {
-          case Some(sym) => {
-            if ((sym.isModule && !sym.hasPackageFlag) || sym.isClass) {
+      def traverse[Acc](
+        trees: Seq[Tree],
+        acc: Acc,
+        examined: List[Type] = List.empty)(
+        f: ((Type, Tree), Acc) => Acc): Acc =
+        trees.headOption match {
+          case Some(tree) => {
+            import tree.{ symbol => sym }
+
+            if (sym != null && !(sym.fullName.startsWith("java.") ||
+              sym.fullName.startsWith("scala.")) &&
+              ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)) {
+
               val tpe = sym.typeSignature
               lazy val kind: String = if (sym.isModule) "object" else "class"
 
-              if (acceptsType(sym)) {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
-                }
+              val b = Seq.newBuilder[Tree]
 
-                if (sym.isModule) {
-                  go(tpe.members ++: syms.tail, tpe :: tpes)
-                } else {
-                  go(syms.tail, tpe :: tpes)
-                }
-              } else {
-                if (plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
-                }
+              tree.filter(_ != tree).foreach { b += _ }
 
-                if (sym.isModule) {
-                  go(tpe.members ++: syms.tail, tpes)
+              val newTrees: Seq[Tree] = { // TODO: Check
+                //if (!sym.isModule) trees.tail
+                //else tree.children ++: trees.tail
+
+                b.result() ++: trees.tail
+              }
+
+              val accepted = (
+                ClassDefTag.unapply(tree).nonEmpty ||
+                ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
+
+              val add = !examined.contains(tpe) && accepted
+
+              val newAcc = {
+                if (add) {
+                  if (plugin.debug) {
+                    global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
+                  }
+
+                  f(tpe -> tree, acc)
                 } else {
-                  go(syms.tail, tpes)
+                  if (!accepted && plugin.debug) {
+                    global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                  }
+
+                  acc
                 }
               }
+
+              val newEx = {
+                if (add) tpe :: examined
+                else examined
+              }
+
+              traverse(newTrees, newAcc, newEx)(f)
             } else {
-              go(syms.tail, tpes)
+              traverse(trees.tail, acc, examined)(f)
             }
           }
 
           case _ =>
-            tpes.reverse
+            acc
         }
 
-      val scalaTypes: List[Type] = go(unit.body.children.map(_.symbol), Nil)
+      val symtab = (traverse(
+        unit.body.children, List.empty[(String, (Type, Tree))]) {
+          case ((tpe, tree), acc) =>
+            tree.symbol.fullName -> (tpe -> tree) :: acc
+        }).toMap
+
+      val scalaTypes: List[(Type, Tree)] = (traverse(
+        unit.body.children, List.empty[(Type, Tree)]) { _ :: _ }).reverse
 
       object CompilerLogger extends io.github.scalats.core.Logger {
+        def info(msg: => String): Unit = plugin.global.inform(msg)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
+
+      val declMapper = TypeScriptDeclarationMapper.
+        chain(config.typeScriptDeclarationMappers).
+        getOrElse(TypeScriptDeclarationMapper.Defaults)
 
       val typeMapper = TypeScriptTypeMapper.
         chain(config.typeScriptTypeMappers).
         getOrElse(TypeScriptTypeMapper.Defaults)
 
+      val importResolver = TypeScriptImportResolver.
+        chain(config.typeScriptImportResolvers).
+        getOrElse(TypeScriptImportResolver.Defaults)
+
       val ex = TypeScriptGenerator.generate(global)(
-        config = plugin.config.settings,
+        settings = plugin.config.settings,
         types = scalaTypes,
+        symtab = symtab,
         logger = CompilerLogger,
-        out = config.printer,
+        importResolver = importResolver,
+        declMapper = declMapper,
         typeMapper = typeMapper,
+        printer = config.printer,
         examined = examined)
 
       examined = examined ++ ex

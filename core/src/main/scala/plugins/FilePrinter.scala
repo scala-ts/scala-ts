@@ -5,7 +5,7 @@ import java.io.{ File, FileOutputStream, PrintStream }
 import io.github.scalats.core.Settings
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
-// TODO: Printer that gather class and interface (need to pass `Declaration` or `TypeRef` instead of just `name: String`)
+// TODO: Printer that gather class and interface
 final class FilePrinter(outDir: File) extends BasePrinter {
 
   def apply(

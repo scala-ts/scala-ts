@@ -8,7 +8,7 @@ import scala.util.control.NonFatal
 /**
  * Created by Milosz on 09.12.2016.
  *
- * @param optionToNullable `T | null`
+ * @param optionToNullable generate nullable type as `T | null`
  */
 final class Settings(
   val emitCodecs: Settings.EmitCodecs,

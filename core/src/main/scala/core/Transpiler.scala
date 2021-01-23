@@ -34,9 +34,10 @@ final class Transpiler(config: Settings) {
 
       case ScalaModel.CaseObject(id, members) => {
         val values = members.map { scalaMember =>
-          Member(
+          Value(
             scalaMember.name,
-            transpileTypeRef(scalaMember.typeRef, false))
+            transpileTypeRef(scalaMember.typeRef, false),
+            scalaMember.value)
         }
 
         ListSet[Declaration](
@@ -52,7 +53,8 @@ final class Transpiler(config: Settings) {
 
         val unionRef = InterfaceDeclaration(
           idToString(id),
-          ifaceFields, List.empty[String], superInterface)
+          ifaceFields, List.empty[String], superInterface,
+          union = true)
 
         apply(possibilities, Some(unionRef)) + UnionDeclaration(
           idToString(id),
@@ -84,7 +86,8 @@ final class Transpiler(config: Settings) {
           transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
       },
       typeParams = scalaClass.typeArgs,
-      superInterface = superInterface)
+      superInterface = superInterface,
+      union = false)
   }
 
   /* TODO: (medium priority) Remove
@@ -123,7 +126,7 @@ final class Transpiler(config: Settings) {
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
       StringRef
 
-    case ScalaModel.SeqRef(innerType) =>
+    case ScalaModel.CollectionRef(innerType) =>
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>

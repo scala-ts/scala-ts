@@ -6,12 +6,14 @@ import io.github.scalats.core.{ Settings, TypeScriptPrinter }
 import io.github.scalats.typescript.TypeRef
 
 abstract class BasePrinter extends TypeScriptPrinter {
+  private lazy val preludeUrl = sys.props.get("scala-ts.printer.prelude-url")
+
   /**
    * If the system property `scala-ts.printer.prelude-url` is defined,
    * then print the content from the URL as prelude to the given stream.
    */
   protected def printPrelude(out: PrintStream): Unit =
-    sys.props.get("scala-ts.printer.prelude-url").foreach { url =>
+    preludeUrl.foreach { url =>
       out.println(scala.io.Source.fromURL(url).mkString)
     }
 
