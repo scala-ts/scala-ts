@@ -2,6 +2,8 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
+import scala.util.control.NonFatal
+
 import scala.reflect.runtime.{ universe => runtimeUniverse }
 
 import ScalaModel._
@@ -246,17 +248,18 @@ object ScalaRuntimeFixtures {
     runtimeUniverse.rootMirror.mkToolBox()
   }
 
-  @inline private def typecheck(tree: Tree) = try {
-    tb.typecheck(tree)
+  @inline private def retry[T](n: Int)(f: => T): T = try {
+    f
   } catch {
-    case scala.util.control.NonFatal(_) =>
-      try {
-        tb.typecheck(tree)
-      } catch {
-        case scala.util.control.NonFatal(_) =>
-          tb.typecheck(tree)
-      }
+    case NonFatal(_) if (n > 0) =>
+      retry(n - 1)(f)
+
+    case NonFatal(cause) =>
+      throw cause
   }
+
+  @inline private def typecheck(tree: Tree) =
+    retry(5)(tb.typecheck(tree))
 
   case class TestClass1(name: String)
 

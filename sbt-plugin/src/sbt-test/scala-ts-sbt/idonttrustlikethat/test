@@ -1,0 +1,35 @@
+$ absent target/scala-ts/src_managed/Bar.ts
+$ absent target/scala-ts/src_managed/Foo.ts
+
+$ absent target/scala-ts/src_managed/Transport.ts
+$ absent target/scala-ts/src_managed/BusLine.ts
+$ absent target/scala-ts/src_managed/TrainLine.ts
+
+$ absent target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts
+
+# Simple generation from Scala case class
+> compile
+
+# Check the generated files is as expected
+$ exists target/scala-ts.conf
+
+$ exists target/scala-ts/src_managed/Bar.ts
+$ must-mirror target/scala-ts/src_managed/Bar.ts src/test/resources/Bar.ts
+
+$ exists target/scala-ts/src_managed/Foo.ts
+$ must-mirror target/scala-ts/src_managed/Foo.ts src/test/resources/Foo.ts
+
+$ exists target/scala-ts/src_managed/Transport.ts
+$ must-mirror target/scala-ts/src_managed/Transport.ts src/test/resources/Transport.ts
+
+$ exists target/scala-ts/src_managed/BusLine.ts
+$ must-mirror target/scala-ts/src_managed/BusLine.ts src/test/resources/BusLine.ts
+
+$ exists target/scala-ts/src_managed/TrainLine.ts
+$ must-mirror target/scala-ts/src_managed/TrainLine.ts src/test/resources/TrainLine.ts
+
+$ exists target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts
+$ must-mirror target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts src/test/resources/NotSupportedClassAsTypeArgs.ts
+
+# Preserve the generated files (to compile with tsc after)
+> preserveGeneratedTypescript

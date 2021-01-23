@@ -16,18 +16,8 @@ final class Transpiler(config: Settings) {
     scalaTypes: ListSet[ScalaModel.TypeDef],
     superInterface: Option[InterfaceDeclaration]): ListSet[Declaration] =
     scalaTypes.flatMap {
-      case scalaClass: ScalaModel.CaseClass => {
-        /* TODO: (medium priority) Remove
-        val clazz = {
-          if (config.emitClasses) {
-            ListSet[Declaration](transpileClass(scalaClass, superInterface))
-          } else ListSet.empty[Declaration]
-        }
-
-        if (!config.emitInterfaces) clazz
-        else*/ ListSet[Declaration](
-          transpileInterface(scalaClass, superInterface)) //++ clazz // TODO: (medium priority) Remove
-      }
+      case scalaClass: ScalaModel.CaseClass =>
+        ListSet[Declaration](transpileInterface(scalaClass, superInterface))
 
       case ScalaModel.EnumerationDef(id, values) =>
         ListSet[Declaration](EnumDeclaration(idToString(id), values))

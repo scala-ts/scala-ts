@@ -8,15 +8,9 @@ layout: default
 
 ## Usage
 
-*Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
+It handles various Scala types.
 
-### Examples
-
-*Scala-TS* handle various cases and can be configured in many ways.
-
-#### Example 1
-
-A simple [case class](https://docs.scala-lang.org/tour/case-classes.html) `Incident`.
+*Input Scala:*
 
 ```scala
 package scalats.examples
@@ -24,7 +18,7 @@ package scalats.examples
 case class Incident(id: String, message: String)
 ```
 
-*Generated TypeScript:* [Interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) `Incident`
+*Generated TypeScript:*
 
 ```typescript
 export interface Incident {
@@ -33,244 +27,12 @@ export interface Incident {
 }
 ```
 
-#### Example 2
-
-Case class `Station` with `Option`al field `lastIncident`.
-
-```scala
-package scalats.examples
-
-case class Station(
-    id: String,
-    name: String,
-    lastIncident: Option[Incident])
-```
-
-*Generated TypeScript:*
-
-```typescript
-export interface Station {
-  id: string;
-  name: string;
-  lastIncident?: Incident;
-}
-```
-
-> See `TypeScriptTypeMapper.NullableAsOption` with setting `typeScriptTypeMappers` bellow in [configuration](#Configuration) documentation.
-
-#### Example 3
-
-Generic case class `Tagged[T]`.
-
-```scala
-package scalats.examples
-
-case class Tagged[T](tag: String, value: T)
-```
-
-*Generated TypeScript:*
-
-```typescript
-export interface Tagged<T> {
-  tag: string;
-  value: T;
-}
-```
-
-#### Example 4
-
-Related case classes `Event` and `Message`, also using the previous generic type `Tagged` and [Value class](https://docs.scala-lang.org/overviews/core/value-classes.html) `EventType`.
-
-```scala
-package scalats.examples
-
-import java.util.Locale
-import java.time.OffsetDateTime
-
-final class EventType(val name: String) extends AnyVal
-
-case class Event(
-    id: String,
-    changed: OffsetDateTime,
-    `type`: EventType,
-    messages: Tagged[Seq[TextMessage]])
-
-case class TextMessage(
-    format: String,
-    language: Locale,
-    text: String)
-```
-
-*Generated TypeScript:* Note that the Value class `EventType` is exported as the inner type (there `string` for `val name: String`).
-
-```typescript
-export interface Event {
-  id: string;
-  changed: Date;
-  type: string;
-  messages: Tagged<ReadonlyArray<Message>>;
-}
-
-export interface Message {
-  format: string;
-  language: string;
-  text: string;
-}
-```
-
-> `Locale` type is provided a transpiler as `string`.
-
-#### Example 5
-
-[Sealed trait](https://docs.scala-lang.org/tour/traits.html#subtyping)/family `Transport`; By default, sealed trait is generated using inheritance.
-
-```scala
-package scalats.examples
-
-sealed trait Transport {
-  def name: String
-}
-
-case class TrainLine(
-    name: String,
-    startStationId: String,
-    endStationId: String)
-    extends Transport
-
-case class BusLine(
-    id: Int,
-    name: String,
-    stopIds: Seq[String])
-    extends Transport
-```
-
-*Generated TypeScript:*
-
-```typescript
-export interface TrainLine extends Transport {
-  name: string;
-  startStationId: string;
-  endStationId: string;
-}
-
-export interface BusLine extends Transport {
-  id: number;
-  name: string;
-  stopIds: ReadonlyArray<string>;
-}
-
-export interface Transport {
-  name: string;
-}
-```
-
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/simple/)
-
-#### Example 6
-
-Sealed trait/family as [TypeScript union type](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html).
-
-Using `scalatsUnionWithLiteral` settings (which setup appropriate declaration mapper and import resolvers), a Scala sealed family representing a union type can be generated as TypeScript union type.
-
-```scala
-package scalats.examples
-
-sealed trait Greeting
-
-object Greeting {
-  case object Hello extends Greeting
-  case object GoodBye extends Greeting
-  case object Hi extends Greeting
-  case object Bye extends Greeting
-
-  case class Whatever(word: String) extends Greeting
-}
-```
-
-*Generated TypeScript:*
-
-```typescript
-export const ByeInhabitant = 'Bye';
-
-export type Bye = typeof ByeInhabitant;
-
-export const GoodByeInhabitant = 'GoodBye';
-
-export type GoodBye = typeof GoodByeInhabitant;
-
-export const HelloInhabitant = 'Hello';
-
-export type Hello = typeof HelloInhabitant;
-
-export const HiInhabitant = 'Hi';
-
-export type Hi = typeof HiInhabitant;
-
-export interface Whatever {
-  word: string;
-}
-
-export type Greeting = Bye | GoodBye | Hello | Hi | Whatever;
-```
-
-> See `scalatsUnionWithLiteral` SBT settings, `TypeScriptDeclarationMapper.SingletonAsLiteral` and `TypeScriptDeclarationMapper.UnionAsSimpleUnion` for setting `typeScriptDeclarationMappers`, and `TypeScriptImportResolver.UnionWithLiteralSingleton` and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
-
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
-
-#### Example 7
-
-[Scala Enumeration](https://www.scala-lang.org/api/current/scala/Enumeration.html).
-
-```scala
-package scalats.examples
-
-object WeekDay extends Enumeration {
-  type WeekDay = Value
-  val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
-}
-```
-
-*Generated TypeScript:* [union](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html) `WeekDay`
-
-```typescript
-export type WeekDay = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
-
-export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
-// Useful to iterate the values
-```
-
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/single-file-printer/)
-
-#### Example 8
-
-Scala [Singleton objects](https://docs.scala-lang.org/tour/singleton-objects.html) as TypeScript [Literal types](https://www.typescriptlang.org/docs/handbook/literal-types.html).
-
-```scala
-package scalats.examples
-
-sealed abstract class State(val entryName: String)
-
-case object Alabama extends State("AL")
-case object Alaska extends State("AK")
-```
-
-*Generated TypeScript:* `entryName` is transpiled as literal.
-
-```
-export const AlabamaInhabitant = "AL";
-
-export type Alabama = typeof AlabamaInhabitant;
-
-export const AlaskaInhabitant = "AK";
-
-export type Alaska = typeof AlaskaInhabitant;
-```
-
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/)
+> See [more examples](./examples.html)
 
 ### SBT plugin
 
-Add the following plugin to `project/plugins.sbt`:
+*Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
+If can be set up by adding the plugin to `project/plugins.sbt`:
 
     addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % "{{site.latest_release}}")
 
@@ -287,7 +49,7 @@ The TypeScript files are generated on compile.
 
 By default, the TypeScript generation is executed in directory `target/scala-ts/src_managed` (see `sourceManaged in scalatsOnCompile` in [configuration](#configuration)).
 
-*See [examples](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt)*
+> See [SBT examples on GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/)
 
 **Release notes:**
 
@@ -326,17 +88,23 @@ TODO: Custom printer in `project/`
 
 The following generator settings can be specified as [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) in the plugin configuration (see [examples](../core/src/test/resources/plugin-conf.xml)).
 
-- `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`)
-- `optionToUndefined` - Translate `Option` types to union type with `undefined` (e.g. `Option[Int]` to `number | undefined`) - can be combined with `optionToNullable`
-- `prependIPrefix` - Prepend `I` prefix to generated interfaces (default: `true`)
+TODO: TypeScriptTypeMapper
+TODO: TypeScriptFieldMapper
+TODO: TypeScriptDeclarationMapper = enumerationAsEnum, singletonAsLiteral, scalatsUnionAsSimpleUnion, scalatsUnionWithLiteral
+
+- `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`); Default `false` as builtin behaviour is option-to-undefined (see `TypeScriptTypeMapper.NullableAsOption`).
 - `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
 - `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
 - `typescriptLineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
-- `fieldNaming` - The conversions for the field names if emitCodecs: `Identity`, `SnakeCase` or a class name (default: `Identity`).
-- `printer` - An optional printer class.
-- `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` from).
+- `typeNaming` - The conversions for the type names (default: `Identity`).
+- `fieldMapper` - The conversions for the field names if emitCodecs: `Identity`, `SnakeCase` or a class name (default: `Identity`).
+- `discriminator` - The name of the field to be used as discriminator (default: `_type`).
 
 Also the following build options can be configured.
+
+TODO:
+- `printer` - An optional printer class.
+- `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` from).
 
 - `compilationRuleSet` - Set of rules to specify which Scala source files must be considered.
 - `typeRuleSet` - Set of rules to specify which types (from the already filtered source files) must be considered.
@@ -367,6 +135,7 @@ Optionally the following argument can be passed.
 
 - `-P:scalats:debug` - Enable debug.
 - `-P:scalats:printerOutputDirectory=/path/to/base` - Path to a base directory to initialize a custom printer with.
+- `-P:scalats:sys.scala-ts.printer.prelude-url=/path/to/prelude` - Set the system property (`scala-ts.printer.prelude-url`) to pass `/path/to/prelude` as printer prelude.
 
 ## Type reference
 
@@ -391,10 +160,6 @@ Optionally the following argument can be passed.
 | `LocalDate`, `LocalDateTime`                      | `Date`     |
 | `ZonedDateTime`, `OffsetDateTime`                 | `Date`     |
 
-
+TODO:
 - `List`, `Seq`, `Set`, `Map`, `Tuple`
 - `Option`, `Either`
-
-TODO: Table for mapping between Scala / TS types
-TODO: TypeScriptTypeMapper
-TODO: TypeScriptDeclarationMapper = enumerationAsEnum, singletonAsLiteral, scalatsUnionAsSimpleUnion, scalatsUnionWithLiteral

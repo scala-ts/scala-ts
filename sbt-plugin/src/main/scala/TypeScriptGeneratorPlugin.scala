@@ -109,11 +109,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     lazy val scalatsUnionAsSimpleUnion =
       classOf[TypeScriptDeclarationMapper.UnionAsSimpleUnion]
 
+    lazy val scalatsUnionWithLiteralSingletonImportResolvers =
+      classOf[TypeScriptImportResolver.UnionWithLiteralSingleton]
+
     lazy val scalatsUnionWithLiteral: Seq[Def.Setting[_]] = Seq(
       scalatsTypeScriptDeclarationMappers ++= Seq(
         scalatsSingletonAsLiteral, scalatsUnionAsSimpleUnion),
       scalatsTypeScriptImportResolvers ++= Seq(
-        classOf[TypeScriptImportResolver.UnionWithLiteralSingleton]))
+        scalatsUnionWithLiteralSingletonImportResolvers))
 
     // ---
 

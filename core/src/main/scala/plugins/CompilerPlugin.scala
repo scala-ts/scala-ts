@@ -240,16 +240,19 @@ final class CompilerPlugin(val global: Global)
             acc
         }
 
+      val typeBuf = List.newBuilder[(Type, Tree)]
+
       val symtab = (traverse(
         unit.body.children, List.empty[(String, (Type, Tree))]) {
-          case ((tpe, tree), acc) =>
-            tree.symbol.fullName -> (tpe -> tree) :: acc
+          case (ref @ (_, tree), acc) =>
+            typeBuf += ref
+            tree.symbol.fullName -> ref :: acc
         }).toMap
 
-      val scalaTypes: List[(Type, Tree)] = (traverse(
-        unit.body.children, List.empty[(Type, Tree)]) { _ :: _ }).reverse
+      val scalaTypes = typeBuf.result()
 
       object CompilerLogger extends io.github.scalats.core.Logger {
+        def debug(msg: => String): Unit = plugin.global.debuglog(msg)
         def info(msg: => String): Unit = plugin.global.inform(msg)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }

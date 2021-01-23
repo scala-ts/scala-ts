@@ -86,7 +86,7 @@ final class TypeScriptEmitter(
       else ""
     }
 
-    o.println(s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(name, tsField, member.typeRef)}${lineSeparator}")
+    o.println(s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(settings, name, tsField, member.typeRef)}${lineSeparator}")
   }
 
   private val emitSingletonDeclaration: SingletonDeclaration => Unit = {
@@ -196,8 +196,12 @@ final class TypeScriptEmitter(
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
-    (ownerType: String, member: TypeScriptField, typeRef: TypeRef) =>
-      typeMapper(resolvedTypeMapper, ownerType, member, typeRef).
+    (
+    settings: Settings,
+    ownerType: String,
+    member: TypeScriptField,
+    typeRef: TypeRef) =>
+      typeMapper(resolvedTypeMapper, settings, ownerType, member, typeRef).
         getOrElse(defaultTypeMapping(ownerType, member, typeRef))
   }
 
@@ -205,7 +209,7 @@ final class TypeScriptEmitter(
     ownerType: String,
     member: TypeScriptField,
     typeRef: TypeRef): String = {
-    val tr = resolvedTypeMapper(ownerType, member, _: TypeRef)
+    val tr = resolvedTypeMapper(settings, ownerType, member, _: TypeRef)
 
     typeRef match {
       case NumberRef => "number"
@@ -277,7 +281,7 @@ final class TypeScriptEmitter(
 private[scalats] object TypeScriptEmitter {
   type DeclarationMapper = Function6[TypeScriptDeclarationMapper.Resolved, Settings, TypeScriptTypeMapper.Resolved, TypeScriptFieldMapper, Declaration, PrintStream, Option[Unit]]
 
-  type TypeMapper = Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]]
+  type TypeMapper = Function5[TypeScriptTypeMapper.Resolved, Settings, String, TypeScriptField, TypeRef, Option[String]]
 
   type ImportResolver = Declaration => Option[Set[TypeRef]]
 

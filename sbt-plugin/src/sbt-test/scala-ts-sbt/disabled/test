@@ -3,4 +3,6 @@ $ absent target/scala-ts/src_managed/CaseClassBar.ts
 # Simple generation from Scala case class
 > compile
 
+$ absent target/scala-ts.conf
+
 $ absent target/scala-ts/src_managed/CaseClassBar.ts
