@@ -6,7 +6,9 @@ import { BusLine } from './BusLine';
 
 // Validator for UnionDeclaration Transport
 export const idtltTransport = idtlt.discriminatedUnion(
-  '_type', idtltBusLine, idtltTrainLine);
+  '_type',
+  idtltBusLine,
+  idtltTrainLine);
 
 // Fields are ignored: name
 

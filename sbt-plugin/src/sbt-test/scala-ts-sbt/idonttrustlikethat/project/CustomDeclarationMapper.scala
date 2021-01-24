@@ -26,16 +26,15 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
-    val name = declaration.name
+    import declaration.name
     val tpeName = typeNaming(declaration.reference)
 
     def deriving = s"""// Deriving TypeScript type from ${tpeName} validator
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
 """
 
-    declaration match {
-      case InterfaceDeclaration(_, fields, Nil, superInterface, false) =>
-        Some {
+    def emit: Unit = declaration match {
+      case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
           out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.object({""")
 
@@ -55,8 +54,7 @@ export const idtlt${tpeName} = idtlt.object({""")
 $deriving""")
         }
 
-      case i: InterfaceDeclaration =>
-        Some {
+      case i: InterfaceDeclaration => {
           out.println(s"// Not supported: InterfaceDeclaration '${name}'")
 
           if (i.typeParams.nonEmpty) {
@@ -64,15 +62,14 @@ $deriving""")
           }
         }
 
-      case UnionDeclaration(_, fields, possibilities, None) =>
-        Some {
-          out.print(s"""// Validator for UnionDeclaration ${tpeName}
+      case UnionDeclaration(_, fields, possibilities, None) => {
+          out.println(s"""// Validator for UnionDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.discriminatedUnion(
-${indent}'${settings.discriminator.text}', """)
+${indent}'${settings.discriminator.text}',""")
 
           out.print(possibilities.map { p =>
-            s"idtlt${typeNaming(p)}"
-          }.toSeq.sorted mkString ", ")
+            s"${indent}idtlt${typeNaming(p)}"
+          }.toSeq.sorted mkString ",\n")
 
           out.println(s")${lineSep}")
 
@@ -88,13 +85,58 @@ $deriving""")
         }
 
       case _: UnionDeclaration =>
-        Some(out.println(s"// Not supported: UnionDeclaration '${name}'"))
+        out.println(s"// Not supported: UnionDeclaration '${name}'")
 
-        // TODO: enum WeekDay
+      case EnumDeclaration(_, values) => {
+          out.println(s"""// Validator for EnumDeclaration ${tpeName}
+export const idtlt${tpeName} = idtlt.union(""")
 
-      case _ =>
-        None
+          out.print(values.map { v =>
+            s"${indent}idtlt.literal('${v}')"
+          } mkString ",\n")
+
+          out.print(s""")
+
+$deriving""")
+        }
+
+      case SingletonDeclaration(_, values, superInterface) => {
+        out.print(s"""// Validator for SingletonDeclaration ${tpeName}
+export const idtlt${tpeName} = """)
+
+        values.headOption match {
+          case Some(Value(_, _, single)) => {
+            if (values.tail.isEmpty) {
+              out.println(s"idtlt.literal(${single})${lineSep}")
+            } else {
+              out.println(s"idtlt.object({")
+
+              values.foreach {
+                case Value(nme, _, v) =>
+                  out.println(s"${indent}${nme}: idtlt.literal(${v}),")
+              }
+
+              out.println(s"})${lineSep}")
+            }
+          }
+
+          case _ =>
+            out.println(s"idtlt.literal('${name}')")
+
+        }
+
+        superInterface.foreach { si =>
+          out.print(s"""
+// Super-type declaration ${si.name} is ignored""")
+        }
+
+        out.print(s"""
+
+$deriving""")
+      }
     }
+
+    Some(emit)
   }
 
   // ---
@@ -108,8 +150,6 @@ $deriving""")
     member: Member
   ): Unit = {
     val tsField = fieldMapper(settings, name, member.name, member.typeRef)
-
-    // TODO: scalatsNullableAsOption?
 
     o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},")
   }

@@ -8,7 +8,7 @@ export const idtltBar = idtlt.object({
   created: idtlt.isoDate,
   updated: idtlt.isoDate,
   transports: idtlt.array(idtltTransport),
-  amount: idtlt.number,
+  amount: idtlt.optional(idtlt.number),
   age: idtlt.number,
   name: idtlt.string,
 });

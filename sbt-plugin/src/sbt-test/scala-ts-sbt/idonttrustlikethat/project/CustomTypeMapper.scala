@@ -21,37 +21,49 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
         getOrElse(parent(settings, ownerType, member, ref))
     }
 
-    // TODO: Return string (when no longer partial match)
-    tpe match {
+    val tsType = tpe match {
       case StringRef =>
-        Some("idtlt.string")
+        "idtlt.string"
 
       case NumberRef =>
-        Some("idtlt.number")
+        "idtlt.number"
 
       case BooleanRef =>
-        Some("idtlt.boolean")
+        "idtlt.boolean"
 
       case DateRef | DateTimeRef =>
-        Some("idtlt.isoDate")
+        "idtlt.isoDate"
 
       case ArrayRef(innerType) =>
-        Some(s"idtlt.array(${tr(innerType)})")
+        s"idtlt.array(${tr(innerType)})"
 
       case TupleRef(params) =>
-        Some(params.map(tr).mkString("idtlt.tuple(", ", ", ")"))
+        params.map(tr).mkString("idtlt.tuple(", ", ", ")")
 
       case custom @ CustomTypeRef(_, Nil) =>
-        Some(s"idtlt${typeNaming(custom)}")
+        s"idtlt${typeNaming(custom)}"
 
-        /* TODO:
       case custom @ CustomTypeRef(_, params) =>
-        Some(s"idtlt.unknown // Unsupported
-        s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
-       */
+        s"idtlt.unknown /* Unsupported '${typeNaming(custom)}'; Type parameters: ${params.map(tr).mkString(", ")} */"
 
-    case _ =>
-      None
+      case NullableType(innerType) if settings.optionToNullable =>
+        s"idtlt.union(${tr(innerType)}, idtlt.null)"
+
+      case NullableType(innerType) =>
+        // TODO: ?? member.flags contains TypeScriptField.omitable
+        s"idtlt.optional(${tr(innerType)})"
+    // TODO: space-monad? string.nullable().map(Option)
+
+      case UnionType(possibilities) =>
+        s"idtlt.union(${possibilities.map(tr) mkString ", "})"
+
+      case MapType(keyType, valueType) =>
+        s"idtlt.dictionary(${tr(keyType)}, ${tr(valueType)})"
+
+      case _ =>
+        s"idtlt.${typeNaming(tpe)}"
     }
+
+    Some(tsType)
   }
 }

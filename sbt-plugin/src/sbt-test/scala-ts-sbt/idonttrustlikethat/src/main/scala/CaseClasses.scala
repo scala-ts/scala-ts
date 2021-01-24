@@ -13,8 +13,10 @@ case class Bar(
 
 case class Foo(
   id: Long,
-  namespace: (Int, String),
-  row: Tuple3[String, Transport, OffsetDateTime])
+  namesp: (Int, String),
+  row: Tuple3[String, Transport, OffsetDateTime],
+  score: Either[Int, String],
+  rates: Map[String, Float])
 
 case class NotSupportedClassAsTypeArgs[T](
   name: String,

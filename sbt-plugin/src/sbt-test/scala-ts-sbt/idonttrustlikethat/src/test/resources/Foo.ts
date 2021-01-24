@@ -5,8 +5,10 @@ import { Transport } from './Transport';
 
 // Validator for InterfaceDeclaration Foo
 export const idtltFoo = idtlt.object({
+  rates: idtlt.dictionary(idtlt.string, idtlt.number),
+  score: idtlt.union(idtlt.number, idtlt.string),
   row: idtlt.tuple(idtlt.string, idtltTransport, idtlt.isoDate),
-  namespace: idtlt.tuple(idtlt.number, idtlt.string),
+  namesp: idtlt.tuple(idtlt.number, idtlt.string),
   id: idtlt.number,
 });
 
