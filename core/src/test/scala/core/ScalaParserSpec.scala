@@ -1,8 +1,8 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
 import scala.util.control.NonFatal
+
+import scala.collection.immutable.ListSet
 
 import scala.reflect.runtime.{ universe => runtimeUniverse }
 

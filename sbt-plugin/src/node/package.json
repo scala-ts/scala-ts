@@ -12,6 +12,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "space-monad": "^1.0.0"
+    "space-monad": "^1.0.0",
+    "idonttrustlikethat": "^1.0.6"
   }
 }

@@ -9,10 +9,10 @@ enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 // Custom option transpiling
 scalatsOptionToNullable := true
 
-// Custom type naming
+// Custom type naming (defined in `project/CustomTypeNaming.scala`)
 scalatsTypeScriptTypeNaming := classOf[scalats.CustomTypeNaming]
 
-// Custom field naming
+// Custom field naming (defined in `project/CustomFieldMapper.scala`)
 scalatsTypeScriptFieldMapper := classOf[scalats.CustomFieldMapper]
 
 // Overwrite the directory the printer is initialized with
@@ -22,7 +22,7 @@ sourceManaged in scalatsOnCompile := {
   dir
 }
 
-// Custom printer
+// Custom printer (defined in `project/CustomPrinter.scala`)
 scalatsPrinter := scalatsPrinterForClass[scalats.CustomPrinter]()
 
 scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
@@ -33,12 +33,14 @@ scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
 scalatsTypeScriptDeclarationMappers := Seq(
   scalatsEnumerationAsEnum,
   classOf[scalats.CustomDeclarationMapper]
+  // defined in `project/CustomDeclarationMapper.scala`
 )
 
 // Custom type mapper
 scalatsTypeScriptTypeMappers := Seq(
   scalatsNullableAsOption, // Also scalatsDateAsString, scalatsNumberAsString
   classOf[scalats.CustomTypeMapper]
+  // defined in `project/CustomTypeMapper.scala`
 )
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
