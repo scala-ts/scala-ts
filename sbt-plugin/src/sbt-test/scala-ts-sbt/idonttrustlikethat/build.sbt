@@ -34,6 +34,9 @@ scalatsTypeScriptDeclarationMappers := Seq(
   classOf[scalats.CustomDeclarationMapper] // TODO: Refactor as scala-ts module
 )
 
+scalacOptions in Compile ++= Seq(
+  "-P:scalats:sys.scala-ts.printer.import-pattern=* as ns%1$s")
+
 scalatsTypeScriptImportResolvers ++= Seq(
   scalatsUnionWithLiteralSingletonImportResolvers)
 

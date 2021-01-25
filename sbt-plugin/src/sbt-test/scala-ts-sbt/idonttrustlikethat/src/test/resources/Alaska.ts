@@ -5,6 +5,7 @@ import * as idtlt from 'idonttrustlikethat';
 export const idtltAlaska = idtlt.literal("AK");
 
 // Super-type declaration State is ignored
+export const idtltDiscriminatedAlaska = idtltAlaska;
 
 // Deriving TypeScript type from Alaska validator
 export type Alaska = typeof idtltAlaska.T;

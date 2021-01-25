@@ -5,6 +5,7 @@ import * as idtlt from 'idonttrustlikethat';
 export const idtltHello = idtlt.literal('Hello')
 
 // Super-type declaration Greeting is ignored
+export const idtltDiscriminatedHello = idtltHello;
 
 // Deriving TypeScript type from Hello validator
 export type Hello = typeof idtltHello.T;

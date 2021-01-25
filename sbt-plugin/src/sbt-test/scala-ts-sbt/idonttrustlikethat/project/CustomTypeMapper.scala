@@ -40,8 +40,10 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
       case TupleRef(params) =>
         params.map(tr).mkString("idtlt.tuple(", ", ", ")")
 
-      case custom @ CustomTypeRef(_, Nil) =>
-        s"idtlt${typeNaming(custom)}"
+      case custom @ CustomTypeRef(_, Nil) => {
+        val n = typeNaming(custom)
+        s"ns${n}.idtlt${n}"
+      }
 
       case custom @ CustomTypeRef(_, params) =>
         s"idtlt.unknown /* Unsupported '${typeNaming(custom)}'; Type parameters: ${params.map(tr).mkString(", ")} */"
@@ -51,7 +53,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
 
       case NullableType(innerType) =>
         // TODO: ?? member.flags contains TypeScriptField.omitable
-        s"idtlt.optional(${tr(innerType)})"
+        s"${tr(innerType)}.optional()"
     // TODO: space-monad? string.nullable().map(Option)
 
       case UnionType(possibilities) =>

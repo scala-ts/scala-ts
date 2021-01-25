@@ -8,5 +8,12 @@ export const idtltWhatever = idtlt.object({
 
 // Super-type declaration Greeting is ignored
 
+export const idtltDiscriminatedWhatever = idtlt.intersection(
+  idtltWhatever,
+  idtlt.object({
+    '_type': idtlt.literal('Whatever')
+  })
+);
+
 // Deriving TypeScript type from Whatever validator
 export type Whatever = typeof idtltWhatever.T;

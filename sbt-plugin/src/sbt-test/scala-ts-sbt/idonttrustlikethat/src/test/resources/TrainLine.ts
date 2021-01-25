@@ -10,5 +10,12 @@ export const idtltTrainLine = idtlt.object({
 
 // Super-type declaration Transport is ignored
 
+export const idtltDiscriminatedTrainLine = idtlt.intersection(
+  idtltTrainLine,
+  idtlt.object({
+    '_type': idtlt.literal('TrainLine')
+  })
+);
+
 // Deriving TypeScript type from TrainLine validator
 export type TrainLine = typeof idtltTrainLine.T;

@@ -33,6 +33,15 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
 """
 
+    def discrimitedObj =
+      s"""export const idtltDiscriminated${tpeName} = idtlt.intersection(
+${indent}idtlt${tpeName},
+${indent}idtlt.object({
+${indent}${indent}'${settings.discriminator.text}': idtlt.literal('${tpeName}')
+${indent}})
+)${lineSep}
+"""
+
     def emit: Unit = declaration match {
       case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
           out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
@@ -51,6 +60,7 @@ export const idtlt${tpeName} = idtlt.object({""")
           }
 
           out.print(s"""
+$discrimitedObj
 $deriving""")
         }
 
@@ -64,11 +74,12 @@ $deriving""")
 
       case UnionDeclaration(_, fields, possibilities, None) => {
           out.println(s"""// Validator for UnionDeclaration ${tpeName}
-export const idtlt${tpeName} = idtlt.discriminatedUnion(
-${indent}'${settings.discriminator.text}',""")
+export const idtlt${tpeName} = idtlt.union(""")
 
-          out.print(possibilities.map { p =>
-            s"${indent}idtlt${typeNaming(p)}"
+        out.print(possibilities.map { p =>
+          val n = typeNaming(p)
+
+            s"${indent}ns${n}.idtltDiscriminated${n}"
           }.toSeq.sorted mkString ",\n")
 
           out.println(s")${lineSep}")
@@ -81,12 +92,14 @@ ${indent}'${settings.discriminator.text}',""")
           }
 
           out.print(s"""
+$discrimitedObj
 $deriving""")
         }
 
       case _: UnionDeclaration =>
         out.println(s"// Not supported: UnionDeclaration '${name}'")
 
+        // TODO: $discrimitedObj
       case EnumDeclaration(_, values) => {
           out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
@@ -97,6 +110,7 @@ export const idtlt${tpeName} = idtlt.union(""")
 
           out.print(s""")
 
+$discrimitedObj
 $deriving""")
         }
 
@@ -131,6 +145,7 @@ export const idtlt${tpeName} = """)
         }
 
         out.print(s"""
+export const idtltDiscriminated${tpeName} = idtlt${tpeName};
 
 $deriving""")
       }
