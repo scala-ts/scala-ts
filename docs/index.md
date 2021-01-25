@@ -25,6 +25,11 @@ export interface Incident {
   id: string;
   message: string;
 }
+
+const incident: Incident = {
+  id: 'id',
+  message: 'A message'
+}
 ```
 
 > See [more examples](./examples.html)
@@ -104,6 +109,67 @@ scalatsPrinter := scalatsSingleFilePrinter // Default single file 'scala.ts'
 scalatsPrinter := scalatsPrinterForClass[CustomPrinter]()
 ```
 
+#### SBT plugin extensions
+
+Additionnally to the *Scala-TS* SBT plugin, some extensions are provided.
+
+##### idonttrustlikethat
+
+A SBT plugin extension is provided to generate TypeScript [idonttrustlikethat](https://github.com/AlexGalays/idonttrustlikethat) validators, and derived types.
+
+This can be configured by first adding `scala-ts-sbt-idtlt` to the `project/plugins.sbt` (instead of base `scala-ts-sbt`).
+
+```ocaml
+addSbtPlugin("io.github.scala-ts" %% "scala-ts-sbt-idtlt" % {{site.latest_release}})
+```
+
+Then in the `build.sbt` is can be configured as below.
+
+```ocaml
+enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
+```
+
+**Example:** Scala case class
+
+```scala
+package scalats.docs.idtlt
+
+import java.time.LocalDate
+
+case class Bar(
+  name: String,
+  age: Int,
+  amount: Option[BigInt],
+  updated: LocalDate,
+  created: LocalDate
+)
+```
+
+It generates the following TypeScript validators and types.
+
+```typescript
+import * as idtlt from 'idonttrustlikethat';
+
+// Validator for InterfaceDeclaration Bar
+export const idtltBar = idtlt.object({
+  created: idtlt.isoDate,
+  updated: idtlt.isoDate,
+  amount: idtlt.number.optional(),
+  age: idtlt.number,
+  name: idtlt.string,
+});
+
+export const idtltDiscriminatedBar = idtlt.intersection(
+  idtltBar,
+  idtlt.object({
+    '_type': idtlt.literal('Bar')
+  })
+);
+
+// Deriving TypeScript type from Bar validator
+export type Bar = typeof idtltBar.T;
+```
+
 ### Compiler plugin
 
 *Scala-TS* can be configured as a Scalac compiler plugin using the following options.
@@ -117,15 +183,11 @@ The following generator settings can be specified as [HOCON](https://github.com/
 - `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
 - `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
 - `typescriptLineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
-- `typeNaming` - The conversions for the type names (default: `Identity`).
-- `fieldMapper` - The conversions for the field names if emitCodecs: `Identity`, `SnakeCase` or a class name (default: `Identity`).
+- `typeNaming` - The conversions for the type names (default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L13)*
+- `fieldMapper` - The conversions for the field names (implements `TypeScriptFieldMapper`; default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L16)*
 - `discriminator` - The name of the field to be used as discriminator (default: `_type`).
 
-Also the following build options can be configured.
-
-TODO:
-- `printer` - An optional printer class.
-- `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` from).
+The Scala code base to be considered to generate TypeScript from can be filtered using the following build options.
 
 - `compilationRuleSet` - Set of rules to specify which Scala source files must be considered.
 - `typeRuleSet` - Set of rules to specify which types (from the already filtered source files) must be considered.
@@ -152,6 +214,14 @@ typeRuleSet {
 }
 ```
 
+Also the settings can be used from advanced configuration.
+
+- `printer` - An optional printer class (implements `TypeScriptPrinter`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L26)*
+- `typeScriptTypeMappers` - A list of type mappers (implements `TypeScriptTypeMapper`).
+- `typeScriptImportResolvers` - A list of import resolvers (implements `TypeScriptImportResolver`).
+- `typeScriptDeclarationMappers` - A list of declaration mappers (implements `TypeScriptDeclarationMapper`). Some additional declaration mappers are provided: `enumerationAsEnum`, `singletonAsLiteral`, `scalatsUnionAsSimpleUnion`, `scalatsUnionWithLiteral`.
+- `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` ...).
+
 Optionally the following argument can be passed.
 
 - `-P:scalats:debug` - Enable debug.
@@ -159,13 +229,6 @@ Optionally the following argument can be passed.
 - `-P:scalats.sys.scala-ts.single-filename=filename.ts` - Set the filename if using the `SingleFilePrinter`.
 - `-P:scalats:sys.scala-ts.printer.prelude-url=/path/to/prelude` - Set the system property (`scala-ts.printer.prelude-url`) to pass `/path/to/prelude` as printer prelude.
 - `-P:scalats:sys.scala-ts.printer.import-pattern=import-pattern` - Override the pattern to print pattern (default: `{ %1$s }` with `%1$s` being the placeholder for the name of the type to be imported).
-
-TODO: TypeScriptTypeMapper
-TODO: TypeScriptFieldMapper
-TODO: TypeScriptDeclarationMapper = enumerationAsEnum, singletonAsLiteral, scalatsUnionAsSimpleUnion, scalatsUnionWithLiteral
-TODO: Custom field naming in `project/` + `scalatsTypeScriptFieldMapper := classOf[scalats.CustomTypeScriptFieldMapper]`
-
-TODO: Custom printer in `project/`
 
 ## Type reference
 
@@ -195,4 +258,14 @@ TODO: Custom printer in `project/`
 | `Tuple3[A, B, C]` (similar for other tuple types) | `[A, B, C]`       |
 | `Either[L, R]` (`L` on left, `R` on right)        | `L | R`           |
 
-TODO: `Option`
+### Option
+
+By default, according the setting `optionToNullable`, [`Option`](https://www.scala-lang.org/api/current/scala/Option.html) values are generated as omitable TypeScript fields (`T | undefined`) or as nullable fields.
+
+```typescript
+// For Option[String]
+export interface Example {
+  ifOptionToNullable?: string | undefined,
+  otherwise: string | nullable
+}
+```
