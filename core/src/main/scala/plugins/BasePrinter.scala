@@ -17,8 +17,18 @@ abstract class BasePrinter extends TypeScriptPrinter {
       out.println(scala.io.Source.fromURL(url).mkString)
     }
 
+  private lazy val formatImport: String => String =
+    sys.props.get("scala-ts.printer.import-pattern") match {
+      case Some(pattern) =>
+        pattern.format(_: String)
+
+      case _ =>
+        { tpeName: String => s"{ ${tpeName} }" }
+    }
+
   /**
    * Prints TypeScript imports from the required types.
+   * If the system property `scala-ts.printer.import-pattern`
    *
    * @param importPath the function applied to each required type to determine the import path
    */
@@ -33,7 +43,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
     requires.foreach { tpe =>
       val tpeName = typeNaming(tpe)
 
-      out.println(s"import { ${tpeName} } from '${importPath(tpe)}'${sep}")
+      out.println(s"import ${formatImport(tpeName)} from '${importPath(tpe)}'${sep}")
     }
 
     if (requires.nonEmpty) {

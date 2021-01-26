@@ -1,0 +1,82 @@
+$ absent target/scala-ts/src_managed/Bar.ts
+$ absent target/scala-ts/src_managed/Foo.ts
+
+$ absent target/scala-ts/src_managed/Transport.ts
+$ absent target/scala-ts/src_managed/BusLine.ts
+$ absent target/scala-ts/src_managed/TrainLine.ts
+
+$ absent target/scala-ts/src_managed/WeekDay.ts
+
+$ absent target/scala-ts/src_managed/State.ts
+$ absent target/scala-ts/src_managed/Alabama.ts
+$ absent target/scala-ts/src_managed/Alaska.ts
+
+$ absent target/scala-ts/src_managed/Greeting.ts
+$ absent target/scala-ts/src_managed/Bye.ts
+$ absent target/scala-ts/src_managed/GoodBye.ts
+$ absent target/scala-ts/src_managed/Hello.ts
+$ absent target/scala-ts/src_managed/Hi.ts
+$ absent target/scala-ts/src_managed/Whatever.ts
+
+$ absent target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts
+$ absent target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts
+
+# Simple generation from Scala case class
+> compile
+
+# Check the generated files is as expected
+$ exists target/scala-ts.conf
+
+$ exists target/scala-ts/src_managed/Bar.ts
+$ must-mirror target/scala-ts/src_managed/Bar.ts src/test/resources/Bar.ts
+
+$ exists target/scala-ts/src_managed/Foo.ts
+$ must-mirror target/scala-ts/src_managed/Foo.ts src/test/resources/Foo.ts
+
+$ exists target/scala-ts/src_managed/Transport.ts
+$ must-mirror target/scala-ts/src_managed/Transport.ts src/test/resources/Transport.ts
+
+$ exists target/scala-ts/src_managed/BusLine.ts
+$ must-mirror target/scala-ts/src_managed/BusLine.ts src/test/resources/BusLine.ts
+
+$ exists target/scala-ts/src_managed/TrainLine.ts
+$ must-mirror target/scala-ts/src_managed/TrainLine.ts src/test/resources/TrainLine.ts
+
+$ exists target/scala-ts/src_managed/WeekDay.ts
+$ must-mirror target/scala-ts/src_managed/WeekDay.ts src/test/resources/WeekDay.ts
+
+$ exists target/scala-ts/src_managed/State.ts
+$ must-mirror target/scala-ts/src_managed/State.ts src/test/resources/State.ts
+
+$ exists target/scala-ts/src_managed/Alabama.ts
+$ must-mirror target/scala-ts/src_managed/Alabama.ts src/test/resources/Alabama.ts
+
+$ exists target/scala-ts/src_managed/Alaska.ts
+$ must-mirror target/scala-ts/src_managed/Alaska.ts src/test/resources/Alaska.ts
+
+$ exists target/scala-ts/src_managed/Greeting.ts
+$ must-mirror target/scala-ts/src_managed/Greeting.ts src/test/resources/Greeting.ts
+
+$ exists target/scala-ts/src_managed/Bye.ts
+$ must-mirror target/scala-ts/src_managed/Bye.ts src/test/resources/Bye.ts
+
+$ exists target/scala-ts/src_managed/GoodBye.ts
+$ must-mirror target/scala-ts/src_managed/GoodBye.ts src/test/resources/GoodBye.ts
+
+$ exists target/scala-ts/src_managed/Hello.ts
+$ must-mirror target/scala-ts/src_managed/Hello.ts src/test/resources/Hello.ts
+
+$ exists target/scala-ts/src_managed/Hi.ts
+$ must-mirror target/scala-ts/src_managed/Hi.ts src/test/resources/Hi.ts
+
+$ exists target/scala-ts/src_managed/Whatever.ts
+$ must-mirror target/scala-ts/src_managed/Whatever.ts src/test/resources/Whatever.ts
+
+$ exists target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts
+$ must-mirror target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts src/test/resources/NotSupportedClassAsTypeArgs.ts
+
+$ exists target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts
+$ must-mirror target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts src/test/resources/NotSupportedAsNotSupportedField.ts
+
+# Preserve the generated files (to compile with tsc after)
+> preserveGeneratedTypescript

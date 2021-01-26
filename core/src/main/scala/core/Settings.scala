@@ -3,7 +3,6 @@ package io.github.scalats.core
 import scala.util.control.NonFatal
 
 // TODO: Per-type options: nullable, fieldMapper, emitCodecs (by annotation on such type?)
-// TODO: (medium priority) Type naming
 
 /**
  * Created by Milosz on 09.12.2016.

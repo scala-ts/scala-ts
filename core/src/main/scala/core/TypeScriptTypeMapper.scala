@@ -14,7 +14,7 @@ import typescript.TypeRef
  * - [[TypeScriptTypeMapper.NumberAsString]]
  * - [[TypeScriptTypeMapper.NullableAsOption]]
  */
-trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, String, TypeScriptField, TypeRef, Option[String]] { self =>
+trait TypeScriptTypeMapper extends Function5[TypeScriptTypeMapper.Resolved, Settings, String, TypeScriptField, TypeRef, Option[String]] { self =>
 
   /**
    * @param parent the parent/fallback mapper
@@ -25,6 +25,7 @@ trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, Stri
    */
   def apply(
     parent: TypeScriptTypeMapper.Resolved,
+    settings: Settings,
     ownerType: String,
     member: TypeScriptField,
     tpe: TypeRef): Option[String]
@@ -33,23 +34,25 @@ trait TypeScriptTypeMapper extends Function4[TypeScriptTypeMapper.Resolved, Stri
     new TypeScriptTypeMapper {
       @inline def apply(
         parent: TypeScriptTypeMapper.Resolved,
+        settings: Settings,
         ownerType: String,
         member: TypeScriptField,
         tpe: TypeRef): Option[String] =
-        self(parent, ownerType, member, tpe).
-          orElse(m(parent, ownerType, member, tpe))
+        self(parent, settings, ownerType, member, tpe).
+          orElse(m(parent, settings, ownerType, member, tpe))
     }
 }
 
 object TypeScriptTypeMapper {
   import com.github.ghik.silencer.silent
 
-  /** `(ownerType, member, type) => TypeScript type` */
-  type Resolved = Function3[String, TypeScriptField, TypeRef, String]
+  /** `(settings, ownerType, member, type) => TypeScript type` */
+  type Resolved = Function4[Settings, String, TypeScriptField, TypeRef, String]
 
   object Defaults extends TypeScriptTypeMapper {
     @silent @inline def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef) = Option.empty[String]
@@ -59,11 +62,12 @@ object TypeScriptTypeMapper {
   final class ArrayAsGeneric extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.ArrayRef(innerType) =>
-        Some(s"Array<${parent(ownerType, member, innerType)}>")
+        Some(s"Array<${parent(settings, ownerType, member, innerType)}>")
 
       case _ => None
     }
@@ -75,11 +79,12 @@ object TypeScriptTypeMapper {
   final class ArrayAsBrackets extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.ArrayRef(innerType) =>
-        Some(s"${parent(ownerType, member, innerType)}[]")
+        Some(s"${parent(settings, ownerType, member, innerType)}[]")
 
       case _ => None
     }
@@ -90,6 +95,7 @@ object TypeScriptTypeMapper {
   final class NumberAsString extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
@@ -106,6 +112,7 @@ object TypeScriptTypeMapper {
   final class DateAsString extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
@@ -127,11 +134,12 @@ object TypeScriptTypeMapper {
   final class NullableAsOption extends TypeScriptTypeMapper {
     def apply(
       parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
       ownerType: String,
       member: TypeScriptField,
       tpe: TypeRef): Option[String] = tpe match {
       case typescript.NullableType(innerType) =>
-        Some(s"Option<${parent(ownerType, member, innerType)}>")
+        Some(s"Option<${parent(settings, ownerType, member, innerType)}>")
 
       case _ =>
         None

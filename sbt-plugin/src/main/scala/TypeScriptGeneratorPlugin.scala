@@ -10,6 +10,7 @@ import scala.reflect.ClassTag
 
 import sbt._
 import sbt.Keys._
+import sbt.internal.util.Attributed
 
 import _root_.io.github.scalats.core.{ Settings, TypeScriptDeclarationMapper, TypeScriptFieldMapper, TypeScriptImportResolver, TypeScriptPrinter, TypeScriptTypeMapper, TypeScriptTypeNaming }
 import _root_.io.github.scalats.plugins.{
@@ -98,6 +99,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsTypeExcludes = settingKey[Set[String]](
       s"Scala types to be excluded for ScalaTS; $typeRegex (default: none)")
 
+    val scalatsAdditionalClasspath = settingKey[Classpath](
+      "Additional classpath for Scala-TS")
+
     // ---
 
     lazy val scalatsEnumerationAsEnum =
@@ -109,11 +113,14 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     lazy val scalatsUnionAsSimpleUnion =
       classOf[TypeScriptDeclarationMapper.UnionAsSimpleUnion]
 
+    lazy val scalatsUnionWithLiteralSingletonImportResolvers =
+      classOf[TypeScriptImportResolver.UnionWithLiteralSingleton]
+
     lazy val scalatsUnionWithLiteral: Seq[Def.Setting[_]] = Seq(
       scalatsTypeScriptDeclarationMappers ++= Seq(
         scalatsSingletonAsLiteral, scalatsUnionAsSimpleUnion),
       scalatsTypeScriptImportResolvers ++= Seq(
-        classOf[TypeScriptImportResolver.UnionWithLiteralSingleton]))
+        scalatsUnionWithLiteralSingletonImportResolvers))
 
     // ---
 
@@ -165,6 +172,30 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsCompilerPluginConf := {
       (target in Compile).value / "scala-ts.conf"
     },
+    scalatsAdditionalClasspath := {
+      val sbtScalaVer: String = {
+        val props = new java.util.Properties
+        props.load(getClass getResourceAsStream "/library.properties")
+
+        val Major = "^([0-9]+\\.[0-9]+).*$".r
+
+        Option(props getProperty "version.number").collect {
+          case Major(v) => v
+        }.getOrElse {
+          println("Fails to resolve SBT scala version; Defaults to 2.12")
+
+          "2.12"
+        }
+      }
+
+      val sbtMajorVer: String = {
+        if (sbtBinaryVersion.value == "0.13") "0.13"
+        else "1.0"
+      }
+
+      Seq(
+        Attributed.blank(baseDirectory.value / "project" / "target" / s"scala-${sbtScalaVer}" / s"sbt-${sbtMajorVer}" / "classes"))
+    },
     scalatsPrepare := {
       val logger = streams.value.log
       import Settings.EmitCodecs
@@ -172,29 +203,8 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       var out: PrintWriter = null
 
       try {
-        val sbtScalaVer: String = {
-          val props = new java.util.Properties
-          props.load(getClass getResourceAsStream "/library.properties")
-
-          val Major = "^([0-9]+\\.[0-9]+).*$".r
-
-          Option(props getProperty "version.number").collect {
-            case Major(v) => v
-          }.getOrElse {
-            logger.warn("Fails to resolve SBT scala version; Defaults to 2.12")
-            "2.12"
-          }
-        }
-
-        val sbtMajorVer: String = {
-          if (sbtBinaryVersion.value == "0.13") "0.13"
-          else "1.0"
-        }
-
-        val sbtProjectClassUrl = {
-          val t = baseDirectory.value / "project" / "target" / s"scala-${sbtScalaVer}" / s"sbt-${sbtMajorVer}" / "classes"
-
-          t.toURI.toURL
+        val additionalClasspath = scalatsAdditionalClasspath.value.map {
+          _.data.toURI.toURL
         }
 
         val typeNaming: TypeScriptTypeNaming = {
@@ -323,7 +333,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           typeScriptImportResolvers = importResolvers,
           typeScriptDeclarationMappers = declMappers,
           typeScriptTypeMappers = typeMappers,
-          additionalClasspath = Seq(sbtProjectClassUrl))
+          additionalClasspath = additionalClasspath)
 
         out = new PrintWriter(confFile)
 

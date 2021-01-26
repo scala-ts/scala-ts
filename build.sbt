@@ -113,9 +113,51 @@ object Manifest {
     }.taskValue
   ).dependsOn(core)
 
+lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
+  enablePlugins(SbtPlugin).
+  settings(
+    name := "scala-ts-sbt-idtlt",
+    crossScalaVersions := Seq(scalaVersion.value),
+    pluginCrossBuild / sbtVersion := (
+      `sbt-plugin` / pluginCrossBuild / sbtVersion).value,
+    sbtPlugin := true,
+    scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
+    unmanagedJars in Compile += {
+      val jarName = (shaded / assembly / assemblyJarName).value
+
+      (shaded / target).value / jarName
+    },
+    scripted := scripted.
+      dependsOn(publishLocal in core).
+      dependsOn(publishLocal in `sbt-plugin`).
+      evaluated,
+    sourceGenerators in Compile += Def.task {
+      val groupId = organization.value
+      val coreArtifactId = (core / name).value
+      val ver = version.value
+      val dir = (sourceManaged in Compile).value
+      val outdir = dir / "org" / "scalats" / "sbt" / "idtlt"
+      val f = outdir / "Manifest.scala"
+
+      outdir.mkdirs()
+
+      Seq(IO.writer[File](f, "", IO.defaultCharset, false) { w =>
+        w.append(s"""package io.github.scalats.sbt.idtlt
+
+object Manifest {
+  val groupId = "$groupId"
+  val coreArtifactId = "$coreArtifactId"
+  val version = "$ver"
+}""")
+
+        f
+      })
+    }.taskValue
+  ).dependsOn(`sbt-plugin`)
+
 lazy val root = (project in file("."))
   .settings(
     publish := ({}),
     publishTo := None,
   )
-  .aggregate(shaded, core, `sbt-plugin`)
+  .aggregate(shaded, core, `sbt-plugin`, `sbt-plugin-idtlt`)

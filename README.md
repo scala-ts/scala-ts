@@ -1,13 +1,13 @@
-# ScalaTS
+# Scala-TS
 
-*ScalaTS* generate TypeScript from Scala.
+*Scala-TS* generate TypeScript from Scala.
 
 Help to integrate REST-ful Scala backend and TypeScript frontend.
 Having defined Scala types returned by your endpoints you can easily generate TypeScript definitions for consuming these endpoints.
 
 ## Usage
 
-*ScalaTS* can be used either standalone or as a SBT plugin.
+*Scala-TS* can be used either standalone or as a SBT plugin.
 
 See:
 
@@ -24,7 +24,7 @@ The SBT plugin can also be built:
 
     sbt '^ sbt-plugin/publishLocal'
 
-*Running tests:* [![Travis build status](https://travis-ci.org/scala-ts/scala-ts.svg?branch=master)](https://travis-ci.org/scala-ts/scala-ts):
+*Running tests:* ![CI](https://github.com/scala-ts/scala-ts/workflows/CI/badge.svg):
 
 The tests for the core library and compiler plugin can be executed.
 

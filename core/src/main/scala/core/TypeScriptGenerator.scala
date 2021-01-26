@@ -16,7 +16,7 @@ import scala.reflect.api.Universe
  */
 object TypeScriptGenerator {
 
-  /*
+  /* TODO: Remove of refactor with runtime ToolBox
    * Generates TypeScript from specified runtime classes.
    *
    * @param settings $settingsParam

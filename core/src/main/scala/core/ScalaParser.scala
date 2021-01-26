@@ -155,7 +155,7 @@ final class ScalaParser[Uni <: Universe](
 
     if (tpeSym.fullName.startsWith("scala.") &&
       !tpeSym.fullName.startsWith("scala.Enumeration.")) {
-      logger.info(s"Skip Scala type: ${tpeSym.fullName}")
+      logger.debug(s"Skip Scala type: ${tpeSym.fullName}")
 
       Result(examined + fullId(scalaType), Option.empty[TypeDef])
     } else scalaType match {
@@ -169,6 +169,8 @@ final class ScalaParser[Uni <: Universe](
       case _ if (tpeSym.isClass) => {
         // TODO: Special case for ValueClass; See #ValueClass_1
         val classSym = tpeSym.asClass
+
+        // TODO: Not sealed trait like CaseClass
 
         if (classSym.isAbstract /*isTrait*/ && classSym.isSealed &&
           scalaType.typeParams.isEmpty) {
@@ -427,6 +429,7 @@ final class ScalaParser[Uni <: Universe](
         EnumerationDef(identifier, ListSet(values.toSeq: _*))))
   }
 
+  // TODO: Parse default field values
   private def parseCaseClass(
     tpe: (Type, Tree),
     examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
