@@ -205,7 +205,7 @@ export interface Whatever {
 export type Greeting = Bye | GoodBye | Hello | Hi | Whatever;
 ```
 
-> See `scalatsUnionWithLiteral` SBT settings, `TypeScriptDeclarationMapper.SingletonAsLiteral` and `TypeScriptDeclarationMapper.UnionAsSimpleUnion` for setting `typeScriptDeclarationMappers`, and `TypeScriptImportResolver.UnionWithLiteralSingleton` and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
+> See `scalatsUnionWithLiteral` SBT settings, [`TypeScriptDeclarationMapper.SingletonAsLiteral`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$SingletonAsLiteral.html) and [`TypeScriptDeclarationMapper.UnionAsSimpleUnion`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$UnionAsSimpleUnion.html) for setting `typeScriptDeclarationMappers`, and [`TypeScriptImportResolver.UnionWithLiteralSingleton`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptImportResolver$$UnionWithLiteralSingleton.html) and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
 

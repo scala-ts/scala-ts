@@ -53,7 +53,9 @@ jobs:
       if: always()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: target/test-reports/TEST-*.xml
+        files: core/target/test-reports/TEST-*.xml
+        check_name: 'Core tests'
+        comment_title: 'Core tests statistics'
 
     - name: 'Run SBT plugin tests'
       run: sbt ';error ;^ publishLocal ;^ scripted'
@@ -85,6 +87,8 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: sbt-plugin/target/junit.xml
+        check_name: 'TypeScript tests'
+        comment_title: 'TypeScript tests statistics'
         
     - name: 'Publish snapshot (master)'
       if: ${{ github.ref == 'refs/heads/master' }}

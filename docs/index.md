@@ -34,6 +34,8 @@ const incident: Incident = {
 
 > See [more examples](./examples.html)
 
+[![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
+
 **Release notes:**
 
 *New version 0.3.2* - added support for more types; added file output support.
@@ -43,15 +45,15 @@ const incident: Incident = {
 ### SBT plugin
 
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
-If can be set up by adding the plugin to `project/plugins.sbt`:
+If can be set up by adding to `project/plugins.sbt`:
 
     addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "{{site.latest_release}}")
 
 Additionally, the plugin must be enabled per project.
 
 ```ocaml
-// Disabled by default
-enablePlugins(io.github.scalats.sbt.TypeScriptGeneratorPlugin)
+// Not enabled by default
+enablePlugins(TypeScriptGeneratorPlugin)
 ```
 
 The TypeScript files are generated on compile.
