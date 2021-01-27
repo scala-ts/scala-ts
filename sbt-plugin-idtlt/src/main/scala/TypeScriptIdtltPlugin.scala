@@ -48,7 +48,7 @@ object TypeScriptIdtltPlugin extends AutoPlugin {
           cls.getURLs.toSeq.flatMap { url =>
             val repr = url.toString
 
-            if (repr.indexOf("scala-ts-sbt-idtlt") != -1 &&
+            if (repr.indexOf("sbt-scala-ts-idtlt") != -1 &&
               repr.startsWith("file:")) {
               Seq(new File(url.toURI))
             } else {

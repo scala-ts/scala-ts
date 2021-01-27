@@ -156,7 +156,7 @@ export interface Transport {
 }
 ```
 
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/simple/)
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/simple/)
 
 ## Example 6
 
@@ -207,7 +207,7 @@ export type Greeting = Bye | GoodBye | Hello | Hi | Whatever;
 
 > See `scalatsUnionWithLiteral` SBT settings, `TypeScriptDeclarationMapper.SingletonAsLiteral` and `TypeScriptDeclarationMapper.UnionAsSimpleUnion` for setting `typeScriptDeclarationMappers`, and `TypeScriptImportResolver.UnionWithLiteralSingleton` and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
 
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
 
 ## Example 7
 
@@ -231,7 +231,7 @@ export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
 // Useful to iterate the values
 ```
 
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/single-file-printer/)
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/single-file-printer/)
 
 ## Example 8
 
@@ -258,4 +258,4 @@ export const AlaskaInhabitant = "AK";
 export type Alaska = typeof AlaskaInhabitant;
 ```
 
-> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/enumeratum/)
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/enumeratum/)
