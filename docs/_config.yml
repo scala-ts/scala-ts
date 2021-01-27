@@ -2,5 +2,5 @@ theme: jekyll-theme-minimal
 title: Scala-ts
 description: Simple tool which can generate TypeScript from Scala
 show_downloads: false
-latest_release: 0.4.0
+latest_release: 0.4.1-SNAPSHOT
 logo: assets/img/logo.png
