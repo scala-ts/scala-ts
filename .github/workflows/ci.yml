@@ -65,15 +65,15 @@ jobs:
 
     - name: 'Compile generated TypeScript from SBT scripted tests'
       run: |
-        cp sbt-plugin/src/node/*.* /tmp/scala-ts-sbt/
-        cd /tmp/scala-ts-sbt/
+        cp sbt-plugin/src/node/*.* /tmp/sbt-scala-ts/
+        cd /tmp/sbt-scala-ts/
         find . -type f -name '*.ts' -print
         npm ci
         npm run build
 
     - name: 'Run TypeScript tests'
       run: |
-        cd /tmp/scala-ts-sbt/
+        cd /tmp/sbt-scala-ts/
         npm run test
         export TD="$OLDPWD/sbt-plugin/target"
         test -d "$TD" || mkdir -p "$TD"

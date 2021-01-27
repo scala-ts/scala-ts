@@ -12,8 +12,8 @@ layout: default
 - `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
 - `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
 - `typescriptLineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
-- `typeNaming` - The conversions for the type names (default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L13)*
-- `fieldMapper` - The conversions for the field names (implements `TypeScriptFieldMapper`; default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L16)*
+- `typeNaming` - The conversions for the type names (default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L13)*
+- `fieldMapper` - The conversions for the field names (implements `TypeScriptFieldMapper`; default: `Identity`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L16)*
 - `discriminator` - The name of the field to be used as discriminator (default: `_type`).
 
 The Scala code base to be considered to generate TypeScript from can be filtered using the following build options.
@@ -45,7 +45,7 @@ typeRuleSet {
 
 Also the settings can be used from advanced configuration.
 
-- `printer` - An optional printer class (implements `TypeScriptPrinter`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L26)*
+- `printer` - An optional printer class (implements `TypeScriptPrinter`). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L26)*
 - `typeScriptTypeMappers` - A list of type mappers (implements `TypeScriptTypeMapper`).
 - `typeScriptImportResolvers` - A list of import resolvers (implements `TypeScriptImportResolver`).
 - `typeScriptDeclarationMappers` - A list of declaration mappers (implements `TypeScriptDeclarationMapper`). Some additional declaration mappers are provided: `enumerationAsEnum`, `singletonAsLiteral`, `scalatsUnionAsSimpleUnion`, `scalatsUnionWithLiteral`.
@@ -68,8 +68,8 @@ The SBT plugin also has some specific settings.
 
 The following utilities are provided to ease setting up the printer prelude.
 
-- `scalatsPrinterInMemoryPrelude(lines: Strings*)` - Set prelude from embedded lines (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L28))
-- `scalatsPrinterUrlPrelude(url)` - Set prelude from URL (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/single-file-printer/build.sbt#L11))
+- `scalatsPrinterInMemoryPrelude(lines: Strings*)` - Set prelude from embedded lines (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L28))
+- `scalatsPrinterUrlPrelude(url)` - Set prelude from URL (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/single-file-printer/build.sbt#L11))
 
 ```ocaml
 // In memory prelude
@@ -87,8 +87,8 @@ scalatsPrinterPrelude := scalatsPrinterUrlPrelude(
 More than the prelude, the TypeScript printer can be further customized through the `scalatsPrinter` settings, with the utilities provided along the SBT plugin.
 
 - `scalatsFilePrinter` - Print one file per type.
-- `scalatsSingleFilePrinter` - Print all types in a single file (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/single-file-printer/build.sbt#L9).
-- `scalatsPrinterForClass(props*)` - Use a custom printer (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/scala-ts-sbt/custom-cfg/build.sbt#L25)).
+- `scalatsSingleFilePrinter` - Print all types in a single file (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/single-file-printer/build.sbt#L9).
+- `scalatsPrinterForClass(props*)` - Use a custom printer (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L25)).
 
 ```ocaml
 scalatsPrinter := scalatsSingleFilePrinter

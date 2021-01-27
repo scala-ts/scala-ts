@@ -73,7 +73,7 @@ lazy val core = project.in(file("core")).settings(
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
   enablePlugins(SbtPlugin).
   settings(
-    name := "scala-ts-sbt",
+    name := "sbt-scala-ts",
     crossScalaVersions := Seq(scalaVersion.value),
     pluginCrossBuild / sbtVersion := "1.3.13",
     sbtPlugin := true,
@@ -116,7 +116,7 @@ object Manifest {
 lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
   enablePlugins(SbtPlugin).
   settings(
-    name := "scala-ts-sbt-idtlt",
+    name := "sbt-scala-ts-idtlt",
     crossScalaVersions := Seq(scalaVersion.value),
     pluginCrossBuild / sbtVersion := (
       `sbt-plugin` / pluginCrossBuild / sbtVersion).value,

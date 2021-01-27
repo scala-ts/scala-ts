@@ -4,7 +4,7 @@
 
 In `project/plugins.sbt`:
 
-    addSbtPlugin("io.github.scala-ts" %% "scala-ts-sbt-idtlt" % pluginVer)
+    addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts-idtlt" % pluginVer)
 
 In `build.sbt`:
 

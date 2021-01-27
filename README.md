@@ -41,8 +41,21 @@ export SCRIPTED_TEST="simple"
 export PLUGIN_VERSION="0.4.1-SNAPSHOT"
 export SBT_VERSION="1.4.4"
 
-cd "sbt-plugin/src/sbt-test/scala-ts-sbt/${SCRIPTED_TEST}"
+cd "sbt-plugin/src/sbt-test/sbt-scala-ts/${SCRIPTED_TEST}"
 sbt "-J-Dscala-ts.version=${PLUGIN_VERSION}" "-J-Dsbt.version=${SBT_VERSION}"
+```
+
+Publish on Sonatype:
+
+```bash
+./project/staging.sh
+
+project sbt-plugin
+^publishSigned
+project sbt-plugin-idtlt
+^publishSigned
+project core
++publish
 ```
 
 ## Credits

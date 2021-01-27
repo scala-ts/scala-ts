@@ -45,7 +45,7 @@ const incident: Incident = {
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
 If can be set up by adding the plugin to `project/plugins.sbt`:
 
-    addSbtPlugin("io.github.scala-ts" % "scala-ts-sbt" % "{{site.latest_release}}")
+    addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "{{site.latest_release}}")
 
 Additionally, the plugin must be enabled per project.
 
@@ -62,7 +62,7 @@ By default, the TypeScript generation is executed in directory `target/scala-ts/
 
 > See [SBT plugin settings](./config.html#sbt-plugin-settings)
 
-> See [SBT examples on GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/scala-ts-sbt/)
+> See [SBT examples on GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/)
 
 ### Compiler plugin
 
@@ -73,7 +73,7 @@ By default, the TypeScript generation is executed in directory `target/scala-ts/
 
 The `plugin.conf` is a [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) file that define the generator settings (see [example](https://github.com/scala-ts/scala-ts/blob/master/core/src/test/resources/plugin-conf.xml).
 
-> See [compiler settings](./config.html#compiler-settings
+> See [compiler settings](./config.html#compiler-settings)
 
 ## Type reference
 
@@ -123,10 +123,10 @@ Additionnally to the *Scala-TS* SBT plugin, some extensions are provided.
 
 A SBT plugin extension is provided to generate TypeScript [idonttrustlikethat](https://github.com/AlexGalays/idonttrustlikethat) validators, and derived types.
 
-This can be configured by first adding `scala-ts-sbt-idtlt` to the `project/plugins.sbt` (instead of base `scala-ts-sbt`).
+This can be configured by first configuring `sbt-scala-ts-idtlt` to the `project/plugins.sbt` (instead of base `sbt-scala-ts`).
 
 ```ocaml
-addSbtPlugin("io.github.scala-ts" %% "scala-ts-sbt-idtlt" % {{site.latest_release}})
+addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts-idtlt" % {{site.latest_release}})
 ```
 
 Then in the `build.sbt` is can be configured as below.
