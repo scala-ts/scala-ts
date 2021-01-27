@@ -122,10 +122,15 @@ lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
       `sbt-plugin` / pluginCrossBuild / sbtVersion).value,
     sbtPlugin := true,
     scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
-    unmanagedJars in Compile += {
+    compile in Compile := (compile in Compile).
+      dependsOn(`sbt-plugin` / Compile / compile).value,
+    unmanagedJars in Compile ++= {
       val jarName = (shaded / assembly / assemblyJarName).value
 
-      (shaded / target).value / jarName
+      Seq(
+        (`sbt-plugin` / Compile / packageBin).value,
+        (shaded / target).value / jarName
+      )
     },
     scripted := scripted.
       dependsOn(publishLocal in core).
@@ -153,7 +158,7 @@ object Manifest {
         f
       })
     }.taskValue
-  ).dependsOn(`sbt-plugin`)
+  ).dependsOn(core)
 
 lazy val root = (project in file("."))
   .settings(
