@@ -51,13 +51,13 @@ Also the settings can be used from advanced configuration.
 - `typeScriptDeclarationMappers` - A list of declaration mappers (implements `TypeScriptDeclarationMapper`). Some additional declaration mappers are provided: `enumerationAsEnum`, `singletonAsLiteral`, `scalatsUnionAsSimpleUnion`, `scalatsUnionWithLiteral`.
 - `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` ...).
 
-The [compiler plugin settings](#compiler-plugin) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsTypescriptIndent` SBT setting corresponds to the compiler plugin setting `typescriptIndent`.
+## SBT plugin settings
+
+The [compiler plugin settings](#compiler-settings) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsTypescriptIndent` SBT setting corresponds to the compiler plugin setting `typescriptIndent`.
 
 ```ocaml
 scalatsTypescriptIndent := "\t"
 ```
-
-## SBT plugin settings
 
 The SBT plugin also has some specific settings.
 
