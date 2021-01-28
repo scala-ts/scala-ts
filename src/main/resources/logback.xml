@@ -1,0 +1,33 @@
+<configuration debug="false">
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) %cyan(%logger{10}) - %msg [%thread]%n%xException</pattern>
+    </encoder>
+  </appender>
+
+  <!--
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+      <destination>localhost:9600</destination>
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <includeMdc>false</includeMdc>
+        <includeContext>false</includeContext>
+        <includeCallerData>false</includeCallerData>
+      </encoder>
+    </appender>
+  -->
+
+  <!-- Akka related -->
+  <logger name="akka" level="info" />
+  <logger name="com.typesafe.sslconfig" level="warn" />
+  <logger name="akka-data-app" level="debug" />
+
+  <root level="debug">
+    <appender-ref ref="STDOUT" />
+
+    <!--
+    <appender-ref ref="LOGSTASH" />
+    -->
+  </root>
+</configuration>
