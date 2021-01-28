@@ -40,6 +40,7 @@ object TypeScriptImportResolver {
       declaration match {
         case InterfaceDeclaration(name, fields, _, superInterface, _) if (
           superInterface.exists(_.union)) =>
+
           Some(fields.flatMap(_.typeRef.requires).filterNot(_.name == name))
 
         case SingletonDeclaration(_, _, _) =>
