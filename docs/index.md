@@ -4,7 +4,7 @@ layout: default
 
 # Scala-TS
 
-*Scala-TS* is a simple tool which can generate [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
+*Scala-TS* is a simple tool which generates [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
 
 ## Usage
 
@@ -26,6 +26,7 @@ export interface Incident {
   message: string;
 }
 
+// Can be used...
 const incident: Incident = {
   id: 'id',
   message: 'A message'
@@ -45,18 +46,18 @@ const incident: Incident = {
 ### SBT plugin
 
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
-If can be set up by adding to `project/plugins.sbt`:
+It can be set up by adding to `project/plugins.sbt`:
 
     addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "{{site.latest_release}}")
 
-Additionally, the plugin must be enabled per project.
+Additionally, the plugin can be enabled per project.
 
 ```ocaml
 // Not enabled by default
 enablePlugins(TypeScriptGeneratorPlugin)
 ```
 
-The TypeScript files are generated on compile.
+The TypeScript files are generated at compile-time.
 
     sbt compile
 
