@@ -99,7 +99,7 @@ case class TextMessage(
 export interface Event {
   id: string;
   changed: Date;
-  type: string;
+  type: string; // <---- HERE
   messages: Tagged<ReadonlyArray<Message>>;
 }
 
