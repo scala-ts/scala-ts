@@ -38,7 +38,7 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
  */
 case class CustomTypeRef(
   name: String,
-  typeArgs: List[TypeRef]) extends TypeRef with GenericTypeRef {
+  typeArgs: List[TypeRef] = Nil) extends TypeRef with GenericTypeRef {
   override def requires: Set[TypeRef] =
     super.requires + this
 }

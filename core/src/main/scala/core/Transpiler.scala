@@ -120,7 +120,7 @@ final class Transpiler(config: Settings) {
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>
-      SimpleTypeRef(idToString(id))
+      CustomTypeRef(idToString(id))
 
     case ScalaModel.TupleRef(typeArgs) =>
       TupleRef(

@@ -7,7 +7,8 @@ sealed trait Transport {
 case class TrainLine(
     name: String,
     startStationId: String,
-    endStationId: String)
+    endStationId: String,
+    serviceDays: Set[WeekDay.Value])
     extends Transport
 
 case class BusLine(

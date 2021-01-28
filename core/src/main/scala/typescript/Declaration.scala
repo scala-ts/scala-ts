@@ -58,7 +58,7 @@ case class InterfaceDeclaration(
   superInterface: Option[InterfaceDeclaration],
   union: Boolean) extends Declaration {
   override def reference: TypeRef =
-    CustomTypeRef(name, typeParams.map(SimpleTypeRef(_)))
+    CustomTypeRef(name, typeParams.map(CustomTypeRef(_)))
 
 }
 
