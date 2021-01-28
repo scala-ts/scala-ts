@@ -1,4 +1,4 @@
-import { TSTransport } from './scalatsTransport';
+import type { TSTransport } from './scalatsTransport';
 
 export interface TSTrainLine extends TSTransport {
   _name: string;
