@@ -5,8 +5,7 @@ case class Account(
   contact: Option[ContactName], // Optional property
   usage: Usage.Usage,
     password: String,
-    usage: Usage.Value,
-    favoriteFoods: Seq[Food])
+  favoriteFoods: Seq[Food])
 
 // Value class
 final class UserName(val name: String) extends AnyVal {
@@ -22,12 +21,6 @@ case class ContactName(
 object Usage extends Enumeration {
   type Usage = Value
   val Personal, Professional = Value
-}
-
-// Enumeration
-object Usage extends Enumeration {
-  type Usage = Value
-  val Personal, Professional = Usage
 }
 
 // Sealed family with Singleton objects

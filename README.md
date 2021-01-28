@@ -1,6 +1,6 @@
-# Akka HTTP API
+# Scala-TS demo
 
-A minimal, ready-to-use Akka HTTP based project template.
+Scala-TS demonstration with an [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html) API sharing Scala type with a TypeScript [Svelte](https://svelte.dev/) frontend.
 
 ## Build
 

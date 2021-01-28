@@ -10,4 +10,10 @@ addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.1")
 
+<<<<<<< HEAD
 addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "0.5.1")
+=======
+resolvers += Resolver.sonatypeRepo("snapshots")
+
+addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "0.5.1-SNAPSHOT" changing())
+>>>>>>> 43b2b4a (Bootstrap Svlete frontend)
