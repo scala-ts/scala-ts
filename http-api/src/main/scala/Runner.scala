@@ -1,6 +1,7 @@
 package io.github.scalats.demo
 
 import scala.util.{ Failure, Success, Try }
+
 import scala.concurrent.Await
 
 import akka.http.scaladsl.Http

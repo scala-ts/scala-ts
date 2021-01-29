@@ -2,10 +2,10 @@ package io.github.scalats.demo.model
 
 case class Account(
     userName: UserName,
-  contact: Option[ContactName], // Optional property
-  usage: Usage.Usage,
+    contact: Option[ContactName], // Optional property
+    usage: Usage.Usage,
     password: String,
-  favoriteFoods: Seq[Food])
+    favoriteFoods: Seq[Food])
 
 // Value class
 final class UserName(val name: String) extends AnyVal {
@@ -15,7 +15,7 @@ final class UserName(val name: String) extends AnyVal {
 case class ContactName(
     firstName: String,
     lastName: String,
-  age: Int)
+    age: Int)
 
 // Enumeration
 object Usage extends Enumeration {

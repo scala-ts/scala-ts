@@ -16,12 +16,23 @@
   </main>
 
   <footer class="footer mt-auto py-3 text-center">
-    <div class="alert alert-secondary">
-      This is a
-      <a
-        href="https://scala-ts.github.io/scala-ts/"
-        target="_blank">Scala-TS</a>
-      demo.
+    <div class="row justify-content-md-center">
+      <div class="alert alert-secondary col col-lg-4">
+        <p>
+          This is a
+          <a
+            href="https://scala-ts.github.io/scala-ts/"
+            target="_blank">Scala-TS</a>
+          demo.
+        </p>
+
+        <p>
+          <i class="bi bi-github" />
+          See
+          <a
+            href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete">sources</a>
+        </p>
+      </div>
     </div>
   </footer>
 </div>

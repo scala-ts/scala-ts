@@ -30,6 +30,7 @@ const esbuildTarget = production ? "es6" : "es2017";
 
 const appEnv = envValidator.validate({
   isProd: production,
+  backendUrl: process.env.BACKEND_URL,
   ...config().parsed,
 });
 

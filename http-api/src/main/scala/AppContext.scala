@@ -5,12 +5,10 @@ import scala.util.control.NonFatal
 
 import scala.concurrent.duration._
 
-import org.slf4j.LoggerFactory
-
-import com.typesafe.config.Config
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import com.typesafe.config.Config
+import org.slf4j.LoggerFactory
 
 final class AppContext(
     val name: String,
