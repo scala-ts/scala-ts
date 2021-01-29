@@ -31,7 +31,9 @@ version in ThisBuild := {
       }
     }
 
-    case _ =>
-      sys.error("Fails to resolve Git information")
+    case _ => {
+      println("Fails to resolve Git information")
+      "1.0.0-SNAPSHOT"
+    }
   }
 }

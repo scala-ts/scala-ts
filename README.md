@@ -11,3 +11,9 @@ Using [SBT](https://www.scala-sbt.org/):
 **Run locally:**
 
     sbt run
+
+## Deploy
+
+On Heroku:
+
+    git push heroku demo/akka-http-svlete:master
