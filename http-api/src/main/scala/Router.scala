@@ -19,15 +19,35 @@ final class Router(context: AppContext) {
       // See https://doc.akka.io/docs/akka-http/current/routing-dsl/overview.html
 
       cors() {
-        pathPrefix("user") {
-          (post & path("signup") & entity(as[JsObject])) {
-            signupRoute
+        concat(
+          pathPrefix("user") {
+            (post & path("signup") & entity(as[JsObject])) {
+              signupRoute
+            }
+          },
+          get {
+            concat(
+              pathPrefix("images") {
+                staticResources("images")
+              },
+              pathPrefix("immutable") {
+                staticResources("immutable")
+              },
+              getFromResource("webroot/index.html")
+            )
           }
-        }
+        )
       }
     }
 
   // ---
+
+  private def staticResources(prefix: String) = 
+    extractUnmatchedPath { path =>
+      val res = path.toString.stripPrefix("/")
+
+      getFromResource(s"webroot/${prefix}/${res}")
+    }
 
   private val signupRoute: JsObject => Route = { payload: JsObject =>
     complete(payload)

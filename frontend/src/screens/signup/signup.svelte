@@ -28,10 +28,23 @@
         </div>
         <!-- TODO: Other Account properties -->
 
-        <button
-          type="submit"
-          disabled={!$valid}
-          class="btn btn-primary">Submit</button>
+        <div class="row">
+          <div class="col col-md-6 col-lg-6">
+            <button
+              type="submit"
+              disabled={!$valid}
+              class="btn btn-primary">Submit</button>
+          </div>
+
+          <div class="col col-auto">
+            Powered by
+            <img
+              src="/images/logo-32.png"
+              alt="Scala-TS"
+              width="32"
+              height="32" />
+          </div>
+        </div>
       </form>
     </div>
   </div>

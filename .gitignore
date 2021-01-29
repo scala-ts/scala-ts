@@ -2,3 +2,4 @@ target
 project
 *.class
 .bsp
+node_modules

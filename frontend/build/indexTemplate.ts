@@ -23,6 +23,14 @@ export function indexTemplate(options: Options) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
     <!-- TODO: favicon -->
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="/images/logo-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/images/logo-16.png" sizes="16x16" type="image/png" />
+    <link rel="manifest" href="/favicons/manifest.json">
+
+    <link rel="icon" href="/favicons/favicon.ico" />
+    <meta name="theme-color" content="#007acc" />
+
     ${css}
   </head>
 

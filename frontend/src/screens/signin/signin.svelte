@@ -19,7 +19,7 @@
         src="/images/logo-medium.png"
         alt="Scala-TS"
         width="72"
-        height="57" />
+        height="72" />
 
       <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
