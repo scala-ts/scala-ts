@@ -8,6 +8,7 @@ enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
 
 // ---
 
+// Distribute src/test/typescript as ts-test
 Compile / compile := {
   val res = (Compile / compile).value
   val src = (sourceDirectory in Test).value / "typescript"
