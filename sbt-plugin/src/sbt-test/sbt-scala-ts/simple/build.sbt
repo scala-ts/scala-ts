@@ -6,6 +6,17 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
+// Distribute src/test/typescript as ts-test
+Compile / compile := {
+  val res = (Compile / compile).value
+  val src = (sourceDirectory in Test).value / "typescript"
+  val dest = (sourceManaged in scalatsOnCompile).value / "ts-test"
+
+  sbt.io.IO.copyDirectory(src, dest, overwrite = true)
+
+  res
+}
+
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO
   val logger = streams.value.log
