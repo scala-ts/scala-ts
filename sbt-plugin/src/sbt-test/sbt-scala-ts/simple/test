@@ -25,5 +25,12 @@ $ must-mirror target/scala-ts/src_managed/BusLine.ts src/test/resources/BusLine.
 $ exists target/scala-ts/src_managed/TrainLine.ts
 $ must-mirror target/scala-ts/src_managed/TrainLine.ts src/test/resources/TrainLine.ts
 
+# Dummy change for CaseClassBar.scala ...
+$ exec sed -ie 's/sbttest/sbttest /' src/main/scala/CaseClassBar.scala
+# ... to trigger Scala recompilation (without clean)
+> compile
+
+$ must-mirror target/scala-ts/src_managed/CaseClassBar.ts src/test/resources/CaseClassBar.ts
+
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript

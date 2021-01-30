@@ -1,0 +1,42 @@
+@startuml
+skinparam class {
+  FontColor automatic
+  HeaderBackgroundColor #007acc
+  BackgroundColor #fff
+}
+
+class Account << Case class >>
+Account : userName UserName 
+Account : contact Option[ContactName]
+Account : usage Usage
+Account : password String
+Account : favoriteFoods Seq[Food]
+
+class UserName << Value class >>
+UserName : name String
+Account -up- UserName : is composed of >
+
+class ContactName << Case class >>
+ContactName : firstName String
+ContactName : lastName String
+ContactName : age Int
+Account - ContactName : is composed of >
+
+enum Usage
+Usage : Personal
+Usage : Professional
+Account -down- Usage : is composed of >
+
+interface Food << Union >>
+Food : name String
+Account -down- Food : is composed of >
+
+class JapaneseSushi << Singleton >>
+Food <|-down- JapaneseSushi : sushi
+
+class Pizza << Singleton >>
+Food <|-down- Pizza : pizza
+
+class OtherFood << Case class >>
+Food <|-down- OtherFood
+@enduml
