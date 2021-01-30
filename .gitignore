@@ -1,3 +1,4 @@
 *.class
 target
 .bsp
+.DS_Store

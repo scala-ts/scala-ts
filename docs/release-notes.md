@@ -4,6 +4,8 @@ layout: default
 
 # Release notes
 
+[![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
+
 *Version 0.5.3* - Patch version; Fix dependencies.
 
 [*Version 0.5.2*](https://github.com/scala-ts/scala-ts/compare/0.5.01...0.5.2) - Patch version; Fix duplicate TypeScript output on Scala re-compilation (+ increase test coverage).

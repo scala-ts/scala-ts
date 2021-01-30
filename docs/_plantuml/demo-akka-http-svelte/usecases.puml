@@ -1,0 +1,43 @@
+@startuml
+skinparam sequence {
+  ActorBorderColor #000
+  LifeLineBorderColor #000
+  ParticipantBorderColor #000
+  ParticipantFontColor #fff
+  ActorBackgroundColor #fff
+}
+
+actor User
+participant "Frontend\n(TypeScript/Svelte)" as frontend #007acc
+participant "REST API\n(Scala/Akka-HTTP)" as API #dd3633
+
+activate User
+
+User -> frontend : Signup using
+activate frontend #007acc
+frontend -> API : POST /signup (Account)
+activate API #dd3633
+frontend <- API : Ok(UserName) | error
+deactivate API
+User <- frontend : Display result
+deactivate frontend
+
+User -> frontend : Login
+activate frontend #007acc
+
+frontend -> API : POST /signin (Credentials)
+activate API #dd3633
+frontend <- API : Ok(UserToken) | error
+deactivate API
+
+frontend -> frontend : [If Ok] Redirect to profile
+activate frontend #229cee
+frontend -> API : GET (UserToken)
+activate API #dd3633
+frontend <- API : Account
+deactivate API
+User <- frontend : Display profile screen
+deactivate frontend
+
+deactivate frontend
+@enduml

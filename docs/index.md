@@ -6,6 +6,8 @@ layout: default
 
 *Scala-TS* is a simple tool which generates [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types.
 
+> See [release notes](./release-notes.html)
+
 ## Usage
 
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin) (recommended) or as a Scala [compiler plugin](#compiler-plugin), to handle generate TypeScript on Scala compilation.
@@ -33,11 +35,11 @@ const incident: Incident = {
 }
 ```
 
-> See [more examples](./examples.html)
+> See [examples](./examples.html)
 
-> See [release notes](./release-notes.html)
+**More:**
 
-[![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
+- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
 
 ### SBT plugin
 
