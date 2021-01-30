@@ -106,5 +106,4 @@ Optionally the following argument can be passed.
 - `-P:scalats:printerOutputDirectory=/path/to/base` - Path to a base directory to initialize a custom printer with.
 - `-P:scalats.sys.scala-ts.single-filename=filename.ts` - Set the filename if using the `SingleFilePrinter`.
 - `-P:scalats:sys.scala-ts.printer.prelude-url=/path/to/prelude` - Set the system property (`scala-ts.printer.prelude-url`) to pass `/path/to/prelude` as printer prelude.
-- `-P:scalats:sys.scala-ts.printer.import-pattern=import-pattern` - Override the pattern to print pattern (default: `{ %1$s }` with `%1$s` being the placeholder for the name of the type to be imported).
-
+- `-P:scalats:sys.scala-ts.printer.import-pattern=import-pattern` - Override the pattern to print pattern (default: `type { %1$s }` with `%1$s` being the placeholder for the name of the type to be imported).
