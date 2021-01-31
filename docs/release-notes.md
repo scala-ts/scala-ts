@@ -4,6 +4,8 @@ layout: default
 
 # Release notes
 
+*Version 0.5.3* - Patch version; Fix dependencies.
+
 [*Version 0.5.2*](https://github.com/scala-ts/scala-ts/compare/0.5.01...0.5.2) - Patch version; Fix duplicate TypeScript output on Scala re-compilation (+ increase test coverage).
 
 [*Version 0.5.1*](https://github.com/scala-ts/scala-ts/compare/0.5.0...0.5.1) - Patch version; Refactor `import` as `import type`, and fix import resolution for `Enumeration` field.
