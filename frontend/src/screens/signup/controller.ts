@@ -1,14 +1,16 @@
 import { writable, derived, Readable } from "svelte/store";
 import type { Account } from "@shared/Account";
+import type { ContactName } from "@shared/ContactName";
 
-const initialAccount: Account = {
+// Overall store
+const initialAccount: () => Account = () => ({
   userName: "",
   password: "",
   usage: "Personal",
   favoriteFoods: [],
-};
+});
 
-export const accountStore = writable<Account>({ ...initialAccount });
+export const accountStore = writable<Account>(initialAccount());
 
 export const valid: Readable<boolean> = derived(
   accountStore,
@@ -19,6 +21,14 @@ export const valid: Readable<boolean> = derived(
   }
 );
 
+// Contact name
+export const contactStore = writable<ContactName>({
+  firstName: "",
+  lastName: "",
+  age: -1,
+});
+
+// Save
 export const error = writable<string | undefined>(undefined);
 
 export const lastSavedName = writable<string | undefined>(undefined);
@@ -38,6 +48,6 @@ export async function submitSignUp(account: Account) {
     error.set(`${json.error}: ${json.details}`);
   } else {
     lastSavedName.set(json);
-    accountStore.set({ ...initialAccount });
+    accountStore.set(initialAccount());
   }
 }

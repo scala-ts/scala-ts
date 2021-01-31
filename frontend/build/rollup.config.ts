@@ -121,7 +121,10 @@ const options: RollupOptions = {
       entries: [
         {
           find: "@shared",
-          replacement: path.resolve(buildDirectory, "../../shared/src"),
+          replacement: path.resolve(
+            buildDirectory,
+            "../../common/target/scala-ts/src_managed"
+          ),
         },
         {
           find: /@(.*)/,
