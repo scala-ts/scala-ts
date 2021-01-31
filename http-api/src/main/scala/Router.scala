@@ -1,8 +1,15 @@
 package io.github.scalats.demo
 
-import play.api.libs.json.JsObject
+import io.github.scalats.demo.model.Account
 
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model.{ headers, StatusCodes }
+import akka.http.scaladsl.server.{
+  RejectionHandler,
+  Route,
+  UnsupportedRequestContentTypeRejection,
+  ValidationRejection
+}
+import play.api.libs.json._
 
 final class Router(context: AppContext) {
   import akka.http.scaladsl.server.Directives._
@@ -14,16 +21,23 @@ final class Router(context: AppContext) {
 
   //import context.executor // ExecutionContext
 
-  val instance: Route =
-    logRequest(s"${context.name}.router") {
+  import Codecs._
+
+  val instance: Route = {
+    implicit val rejHandler: RejectionHandler = rejectionHandler
+
+    Route.seal(logRequest(s"${context.name}.router") {
       // See https://doc.akka.io/docs/akka-http/current/routing-dsl/overview.html
 
       cors() {
         concat(
           pathPrefix("user") {
-            (post & path("signup") & entity(as[JsObject])) {
+            (post & path("signup") & entity(as[Account])) {
               signupRoute
             }
+
+            // TODO: POST signin(Credentials)
+            // TODO: GET profile
           },
           get {
             concat(
@@ -38,18 +52,62 @@ final class Router(context: AppContext) {
           }
         )
       }
-    }
+    })
+  }
 
   // ---
 
-  private def staticResources(prefix: String) = 
+  private def staticResources(prefix: String) =
     extractUnmatchedPath { path =>
       val res = path.toString.stripPrefix("/")
 
       getFromResource(s"webroot/${prefix}/${res}")
     }
 
-  private val signupRoute: JsObject => Route = { payload: JsObject =>
-    complete(payload)
+  private val signupRoute: Account => Route = { account: Account =>
+    val existing = context.cache.getIfPresent(account.userName)
+
+    if (existing != null) {
+      complete(
+        StatusCodes.Forbidden,
+        Json.obj("error" -> "forbidden", "details" -> "User already created")
+      )
+
+    } else {
+      context.cache.put(account.userName, account)
+
+      respondWithHeader(
+        headers.`Cache-Control`(
+          headers.CacheDirectives.`max-age`(context.cacheDuration.getSeconds)
+        )
+      ) {
+        complete(StatusCodes.Created, account.userName)
+      }
+    }
   }
+
+  // ---
+
+  private lazy val rejectionHandler = RejectionHandler
+    .newBuilder()
+    .handle {
+      case UnsupportedRequestContentTypeRejection(supported) =>
+        complete(
+          StatusCodes.BadRequest,
+          Json.obj(
+            "error" -> "requestContentType",
+            "details" -> Json.obj("supported" -> supported)
+          )
+        )
+
+      case ValidationRejection(message, _) =>
+        complete(
+          StatusCodes.InternalServerError,
+          Json.obj("error" -> "validation", "details" -> Json.parse(message))
+        )
+
+      case rej =>
+        sys.error(s"${rej.getClass}: $rej")
+    }
+    .result()
 }

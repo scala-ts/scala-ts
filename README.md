@@ -6,14 +6,31 @@ Scala-TS demonstration with an [Akka HTTP](https://doc.akka.io/docs/akka-http/cu
 
 Using [SBT](https://www.scala-sbt.org/):
 
-    sbt compile
+1. Run `sbt common/compile` to compile the Scala data model, and generate the corresponding TypeScript (to `common/target/scala-ts/src_managed/`).
+2. Run `sbt http-api/compile` to compile the REST API.
+
+Since *#1* is ok, the TypeScript/Svelte frontend can be built (using the generated TypeScript).
+
+```bash
+cd frontend
+yarn build
+```
 
 **Run locally:**
 
+Scala REST API:
+
     sbt run
+
+Frontend:
+
+```bash
+cd frontend
+yarn dev
+```
 
 ## Deploy
 
-On Heroku:
+On Heroku *(see [heroku.yml](./heroku.yml) & [Dockerfile](./Dockerfile))*
 
     git push heroku demo/akka-http-svlete:master

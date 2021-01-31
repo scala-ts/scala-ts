@@ -1,14 +1,22 @@
 package io.github.scalats.demo
 
+import java.time.{ Duration => JDuration }
+
 import scala.util.Try
 import scala.util.control.NonFatal
 
 import scala.concurrent.duration._
 
+import org.slf4j.LoggerFactory
+
+import com.typesafe.config.Config
+
+import com.google.common.cache.{ Cache, CacheBuilder }
+
+import io.github.scalats.demo.model.{ Account, UserName }
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.typesafe.config.Config
-import org.slf4j.LoggerFactory
 
 final class AppContext(
     val name: String,
@@ -21,6 +29,14 @@ final class AppContext(
   implicit val materializer = Materializer(system)
 
   val logger = LoggerFactory.getLogger(name)
+
+  val cacheDuration = JDuration.ofMinutes(5)
+
+  val cache: Cache[UserName, Account] = CacheBuilder
+    .newBuilder()
+    .maximumSize(1000)
+    .expireAfterWrite(cacheDuration)
+    .build()
 
   @volatile private var stopped = false
 

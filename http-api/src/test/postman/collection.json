@@ -1,0 +1,236 @@
+{
+	"info": {
+		"_postman_id": "a0634821-7ec6-4a12-acf3-a33167d59273",
+		"name": "Scala-TS demo",
+		"description": "**Make sure** to set the `backendUrl` collection variable.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "POST /signup",
+			"item": [
+				{
+					"name": "Error: Invalid request content type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Validation error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).to.eql(\"requestContentType\");",
+									"",
+									"    pm.expect(jsonData.details.supported[0].mediaRange).to.eql(\"application/json\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"invalid\"",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/user/signup",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"user",
+								"signup"
+							]
+						},
+						"description": "Create a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Error: Invalid Account JSON",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									"",
+									"pm.test(\"Validation error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).to.eql(\"validation\");",
+									"",
+									"    const userNameErrors = jsonData.details['obj.userName'];",
+									"",
+									"    pm.expect(userNameErrors[0].msg[0]).to.eql(\"error.path.missing\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/user/signup",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"user",
+								"signup"
+							]
+						},
+						"description": "Create a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Successful",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Body is user name\", function () {",
+									"    var jsonStr = pm.response.json();",
+									"    pm.expect(jsonStr).to.eql(pm.globals.get(\"scalatsDemoUserName\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const userName = pm.variables.replaceIn(\"{{$randomUserName}}\")",
+									"",
+									"pm.globals.set(\"scalatsDemoUserName\", userName);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"{{scalatsDemoUserName}}\",\n    \"usage\": \"Personal\",\n    \"password\": \"{{$randomPassword}}\",\n    \"favoriteFoods\": [ \"pizza\" ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/user/signup",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"user",
+								"signup"
+							]
+						},
+						"description": "Create a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Error: Forbidden duplicate user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Created\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Validation error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).to.eql(\"forbidden\");",
+									"",
+									"    pm.expect(jsonData.details).to.eql(\"User already created\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"{{scalatsDemoUserName}}\",\n    \"usage\": \"Personal\",\n    \"password\": \"{{$randomPassword}}\",\n    \"favoriteFoods\": [ \"sushi\" ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/user/signup",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"user",
+								"signup"
+							]
+						},
+						"description": "Create a new user account"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "backendUrl",
+			"value": "https://scala-ts-demo.herokuapp.com/"
+		}
+	]
+}

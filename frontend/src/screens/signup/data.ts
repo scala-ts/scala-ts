@@ -18,7 +18,6 @@ export const valid: Readable<boolean> = derived(
 );
 
 export async function submitSignUp(account: Account) {
-  console.log(`==> ${appEnv.backendUrl}`);
   //export const submitSignUp = (a: Account) => {
   const resp = await fetch(`${appEnv.backendUrl}/user/signup`, {
     method: "POST",

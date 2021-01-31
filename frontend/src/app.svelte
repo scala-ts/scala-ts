@@ -30,7 +30,8 @@
           <i class="bi bi-github" />
           See
           <a
-            href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete">sources</a>
+            href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
+            target="_blank">sources</a>
         </p>
       </div>
     </div>

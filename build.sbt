@@ -36,11 +36,14 @@ lazy val `http-api` = (project in file("http-api")).
     libraryDependencies ++= {
       // Versions
       val akkaVer = "2.6.9"
-      val akkaHttpVersion = "10.2.0"
+      val akkaHttpVersion = "10.2.3"
 
       Seq(
         // Logging
         "ch.qos.logback" % "logback-classic" % "1.2.3",
+
+        // As in memory DB
+        "com.google.guava" % "guava" % "30.1-jre",
 
         // Akka
         "com.typesafe.akka" %% "akka-stream" % akkaVer,

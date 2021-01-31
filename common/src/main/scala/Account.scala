@@ -40,3 +40,5 @@ object Pizza extends Food {
 }
 
 case class OtherFood(name: String) extends Food
+
+// TODO: Credentials, UserToken
