@@ -1,11 +1,17 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { accountStore, valid, submitSignUp } from "./data";
+  import {
+    accountStore,
+    error,
+    lastSavedName,
+    valid,
+    submitSignUp,
+  } from "./controller";
 </script>
 
 <div in:fade={{ duration: 120 }} class="container">
   <div class="row justify-content-md-center">
-    <div class="col col-lg-6">
+    <div class="col col-md-8 col-lg-6">
       <h1>Please sign up</h1>
 
       <form on:submit|preventDefault={() => submitSignUp($accountStore)}>
@@ -26,7 +32,9 @@
             id="password"
             bind:value={$accountStore.password} />
         </div>
-        <!-- TODO: Other Account properties -->
+        <!-- TODO: ContactName { firstName, lastName, age: number } -->
+        <!-- TODO: Usage: Personal | Professional -->
+        <!-- TODO: favoriteFoods sushi | pizza | ... -->
 
         <div class="row">
           <div class="col col-md-6 col-lg-6">
@@ -46,6 +54,14 @@
           </div>
         </div>
       </form>
+
+      {#if $lastSavedName}
+        <div class="mt-2 alert alert-success">
+          User '{$lastSavedName}' created.
+        </div>
+      {:else if $error}
+        <div class="mt-2 alert alert-danger">{$error}</div>
+      {/if}
     </div>
   </div>
 </div>

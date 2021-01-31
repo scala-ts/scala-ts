@@ -1,12 +1,14 @@
 import { writable, derived, Readable } from "svelte/store";
 import type { Account } from "@shared/Account";
 
-export const accountStore = writable<Account>({
+const initialAccount: Account = {
   userName: "",
   password: "",
   usage: "Personal",
   favoriteFoods: [],
-});
+};
+
+export const accountStore = writable<Account>({ ...initialAccount });
 
 export const valid: Readable<boolean> = derived(
   accountStore,
@@ -17,8 +19,11 @@ export const valid: Readable<boolean> = derived(
   }
 );
 
+export const error = writable<string | undefined>(undefined);
+
+export const lastSavedName = writable<string | undefined>(undefined);
+
 export async function submitSignUp(account: Account) {
-  //export const submitSignUp = (a: Account) => {
   const resp = await fetch(`${appEnv.backendUrl}/user/signup`, {
     method: "POST",
     headers: {
@@ -28,5 +33,11 @@ export async function submitSignUp(account: Account) {
   });
 
   const json = await resp.json();
-  console.log(`data = ${JSON.stringify(json)}`);
+
+  if (json.error && json.details) {
+    error.set(`${json.error}: ${json.details}`);
+  } else {
+    lastSavedName.set(json);
+    accountStore.set({ ...initialAccount });
+  }
 }

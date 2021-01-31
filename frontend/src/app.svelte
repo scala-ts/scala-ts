@@ -17,7 +17,7 @@
 
   <footer class="footer mt-auto py-3 text-center">
     <div class="row justify-content-md-center">
-      <div class="alert alert-secondary col col-lg-4">
+      <div class="alert alert-secondary col col-sm-6 col-md-6 col-lg-4">
         <p>
           This is a
           <a
