@@ -1,6 +1,8 @@
 import { writable, derived, get, Readable } from "svelte/store";
 import type { Account } from "@shared/Account";
 import type { ContactName } from "@shared/ContactName";
+import type { ModalProps } from "./modal";
+import { Error, isError } from "@utils/error";
 
 // Overall store
 const initialAccount: () => Account = () => ({
@@ -49,12 +51,15 @@ export const hasContact: Readable<boolean> = derived(
 );
 
 // Save
-export const error = writable<string | undefined>(undefined);
+export const pending = writable<boolean>(false);
 
-export const lastSavedName = writable<string | undefined>(undefined);
+export const modalStore = writable<ModalProps | undefined>(undefined);
 
+// TODO: Pending (disable form)
 export async function submitSignUp(account: Account) {
-  const resp = await fetch(`${appEnv.backendUrl}/user/signup`, {
+  pending.set(true);
+
+  const resp: Error | any = await fetch(`${appEnv.backendUrl}/user/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -63,14 +68,37 @@ export async function submitSignUp(account: Account) {
       ...account,
       contactName: get(contactName),
     }),
-  });
+  })
+    .then((resp) => resp.json())
+    .catch((err) => {
+      if (isError(err)) {
+        return err;
+      }
 
-  const json = await resp.json();
+      // ---
 
-  if (json.error && json.details) {
-    error.set(`${json.error}: ${json.details}`);
+      const reason: string =
+        typeof err == "string" ? err.toString() : JSON.stringify(err);
+
+      return {
+        error: "unexpected",
+        details: reason,
+      };
+    });
+
+  pending.set(false);
+
+  if (isError(resp)) {
+    modalStore.set({
+      id: "error-modal",
+      title: "Error",
+      message: `${resp.error}: ${JSON.stringify(resp.details)}`,
+      headerClass: "bg-danger",
+      bodyClass: "text-danger",
+      closeBtnClass: "btn-danger",
+    });
   } else {
-    lastSavedName.set(json);
+    const userName = resp.toString();
 
     // Reset contact
     firstName.set(undefined);
@@ -78,5 +106,18 @@ export async function submitSignUp(account: Account) {
     age.set(undefined);
 
     accountStore.set(initialAccount());
+
+    modalStore.set({
+      id: "success-modal",
+      title: "Success",
+      message: `User '${userName}' is created.`,
+      headerClass: "bg-success",
+      closeBtnClass: "btn-secondary",
+      extraBtn: {
+        classname: "btn-success",
+        onclick: () => (location.href = "/signin"),
+        label: "Sign in...",
+      },
+    });
   }
 }

@@ -19,20 +19,34 @@
     lastName,
     age,
     hasContact,
-    error,
-    lastSavedName,
     valid,
     submitSignUp,
-  } from "./controller";
+    modalStore,
+    pending,
+  } from "./signup";
+
+  import Modal from "./modal.svelte";
+
+  $: modal = $modalStore;
+
+  const hideModal = () => modalStore.set(undefined);
 </script>
 
 <style lang="scss">
+  :global(body) {
+    background-color: var(--bs-light);
+  }
+
   #header {
     height: 6rem;
   }
 
   #header + .row {
-    margin-top: 8rem !important;
+    margin-top: 32rem !important;
+  }
+
+  #header h1 {
+    font-family: "Ubuntu";
   }
 
   #favorite-food {
@@ -46,12 +60,30 @@
   }
 </style>
 
-<div in:fade={{ duration: 120 }} class="container">
+<div in:fade={{ duration: 120 }} class="container-fluid">
+  {#if modal}
+    <Modal state={modal} hide={hideModal} />
+  {/if}
+
+  {#if $pending}
+    <div
+      class="modal-backdrop"
+      id="pending-backdrop"
+      style="background-color:rgba(0, 0, 0, 0.5)"
+      in:fade={{ duration: 120 }}>
+      <div
+        class="container-fluid text-center position-relative"
+        style="top:49%">
+        <div class="spinner-border text-white align-middle" role="status" />
+      </div>
+    </div>
+  {/if}
+
   <div
     id="header"
-    class="fixed-top bg-light fixed-top border-bottom-1 border-secondary">
-    <div class="row mt-2">
-      <div class="col col-sm-2 col-md-3 col-lg-3 text-center">
+    class="fixed-top bg-white fixed-top border-bottom-1 border-secondary">
+    <div class="d-flex flex-row mt-2">
+      <div class="flex-fill p-2 text-center">
         <a href="https://scala-ts.github.io/scala-ts/" target="_blank">
           <img
             src="/images/logo-medium.png"
@@ -59,11 +91,11 @@
             width="64"
             height="64" /></a>
       </div>
-      <h1 class="col col-auto pt-3">Please sign up</h1>
+      <h1 class="flex-fill p-4">Please sign up</h1>
     </div>
   </div>
 
-  <div class="row justify-content-md-center mt-5">
+  <div class="row justify-content-md-center">
     <div class="col col-md-8 col-lg-6">
       <form on:submit|preventDefault={() => submitSignUp($accountStore)}>
         <div class="mb-3">
@@ -123,8 +155,6 @@
           </div>
         </div>
 
-        <!-- TODO: ContactName { firstName, lastName, age: number } -->
-
         <div class="mb-3">
           <label for="usage" class="form-label card-title">Usage</label>
           <select
@@ -137,7 +167,7 @@
           </select>
         </div>
 
-        <div class="mb-3 card">
+        <div class="mb-3 card" style="margin-bottom: 8rem !important">
           <div class="card-body">
             <label for="food" class="form-label card-title">Favorite food</label>
             <div class="input-group">
@@ -190,43 +220,38 @@
           </div>
         </div>
 
-        <div class="row" id="signup-footer">
-          <div class="col col-md-4 col-lg-4">
-            <button
-              type="submit"
-              disabled={!$valid}
-              class="btn btn-primary">Submit</button>
-          </div>
+        <div id="signup-footer" class="fixed-bottom bg-white">
+          <div class="d-flex justify-content-between mb-4">
+            <div class="p-2">
+              <button
+                type="submit"
+                disabled={!$valid}
+                class="btn btn-primary">Submit</button>
+            </div>
 
-          <div class="col col-md-4 col-lg-4 text-center align-middle">
-            <small><a
-                href="https://scala-ts.github.io/scala-ts/"
-                target="_blank">
-                Demo by
-                <img
-                  src="/images/logo-32.png"
-                  alt="Scala-TS"
-                  width="32"
-                  height="32" />
-              </a></small>
-          </div>
-          <div class="col col-md-4 col-lg-4 text-end align-middle">
-            <i class="bi bi-github" />
-            <small>
-              <a
-                href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
-                target="_blank">See sources</a></small>
+            <div class="p-2">
+              <small><a
+                  href="https://scala-ts.github.io/scala-ts/"
+                  target="_blank">
+                  Demo by
+                  <img
+                    src="/images/logo-32.png"
+                    alt="Scala-TS"
+                    width="32"
+                    height="32" />
+                </a></small>
+            </div>
+
+            <div class="p-2">
+              <i class="bi bi-github" />
+              <small>
+                <a
+                  href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
+                  target="_blank">See sources</a></small>
+            </div>
           </div>
         </div>
       </form>
-
-      {#if $lastSavedName}
-        <div class="mt-2 alert alert-success">
-          User '{$lastSavedName}' created.
-        </div>
-      {:else if $error}
-        <div class="mt-2 alert alert-danger">{$error}</div>
-      {/if}
     </div>
   </div>
 </div>

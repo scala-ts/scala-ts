@@ -92,19 +92,19 @@ final class Router(context: AppContext) {
     .newBuilder()
     .handle {
       case UnsupportedRequestContentTypeRejection(supported) =>
-        complete(
+        cors()(complete(
           StatusCodes.BadRequest,
           Json.obj(
             "error" -> "requestContentType",
             "details" -> Json.obj("supported" -> supported)
           )
-        )
+        ))
 
       case ValidationRejection(message, _) =>
-        complete(
+        cors()(complete(
           StatusCodes.InternalServerError,
           Json.obj("error" -> "validation", "details" -> Json.parse(message))
-        )
+        ))
 
       case rej =>
         sys.error(s"${rej.getClass}: $rej")

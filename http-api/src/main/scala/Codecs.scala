@@ -37,8 +37,8 @@ private[demo] object Codecs {
       case JsString(name) =>
         JsSuccess(OtherFood(name))
 
-      case _ =>
-        JsError("error.food.invalid")
+      case v =>
+        JsError(JsonValidationError("error.food.invalid", v))
     }
   }
 

@@ -5,7 +5,7 @@ import type { JapaneseSushi } from "@shared/JapaneseSushi";
 import type { Pizza } from "@shared/Pizza";
 import type { OtherFood } from "@shared/OtherFood";
 
-import { accountStore } from "./controller";
+import { accountStore } from "./signup";
 
 type PizzaSushi = JapaneseSushi | Pizza;
 
