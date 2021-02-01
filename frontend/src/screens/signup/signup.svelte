@@ -15,7 +15,10 @@
 
   import {
     accountStore,
-    contactStore,
+    firstName,
+    lastName,
+    age,
+    hasContact,
     error,
     lastSavedName,
     valid,
@@ -24,6 +27,14 @@
 </script>
 
 <style lang="scss">
+  #header {
+    height: 6rem;
+  }
+
+  #header + .row {
+    margin-top: 8rem !important;
+  }
+
   #favorite-food {
     height: 8rem;
     overflow-y: auto;
@@ -36,10 +47,24 @@
 </style>
 
 <div in:fade={{ duration: 120 }} class="container">
-  <div class="row justify-content-md-center">
-    <div class="col col-md-8 col-lg-6">
-      <h1>Please sign up</h1>
+  <div
+    id="header"
+    class="fixed-top bg-light fixed-top border-bottom-1 border-secondary">
+    <div class="row mt-2">
+      <div class="col col-sm-2 col-md-3 col-lg-3 text-center">
+        <a href="https://scala-ts.github.io/scala-ts/" target="_blank">
+          <img
+            src="/images/logo-medium.png"
+            alt="Scala-TS"
+            width="64"
+            height="64" /></a>
+      </div>
+      <h1 class="col col-auto pt-3">Please sign up</h1>
+    </div>
+  </div>
 
+  <div class="row justify-content-md-center mt-5">
+    <div class="col col-md-8 col-lg-6">
       <form on:submit|preventDefault={() => submitSignUp($accountStore)}>
         <div class="mb-3">
           <label for="userName" class="form-label">Username</label>
@@ -61,13 +86,39 @@
 
         <div class="mb-3 card">
           <div class="card-body">
+            <div class="card-title">
+              <span>Contact</span>
+
+              {#if $hasContact}
+                <i class="bi bi-check-square text-muted fw-light" />
+              {:else}<i class="bi bi-square text-muted fw-light" />{/if}
+            </div>
+
             <div>
               <label for="firstName" class="form-label">Firstname</label>
               <input
                 type="text"
                 class="form-control"
                 id="firstName"
-                bind:value={$contactStore.firstName} />
+                bind:value={$firstName} />
+            </div>
+
+            <div>
+              <label for="lastName" class="form-label">Lastname</label>
+              <input
+                type="text"
+                class="form-control"
+                id="lastName"
+                bind:value={$lastName} />
+            </div>
+
+            <div>
+              <label for="age" class="form-label">Age</label>
+              <input
+                type="text"
+                class="form-control"
+                id="age"
+                bind:value={$age} />
             </div>
           </div>
         </div>
