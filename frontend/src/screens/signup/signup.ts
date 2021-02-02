@@ -55,7 +55,6 @@ export const pending = writable<boolean>(false);
 
 export const modalStore = writable<ModalProps | undefined>(undefined);
 
-// TODO: Pending (disable form)
 export async function submitSignUp(account: Account) {
   pending.set(true);
 

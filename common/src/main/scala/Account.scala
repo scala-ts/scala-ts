@@ -29,6 +29,8 @@ object Usage extends Enumeration {
 //    => https://github.com/lloydmeta/enumeratum
 sealed trait Food {
   def name: String
+
+  @inline override def toString = name
 }
 
 object JapaneseSushi extends Food {

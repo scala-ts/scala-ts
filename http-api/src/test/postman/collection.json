@@ -134,7 +134,11 @@
 								"exec": [
 									"const userName = pm.variables.replaceIn(\"{{$randomUserName}}\")",
 									"",
-									"pm.globals.set(\"scalatsDemoUserName\", userName);"
+									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\")",
+									"",
+									"pm.globals.set(\"scalatsDemoUserName\", userName);",
+									"",
+									"pm.globals.set(\"scalatsDemoPassword\", password)"
 								],
 								"type": "text/javascript"
 							}
@@ -145,7 +149,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"userName\": \"{{scalatsDemoUserName}}\",\n    \"usage\": \"Personal\",\n    \"password\": \"{{$randomPassword}}\",\n    \"favoriteFoods\": [ \"pizza\" ]\n}",
+							"raw": "{\n    \"userName\": \"{{scalatsDemoUserName}}\",\n    \"usage\": \"Personal\",\n    \"password\": \"{{scalatsDemoPassword}}\",\n    \"favoriteFoods\": [ \"pizza\" ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -223,6 +227,125 @@
 						"description": "Create a new user account"
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "POST /signin",
+			"item": [
+				{
+					"name": "Unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Validation error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).to.eql(\"forbidden\");",
+									"",
+									"    pm.expect(jsonData.details).to.eql(\"Unauthorized\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"{{$randomUserAgent}}\",\n    \"password\": \"{{$randomPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/signin",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Validation error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).to.eql(\"forbidden\");",
+									"",
+									"    pm.expect(jsonData.details).to.eql(\"Unauthorized\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"{{scalatsDemoUserName}}\",\n    \"password\": \"{{scalatsDemoPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backendUrl}}/signin",
+							"host": [
+								"{{backendUrl}}"
+							],
+							"path": [
+								"signin"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		}

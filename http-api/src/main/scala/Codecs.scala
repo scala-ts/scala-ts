@@ -51,6 +51,8 @@ private[demo] object Codecs {
 
   implicit val accountFormat: OFormat[Account] = Json.format
 
+  implicit val credentialsFormat: OFormat[Credentials] = Json.format
+
   // ---
 
   implicit val contentTypeRangeWrites: Writes[ContentTypeRange] = {

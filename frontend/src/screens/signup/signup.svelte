@@ -42,7 +42,7 @@
   }
 
   #header + .row {
-    margin-top: 32rem !important;
+    margin-top: 8rem !important;
   }
 
   #header h1 {

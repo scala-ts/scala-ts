@@ -24,17 +24,17 @@
           <h1 class="mb-3">Please sign in</h1>
         </div>
 
-        <label for="inputEmail" class="visually-hidden">Email address</label>
+        <label for="userName" class="visually-hidden">Email address</label>
         <input
-          type="email"
-          id="inputEmail"
+          type="text"
+          id="userName"
           class="form-control mb-3"
-          placeholder="Email address"
+          placeholder="Username"
           bind:value={$userName} />
-        <label for="inputPassword" class="visually-hidden">Password</label>
+        <label for="password" class="visually-hidden">Password</label>
         <input
           type="password"
-          id="inputPassword"
+          id="password"
           class="form-control mb-3"
           placeholder="Password"
           bind:value={$password} />

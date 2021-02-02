@@ -1,6 +1,6 @@
 package io.github.scalats.demo
 
-import io.github.scalats.demo.model.Account
+import io.github.scalats.demo.model.{ Account, Credentials, UserName }
 
 import akka.http.scaladsl.model.{ headers, StatusCodes }
 import akka.http.scaladsl.server.{
@@ -36,8 +36,10 @@ final class Router(context: AppContext) {
               signupRoute
             }
 
-            // TODO: POST signin(Credentials)
             // TODO: GET profile
+          },
+          (post & path("signin") & entity(as[Credentials])) {
+            signinRoute
           },
           get {
             concat(
@@ -57,17 +59,8 @@ final class Router(context: AppContext) {
 
   // ---
 
-  private def staticResources(prefix: String) =
-    extractUnmatchedPath { path =>
-      val res = path.toString.stripPrefix("/")
-
-      getFromResource(s"webroot/${prefix}/${res}")
-    }
-
-  private val signupRoute: Account => Route = { account: Account =>
-    val existing = context.cache.getIfPresent(account.userName)
-
-    if (existing != null) {
+  private val signupRoute: Account => Route = { account =>
+    if (findUser(account.userName).nonEmpty) {
       complete(
         StatusCodes.Forbidden,
         Json.obj("error" -> "forbidden", "details" -> "User already created")
@@ -86,25 +79,55 @@ final class Router(context: AppContext) {
     }
   }
 
+  private val signinRoute: Credentials => Route = { credentials =>
+    import credentials.{ userName, password }
+
+    findUser(userName).filter(_.password == password) match {
+      case Some(_) =>
+        complete(Json toJson s"${userName}:${Digest.md5Hex(password, "UTF-8")}")
+
+      case _ =>
+        complete(
+          StatusCodes.Forbidden,
+          Json.obj("error" -> "forbidden", "details" -> "Unauthorized")
+        )
+    }
+  }
+
+  private def findUser(userName: UserName): Option[Account] =
+    Option(context.cache getIfPresent userName)
+
+  // To embed frontend as static resources
+  private def staticResources(prefix: String) =
+    extractUnmatchedPath { path =>
+      val res = path.toString.stripPrefix("/")
+
+      getFromResource(s"webroot/${prefix}/${res}")
+    }
+
   // ---
 
   private lazy val rejectionHandler = RejectionHandler
     .newBuilder()
     .handle {
       case UnsupportedRequestContentTypeRejection(supported) =>
-        cors()(complete(
-          StatusCodes.BadRequest,
-          Json.obj(
-            "error" -> "requestContentType",
-            "details" -> Json.obj("supported" -> supported)
+        cors()(
+          complete(
+            StatusCodes.BadRequest,
+            Json.obj(
+              "error" -> "requestContentType",
+              "details" -> Json.obj("supported" -> supported)
+            )
           )
-        ))
+        )
 
       case ValidationRejection(message, _) =>
-        cors()(complete(
-          StatusCodes.InternalServerError,
-          Json.obj("error" -> "validation", "details" -> Json.parse(message))
-        ))
+        cors()(
+          complete(
+            StatusCodes.InternalServerError,
+            Json.obj("error" -> "validation", "details" -> Json.parse(message))
+          )
+        )
 
       case rej =>
         sys.error(s"${rej.getClass}: $rej")
