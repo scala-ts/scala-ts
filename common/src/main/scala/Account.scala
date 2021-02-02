@@ -41,4 +41,8 @@ object Pizza extends Food {
 
 case class OtherFood(name: String) extends Food
 
-// TODO: Credentials, UserToken
+case class Credentials(
+  userName: UserName,
+  password: String)
+
+// TODO:  UserToken
