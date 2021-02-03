@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import scala.collection.immutable.{ ListSet, Set }
+import scala.collection.immutable.ListSet
 
 import io.github.scalats.typescript._
 
@@ -259,7 +259,7 @@ final class TypeScriptEmitter(
   private def withOut[T](
     decl: Declaration.Kind,
     name: String,
-    imports: Set[TypeRef])(f: PrintStream => T): T = {
+    imports: ListSet[TypeRef])(f: PrintStream => T): T = {
     lazy val print = out(settings, decl, name, imports)
 
     try {
@@ -283,8 +283,8 @@ private[scalats] object TypeScriptEmitter {
 
   type TypeMapper = Function5[TypeScriptTypeMapper.Resolved, Settings, String, TypeScriptField, TypeRef, Option[String]]
 
-  type ImportResolver = Declaration => Option[Set[TypeRef]]
+  type ImportResolver = Declaration => Option[ListSet[TypeRef]]
 
   /* See `TypeScriptPrinter` */
-  type Printer = Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream]
+  type Printer = Function4[Settings, Declaration.Kind, String, ListSet[TypeRef], PrintStream]
 }

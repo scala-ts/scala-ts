@@ -1,4 +1,4 @@
-package io.github.scalats.sbt.idtlt
+package io.github.scalats.idtlt
 
 import java.io.PrintStream
 

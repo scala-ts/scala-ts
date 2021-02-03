@@ -113,6 +113,30 @@ object Manifest {
     }.taskValue
   ).dependsOn(core)
 
+lazy val idtlt = project.in(file("idtlt")).settings(
+  name := "scala-ts-idtlt",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
+  unmanagedJars in Compile += (shaded / assembly).value,
+  pomPostProcess := XmlUtil.transformPomDependencies { dep =>
+    (dep \ "groupId").headOption.map(_.text) match {
+      case Some(
+        "com.sksamuel.scapegoat" | // plugin there (compile time only)
+          "com.github.ghik" // plugin there (compile time only)
+      ) =>
+        None
+
+      case Some("io.github.scala-ts") =>
+        Some(dep).filter { _ =>
+          (dep \ "artifactId").headOption.
+            exists(_ startsWith "scala-ts-shaded")
+        }
+
+      case _ =>
+        Some(dep)
+    }
+  }
+).dependsOn(core)
+
 lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
   enablePlugins(SbtPlugin).
   settings(
@@ -134,6 +158,7 @@ lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
     },
     scripted := scripted.
       dependsOn(publishLocal in core).
+      dependsOn(publishLocal in idtlt).
       dependsOn(publishLocal in `sbt-plugin`).
       evaluated,
     sourceGenerators in Compile += Def.task {
@@ -158,11 +183,11 @@ object Manifest {
         f
       })
     }.taskValue
-  ).dependsOn(core)
+  ).dependsOn(idtlt)
 
 lazy val root = (project in file("."))
   .settings(
     publish := ({}),
     publishTo := None,
   )
-  .aggregate(shaded, core, `sbt-plugin`, `sbt-plugin-idtlt`)
+  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`)

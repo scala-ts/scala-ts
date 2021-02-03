@@ -47,11 +47,6 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsCompilerPluginConf = settingKey[File](
       "Path to the configuration file generated for the compiler plugin")
 
-    /* TODO: (medium priority)
-    val scalatsEmitCodecs = settingKey[Boolean](
-      "EXPERIMENTAL: Generate the codec functions fromData/toData for TypeScript classes")
-     */
-
     val scalatsOptionToNullable = settingKey[Boolean](
       "Option types will be compiled to 'type | null'")
 
@@ -99,7 +94,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsTypeExcludes = settingKey[Set[String]](
       s"Scala types to be excluded for ScalaTS; $typeRegex (default: none)")
 
-    val scalatsAdditionalClasspath = settingKey[Classpath](
+    val scalatsAdditionalClasspath = taskKey[Classpath](
       "Additional classpath for Scala-TS")
 
     // ---
@@ -156,6 +151,41 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
     @inline def scalatsPrinterUrlPrelude(source: URL): Option[PrinterPrelude] =
       Some(Right(source))
+
+    private val moduleIdKey = AttributeKey[ModuleID]("moduleID")
+
+    def scalatsAddScalatsDependency(
+      dependency: ModuleID): Seq[Def.Setting[_]] = {
+      val m = compilerPlugin(dependency)
+
+      Seq(
+        libraryDependencies += m,
+        scalatsAdditionalClasspath ++= {
+          val log = streams.value.log
+          val v = scalaBinaryVersion.value
+
+          val jars = Classpaths.managedJars(
+            sbt.librarymanagement.Configurations.CompilerPlugin,
+            Set("jar"), update.value)
+
+          jars.find(jm => jm.get(moduleIdKey).exists { ji =>
+            ji.organization == m.organization && (
+              ji.name == m.name || ji.name.startsWith(s"${m.name}_${v}"))
+          }) match {
+            case Some(jar) => {
+              log.debug(s"Resolve library dependency '${name}': ${jar.data}")
+
+              Seq(jar)
+            }
+
+            case _ => {
+              log.error(s"Fails to resolve library dependency: $name")
+
+              Seq.empty
+            }
+          }
+        })
+    }
   }
 
   import autoImport._

@@ -2,6 +2,12 @@
 layout: default
 ---
 
+TODO: Add in index
+**More:**
+
+- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
+
+
 # Akka HTTP/Svelte demonstration
 
 This is a *Scala-TS* demonstration with a REST API managing user information, and a TypeScript [SPA](https://en.wikipedia.org/wiki/Single-page_application) as frontend for this API.

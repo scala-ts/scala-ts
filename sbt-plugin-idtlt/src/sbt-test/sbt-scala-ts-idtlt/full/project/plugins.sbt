@@ -4,4 +4,4 @@ resolvers += Resolver.sonatypeRepo("staging")
 
 addSbtPlugin("io.github.scala-ts" %% "sbt-scala-ts" % pluginVer)
 
-addSbtPlugin("io.github.scala-ts" %% "sbt-scala-ts-idtlt" % pluginVer)
+addSbtPlugin("io.github.scala-ts" %% "sbt-scala-ts-idtlt" % pluginVer changing())

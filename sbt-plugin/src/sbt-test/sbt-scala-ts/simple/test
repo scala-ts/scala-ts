@@ -5,7 +5,7 @@ $ absent target/scala-ts/src_managed/BusLine.ts
 $ absent target/scala-ts/src_managed/TrainLine.ts
 
 # Simple generation from Scala case class
-> compile
+> +compile
 
 # Check the generated files is as expected
 $ exists target/scala-ts.conf

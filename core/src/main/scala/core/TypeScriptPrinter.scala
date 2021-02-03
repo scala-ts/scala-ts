@@ -2,11 +2,11 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.ListSet
 
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
-trait TypeScriptPrinter extends Function4[Settings, Declaration.Kind, String, Set[TypeRef], PrintStream] {
+trait TypeScriptPrinter extends Function4[Settings, Declaration.Kind, String, ListSet[TypeRef], PrintStream] {
 
   /**
    * Resolves the printer to be used to the specified type
@@ -21,7 +21,7 @@ trait TypeScriptPrinter extends Function4[Settings, Declaration.Kind, String, Se
     configuration: Settings,
     kind: Declaration.Kind,
     name: String,
-    requires: Set[TypeRef]): PrintStream
+    requires: ListSet[TypeRef]): PrintStream
 }
 
 object TypeScriptPrinter {
@@ -30,6 +30,6 @@ object TypeScriptPrinter {
       configuration: Settings,
       kind: Declaration.Kind,
       name: String,
-      requires: Set[TypeRef]): PrintStream = Console.out
+      requires: ListSet[TypeRef]): PrintStream = Console.out
   }
 }

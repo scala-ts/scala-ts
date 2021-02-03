@@ -1,6 +1,6 @@
 package scalats
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.ListSet
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
@@ -14,7 +14,7 @@ final class CustomPrinter(outDir: File) extends BasePrinter {
     conf: io.github.scalats.core.Settings,
     kind: Declaration.Kind,
     name: String,
-    requires: Set[TypeRef]): PrintStream = {
+    requires: ListSet[TypeRef]): PrintStream = {
 
     val writePrelude: Boolean = {
       if (first) {
