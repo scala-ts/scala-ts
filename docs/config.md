@@ -116,12 +116,10 @@ When specifying classes for the advanced settings (such as `typeScriptTypeMapper
 
 The Scala version for the compiler plugins must be the same as the one for the sources to be compiled (cf `scalaVersion` SBT setting).
 
-As long as the sources and the SBT Scala versions are the same (for SBT 1.x, Scala 2.12), the classes for the advanced settings can be implemented in `project/` directory of the SBT build definition.
+As long as the sources and the SBT Scala versions are the same (for SBT 1.x, Scala 2.12), the classes for the advanced settings can be implemented in `project/` directory of the SBT build definition (see [example](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg)).
 
 If the Scala versions differ, these classes must be provided as cross versions Scala library to be appended to the `scalatsAdditionalClass` as below.
 
 ```ocaml
 scalatsAddScalatsDependency("org" %% "name" % "ver")
 ```
-
-TODO: Link to example in idtlt

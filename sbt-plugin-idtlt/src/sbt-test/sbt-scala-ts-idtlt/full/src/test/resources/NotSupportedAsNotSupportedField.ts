@@ -11,7 +11,7 @@ export const idtltNotSupportedAsNotSupportedField = idtlt.object({
 export const idtltDiscriminatedNotSupportedAsNotSupportedField = idtlt.intersection(
   idtltNotSupportedAsNotSupportedField,
   idtlt.object({
-    '_type': idtlt.literal('NotSupportedAsNotSupportedField')
+    _type: idtlt.literal('NotSupportedAsNotSupportedField')
   })
 );
 

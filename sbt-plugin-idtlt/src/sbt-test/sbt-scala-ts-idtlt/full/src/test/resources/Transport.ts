@@ -14,7 +14,7 @@ export const idtltTransport = idtlt.union(
 export const idtltDiscriminatedTransport = idtlt.intersection(
   idtltTransport,
   idtlt.object({
-    '_type': idtlt.literal('Transport')
+    _type: idtlt.literal('Transport')
   })
 );
 

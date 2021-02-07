@@ -16,7 +16,7 @@ export const idtltBar = idtlt.object({
 export const idtltDiscriminatedBar = idtlt.intersection(
   idtltBar,
   idtlt.object({
-    '_type': idtlt.literal('Bar')
+    _type: idtlt.literal('Bar')
   })
 );
 

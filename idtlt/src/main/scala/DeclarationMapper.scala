@@ -36,7 +36,7 @@ export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
       s"""export const idtltDiscriminated${tpeName} = idtlt.intersection(
 ${indent}idtlt${tpeName},
 ${indent}idtlt.object({
-${indent}${indent}'${settings.discriminator.text}': idtlt.literal('${tpeName}')
+${indent}${indent}${settings.discriminator.text}: idtlt.literal('${tpeName}')
 ${indent}})
 )${lineSep}
 """
@@ -98,7 +98,6 @@ $deriving""")
       case _: UnionDeclaration =>
         out.println(s"// Not supported: UnionDeclaration '${name}'")
 
-      // TODO: $discrimitedObj
       case EnumDeclaration(_, values) => {
         out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")

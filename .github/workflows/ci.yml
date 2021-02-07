@@ -25,7 +25,8 @@ jobs:
 
     - name: 'Coursier cache'
       uses: coursier/cache-action@v5
-      extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+      with:
+        extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Check code quality' # TODO: Separate job
       run: |

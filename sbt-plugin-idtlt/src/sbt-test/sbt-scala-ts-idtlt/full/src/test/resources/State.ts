@@ -12,7 +12,7 @@ export const idtltState = idtlt.union(
 export const idtltDiscriminatedState = idtlt.intersection(
   idtltState,
   idtlt.object({
-    '_type': idtlt.literal('State')
+    _type: idtlt.literal('State')
   })
 );
 
