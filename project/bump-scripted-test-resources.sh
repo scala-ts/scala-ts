@@ -1,5 +1,10 @@
 #! /bin/bash
 
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <version>"
+  exit 1
+fi
+
 VERSION=$1
 
 for TS in `ls -v -1 sbt-*/src/sbt-test/sbt-*/*/src/test/resources/*.ts`
