@@ -14,6 +14,5 @@ export type AppRouter = typeof router;
 export type AppRoute = AppRouter["route"];
 
 export const currentRoute = readable(router.route, (set) => {
-  const stop = router.onChange(() => set(router.route));
-  return stop;
+  return router.onChange(() => set(router.route));
 });
