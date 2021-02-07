@@ -10,4 +10,4 @@ addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.1")
 
-addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "0.5.3")
+addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % "0.5.4")

@@ -20,7 +20,7 @@ yarn build
 
 Scala REST API:
 
-    sbt run
+    sbt http-api/run
 
 Frontend:
 

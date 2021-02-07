@@ -5,8 +5,7 @@ export const router = Router(
   {
     signup: Route("/"),
     signin: Route("/signin"),
-    //shapes: Route('/shapes'),
-    //shape: Route('/shape/:id', withId),
+    profile: Route("/profile"),
   },
   { onNotFound: (reason) => console.error(reason) }
 );

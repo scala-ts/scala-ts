@@ -25,7 +25,7 @@
     pending,
   } from "./signup";
 
-  import Modal from "./modal.svelte";
+  import Modal from "@components/modal/modal.svelte";
 
   $: modal = $modalStore;
 
@@ -221,33 +221,35 @@
         </div>
 
         <div id="signup-footer" class="fixed-bottom bg-white">
-          <div class="d-flex justify-content-between mb-4">
-            <div class="p-2">
-              <button
-                type="submit"
-                disabled={!$valid}
-                class="btn btn-primary">Submit</button>
-            </div>
+          <div class="col-md-8 col-lg-6 mx-auto">
+            <div class="d-flex justify-content-between mb-4">
+              <div class="p-2">
+                <button
+                  type="submit"
+                  disabled={!$valid}
+                  class="btn btn-primary">Submit</button>
+              </div>
 
-            <div class="p-2">
-              <small><a
-                  href="https://scala-ts.github.io/scala-ts/"
-                  target="_blank">
-                  Demo by
-                  <img
-                    src="/images/logo-32.png"
-                    alt="Scala-TS"
-                    width="32"
-                    height="32" />
-                </a></small>
-            </div>
+              <div class="p-2">
+                <small><a
+                    href="https://scala-ts.github.io/scala-ts/"
+                    target="_blank">
+                    Demo by
+                    <img
+                      src="/images/logo-32.png"
+                      alt="Scala-TS"
+                      width="32"
+                      height="32" />
+                  </a></small>
+              </div>
 
-            <div class="p-2">
-              <i class="bi bi-github" />
-              <small>
-                <a
-                  href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
-                  target="_blank">See sources</a></small>
+              <div class="p-2">
+                <i class="bi bi-github" />
+                <small>
+                  <a
+                    href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
+                    target="_blank">See sources</a></small>
+              </div>
             </div>
           </div>
         </div>

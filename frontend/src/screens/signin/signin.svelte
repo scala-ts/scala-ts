@@ -1,6 +1,21 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { userName, password, isValid, login } from "./signin";
+  import {
+    userName,
+    password,
+    valid,
+    login,
+    loginMessage,
+    modalStore,
+    pending,
+  } from "./signin";
+
+  import Modal from "@components/modal/modal.svelte";
+
+  $: modal = $modalStore;
+  $: msg = $loginMessage;
+
+  const hideModal = () => modalStore.set(undefined);
 </script>
 
 <style lang="scss">
@@ -10,6 +25,24 @@
 </style>
 
 <div in:fade={{ duration: 120 }} class="container-fluid">
+  {#if modal}
+    <Modal state={modal} hide={hideModal} />
+  {/if}
+
+  {#if $pending}
+    <div
+      class="modal-backdrop"
+      id="pending-backdrop"
+      style="background-color:rgba(0, 0, 0, 0.5)"
+      in:fade={{ duration: 120 }}>
+      <div
+        class="container-fluid text-center position-relative"
+        style="top:49%">
+        <div class="spinner-border text-white align-middle" role="status" />
+      </div>
+    </div>
+  {/if}
+
   <div class="row justify-content-md-center">
     <div class="col col-md-5 col-lg-3">
       <form on:submit|preventDefault={login}>
@@ -39,9 +72,15 @@
           placeholder="Password"
           bind:value={$password} />
 
+        {#if msg}
+          <div class="alert alert-{msg.level} border-white" role="alert">
+            {msg.text}
+          </div>
+        {/if}
+
         <button
           class="mt-4 w-100 btn btn-lg btn-primary"
-          disabled={!$isValid}
+          disabled={!$valid}
           type="submit">Sign in</button>
       </form>
     </div>

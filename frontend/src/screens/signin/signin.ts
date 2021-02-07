@@ -1,5 +1,6 @@
 import { writable, derived, get } from "svelte/store";
 import type { Credentials } from "@shared/Credentials";
+import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
 export const userName = writable<string | undefined>(undefined);
@@ -17,12 +18,23 @@ const credentials = derived([userName, password], ($values) => {
   return c;
 });
 
-export const isValid = derived(credentials, ($credentials) => !!$credentials);
+export const valid = derived(credentials, ($credentials) => !!$credentials);
+
+// Log in
+export const pending = writable<boolean>(false);
+
+export const modalStore = writable<ModalProps | undefined>(undefined);
+
+export const loginMessage = writable<
+  | {
+      level: "warning" | "success";
+      text: string;
+    }
+  | undefined
+>(undefined);
 
 export async function login() {
-  alert(JSON.stringify(get(credentials)));
-
-  // TODO: pending.set(true);
+  pending.set(true);
 
   const resp: Error | any = await fetch(`${appEnv.backendUrl}/signin`, {
     method: "POST",
@@ -48,42 +60,35 @@ export async function login() {
       };
     });
 
-  //TODO:pending.set(false);
+  pending.set(false);
 
   if (isError(resp)) {
-    /* TODO:
-    modalStore.set({
-      id: "error-modal",
-      title: "Error",
-      message: `${resp.error}: ${JSON.stringify(resp.details)}`,
-      headerClass: "bg-danger",
-      bodyClass: "text-danger",
-      closeBtnClass: "btn-danger",
-    });
-    */
-    console.log(JSON.stringify(resp));
+    if (resp.error != "forbidden") {
+      modalStore.set({
+        id: "error-modal",
+        title: "Error",
+        message: `${resp.error}: ${JSON.stringify(resp.details)}`,
+        headerClass: "bg-danger",
+        bodyClass: "text-danger",
+        closeBtnClass: "btn-danger",
+      });
+    } else {
+      loginMessage.set({
+        level: "warning",
+        text:
+          typeof resp.details == "string"
+            ? resp.details
+            : JSON.stringify(resp.details),
+      });
+    }
   } else {
-    const userName = resp.toString();
+    localStorage.setItem("scala-ts-demo.token", resp.toString());
 
-    // Reset contact
-    userName.set(undefined);
-    password.set(undefined);
-
-    /* TODO
-    modalStore.set({
-      id: "success-modal",
-      title: "Success",
-      message: `User '${userName}' is created.`,
-      headerClass: "bg-success",
-      closeBtnClass: "btn-secondary",
-      extraBtn: {
-        classname: "btn-success",
-        onclick: () => (location.href = "/signin"),
-        label: "Sign in...",
-      },
+    loginMessage.set({
+      level: "success",
+      text: "OK",
     });
-    */
 
-    alert("OK");
+    location.href = "/profile";
   }
 }
