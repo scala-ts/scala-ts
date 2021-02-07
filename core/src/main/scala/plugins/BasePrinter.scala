@@ -2,6 +2,8 @@ package io.github.scalats.plugins
 
 import java.io.PrintStream
 
+import scala.collection.immutable.ListSet
+
 import io.github.scalats.core.{ Settings, TypeScriptPrinter }
 import io.github.scalats.typescript.TypeRef
 
@@ -34,13 +36,13 @@ abstract class BasePrinter extends TypeScriptPrinter {
    */
   protected def printImports(
     settings: Settings,
-    requires: Set[TypeRef],
+    requires: ListSet[TypeRef],
     out: PrintStream)(importPath: TypeRef => String): Unit = {
     import settings.{ typescriptLineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
-    requires.foreach { tpe =>
+    requires.toList.sortBy(_.name).foreach { tpe =>
       val tpeName = typeNaming(tpe)
 
       out.println(s"import ${formatImport(tpeName)} from '${importPath(tpe)}'${sep}")

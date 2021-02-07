@@ -2,6 +2,8 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import scala.collection.immutable.ListSet
+
 import io.github.scalats.core.Settings
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
@@ -23,7 +25,7 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
     conf: Settings,
     kind: Declaration.Kind,
     name: String,
-    requires: Set[TypeRef]): PrintStream = {
+    requires: ListSet[TypeRef]): PrintStream = {
 
     val f = new File(outDir, filename)
 

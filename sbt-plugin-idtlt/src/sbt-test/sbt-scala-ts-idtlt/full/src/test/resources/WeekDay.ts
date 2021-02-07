@@ -14,7 +14,7 @@ export const idtltWeekDay = idtlt.union(
 export const idtltDiscriminatedWeekDay = idtlt.intersection(
   idtltWeekDay,
   idtlt.object({
-    '_type': idtlt.literal('WeekDay')
+    _type: idtlt.literal('WeekDay')
   })
 );
 

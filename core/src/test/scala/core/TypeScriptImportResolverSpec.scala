@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.ListSet
 
 import io.github.scalats.typescript.{
   CustomTypeRef,
@@ -21,7 +21,7 @@ final class TypeScriptImportResolverSpec
       import TypeScriptImportResolver.defaultResolver
 
       "be resolved for union type" in {
-        defaultResolver(union1) must_=== Set.empty[TypeRef]
+        defaultResolver(union1) must_=== ListSet.empty[TypeRef]
       }
 
       "be resolved as an empty set for interface" >> {
@@ -40,7 +40,7 @@ final class TypeScriptImportResolverSpec
         }
 
         singleton2.name in {
-          defaultResolver(singleton2) must_=== Set(
+          defaultResolver(singleton2) must_=== ListSet(
             CustomTypeRef("SupI", List.empty))
         }
       }
@@ -50,8 +50,8 @@ final class TypeScriptImportResolverSpec
       import TypeScriptImportResolver.{ unionWithLiteralSingleton => resolve }
 
       "be resolved for union type" in {
-        resolve(union1) must beSome[Set[TypeRef]].which {
-          _ must_=== Set.empty[TypeRef] ++ union1.possibilities
+        resolve(union1) must beSome[ListSet[TypeRef]].which {
+          _ must_=== ListSet.empty[TypeRef] ++ union1.possibilities
         }
       }
     }

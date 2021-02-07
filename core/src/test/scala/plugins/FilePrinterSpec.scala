@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.{ File, PrintStream }
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.ListSet
 
 import scala.io.Source.fromFile
 
@@ -25,18 +25,18 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
       val p = new SingleFilePrinter(tmp)
       val printer = {
         val conf = io.github.scalats.core.Settings()
-        p(conf, Declaration.Class, _: String, _: Set[TypeRef])
+        p(conf, Declaration.Class, _: String, _: ListSet[TypeRef])
       }
 
       try {
         withPrinter(new PrintStream(file)) { p1 =>
           p1.println("_prior")
 
-          withPrinter(printer("foo", Set.empty)) { p2 =>
+          withPrinter(printer("foo", ListSet.empty)) { p2 =>
             p2.println("FOO")
 
             withPrinter(
-              printer("bar", Set(CustomTypeRef("Foo", List.empty)))) { p3 =>
+              printer("bar", ListSet(CustomTypeRef("Foo", List.empty)))) { p3 =>
                 p3.println("BAR")
                 p3.flush()
 

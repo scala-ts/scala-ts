@@ -13,7 +13,7 @@ export const idtltBusLine = idtlt.object({
 export const idtltDiscriminatedBusLine = idtlt.intersection(
   idtltBusLine,
   idtlt.object({
-    '_type': idtlt.literal('BusLine')
+    _type: idtlt.literal('BusLine')
   })
 );
 

@@ -138,7 +138,7 @@ object Settings {
 
         } catch {
           case NonFatal(_) =>
-            logger.warning(s"Fails to load custom field naming: ${className}")
+            logger.warning(s"Fails to load custom type naming: ${className}")
             None
         }
 
@@ -161,7 +161,7 @@ object Settings {
 
         } catch {
           case NonFatal(_) =>
-            logger.warning(s"Fails to load custom field naming: ${className}")
+            logger.warning(s"Fails to load custom field mapper: ${className}")
             None
         }
 

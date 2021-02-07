@@ -107,3 +107,19 @@ Optionally the following argument can be passed.
 - `-P:scalats.sys.scala-ts.single-filename=filename.ts` - Set the filename if using the `SingleFilePrinter`.
 - `-P:scalats:sys.scala-ts.printer.prelude-url=/path/to/prelude` - Set the system property (`scala-ts.printer.prelude-url`) to pass `/path/to/prelude` as printer prelude.
 - `-P:scalats:sys.scala-ts.printer.import-pattern=import-pattern` - Override the pattern to print pattern (default: `type { %1$s }` with `%1$s` being the placeholder for the name of the type to be imported).
+
+## Advanced settings
+
+TODO
+
+When specifying classes for the advanced settings (such as `typeScriptTypeMappers`), the classes must be loadable in the classloader for the [compiler plugins](https://docs.scala-lang.org/overviews/plugins/index.html) (different from either the SBT/SBT plugins own classpath or the classpath to compile the Scala sources).
+
+The Scala version for the compiler plugins must be the same as the one for the sources to be compiled (cf `scalaVersion` SBT setting).
+
+As long as the sources and the SBT Scala versions are the same (for SBT 1.x, Scala 2.12), the classes for the advanced settings can be implemented in `project/` directory of the SBT build definition (see [example](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg)).
+
+If the Scala versions differ, these classes must be provided as cross versions Scala library to be appended to the `scalatsAdditionalClass` as below.
+
+```ocaml
+scalatsAddScalatsDependency("org" %% "name" % "ver")
+```

@@ -1,0 +1,29 @@
+@startuml
+skinparam interface {
+  backgroundColor gray
+  borderColor black
+}
+
+skinparam component {
+  BorderColor black
+  BackgroundColor white
+}
+
+frame "Scala" #dd3633 {
+  [common]
+  [http-api << Akka-HTTP >>] as api
+}
+
+frame "TypeScript" #007acc {
+  [frontend]
+  [Account.ts, ... << generated >> ] as modelts
+}
+
+note top of common : Declares data model
+
+api -up-> common : Uses >
+api -down-> HTTP
+modelts -up-> common : Generated \nusing Scala-TS >
+frontend -up-> modelts : Uses >
+frontend ..right..> HTTP : Calls (REST)
+@enduml

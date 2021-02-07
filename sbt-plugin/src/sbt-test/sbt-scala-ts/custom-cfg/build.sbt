@@ -9,6 +9,8 @@ enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 // Custom option transpiling
 scalatsOptionToNullable := true
 
+// TODO: cross example with custom class in separate module
+
 // Custom type naming (defined in `project/CustomTypeNaming.scala`)
 scalatsTypeScriptTypeNaming := classOf[scalats.CustomTypeNaming]
 

@@ -2,6 +2,8 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import scala.collection.immutable.ListSet
+
 import io.github.scalats.core.Settings
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 
@@ -9,11 +11,12 @@ import io.github.scalats.typescript.{ Declaration, TypeRef }
 final class FilePrinter(outDir: File) extends BasePrinter {
   private val tracker = scala.collection.mutable.Map.empty[String, File]
 
+  @com.github.ghik.silencer.silent(".*kind.*never used.*")
   def apply(
     conf: Settings,
     kind: Declaration.Kind,
     name: String,
-    requires: Set[TypeRef]): PrintStream = {
+    requires: ListSet[TypeRef]): PrintStream = {
 
     val f = tracker.getOrElseUpdate(name, {
       val n = new File(outDir, s"${name}.ts")

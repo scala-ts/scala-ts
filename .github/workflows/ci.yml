@@ -25,12 +25,8 @@ jobs:
 
     - name: 'Coursier cache'
       uses: coursier/cache-action@v5
-
-    - name: 'SBT cache'
-      uses: actions/cache@v1
       with:
-        path: $HOME/.sbt
-        key: ${{ runner.os }}-sbt-cache-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+        extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
@@ -58,7 +54,7 @@ jobs:
         comment_title: 'Core tests statistics'
 
     - name: 'Run SBT plugin tests'
-      run: sbt ';error ;^ publishLocal ;^ scripted'
+      run: sbt ';error ;+publishLocal ;++2.12.12 ;^scripted'
 
     - name: 'Set up Node'
       uses: actions/setup-node@v1

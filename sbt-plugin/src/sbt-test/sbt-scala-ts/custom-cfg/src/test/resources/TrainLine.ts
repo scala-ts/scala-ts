@@ -1,5 +1,5 @@
-import type { TSWeekDay } from './scalatsWeekDay';
 import type { TSTransport } from './scalatsTransport';
+import type { TSWeekDay } from './scalatsWeekDay';
 
 export interface TSTrainLine extends TSTransport {
   _name: string;

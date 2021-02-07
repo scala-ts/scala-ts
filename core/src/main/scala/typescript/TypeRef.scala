@@ -1,13 +1,13 @@
 package io.github.scalats.typescript
 
-import scala.collection.immutable.{ ListSet, Set }
+import scala.collection.immutable.ListSet
 
 import io.github.scalats.core.Internals
 
 /** Reference to a builtin type or one declared elsewhere. */
 sealed trait TypeRef {
   /* See `Declaration.requires` */
-  private[scalats] def requires: Set[TypeRef]
+  private[scalats] def requires: ListSet[TypeRef]
 
   /** The type name */
   def name: String
@@ -25,8 +25,8 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
     else s"""${name}${typeArgs.mkString("<", ", ", ">")}"""
   }
 
-  def requires: Set[TypeRef] =
-    typeArgs.toSet.flatMap { ta: TypeRef => ta.requires }
+  def requires: ListSet[TypeRef] =
+    ListSet.empty ++ typeArgs.toList.flatMap { ta: TypeRef => ta.requires }
 
 }
 
@@ -39,7 +39,7 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
 case class CustomTypeRef(
   name: String,
   typeArgs: List[TypeRef] = Nil) extends TypeRef with GenericTypeRef {
-  override def requires: Set[TypeRef] =
+  override def requires: ListSet[TypeRef] =
     super.requires + this
 }
 
@@ -69,7 +69,7 @@ case class TupleRef(typeArgs: List[TypeRef])
 }
 
 private[scalats] sealed class SimpleTypeRef(val name: String) extends TypeRef {
-  @inline def requires = Set.empty[TypeRef]
+  @inline def requires = ListSet.empty[TypeRef]
 
   @inline override def toString = name
 
@@ -117,7 +117,7 @@ case class NullableType(innerType: TypeRef) extends TypeRef {
  * Reference to a union type (e.g. `string | number`)
  */
 case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
-  @inline def requires = Set.empty[TypeRef]
+  @inline def requires = ListSet.empty[TypeRef]
 
   lazy val name = Internals.list(possibilities.map(_.name)).mkString(" | ")
 
@@ -132,7 +132,7 @@ case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
  * @param valueType the type of the values
  */
 case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef {
-  def requires: Set[TypeRef] =
+  def requires: ListSet[TypeRef] =
     keyType.requires ++ valueType.requires
 
   lazy val name = s"{ [key: ${keyType.name}]: ${valueType.name} }"

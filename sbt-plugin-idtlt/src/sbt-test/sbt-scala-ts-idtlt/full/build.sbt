@@ -6,6 +6,10 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
 
+scalaVersion := "2.13.4"
+
+crossScalaVersions := Seq("2.12.12", scalaVersion.value)
+
 // ---
 
 // Distribute src/test/typescript as ts-test

@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.ListSet
 
 import io.github.scalats.typescript._
 
@@ -12,31 +12,31 @@ import io.github.scalats.typescript._
  * The implementations must be class with a no-arg constructor.
  */
 trait TypeScriptImportResolver
-  extends (Declaration => Option[Set[TypeRef]]) { self =>
+  extends (Declaration => Option[ListSet[TypeRef]]) { self =>
 
   /**
    * Resolves `Some` required import for the given `declaration`.
    *
    * If `None` is returns, will use the `Defaults` imports.
    */
-  def apply(declaration: Declaration): Option[Set[TypeRef]]
+  def apply(declaration: Declaration): Option[ListSet[TypeRef]]
 
   def andThen(m: TypeScriptImportResolver): TypeScriptImportResolver =
     new TypeScriptImportResolver {
-      @inline def apply(decl: Declaration): Option[Set[TypeRef]] =
+      @inline def apply(decl: Declaration): Option[ListSet[TypeRef]] =
         self(decl).orElse(m(decl))
     }
 }
 
 object TypeScriptImportResolver {
-  type Resolved = Declaration => Set[TypeRef]
+  type Resolved = Declaration => ListSet[TypeRef]
 
   object Defaults extends TypeScriptImportResolver {
-    def apply(declaration: Declaration): Option[Set[TypeRef]] = None
+    def apply(declaration: Declaration): Option[ListSet[TypeRef]] = None
   }
 
   final class UnionWithLiteralSingleton extends TypeScriptImportResolver {
-    def apply(declaration: Declaration): Option[Set[TypeRef]] =
+    def apply(declaration: Declaration): Option[ListSet[TypeRef]] =
       declaration match {
         case InterfaceDeclaration(name, fields, _, superInterface, _) if (
           superInterface.exists(_.union)) =>
@@ -44,10 +44,10 @@ object TypeScriptImportResolver {
           Some(fields.flatMap(_.typeRef.requires).filterNot(_.name == name))
 
         case SingletonDeclaration(_, _, _) =>
-          Some(Set.empty[TypeRef])
+          Some(ListSet.empty[TypeRef])
 
         case UnionDeclaration(_, _, possibilities, _) =>
-          Some(Set.empty[TypeRef] ++ possibilities)
+          Some(possibilities.map { t => (t: TypeRef) })
 
         case _ =>
           None
@@ -75,19 +75,19 @@ object TypeScriptImportResolver {
     case InterfaceDeclaration(name, fields, _, superInterface, _) =>
       fields.flatMap(_.typeRef.requires).
         filterNot(_.name == name) ++ superInterface.
-        toSet.map { i: InterfaceDeclaration => i.reference }
+        map { i: InterfaceDeclaration => i.reference }
 
     case SingletonDeclaration(name, values, superInterface) =>
       values.flatMap(_.typeRef.requires).
         filterNot(_.name == name) ++ superInterface.
-        toSet.map { i: InterfaceDeclaration => i.reference }
+        map { i: InterfaceDeclaration => i.reference }
 
     case UnionDeclaration(name, fields, _, superInterface) =>
       fields.flatMap(_.typeRef.requires).
         filterNot(_.name == name) ++ superInterface.
-        toSet.map { i: InterfaceDeclaration => i.reference }
+        map { i: InterfaceDeclaration => i.reference }
 
     case _ =>
-      Set.empty[TypeRef]
+      ListSet.empty[TypeRef]
   }
 }

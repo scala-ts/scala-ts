@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="488px" preserveAspectRatio="none" style="width:439px;height:488px;" version="1.1" viewBox="0 0 439 488" width="439px" zoomAndPan="magnify"><defs><filter height="300%" id="f1eamel5fk5gtq" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[c32d901b6a3399902eae459c95bc19d1]
+cluster Scala--><rect fill="#DD3633" filter="url(#f1eamel5fk5gtq)" height="301" style="stroke: #000000; stroke-width: 1.5;" width="190" x="14" y="72"/><path d="M60,73 L60,81.4883 L50,91.4883 L14,91.4883 " fill="none" style="stroke: #000000; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="36" x="17" y="86.5352">Scala</text><!--MD5=[93ff578156fd6d4688ddcf720c1bd60b]
+cluster TypeScript--><rect fill="#007ACC" filter="url(#f1eamel5fk5gtq)" height="265" style="stroke: #000000; stroke-width: 1.5;" width="216" x="212" y="205"/><path d="M298,206 L298,214.4883 L288,224.4883 L212,224.4883 " fill="none" style="stroke: #000000; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="76" x="215" y="219.5352">TypeScript</text><!--MD5=[8274bfb416b6365278739ca5c48d26ea]
+entity common--><rect fill="#FFFFFF" filter="url(#f1eamel5fk5gtq)" height="36.4883" style="stroke: #000000; stroke-width: 1.5;" width="80" x="104" y="99"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="99" y="104"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="99" y="125.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="60" x="114" y="122.5352">common</text><!--MD5=[e2307af040e3f87d22824e7603ca28ec]
+entity api--><rect fill="#FFFFFF" filter="url(#f1eamel5fk5gtq)" height="36.4883" style="stroke: #000000; stroke-width: 1.5;" width="173" x="22.5" y="329"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="17.5" y="334"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="17.5" y="355.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="153" x="32.5" y="352.5352">http-api «Akka-HTTP»</text><!--MD5=[b1e3d2dcb3697de9e6328d1cb436cbc4]
+entity frontend--><rect fill="#FFFFFF" filter="url(#f1eamel5fk5gtq)" height="36.4883" style="stroke: #000000; stroke-width: 1.5;" width="80" x="270" y="426"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="265" y="431"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="265" y="452.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="60" x="280" y="449.5352">frontend</text><!--MD5=[78c843e1317dbf969726207ccb97a4c6]
+entity modelts--><rect fill="#FFFFFF" filter="url(#f1eamel5fk5gtq)" height="36.4883" style="stroke: #000000; stroke-width: 1.5;" width="200" x="220" y="232"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="215" y="237"/><rect fill="#FFFFFF" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="215" y="258.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="180" x="230" y="255.5352">Account.ts, ... «generated»</text><path d="M69.5,8 L69.5,33.3105 A0,0 0 0 0 69.5,33.3105 L140,33.3105 L144,98.7782 L148,33.3105 L218.5,33.3105 A0,0 0 0 0 218.5,33.3105 L218.5,18 L208.5,8 L69.5,8 A0,0 0 0 0 69.5,8 " fill="#FBFB77" filter="url(#f1eamel5fk5gtq)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M208.5,8 L208.5,18 L218.5,18 L208.5,8 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="128" x="75.5" y="25.5684">Declares data model</text><!--MD5=[96f7e1299d4a43069e6ed32352fcac20]
+entity HTTP--><ellipse cx="148" cy="444" fill="#808080" filter="url(#f1eamel5fk5gtq)" rx="8" ry="8" style="stroke: #000000; stroke-width: 2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="36" x="130" y="474.5352">HTTP</text><!--MD5=[c5478c0ccc054ea6b2ae0ad553f9cd06]
+reverse link common to api--><path d="M140.4873,140.0835 C133.5246,185.8382 118.1009,287.1941 111.7821,328.7179 " fill="none" id="common&lt;-api" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="141.2536,135.0477,135.945,143.3434,140.5013,139.9908,143.854,144.5471,141.2536,135.0477" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="30" x="131" y="255.0684">Uses</text><!--MD5=[ae15bf7c16a67ee55dcfde36f6300131]
+link api to HTTP--><path d="M116.3356,365.245 C123.8943,384.0448 135.513,412.9427 142.3753,430.0103 " fill="none" id="api-&gt;HTTP" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="144.3425,434.9031,144.6966,425.0606,142.4774,430.264,137.274,428.0448,144.3425,434.9031" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[2fee9032610baa819ae998c6cc24ab2c]
+reverse link common to modelts--><path d="M172.1619,138.2815 C206.4049,164.1583 263.6144,207.3904 295.9063,231.7928 " fill="none" id="common&lt;-modelts" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="168.103,135.2142,172.8717,143.8316,172.0921,138.2287,177.6949,137.4491,168.103,135.2142" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="63" x="268" y="178.5684">Generated</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="94" x="248" y="193.8789">using Scala-TS</text><polygon fill="#000000" points="344,187.4658,350,190.4658,344,193.4658,344,187.4658" style="stroke: #000000; stroke-width: 1.0;"/><!--MD5=[d33f8094d1a0d5d51a613350b976b7cd]
+reverse link modelts to frontend--><path d="M318.8,273.2804 C316.7821,312.4275 312.7518,390.6154 310.931,425.9388 " fill="none" id="modelts&lt;-frontend" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="319.0592,268.251,314.6011,277.0331,318.8018,273.2444,322.5905,277.445,319.0592,268.251" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="30" x="316" y="352.0684">Uses</text><!--MD5=[45492763890cc90bd75a80cb82b256d7]
+link frontend to HTTP--><path d="M269.9713,444 C235.0568,444 186.3561,444 162.4306,444 " fill="none" id="frontend-&gt;HTTP" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="157.174,444,166.174,448,162.174,444,166.174,440,157.174,444" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="73" x="177" y="437.5684">Calls (REST)</text><!--MD5=[2f7654f77128a789b358a5e221998240]
+@startuml
+skinparam interface {
+  backgroundColor gray
+  borderColor black
+}
+
+skinparam component {
+  BorderColor black
+  BackgroundColor white
+}
+
+frame "Scala" #dd3633 {
+  [common]
+  [http-api << Akka-HTTP >>] as api
+}
+
+frame "TypeScript" #007acc {
+  [frontend]
+  [Account.ts, ... << generated >> ] as modelts
+}
+
+note top of common : Declares data model
+
+api -up-> common : Uses >
+api -down-> HTTP
+modelts -up-> common : Generated \nusing Scala-TS >
+frontend -up-> modelts : Uses >
+frontend ..right..> HTTP : Calls (REST)
+@enduml
+
+PlantUML version 1.2020.11(Sat May 30 12:13:43 CEST 2020)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: fr
+Country: FR
+--></g></svg>
