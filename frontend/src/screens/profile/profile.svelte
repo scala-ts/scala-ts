@@ -1,9 +1,24 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { fade } from "svelte/transition";
-  import { signOut } from "./profile";
+  import { account, load, modalStore, pending, signOut } from "./profile";
 
   export let token: string;
   const name = token.substring(0, token.indexOf(":"));
+
+  onMount(async () => load(token));
+
+  $: a = $account;
+  $: contact = a ? a.contact : undefined;
+  $: usage = a ? a.usage : undefined;
+  $: foods = a ? a.favoriteFoods : [];
+
+  // Modal
+  import Modal from "@components/modal/modal.svelte";
+
+  $: modal = $modalStore;
+
+  const hideModal = () => modalStore.set(undefined);
 </script>
 
 <style lang="scss">
@@ -14,9 +29,31 @@
   h1 {
     font-family: "Ubuntu";
   }
+
+  .card-footer a {
+    text-decoration: none;
+  }
 </style>
 
 <div in:fade={{ duration: 120 }} class="container-fluid">
+  {#if modal}
+    <Modal state={modal} hide={hideModal} />
+  {/if}
+
+  {#if $pending}
+    <div
+      class="modal-backdrop"
+      id="pending-backdrop"
+      style="background-color:rgba(0, 0, 0, 0.5)"
+      in:fade={{ duration: 120 }}>
+      <div
+        class="container-fluid text-center position-relative"
+        style="top:49%">
+        <div class="spinner-border text-white align-middle" role="status" />
+      </div>
+    </div>
+  {/if}
+
   <div class="row justify-content-md-center mt-3">
     <div class="col col-md-8 col-lg-6">
       <div class="card">
@@ -34,6 +71,36 @@
           <dl class="row">
             <dt class="col-sm-3">Name</dt>
             <dd class="col-sm-9">{name}</dd>
+          </dl>
+
+          {#if contact}
+            <dl class="row">
+              <dt class="col-sm-3">Contact</dt>
+              <dd class="col-sm-9">
+                {contact.firstName}
+                {contact.lastName}
+                ({contact.age}
+                years)
+              </dd>
+            </dl>
+          {/if}
+
+          {#if usage}
+            <dl class="row">
+              <dt class="col-sm-3">Usage</dt>
+              <dd class="col-sm-9">{usage}</dd>
+            </dl>
+          {/if}
+
+          <dl class="row">
+            <dt class="col-sm-3">Favorite food</dt>
+            <dd class="col-sm-9">
+              <ul>
+                {#each foods as food}
+                  <li>{food}</li>
+                {/each}
+              </ul>
+            </dd>
           </dl>
         </div>
 

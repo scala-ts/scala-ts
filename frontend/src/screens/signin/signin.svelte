@@ -16,6 +16,8 @@
   $: msg = $loginMessage;
 
   const hideModal = () => modalStore.set(undefined);
+
+  const init = (el: HTMLElement) => el.focus();
 </script>
 
 <style lang="scss">
@@ -63,6 +65,7 @@
           id="userName"
           class="form-control mb-3"
           placeholder="Username"
+          use:init
           bind:value={$userName} />
         <label for="password" class="visually-hidden">Password</label>
         <input

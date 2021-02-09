@@ -1,7 +1,5 @@
 package io.github.scalats.demo
 
-import io.github.scalats.demo.model.{ Account, Credentials, UserName }
-
 import akka.http.scaladsl.model.{ headers, StatusCodes }
 import akka.http.scaladsl.server.{
   RejectionHandler,
@@ -9,6 +7,10 @@ import akka.http.scaladsl.server.{
   UnsupportedRequestContentTypeRejection,
   ValidationRejection
 }
+import akka.http.scaladsl.server.directives.{ Credentials => Creds }
+
+import io.github.scalats.demo.model.{ Account, Credentials, UserName }
+
 import play.api.libs.json._
 
 final class Router(context: AppContext) {
@@ -32,11 +34,19 @@ final class Router(context: AppContext) {
       cors() {
         concat(
           pathPrefix("user") {
-            (post & path("signup") & entity(as[Account])) {
-              signupRoute
-            }
-
-            // TODO: GET profile
+            concat(
+              (post & path("signup") & entity(as[Account])) {
+                signupRoute
+              },
+              authenticateBasic(
+                realm = "scala-ts-demo",
+                Authenticator.unapply
+              ) { account =>
+                (get & path("profile")) {
+                  complete(Json toJson account)
+                }
+              }
+            )
           },
           (post & path("signin") & entity(as[Credentials])) {
             signinRoute
@@ -58,6 +68,18 @@ final class Router(context: AppContext) {
   }
 
   // ---
+
+  private object Authenticator {
+    def unapply: Creds => Option[Account] = (_: Creds) match {
+      case p @ Creds.Provided(name) =>
+        findUser(new UserName(name)).filter { user =>
+          p.verify(Digest.md5Hex(user.password, "UTF-8"))
+        }
+
+      case _ =>
+        None
+    }
+  }
 
   private val signupRoute: Account => Route = { account =>
     if (findUser(account.userName).nonEmpty) {

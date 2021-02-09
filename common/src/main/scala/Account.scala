@@ -46,5 +46,3 @@ case class OtherFood(name: String) extends Food
 case class Credentials(
   userName: UserName,
   password: String)
-
-// TODO:  UserToken

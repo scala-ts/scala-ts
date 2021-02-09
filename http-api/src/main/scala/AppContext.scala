@@ -13,10 +13,10 @@ import com.typesafe.config.Config
 
 import com.google.common.cache.{ Cache, CacheBuilder }
 
-import io.github.scalats.demo.model.{ Account, UserName }
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+
+import io.github.scalats.demo.model.{ Account, UserName }
 
 final class AppContext(
     val name: String,

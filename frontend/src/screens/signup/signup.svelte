@@ -122,7 +122,7 @@
               <span>Contact</span>
 
               {#if $hasContact}
-                <i class="bi bi-check-square text-muted fw-light" />
+                <i class="bi bi-check-square text-primary fw-light" />
               {:else}<i class="bi bi-square text-muted fw-light" />{/if}
             </div>
 
@@ -147,7 +147,8 @@
             <div>
               <label for="age" class="form-label">Age</label>
               <input
-                type="text"
+                type="number"
+                min="0"
                 class="form-control"
                 id="age"
                 bind:value={$age} />

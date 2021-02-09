@@ -1,12 +1,13 @@
 package io.github.scalats.demo
 
-import io.github.scalats.demo.model._
-
 import akka.http.scaladsl.model.{
   ContentTypeRange,
   HttpCharsetRange,
   MediaRange
 }
+
+import io.github.scalats.demo.model._
+
 import play.api.libs.json._
 
 /* JSON codecs to read Scala types from requests and write to responses. */

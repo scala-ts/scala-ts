@@ -65,7 +65,7 @@ export async function submitSignUp(account: Account) {
     },
     body: JSON.stringify({
       ...account,
-      contactName: get(contactName),
+      contact: get(contactName),
     }),
   })
     .then((resp) => resp.json())
