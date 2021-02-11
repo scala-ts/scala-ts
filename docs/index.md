@@ -37,6 +37,10 @@ const incident: Incident = {
 
 > See [examples](./examples.html)
 
+**More:**
+
+- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
+
 ### SBT plugin
 
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin).
