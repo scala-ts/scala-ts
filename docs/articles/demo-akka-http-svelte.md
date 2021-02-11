@@ -2,12 +2,6 @@
 layout: default
 ---
 
-TODO: Add in index
-**More:**
-
-- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
-
-
 # Akka HTTP/Svelte demonstration
 
 This is a *Scala-TS* demonstration with a REST API managing user information, and a TypeScript [SPA](https://en.wikipedia.org/wiki/Single-page_application) as frontend for this API.
@@ -30,31 +24,50 @@ The application demonstrates several user management features.
 
 The user can create a new account.
 
-First, the user signs up using the Svlete form.
+First, the user signs up using the Svelte form.
 
 ![SignUp form](../assets/demo-akka-http-svelte/signup1.png)
 
-Then the frontend `POST`s as JSON the TypeScript `Account` (see in model; TODO: Link).
+Then the frontend `POST`s as JSON the TypeScript `Account`.
 
-(TODO: Snippet & GitHub Link)
+e.g.
 
-The REST API receives the JSON data and decodes it as Scala `Account` (see in model; TODO: Link).
+```json
+{
+  "userName": "xoo",
+  "password":"bar",
+  "usage":"Personal",
+  "favoriteFoods": [
+    "pizza",
+    { "name": "ramen" }
+  ],
+  "contactName": {
+    "firstName": "Lorem",
+    "lastName": "Ipsum",
+    "age": "23"
+  }
+}
+```
 
-(TODO: Scala Snippet & GitHub link)
+![SignUp request](../assets/demo-akka-http-svelte/signup2.png)
+
+> *See [TypeScript POST](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/frontend/src/screens/signup/signup.ts#L58)*
+
+The REST API receives the JSON data and decodes it as [Scala `Account`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/common/src/main/scala/Account.scala#L3).
+
+> *See [Scala SignUp endpoint](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L38)*
 
 > *Note:* [Play JSON](https://github.com/playframework/play-json#play-json) is used to read and write the Scala types from/to JSON requests/responses.
 
-If it's Ok, the Scala `UserName` (see in model; TODO: Link) is sent back as JSON response.
+If it's Ok, the [Scala `UserName`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/common/src/main/scala/Account.scala#L11) is [sent back as JSON](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L99) response.
 
-(TODO: Scala Snippet & GitHub link)
+![SignUp response](../assets/demo-akka-http-svelte/signup2.png)
 
-Finally, frontend handles the response as TypeScript `UserName` (see in model; TODO: Link), and the Sign Up confirmation is displayed (or error is some).
+Finally, frontend handles the response as TypeScript `UserName`, and the Sign Up confirmation is displayed (or error if some).
+
+![SignUp response](../assets/demo-akka-http-svelte/signup4.png)
 
 > *Note:* In this sample frontend, it's possible to 'quite' safely [assert the JSON response as the expected type](https://www.typescriptlang.org/docs/handbook/basic-types.html#type-assertions). In many case, validating the response must be done (e.g. [io-ts](https://gcanti.github.io/io-ts/), [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat), ...).
-
-(TODO: Scala Snippet & GitHub link)
-
-TODO: Screenshot
 
 ### Login
 
@@ -62,41 +75,48 @@ The user can connect using his credentials, and then see his information on the 
 
 First, the user type his name and password.
 
-TODO: Screenshot
+![Login form](../assets/demo-akka-http-svelte/login1.png)
 
-Then the frontend `POST`s as JSON the TypeScript `Credentials` (see in model; TODO: Link).
+Then the frontend `POST`s as JSON the TypeScript `Credentials`.
 
-(TODO: Scala Snippet & GitHub link)
+```json
+{"userName":"foo","password":"bar"}
+```
 
-The REST API receives the JSON data and decodes it as Scala `Credentials` (see in model; TODO: Link).
+![Login request](../assets/demo-akka-http-svelte/login2.png)
 
-(TODO: Scala Snippet & GitHub link)
+> *See [TypeScript login](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/frontend/src/screens/signin/signin.ts#L36)*
 
-If it's Ok, a Scala `UserToken` is sent back as JSON response.
+The REST API receives the JSON data and decodes it as [Scala `Credentials`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/common/src/main/scala/Account.scala#L46).
 
-(TODO: Scala Snippet & GitHub link)
+> *See [Scala SignIn endpoint](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L51)
 
-Then the frontend redirects to the profile screen, which `GET`s its information (according the token passed as [HTTP authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)).
+If it's Ok, a [user token](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L109) is sent back as JSON response.
 
-(TODO: Scala Snippet & GitHub link)
+![Login response](../assets/demo-akka-http-svelte/login3.png)
+
+Then the frontend [redirects to the profile screen](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/frontend/src/screens/signin/signin.ts#L92), which `GET`s its information (according the token passed as [HTTP authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)).
 
 The REST API handles the user token, and finds the corresponding Scala `Account` to send it back as JSON.
 
-(TODO: Scala Snippet & GitHub link)
+```json
+{
+  "userName": "foo",
+  "usage": "Personal",
+  "password": "bar",
+  "favoriteFoods": [ "pizza", "ramen" ]
+}
+```
 
-Finally, the frontend receives the response as TypeScript `Account` (see in model; TODO: Link), and it's displayed on the profile screen.
+Finally, the frontend receives the response as TypeScript `Account`, and it's displayed on the profile screen.
 
-(TODO: Scala Snippet & GitHub link)
-
-TODO: Screenshot
+![Profile screen](../assets/demo-akka-http-svelte/profile1.png)
 
 ## Model
 
-The demonstration models the user accounts and relared information (username, credentials and token).
+The demonstration models the user accounts and related information (username, credentials and token).
 
-![Demonstration use cases](../assets/demo-akka-http-svelte/usecases.svg)
-
-TODO: Links in the table (to GitHub)
+![Model](../assets/demo-akka-http-svelte/types.svg)
 
 | Scala                  | TypeScript            |
 | ---------------------- | --------------------- |
@@ -121,5 +141,7 @@ yarn build
 
 ## Deploy
 
-heroku.yml & Dockerfile (copy frontend to src/main/resources/webroot so serve as static resources)
+It can be deploy to [Heroku](https://www.heroku.com/) using Docker build.
 
+- [`heroku.yml`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/heroku.yml)
+- `Dockerfile` ([copy frontend](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/Dockerfile#L12) to `src/main/resources/webroot` so it's served as static resources).
