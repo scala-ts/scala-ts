@@ -125,6 +125,31 @@ The demonstration models the user accounts and related information (username, cr
 | Credentials case class | Credentials interface |
 | UserToken value class  | string                |
 
+## Project structure
+
+The demonstration project is composed of multiple modules.
+
+![Project layout](../assets/demo-akka-http-svelte/components.svg)
+
+**common:** Common data model
+
+Using *Scala-TS*, it declares the data model as Scala types, and from there the corresponding TypeScript types are generated.
+
+```ocaml
+lazy val common = (project in file("common")).
+  enablePlugins(TypeScriptGeneratorPlugin).
+  settings(
+    Seq(
+      name := "scala-ts-demo-common"
+    ) ++ scalatsUnionWithLiteral)
+```
+
+**http-api** REST/HTTP API
+
+Implements the use cases based on the data model
+
+**frontend** TypeScript Svelte frontend
+
 ## Build
 
 Using [SBT](https://www.scala-sbt.org/):
