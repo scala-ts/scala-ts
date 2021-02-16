@@ -28,7 +28,6 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
   override def trigger = noTrigger
 
-  // TODO: Check the documentation index.md
   object autoImport {
     /** Printer class, along with system properties */
     type PrinterSetting = (Class[_ <: TypeScriptPrinter], Map[String, String])

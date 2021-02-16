@@ -170,6 +170,7 @@ final class CompilerPlugin(val global: Global)
     }
 
     @volatile private var examined = ListSet.empty[ScalaParser.TypeFullId]
+    private val compiled = scala.collection.mutable.Set.empty[String]
 
     private def handle(
       unit: CompilationUnit,
@@ -269,6 +270,11 @@ final class CompilerPlugin(val global: Global)
         chain(config.typeScriptImportResolvers).
         getOrElse(TypeScriptImportResolver.Defaults)
 
+      compiled.synchronized {
+        // Include the current compilation unit as it's known
+        compiled += unit.source.file.canonicalPath
+      }
+
       val ex = TypeScriptGenerator.generate(global)(
         settings = plugin.config.settings,
         types = scalaTypes,
@@ -278,7 +284,8 @@ final class CompilerPlugin(val global: Global)
         declMapper = declMapper,
         typeMapper = typeMapper,
         printer = config.printer,
-        examined = examined)
+        examined = examined,
+        compiled = compiled.toSet)
 
       examined = examined ++ ex
     }

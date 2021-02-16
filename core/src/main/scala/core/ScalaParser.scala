@@ -7,7 +7,9 @@ import scala.collection.immutable.ListSet
 import scala.reflect.api.Universe
 
 final class ScalaParser[Uni <: Universe](
-  val universe: Uni, logger: Logger)(
+  val universe: Uni,
+  compiled: Set[String],
+  logger: Logger)(
   implicit
   cu: CompileUniverse[Uni]) {
 
@@ -50,8 +52,17 @@ final class ScalaParser[Uni <: Universe](
     examined: ListSet[TypeFullId],
     parsed: ListSet[TypeDef]): Result[ListSet, TypeFullId] = types match {
     case (tpe @ (scalaType, tree)) :: tail => {
+      val pos = scalaType.typeSymbol.pos
+      val notDefined: Boolean = (pos != universe.NoPosition &&
+        !compiled.contains(pos.source.file.canonicalPath))
+
+      if (notDefined) {
+        logger.info(s"Postpone parsing of ${scalaType} (${pos}) is not yet compiled")
+      }
+
       if (examined.contains(fullId(scalaType)) ||
-        scalaType.typeSymbol.isParameter) {
+        scalaType.typeSymbol.isParameter ||
+        notDefined) {
         // Skip already examined type (or a type parameter)
         //val res = parseType(scalaType, examined)
 

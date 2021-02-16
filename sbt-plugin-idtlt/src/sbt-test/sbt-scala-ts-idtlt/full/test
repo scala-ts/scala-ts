@@ -21,6 +21,14 @@ $ absent target/scala-ts/src_managed/Whatever.ts
 $ absent target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts
 $ absent target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts
 
+$ absent target/scala-ts/src_managed/Feature.ts
+$ absent target/scala-ts/src_managed/Foo.ts
+$ absent target/scala-ts/src_managed/Bar.ts
+$ absent target/scala-ts/src_managed/Category.ts
+$ absent target/scala-ts/src_managed/Lorem.ts
+$ absent target/scala-ts/src_managed/Ipsum.ts
+$ absent target/scala-ts/src_managed/NamedFeature.ts
+
 # Simple generation from Scala case class
 > +compile
 
@@ -77,6 +85,27 @@ $ must-mirror target/scala-ts/src_managed/NotSupportedClassAsTypeArgs.ts src/tes
 
 $ exists target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts
 $ must-mirror target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts src/test/resources/NotSupportedAsNotSupportedField.ts
+
+$ exists target/scala-ts/src_managed/Feature.ts
+$ must-mirror target/scala-ts/src_managed/Feature.ts src/test/resources/Feature.ts
+
+$ exists target/scala-ts/src_managed/Foo.ts
+$ must-mirror target/scala-ts/src_managed/Foo.ts src/test/resources/Foo.ts
+
+$ exists target/scala-ts/src_managed/Bar.ts
+$ must-mirror target/scala-ts/src_managed/Bar.ts src/test/resources/Bar.ts
+
+$ exists target/scala-ts/src_managed/Category.ts
+$ must-mirror target/scala-ts/src_managed/Category.ts src/test/resources/Category.ts
+
+$ exists target/scala-ts/src_managed/Lorem.ts
+$ must-mirror target/scala-ts/src_managed/Lorem.ts src/test/resources/Lorem.ts
+
+$ exists target/scala-ts/src_managed/Ipsum.ts
+$ must-mirror target/scala-ts/src_managed/Ipsum.ts src/test/resources/Ipsum.ts
+
+$ exists target/scala-ts/src_managed/NamedFeature.ts
+$ must-mirror target/scala-ts/src_managed/NamedFeature.ts src/test/resources/NamedFeature.ts
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedTypescript
