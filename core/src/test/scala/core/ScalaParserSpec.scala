@@ -19,6 +19,7 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
 
   val scalaParser = new ScalaParser[runtimeUniverse.type](
     universe = runtimeUniverse,
+    compiled = Set.empty,
     logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
 
   "Parser" should {

@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
+import scala.collection.immutable.{ ListSet, Set }
 
 import scala.reflect.api.Universe
 //import scala.reflect.runtime
@@ -60,6 +60,7 @@ object TypeScriptGenerator {
    * @param typeMapper $typeMapperParam
    * @param printer $printerParam
    * @param examined the already examined type
+   * @param compiled the already processed compilation units
    * @return the Scala types for which TypeScript has been emitted
    * (including the input `types` and the transitively required types).
    */
@@ -73,10 +74,11 @@ object TypeScriptGenerator {
     declMapper: TypeScriptDeclarationMapper,
     typeMapper: TypeScriptTypeMapper,
     printer: TypeScriptPrinter,
-    examined: ListSet[ScalaParser.TypeFullId])(
+    examined: ListSet[ScalaParser.TypeFullId],
+    compiled: Set[String])(
     implicit
     cu: CompileUniverse[universe.type]): ListSet[ScalaParser.TypeFullId] = {
-    val scalaParser = new ScalaParser[universe.type](universe, logger)
+    val scalaParser = new ScalaParser[universe.type](universe, compiled, logger)
     val transpiler = new Transpiler(settings)
 
     val parseResult = scalaParser.parseTypes(types, symtab, examined)
