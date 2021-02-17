@@ -5,6 +5,7 @@ scalafmtOnCompile := true
 
 inThisBuild(
   List(
+    resolvers += Resolver.sonatypeRepo("staging"),
     //scalaVersion := "2.13.3",
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
