@@ -101,6 +101,7 @@ $deriving""")
       case EnumDeclaration(_, values) => {
         out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
+        
 
         out.print(values.map { v =>
           s"${indent}idtlt.literal('${v}')"
