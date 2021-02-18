@@ -101,16 +101,19 @@ $deriving""")
       case EnumDeclaration(_, values) => {
         out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
-        
 
         out.print(values.map { v =>
           s"${indent}idtlt.literal('${v}')"
         } mkString ",\n")
 
-        out.print(s""")
+        out.println(s""")
 
 $discrimitedObj
-$deriving""")
+$deriving
+export const idtlt${tpeName}Values: Array<${tpeName}> = [""")
+
+        out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")
+        out.println(s"\n]${lineSep}")
       }
 
       case SingletonDeclaration(_, values, superInterface) => {
