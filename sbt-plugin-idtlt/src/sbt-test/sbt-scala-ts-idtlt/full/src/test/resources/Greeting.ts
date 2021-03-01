@@ -15,6 +15,9 @@ export const idtltGreeting = idtlt.union(
   nsHi.idtltDiscriminatedHi,
   nsWhatever.idtltDiscriminatedWhatever);
 
+// Deriving TypeScript type from Greeting validator
+export type Greeting = typeof idtltGreeting.T;
+
 export const idtltDiscriminatedGreeting = idtlt.intersection(
   idtltGreeting,
   idtlt.object({
@@ -22,5 +25,5 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Greeting validator
-export type Greeting = typeof idtltGreeting.T;
+// Deriving TypeScript type from idtltDiscriminatedGreeting validator
+export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;

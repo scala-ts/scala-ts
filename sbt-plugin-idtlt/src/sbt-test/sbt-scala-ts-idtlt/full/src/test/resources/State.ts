@@ -9,6 +9,9 @@ export const idtltState = idtlt.union(
   nsAlabama.idtltDiscriminatedAlabama,
   nsAlaska.idtltDiscriminatedAlaska);
 
+// Deriving TypeScript type from State validator
+export type State = typeof idtltState.T;
+
 export const idtltDiscriminatedState = idtlt.intersection(
   idtltState,
   idtlt.object({
@@ -16,5 +19,5 @@ export const idtltDiscriminatedState = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from State validator
-export type State = typeof idtltState.T;
+// Deriving TypeScript type from idtltDiscriminatedState validator
+export type DiscriminatedState = typeof idtltDiscriminatedState.T;

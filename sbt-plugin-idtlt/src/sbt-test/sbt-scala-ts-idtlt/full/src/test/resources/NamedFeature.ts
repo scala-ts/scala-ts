@@ -9,6 +9,9 @@ export const idtltNamedFeature = idtlt.object({
   name: idtlt.string,
 });
 
+// Deriving TypeScript type from NamedFeature validator
+export type NamedFeature = typeof idtltNamedFeature.T;
+
 export const idtltDiscriminatedNamedFeature = idtlt.intersection(
   idtltNamedFeature,
   idtlt.object({
@@ -16,5 +19,7 @@ export const idtltDiscriminatedNamedFeature = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from NamedFeature validator
-export type NamedFeature = typeof idtltNamedFeature.T;
+// Deriving TypeScript type from idtltDiscriminatedNamedFeature validator
+export type DiscriminatedNamedFeature = typeof idtltDiscriminatedNamedFeature.T;
+
+export const discriminatedNamedFeature: (_: NamedFeature) => DiscriminatedNamedFeature = (v: NamedFeature) => ({ _type: 'NamedFeature', ...v });

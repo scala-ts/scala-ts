@@ -12,6 +12,9 @@ export const idtltFoo = idtlt.object({
   id: idtlt.number,
 });
 
+// Deriving TypeScript type from Foo validator
+export type Foo = typeof idtltFoo.T;
+
 export const idtltDiscriminatedFoo = idtlt.intersection(
   idtltFoo,
   idtlt.object({
@@ -19,5 +22,7 @@ export const idtltDiscriminatedFoo = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Foo validator
-export type Foo = typeof idtltFoo.T;
+// Deriving TypeScript type from idtltDiscriminatedFoo validator
+export type DiscriminatedFoo = typeof idtltDiscriminatedFoo.T;
+
+export const discriminatedFoo: (_: Foo) => DiscriminatedFoo = (v: Foo) => ({ _type: 'Foo', ...v });

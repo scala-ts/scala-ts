@@ -32,14 +32,16 @@ final class DeclarationMapper extends TypeScriptDeclarationMapper {
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
 """
 
-    def discrimitedObj =
+    def discrimitedDecl =
       s"""export const idtltDiscriminated${tpeName} = idtlt.intersection(
 ${indent}idtlt${tpeName},
 ${indent}idtlt.object({
 ${indent}${indent}${settings.discriminator.text}: idtlt.literal('${tpeName}')
 ${indent}})
 )${lineSep}
-"""
+
+// Deriving TypeScript type from idtltDiscriminated${tpeName} validator
+export type Discriminated${tpeName} = typeof idtltDiscriminated${tpeName}.T${lineSep}"""
 
     def emit(): Unit = declaration match {
       case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
@@ -59,8 +61,10 @@ export const idtlt${tpeName} = idtlt.object({""")
         }
 
         out.print(s"""
-$discrimitedObj
-$deriving""")
+$deriving
+$discrimitedDecl
+
+export const discriminated${tpeName}: (_: ${tpeName}) => Discriminated${tpeName} = (v: ${tpeName}) => ({ ${settings.discriminator.text}: '${tpeName}', ...v })${lineSep}""")
       }
 
       case i: InterfaceDeclaration => {
@@ -91,8 +95,8 @@ export const idtlt${tpeName} = idtlt.union(""")
         }
 
         out.print(s"""
-$discrimitedObj
-$deriving""")
+$deriving
+$discrimitedDecl""")
       }
 
       case _: UnionDeclaration =>
@@ -108,8 +112,9 @@ export const idtlt${tpeName} = idtlt.union(""")
 
         out.println(s""")
 
-$discrimitedObj
 $deriving
+$discrimitedDecl
+
 export const idtlt${tpeName}Values: Array<${tpeName}> = [""")
 
         out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")

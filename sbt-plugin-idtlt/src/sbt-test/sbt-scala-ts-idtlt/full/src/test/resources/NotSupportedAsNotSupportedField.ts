@@ -8,6 +8,9 @@ export const idtltNotSupportedAsNotSupportedField = idtlt.object({
   notSupportedClassAsTypeArgs: idtlt.unknown /* Unsupported 'NotSupportedClassAsTypeArgs'; Type parameters: idtlt.number */,
 });
 
+// Deriving TypeScript type from NotSupportedAsNotSupportedField validator
+export type NotSupportedAsNotSupportedField = typeof idtltNotSupportedAsNotSupportedField.T;
+
 export const idtltDiscriminatedNotSupportedAsNotSupportedField = idtlt.intersection(
   idtltNotSupportedAsNotSupportedField,
   idtlt.object({
@@ -15,5 +18,7 @@ export const idtltDiscriminatedNotSupportedAsNotSupportedField = idtlt.intersect
   })
 );
 
-// Deriving TypeScript type from NotSupportedAsNotSupportedField validator
-export type NotSupportedAsNotSupportedField = typeof idtltNotSupportedAsNotSupportedField.T;
+// Deriving TypeScript type from idtltDiscriminatedNotSupportedAsNotSupportedField validator
+export type DiscriminatedNotSupportedAsNotSupportedField = typeof idtltDiscriminatedNotSupportedAsNotSupportedField.T;
+
+export const discriminatedNotSupportedAsNotSupportedField: (_: NotSupportedAsNotSupportedField) => DiscriminatedNotSupportedAsNotSupportedField = (v: NotSupportedAsNotSupportedField) => ({ _type: 'NotSupportedAsNotSupportedField', ...v });

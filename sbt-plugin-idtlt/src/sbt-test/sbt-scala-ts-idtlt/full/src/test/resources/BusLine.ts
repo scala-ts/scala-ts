@@ -10,6 +10,9 @@ export const idtltBusLine = idtlt.object({
 
 // Super-type declaration Transport is ignored
 
+// Deriving TypeScript type from BusLine validator
+export type BusLine = typeof idtltBusLine.T;
+
 export const idtltDiscriminatedBusLine = idtlt.intersection(
   idtltBusLine,
   idtlt.object({
@@ -17,5 +20,7 @@ export const idtltDiscriminatedBusLine = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from BusLine validator
-export type BusLine = typeof idtltBusLine.T;
+// Deriving TypeScript type from idtltDiscriminatedBusLine validator
+export type DiscriminatedBusLine = typeof idtltDiscriminatedBusLine.T;
+
+export const discriminatedBusLine: (_: BusLine) => DiscriminatedBusLine = (v: BusLine) => ({ _type: 'BusLine', ...v });
