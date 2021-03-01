@@ -1,6 +1,8 @@
 <script lang="ts">
+  import * as idtlt from "idonttrustlikethat";
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
+  import { idtltOtherFood } from "@_generated/OtherFood";
   import { account, load, modalStore, pending, signOut } from "./profile";
 
   export let token: string;
@@ -11,7 +13,11 @@
   $: a = $account;
   $: contact = a ? a.contact : undefined;
   $: usage = a ? a.usage : undefined;
-  $: foods = a ? a.favoriteFoods : [];
+  $: foods = a
+    ? a.favoriteFoods.map((f) => {
+        return idtlt.is(f, idtltOtherFood) ? f.name : f;
+      })
+    : [];
 
   // Modal
   import Modal from "@components/modal/modal.svelte";

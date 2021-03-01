@@ -1,5 +1,7 @@
+import { errorDebugString } from "idonttrustlikethat";
 import { writable, derived, get } from "svelte/store";
-import type { Credentials } from "@shared/Credentials";
+import type { Credentials } from "@_generated/Credentials";
+import { idtltAuthenticatedUser } from "@_generated/AuthenticatedUser";
 import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
@@ -81,14 +83,35 @@ export async function login() {
             : JSON.stringify(resp.details),
       });
     }
-  } else {
-    localStorage.setItem("scala-ts-demo.token", resp.toString());
 
-    loginMessage.set({
-      level: "success",
-      text: "OK",
+    return;
+  }
+
+  // ---
+
+  const result = idtltAuthenticatedUser.validate(resp);
+
+  if (!result.ok) {
+    modalStore.set({
+      id: "error-modal",
+      title: "Invalid account",
+      message: errorDebugString(result.errors),
+      headerClass: "bg-danger",
+      bodyClass: "text-danger",
+      closeBtnClass: "btn-danger",
     });
 
-    location.href = "/profile";
+    return;
   }
+
+  // ---
+
+  localStorage.setItem("scala-ts-demo.token", result.value.token);
+
+  loginMessage.set({
+    level: "success",
+    text: "OK",
+  });
+
+  location.href = "/profile";
 }

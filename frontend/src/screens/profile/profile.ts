@@ -1,5 +1,6 @@
+import { errorDebugString } from "idonttrustlikethat";
 import { writable } from "svelte/store";
-import { Account, isAccount } from "@shared/Account";
+import { Account, idtltAccount } from "@_generated/Account";
 import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
@@ -53,20 +54,24 @@ export async function load(token: String) {
     return;
   }
 
-  // ---
+  const result = idtltAccount.validate(resp);
 
-  pending.set(false);
-
-  if (!isAccount(resp)) {
+  if (!result.ok) {
     modalStore.set({
       id: "error-modal",
-      title: "Error",
-      message: "Invalid account",
+      title: "Invalid account",
+      message: errorDebugString(result.errors),
       headerClass: "bg-danger",
       bodyClass: "text-danger",
       closeBtnClass: "btn-danger",
     });
-  } else {
-    account.set(resp);
+
+    return;
   }
+
+  // ---
+
+  pending.set(false);
+
+  account.set(result.value);
 }

@@ -23,14 +23,9 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../common/target/scala-ts/src_managed/*"],
       "@*": ["./src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "build/**/*",
-    "../common/target/scala-ts/src_managed/"
-  ],
+  "include": ["src/**/*", "build/**/*"],
   "exclude": ["node_modules"]
 }

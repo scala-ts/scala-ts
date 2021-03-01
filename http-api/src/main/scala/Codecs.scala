@@ -46,13 +46,19 @@ private[demo] object Codecs {
     }
   }
 
-  implicit val foodWrites: Writes[Food] = Writes[Food] { food =>
-    Json.toJson(food.name)
+  implicit val foodWrites: Writes[Food] = Writes[Food] {
+    case OtherFood(name) =>
+      Json.obj("_type" -> "OtherFood", "name" -> name)
+
+    case food =>
+      Json.toJson(food.name)
   }
 
   implicit val accountFormat: OFormat[Account] = Json.format
 
   implicit val credentialsFormat: OFormat[Credentials] = Json.format
+
+  implicit val authenticatedUserWrites: OWrites[AuthenticatedUser] = Json.format
 
   // ---
 

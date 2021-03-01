@@ -12,6 +12,10 @@ final class UserName(val name: String) extends AnyVal {
   @inline override def toString = name
 }
 
+case class AuthenticatedUser(
+  name: UserName,
+  token: String)
+
 case class ContactName(
     firstName: String,
     lastName: String,

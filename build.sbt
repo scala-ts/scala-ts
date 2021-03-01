@@ -16,11 +16,15 @@ inThisBuild(
 
 // Common model
 lazy val common = (project in file("common")).
-  enablePlugins(TypeScriptGeneratorPlugin).
+  enablePlugins(TypeScriptIdtltPlugin).
   settings(
-    Seq(
-      name := "scala-ts-demo-common"
-    ) ++ scalatsUnionWithLiteral)
+    name := "scala-ts-demo-common",
+    sourceManaged in scalatsOnCompile := {
+      val dir = baseDirectory.value / ".." / "frontend" / "src" / "_generated"
+      dir.mkdirs()
+      dir
+    }
+  )
 
 // Scala Akka-HTTP API
 lazy val `http-api` = (project in file("http-api")).

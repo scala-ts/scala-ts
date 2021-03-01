@@ -1067,7 +1067,11 @@ husky@^4.3.8:
     slash "^3.0.0"
     which-pm-runs "^1.0.0"
 
-idonttrustlikethat@1.0.5, idonttrustlikethat@>=1.0.0:
+idonttrustlikethat@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/idonttrustlikethat/-/idonttrustlikethat-1.0.6.tgz#a5628c7259b7292a0c8792c24fa820b52b8bb84e"
+
+idonttrustlikethat@>=1.0.0:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/idonttrustlikethat/-/idonttrustlikethat-1.0.5.tgz#b35f360b3e9605ede39648fd92075b585373cda5"
 

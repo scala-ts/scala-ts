@@ -1,6 +1,6 @@
 import { writable, derived, get, Readable } from "svelte/store";
-import type { Account } from "@shared/Account";
-import type { ContactName } from "@shared/ContactName";
+import type { Account } from "@_generated/Account";
+import type { ContactName } from "@_generated/ContactName";
 import type { ModalProps } from "@components/modal/modal";
 import { Error, isError } from "@utils/error";
 

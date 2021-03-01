@@ -7,3 +7,4 @@ build/envValidator.js
 build/indexTemplate.js
 build/rollup.config.js
 yarn-error.log
+src/_generated

@@ -9,7 +9,12 @@ import akka.http.scaladsl.server.{
 }
 import akka.http.scaladsl.server.directives.{ Credentials => Creds }
 
-import io.github.scalats.demo.model.{ Account, Credentials, UserName }
+import io.github.scalats.demo.model.{
+  AuthenticatedUser,
+  Account,
+  Credentials,
+  UserName
+}
 
 import play.api.libs.json._
 
@@ -106,7 +111,12 @@ final class Router(context: AppContext) {
 
     findUser(userName).filter(_.password == password) match {
       case Some(_) =>
-        complete(Json toJson s"${userName}:${Digest.md5Hex(password, "UTF-8")}")
+        complete(
+          Json toJson AuthenticatedUser(
+            name = userName,
+            token = s"${userName}:${Digest.md5Hex(password, "UTF-8")}"
+          )
+        )
 
       case _ =>
         complete(

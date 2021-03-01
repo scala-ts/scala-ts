@@ -1,9 +1,9 @@
 import { get, writable, derived, Readable } from "svelte/store";
 
-import type { Food } from "@shared/Food";
-import type { JapaneseSushi } from "@shared/JapaneseSushi";
-import type { Pizza } from "@shared/Pizza";
-import type { OtherFood } from "@shared/OtherFood";
+import type { Food } from "@_generated/Food";
+import type { JapaneseSushi } from "@_generated/JapaneseSushi";
+import type { Pizza } from "@_generated/Pizza";
+import { discriminatedOtherFood } from "@_generated/OtherFood";
 
 import { accountStore } from "./signup";
 
@@ -85,7 +85,7 @@ export const addFood = () => {
 
     // ---
 
-    const food: OtherFood = { name };
+    const food = discriminatedOtherFood({ name });
 
     accountStore.update((a) => ({
       ...a,
