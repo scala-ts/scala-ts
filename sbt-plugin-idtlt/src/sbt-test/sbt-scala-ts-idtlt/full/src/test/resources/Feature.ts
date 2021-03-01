@@ -9,6 +9,9 @@ export const idtltFeature = idtlt.union(
   nsBarNum.idtltDiscriminatedBarNum,
   nsFooLure.idtltDiscriminatedFooLure);
 
+// Deriving TypeScript type from Feature validator
+export type Feature = typeof idtltFeature.T;
+
 export const idtltDiscriminatedFeature = idtlt.intersection(
   idtltFeature,
   idtlt.object({
@@ -16,5 +19,5 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Feature validator
-export type Feature = typeof idtltFeature.T;
+// Deriving TypeScript type from idtltDiscriminatedFeature validator
+export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;

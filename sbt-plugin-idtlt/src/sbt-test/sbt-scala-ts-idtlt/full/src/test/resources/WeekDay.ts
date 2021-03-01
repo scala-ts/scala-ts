@@ -11,6 +11,9 @@ export const idtltWeekDay = idtlt.union(
   idtlt.literal('Sat'),
   idtlt.literal('Sun'))
 
+// Deriving TypeScript type from WeekDay validator
+export type WeekDay = typeof idtltWeekDay.T;
+
 export const idtltDiscriminatedWeekDay = idtlt.intersection(
   idtltWeekDay,
   idtlt.object({
@@ -18,8 +21,8 @@ export const idtltDiscriminatedWeekDay = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from WeekDay validator
-export type WeekDay = typeof idtltWeekDay.T;
+// Deriving TypeScript type from idtltDiscriminatedWeekDay validator
+export type DiscriminatedWeekDay = typeof idtltDiscriminatedWeekDay.T;
 
 export const idtltWeekDayValues: Array<WeekDay> = [
   'Mon',

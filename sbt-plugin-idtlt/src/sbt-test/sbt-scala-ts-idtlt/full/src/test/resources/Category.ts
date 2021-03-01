@@ -9,6 +9,9 @@ export const idtltCategory = idtlt.union(
   nsIpsum.idtltDiscriminatedIpsum,
   nsLorem.idtltDiscriminatedLorem);
 
+// Deriving TypeScript type from Category validator
+export type Category = typeof idtltCategory.T;
+
 export const idtltDiscriminatedCategory = idtlt.intersection(
   idtltCategory,
   idtlt.object({
@@ -16,5 +19,5 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Category validator
-export type Category = typeof idtltCategory.T;
+// Deriving TypeScript type from idtltDiscriminatedCategory validator
+export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;

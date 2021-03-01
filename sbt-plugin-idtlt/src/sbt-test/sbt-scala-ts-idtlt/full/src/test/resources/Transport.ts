@@ -11,6 +11,9 @@ export const idtltTransport = idtlt.union(
 
 // Fields are ignored: name
 
+// Deriving TypeScript type from Transport validator
+export type Transport = typeof idtltTransport.T;
+
 export const idtltDiscriminatedTransport = idtlt.intersection(
   idtltTransport,
   idtlt.object({
@@ -18,5 +21,5 @@ export const idtltDiscriminatedTransport = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Transport validator
-export type Transport = typeof idtltTransport.T;
+// Deriving TypeScript type from idtltDiscriminatedTransport validator
+export type DiscriminatedTransport = typeof idtltDiscriminatedTransport.T;

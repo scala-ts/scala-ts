@@ -13,6 +13,9 @@ export const idtltBar = idtlt.object({
   name: idtlt.string,
 });
 
+// Deriving TypeScript type from Bar validator
+export type Bar = typeof idtltBar.T;
+
 export const idtltDiscriminatedBar = idtlt.intersection(
   idtltBar,
   idtlt.object({
@@ -20,5 +23,7 @@ export const idtltDiscriminatedBar = idtlt.intersection(
   })
 );
 
-// Deriving TypeScript type from Bar validator
-export type Bar = typeof idtltBar.T;
+// Deriving TypeScript type from idtltDiscriminatedBar validator
+export type DiscriminatedBar = typeof idtltDiscriminatedBar.T;
+
+export const discriminatedBar: (_: Bar) => DiscriminatedBar = (v: Bar) => ({ _type: 'Bar', ...v });
