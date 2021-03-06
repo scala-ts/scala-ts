@@ -6,6 +6,8 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
+[*Version 0.5.5*](https://github.com/scala-ts/scala-ts/compare/0.5.5...0.5.6) - Improve [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat); Discriminated factory; Constant for Enum values; Better support for `Map` as dictionary.
+
 [*Version 0.5.5*](https://github.com/scala-ts/scala-ts/compare/0.5.4...0.5.5) - Patch version; Fix compilation order (in case of forward declaration).
 
 [*Version 0.5.4*](https://github.com/scala-ts/scala-ts/compare/0.5.3...0.5.4) - Patch version; Fix cross compilation with idtlt SBT plugin.
