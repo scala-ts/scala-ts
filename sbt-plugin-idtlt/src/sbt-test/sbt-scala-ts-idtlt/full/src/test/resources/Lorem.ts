@@ -9,3 +9,9 @@ export const idtltDiscriminatedLorem = idtltLorem;
 
 // Deriving TypeScript type from Lorem validator
 export type Lorem = typeof idtltLorem.T;
+
+export const LoremInhabitant: Lorem = 'Lorem';
+
+export function isLorem(v: any): v is Lorem {
+  return idtltLorem.validate(v).ok;
+}

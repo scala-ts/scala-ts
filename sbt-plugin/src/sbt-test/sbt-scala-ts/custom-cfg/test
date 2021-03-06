@@ -1,3 +1,4 @@
+> clean
 $ absent target/_custom/scalatsBar.ts
 $ absent target/_custom/scalatsTransport.ts
 $ absent target/_custom/scalatsBusLine.ts

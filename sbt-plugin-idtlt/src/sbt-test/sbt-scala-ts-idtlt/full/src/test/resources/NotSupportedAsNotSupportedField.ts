@@ -22,3 +22,9 @@ export const idtltDiscriminatedNotSupportedAsNotSupportedField = idtlt.intersect
 export type DiscriminatedNotSupportedAsNotSupportedField = typeof idtltDiscriminatedNotSupportedAsNotSupportedField.T;
 
 export const discriminatedNotSupportedAsNotSupportedField: (_: NotSupportedAsNotSupportedField) => DiscriminatedNotSupportedAsNotSupportedField = (v: NotSupportedAsNotSupportedField) => ({ _type: 'NotSupportedAsNotSupportedField', ...v });
+
+export function isNotSupportedAsNotSupportedField(v: any): v is NotSupportedAsNotSupportedField {
+  return (
+    (v['notSupportedClassAsTypeArgs'] && nsNotSupportedClassAsTypeArgs.isNotSupportedClassAsTypeArgs(v['notSupportedClassAsTypeArgs']))
+  );
+}

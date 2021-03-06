@@ -1,3 +1,4 @@
+> clean
 $ absent target/scala-ts/src_managed/Bar.ts
 $ absent target/scala-ts/src_managed/Foo.ts
 

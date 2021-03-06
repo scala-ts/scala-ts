@@ -22,3 +22,9 @@ export const idtltDiscriminatedWhatever = idtlt.intersection(
 export type DiscriminatedWhatever = typeof idtltDiscriminatedWhatever.T;
 
 export const discriminatedWhatever: (_: Whatever) => DiscriminatedWhatever = (v: Whatever) => ({ _type: 'Whatever', ...v });
+
+export function isWhatever(v: any): v is Whatever {
+  return (
+    ((typeof v['word']) === 'string')
+  );
+}

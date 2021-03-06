@@ -1,6 +1,6 @@
-import type { Transport } from '../Transport';
-import type { TrainLine } from '../TrainLine';
-import type { BusLine } from '../BusLine';
+import { Transport, isTransport } from '../Transport';
+import { TrainLine, isTrainLine } from '../TrainLine';
+import { BusLine, isBusLine } from '../BusLine';
 
 const trainLine1: TrainLine = {
   name: 'Train#1',
@@ -26,8 +26,18 @@ describe('Transport', () => {
       endStationId: 'id2',
     }
 
-    expect(result as TrainLine).toEqual(trainLine1)
-    expect(result as Transport).toEqual(transport1)
+    expect(isTransport(result)).toBe(true)
+
+    const rt: Transport = result
+
+    expect(rt).toEqual(transport1)
+
+    expect(isBusLine(result)).toBe(false)
+    expect(isTrainLine(result)).toBe(true)
+
+    const tl: TrainLine = result
+    
+    expect(tl).toEqual(trainLine1)
   })
 
   it('should be asserted for BusLine', () => {
@@ -39,7 +49,17 @@ describe('Transport', () => {
       stopIds: [ 'start', 'middle', 'end' ],
     }
 
-    expect(result as BusLine).toEqual(busLine1)
-    expect(result as Transport).toEqual(transport2)
+    expect(isTransport(result)).toBe(true)
+
+    const rt: Transport = result
+
+    expect(rt).toEqual(transport2)
+
+    expect(isTrainLine(result)).toBe(false)
+    expect(isBusLine(result)).toBe(true)
+
+    const bl: BusLine = result
+
+    expect(bl).toEqual(busLine1)
   })
 })

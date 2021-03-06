@@ -4,3 +4,10 @@ export interface CaseClassBar {
   firstName: string;
   lastName: string;
 }
+
+export function isCaseClassBar(v: any): v is CaseClassBar {
+  return (
+    ((typeof v['lastName']) === 'string') &&
+    ((typeof v['firstName']) === 'string')
+  );
+}

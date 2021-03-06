@@ -3,3 +3,7 @@
 export const AlaskaInhabitant = "AK";
 
 export type Alaska = typeof AlaskaInhabitant;
+
+export function isAlaska(v: any): v is Alaska {
+  return AlaskaInhabitant == v;
+}

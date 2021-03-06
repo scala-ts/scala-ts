@@ -27,6 +27,10 @@ describe('TrainLine', () => {
       console.log(result.errors)
     } else {
       expect(result.value).toEqual(trainLine1)
+
+      expect(nsTransport.isTransport(result.value)).toBe(true)
+      expect(nsTrainLine.isTrainLine(result.value)).toBe(true)
+      expect(nsBusLine.isBusLine(result.value)).toBe(false)
     }
   })
 
@@ -83,6 +87,10 @@ describe('BusLine', () => {
       console.log(result.errors)
     } else {
       expect(result.value).toEqual(busLine1)
+
+      expect(nsTransport.isTransport(result.value)).toBe(true)
+      expect(nsTrainLine.isTrainLine(result.value)).toBe(false)
+      expect(nsBusLine.isBusLine(result.value)).toBe(true)
     }
   })
 
@@ -157,6 +165,10 @@ describe('Transport', () => {
       console.log(result.errors)
     } else {
       expect(result.value).toEqual(transport1)
+
+      expect(nsTransport.isTransport(result.value)).toBe(true)
+      expect(nsTrainLine.isTrainLine(result.value)).toBe(true)
+      expect(nsBusLine.isBusLine(result.value)).toBe(false)
     }
   })
 
@@ -174,6 +186,10 @@ describe('Transport', () => {
       console.log(result.errors)
     } else {
       expect(result.value).toEqual(transport2)
+
+      expect(nsTransport.isTransport(result.value)).toBe(true)
+      expect(nsTrainLine.isTrainLine(result.value)).toBe(false)
+      expect(nsBusLine.isBusLine(result.value)).toBe(true)
     }
   })
 
@@ -191,6 +207,10 @@ describe('Transport', () => {
       console.log(result.errors)
     } else {
       expect(result.value).toEqual(transport3)
+
+      expect(nsTransport.isTransport(result.value)).toBe(true)
+      expect(nsTrainLine.isTrainLine(result.value)).toBe(false)
+      expect(nsBusLine.isBusLine(result.value)).toBe(true)
     }
   })
 })

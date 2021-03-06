@@ -9,3 +9,9 @@ export const idtltDiscriminatedGoodBye = idtltGoodBye;
 
 // Deriving TypeScript type from GoodBye validator
 export type GoodBye = typeof idtltGoodBye.T;
+
+export const GoodByeInhabitant: GoodBye = 'GoodBye';
+
+export function isGoodBye(v: any): v is GoodBye {
+  return idtltGoodBye.validate(v).ok;
+}

@@ -23,5 +23,13 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
 export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;
 
 export const idtltFeatureKnownValues: Array<Feature> = [
-  
+  'BarNum', 'FooLure'
 ];
+
+export function isFeature(v: any): v is Feature {
+  return (
+    nsBarNum.isBarNum(v) ||
+    nsFooLure.isFooLure(v)
+  );
+}
+

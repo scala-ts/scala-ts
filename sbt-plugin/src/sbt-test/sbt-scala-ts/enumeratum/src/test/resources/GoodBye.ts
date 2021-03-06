@@ -3,3 +3,7 @@
 export const GoodByeInhabitant = 'GoodBye';
 
 export type GoodBye = typeof GoodByeInhabitant;
+
+export function isGoodBye(v: any): v is GoodBye {
+  return GoodByeInhabitant == v;
+}

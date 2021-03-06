@@ -3,3 +3,7 @@ import * as idtlt from 'idonttrustlikethat';
 
 // Not supported: InterfaceDeclaration 'NotSupportedClassAsTypeArgs'
 // - type parameters: T
+
+export function isNotSupportedClassAsTypeArgs(v: any): boolean {
+  return false;
+}

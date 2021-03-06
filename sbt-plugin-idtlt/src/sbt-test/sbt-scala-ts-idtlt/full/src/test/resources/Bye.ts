@@ -9,3 +9,9 @@ export const idtltDiscriminatedBye = idtltBye;
 
 // Deriving TypeScript type from Bye validator
 export type Bye = typeof idtltBye.T;
+
+export const ByeInhabitant: Bye = 'Bye';
+
+export function isBye(v: any): v is Bye {
+  return idtltBye.validate(v).ok;
+}

@@ -9,3 +9,9 @@ export const idtltDiscriminatedIpsum = idtltIpsum;
 
 // Deriving TypeScript type from Ipsum validator
 export type Ipsum = typeof idtltIpsum.T;
+
+export const IpsumInhabitant: Ipsum = 'Ipsum';
+
+export function isIpsum(v: any): v is Ipsum {
+  return idtltIpsum.validate(v).ok;
+}

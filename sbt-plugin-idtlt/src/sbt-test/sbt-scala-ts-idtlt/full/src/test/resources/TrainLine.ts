@@ -24,3 +24,11 @@ export const idtltDiscriminatedTrainLine = idtlt.intersection(
 export type DiscriminatedTrainLine = typeof idtltDiscriminatedTrainLine.T;
 
 export const discriminatedTrainLine: (_: TrainLine) => DiscriminatedTrainLine = (v: TrainLine) => ({ _type: 'TrainLine', ...v });
+
+export function isTrainLine(v: any): v is TrainLine {
+  return (
+    ((typeof v['endStationId']) === 'string') &&
+    ((typeof v['startStationId']) === 'string') &&
+    ((typeof v['name']) === 'string')
+  );
+}

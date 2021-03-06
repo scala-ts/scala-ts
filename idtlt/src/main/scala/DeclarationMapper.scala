@@ -2,11 +2,11 @@ package io.github.scalats.idtlt
 
 import java.io.PrintStream
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.core.{
+  Internals,
   Settings,
   TypeScriptDeclarationMapper,
+  TypeScriptEmitter,
   TypeScriptFieldMapper,
   TypeScriptTypeMapper
 }
@@ -29,6 +29,11 @@ final class DeclarationMapper extends TypeScriptDeclarationMapper {
 
     import declaration.name
     val tpeName = typeNaming(declaration.reference)
+
+    val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(indent + indent, _: String, _: Iterable[Member], { t =>
+      val tn = typeNaming(t)
+      s"ns${tn}.is${tn}"
+    }, settings)
 
     def deriving = s"""// Deriving TypeScript type from ${tpeName} validator
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
@@ -66,7 +71,13 @@ export const idtlt${tpeName} = idtlt.object({""")
 $deriving
 $discrimitedDecl
 
-export const discriminated${tpeName}: (_: ${tpeName}) => Discriminated${tpeName} = (v: ${tpeName}) => ({ ${settings.discriminator.text}: '${tpeName}', ...v })${lineSep}""")
+export const discriminated${tpeName}: (_: ${tpeName}) => Discriminated${tpeName} = (v: ${tpeName}) => ({ ${settings.discriminator.text}: '${tpeName}', ...v })${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (
+${interfaceTypeGuard(tpeName, fields)}
+${indent})${lineSep}
+}""")
       }
 
       case i: InterfaceDeclaration => {
@@ -75,17 +86,24 @@ export const discriminated${tpeName}: (_: ${tpeName}) => Discriminated${tpeName}
         if (i.typeParams.nonEmpty) {
           out.println(s"// - type parameters: ${i.typeParams mkString ", "}")
         }
+
+        out.println(s"""
+export function is${tpeName}(v: any): boolean {
+${indent}return false${lineSep}
+}""")
+
       }
 
       case UnionDeclaration(_, fields, possibilities, None) => {
         out.println(s"""// Validator for UnionDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 
-        out.print(possibilities.map { p =>
-          val n = typeNaming(p)
+        val ps = Internals.list(possibilities).sortBy(_.name)
+        val pst = ps.map(typeNaming)
 
+        out.print(pst.map { n =>
           s"${indent}ns${n}.idtltDiscriminated${n}"
-        }.toSeq.sorted mkString ",\n")
+        } mkString ",\n")
 
         out.println(s")${lineSep}")
 
@@ -102,12 +120,31 @@ $discrimitedDecl
 
 export const idtlt${tpeName}KnownValues: Array<${tpeName}> = [""")
 
-        val knownValues: ListSet[String] = possibilities.flatMap {
-          case SingletonTypeRef(_, values) => values.map(_.rawValue)
+        val knownValues: List[String] = ps.flatMap {
+          case SingletonTypeRef(nme, values) => {
+            if (values.headOption.nonEmpty) {
+              values.map(_.rawValue)
+            } else {
+              List(s"'${nme}'")
+            }
+          }
+
           case _ => List.empty[String]
         }
 
-        out.println(s"${indent}${knownValues mkString ", "}\n]${lineSep}")
+        out.println(s"""${indent}${knownValues mkString ", "}\n]${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+        out.print(pst.map { n =>
+          s"${indent}${indent}ns${n}.is${n}(v)"
+        } mkString " ||\n")
+
+        out.println(s"""
+${indent})${lineSep}
+}
+""")
       }
 
       case _: UnionDeclaration =>
@@ -129,7 +166,11 @@ $discrimitedDecl
 export const idtlt${tpeName}Values: Array<${tpeName}> = [""")
 
         out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")
-        out.println(s"\n]${lineSep}")
+        out.println(s"""\n]${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent} return idtlt${tpeName}.validate(v).ok${lineSep}
+}""")
       }
 
       case SingletonDeclaration(_, values, superInterface) => {
@@ -162,10 +203,30 @@ export const idtlt${tpeName} = """)
 // Super-type declaration ${si.name} is ignored""")
         }
 
-        out.print(s"""
-export const idtltDiscriminated${tpeName} = idtlt${tpeName};
+        val constValue: String = values.headOption match {
+          case Some(Value(_, _, raw)) => {
+            if (values.size > 1) {
+              values.map {
+                case Value(n, _, r) => s"${n}: $r"
+              }.mkString("{ ", ", ", " }")
+            } else {
+              raw
+            }
+          }
 
-$deriving""")
+          case _ =>
+            s"'${name}'"
+        }
+
+        out.print(s"""
+export const idtltDiscriminated${tpeName} = idtlt${tpeName}${lineSep}
+
+$deriving
+export const ${tpeName}Inhabitant: ${tpeName} = $constValue${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
+}""")
       }
     }
 

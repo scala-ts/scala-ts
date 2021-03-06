@@ -9,3 +9,9 @@ export const idtltDiscriminatedHello = idtltHello;
 
 // Deriving TypeScript type from Hello validator
 export type Hello = typeof idtltHello.T;
+
+export const HelloInhabitant: Hello = 'Hello';
+
+export function isHello(v: any): v is Hello {
+  return idtltHello.validate(v).ok;
+}

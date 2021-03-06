@@ -33,3 +33,7 @@ export const idtltWeekDayValues: Array<WeekDay> = [
   'Sat',
   'Sun'
 ];
+
+export function isWeekDay(v: any): v is WeekDay {
+   return idtltWeekDay.validate(v).ok;
+}

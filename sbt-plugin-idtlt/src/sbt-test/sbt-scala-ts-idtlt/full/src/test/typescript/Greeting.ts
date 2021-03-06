@@ -32,6 +32,7 @@ function testGreeting<T extends nsGreeting.Greeting>(
   b: nsGreeting.Greeting,
   expected: T,
   validator: idtlt.Validator<T>,
+  guard: (_v: any) => _v is T,
 ) {
   expect(a).toEqual(b)
   
@@ -40,6 +41,9 @@ function testGreeting<T extends nsGreeting.Greeting>(
 
   expect(result1.ok).toBe(true)
   expect(result2.ok).toBe(true)
+
+  expect(guard(repr)).toBe(true)
+  expect(nsGreeting.isGreeting(repr)).toBe(true)
 
   if (!result1.ok) {
     console.log(result1.errors)
@@ -52,6 +56,12 @@ function testGreeting<T extends nsGreeting.Greeting>(
     expect(v1).toEqual(v2)
     expect(v1).toEqual(expected)
     expect(v1).toEqual(a)
+
+    expect(guard(v1)).toBe(true)
+    expect(guard(v2)).toBe(true)
+
+    expect(nsGreeting.isGreeting(v1)).toBe(true)
+    expect(nsGreeting.isGreeting(v2)).toBe(true)
   }
 }
 
@@ -63,6 +73,7 @@ describe('Greeting', () => {
       greeting1b,
       hello,
       nsHello.idtltHello,
+      nsHello.isHello,
     )
   })
 
@@ -73,6 +84,7 @@ describe('Greeting', () => {
       greeting2b,
       goodBye,
       nsGoodBye.idtltGoodBye,
+      nsGoodBye.isGoodBye,
     )
   })
 
@@ -83,6 +95,7 @@ describe('Greeting', () => {
       greeting3b,
       hi,
       nsHi.idtltHi,
+      nsHi.isHi,
     )
   })
 
@@ -93,13 +106,19 @@ describe('Greeting', () => {
       greeting4b,
       bye,
       nsBye.idtltBye,
+      nsBye.isBye,
     )
   })
 })
 
 describe('Whatever Yo', () => {
   it('should be validated', () => {
-    const result = nsWhatever.idtltWhatever.validate({ word: 'Yo' })
+    const input = { word: 'Yo' }
+
+    expect(nsWhatever.isWhatever(input)).toBe(true)
+    expect(nsGreeting.isGreeting(input)).toBe(true)
+    
+    const result = nsWhatever.idtltWhatever.validate(input)
 
     expect(result.ok).toBe(true)
 

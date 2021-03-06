@@ -25,7 +25,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
         pattern.format(_: String)
 
       case _ =>
-        { tpeName: String => s"type { ${tpeName} }" }
+        { tpeName: String => s"{ ${tpeName}, is${tpeName} }" }
     }
 
   /**

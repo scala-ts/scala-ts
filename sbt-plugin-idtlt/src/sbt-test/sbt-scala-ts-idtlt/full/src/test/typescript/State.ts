@@ -18,6 +18,7 @@ function testState<T extends nsState.State>(
   b: nsState.State,
   expected: T,
   validator: idtlt.Validator<T>,
+  guard: (_v: any) => _v is T
 ) {
   expect(a).toEqual(b)
   
@@ -26,6 +27,9 @@ function testState<T extends nsState.State>(
 
   expect(result1.ok).toBe(true)
   expect(result2.ok).toBe(true)
+
+  expect(guard(repr)).toBe(true)
+  expect(nsState.isState(repr)).toBe(true)
 
   if (!result1.ok) {
     console.log(result1.errors)
@@ -38,6 +42,12 @@ function testState<T extends nsState.State>(
     expect(v1).toEqual(v2)
     expect(v1).toEqual(expected)
     expect(v1).toEqual(a)
+
+    expect(guard(v1)).toBe(true)
+    expect(guard(v2)).toBe(true)
+
+    expect(nsState.isState(v1)).toBe(true)
+    expect(nsState.isState(v2)).toBe(true)
   }
 }
 
@@ -49,6 +59,7 @@ describe('State', () => {
       state1b,
       alabama,
       nsAlabama.idtltAlabama,
+      nsAlabama.isAlabama,
     )
   })
 
@@ -59,6 +70,7 @@ describe('State', () => {
       state2b,
       alaska,
       nsAlaska.idtltAlaska,
+      nsAlaska.isAlaska,
     )
   })
 

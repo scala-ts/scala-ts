@@ -9,3 +9,9 @@ export const idtltDiscriminatedFooLure = idtltFooLure;
 
 // Deriving TypeScript type from FooLure validator
 export type FooLure = typeof idtltFooLure.T;
+
+export const FooLureInhabitant: FooLure = 'FooLure';
+
+export function isFooLure(v: any): v is FooLure {
+  return idtltFooLure.validate(v).ok;
+}

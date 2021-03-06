@@ -27,3 +27,14 @@ export const idtltDiscriminatedBar = idtlt.intersection(
 export type DiscriminatedBar = typeof idtltDiscriminatedBar.T;
 
 export const discriminatedBar: (_: Bar) => DiscriminatedBar = (v: Bar) => ({ _type: 'Bar', ...v });
+
+export function isBar(v: any): v is Bar {
+  return (
+    (v['created'] && (v['created'] instanceof Date)) &&
+    (v['updated'] && (v['updated'] instanceof Date)) &&
+    (Array.isArray(v['transports']) && v['transports'].every(elmt => elmt && nsTransport.isTransport(elmt))) &&
+    (!v['amount'] || ((typeof v['amount']) === 'number')) &&
+    ((typeof v['age']) === 'number') &&
+    ((typeof v['name']) === 'string')
+  );
+}

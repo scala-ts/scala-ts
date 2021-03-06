@@ -3,3 +3,9 @@
 export interface Transport {
   name: string;
 }
+
+export function isTransport(v: any): v is Transport {
+  return (
+    ((typeof v['name']) === 'string')
+  );
+}
