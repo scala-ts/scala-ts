@@ -12,12 +12,14 @@ const trainLine1: nsTrainLine.TrainLine = {
 }
 
 describe('TrainLine', () => {
+  const json = {
+    name: 'First',
+    startStationId: 'start1',
+    endStationId: 'end1'
+  }
+
   it('should be validated for trainLine1', () => {
-    const result = nsTrainLine.idtltTrainLine.validate({
-      name: 'First',
-      startStationId: 'start1',
-      endStationId: 'end1'
-    })
+    const result = nsTrainLine.idtltTrainLine.validate(json)
 
     expect(result.ok).toBe(true)
 
@@ -26,6 +28,29 @@ describe('TrainLine', () => {
     } else {
       expect(result.value).toEqual(trainLine1)
     }
+  })
+
+  it('should not be validated as discriminated for trainLine1', () => {
+    const result = nsTrainLine.idtltDiscriminatedTrainLine.validate(json)
+
+    expect(result.ok).toBe(false)
+
+    if (!result.ok) {
+      expect(result.errors).toStrictEqual([
+        { path: '_type', message: 'Expected "TrainLine", got undefined' }
+      ])
+    }
+  })
+
+  it('should be discriminated from trainLine1', () => {
+    const discriminated: nsTrainLine.DiscriminatedTrainLine =
+      nsTrainLine.discriminatedTrainLine(trainLine1)
+
+    expect(nsTrainLine.idtltTrainLine.validate(discriminated).ok).toBe(true)
+
+    expect(nsTrainLine.idtltTrainLine.validate({
+      ...json, _type: 'TrainLine'
+    }).ok).toBe(true)
   })
 })
 
@@ -43,12 +68,14 @@ const busLine2: nsBusLine.BusLine = {
 }
 
 describe('BusLine', () => {
+  const json = {
+    id: 1,
+    name: 'One',
+    stopIds: []
+  }
+
   it('should be validated for busLine1', () => {
-    const result = nsBusLine.idtltBusLine.validate({
-      id: 1,
-      name: 'One',
-      stopIds: []
-    })
+    const result = nsBusLine.idtltBusLine.validate(json)
 
     expect(result.ok).toBe(true)
 
@@ -73,6 +100,29 @@ describe('BusLine', () => {
     } else {
       expect(result.value).toEqual(busLine2)
     }
+  })
+
+  it('should not be validated as discriminated for busLine1', () => {
+    const result = nsBusLine.idtltDiscriminatedBusLine.validate(json)
+
+    expect(result.ok).toBe(false)
+
+    if (!result.ok) {
+      expect(result.errors).toStrictEqual([
+        { path: '_type', message: 'Expected "BusLine", got undefined' }
+      ])
+    }
+  })
+
+  it('should be discriminated from busLine1', () => {
+    const discriminated: nsBusLine.DiscriminatedBusLine =
+      nsBusLine.discriminatedBusLine(busLine1)
+
+    expect(nsBusLine.idtltBusLine.validate(discriminated).ok).toBe(true)
+
+    expect(nsBusLine.idtltBusLine.validate({
+      ...json, _type: 'BusLine'
+    }).ok).toBe(true)
   })
 })
 
