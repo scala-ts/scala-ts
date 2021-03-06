@@ -60,7 +60,7 @@ final class TypeMapper extends TypeScriptTypeMapper {
         s"idtlt.union(${possibilities.map(tr) mkString ", "})"
 
       case MapType(keyType, valueType) =>
-        s"idtlt.dictionary(${tr(keyType)}, ${tr(valueType)})"
+        s"idtlt.dictionary(${tr(keyType)}, ${tr(valueType)}.optional())"
 
       case _ =>
         s"idtlt.${typeNaming(tpe)}"
