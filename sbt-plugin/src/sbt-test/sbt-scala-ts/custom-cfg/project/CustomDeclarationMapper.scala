@@ -24,10 +24,11 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
     case decl @ UnionDeclaration(name, fields, possibilities, superInterface) =>
       Some {
         val typeNaming = settings.typeNaming(settings, _: TypeRef)
+        val tpeName = typeNaming(decl.reference)
 
         // Union interface
         out.println("// Custom declaration handling")
-        out.println(s"export interface ${typeNaming(decl.reference)} {")
+        out.println(s"export interface ${tpeName} {")
 
         // Abstract fields - common to all the subtypes
         fields.foreach { member =>
@@ -38,7 +39,11 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
 
         out.println(s"${settings.typescriptIndent}_additionalField?: string${settings.typescriptLineSeparator}")
 
-        out.println("}")
+        out.println(s"""}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+  return true // dummy
+}""")
       }
 
     case decl: InterfaceDeclaration =>

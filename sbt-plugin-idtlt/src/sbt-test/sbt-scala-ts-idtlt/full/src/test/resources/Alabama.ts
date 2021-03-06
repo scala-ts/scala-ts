@@ -9,3 +9,9 @@ export const idtltDiscriminatedAlabama = idtltAlabama;
 
 // Deriving TypeScript type from Alabama validator
 export type Alabama = typeof idtltAlabama.T;
+
+export const AlabamaInhabitant: Alabama = "AL";
+
+export function isAlabama(v: any): v is Alabama {
+  return idtltAlabama.validate(v).ok;
+}

@@ -9,3 +9,9 @@ export const idtltDiscriminatedHi = idtltHi;
 
 // Deriving TypeScript type from Hi validator
 export type Hi = typeof idtltHi.T;
+
+export const HiInhabitant: Hi = 'Hi';
+
+export function isHi(v: any): v is Hi {
+  return idtltHi.validate(v).ok;
+}

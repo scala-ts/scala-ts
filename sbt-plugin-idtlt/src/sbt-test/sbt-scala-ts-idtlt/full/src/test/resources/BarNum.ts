@@ -9,3 +9,9 @@ export const idtltDiscriminatedBarNum = idtltBarNum;
 
 // Deriving TypeScript type from BarNum validator
 export type BarNum = typeof idtltBarNum.T;
+
+export const BarNumInhabitant: BarNum = 'BarNum';
+
+export function isBarNum(v: any): v is BarNum {
+  return idtltBarNum.validate(v).ok;
+}

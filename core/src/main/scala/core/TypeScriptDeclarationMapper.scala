@@ -82,9 +82,14 @@ object TypeScriptDeclarationMapper {
       out: PrintStream): Option[Unit] = declaration match {
       case decl @ EnumDeclaration(_, values) => Some {
         val typeNaming = settings.typeNaming(settings, _: TypeRef)
-        import settings.{ typescriptIndent => indent }
+        import settings.{
+          typescriptIndent => indent,
+          typescriptLineSeparator => lineSep
+        }
 
-        out.println(s"export enum ${typeNaming(decl.reference)} {")
+        val tpeName = typeNaming(decl.reference)
+
+        out.println(s"export enum ${tpeName} {")
 
         list(values).zipWithIndex.foreach {
           case (value, idx) =>
@@ -96,7 +101,23 @@ object TypeScriptDeclarationMapper {
         }
 
         out.println()
-        out.println("}")
+        out.println(s"""}
+
+export const ${tpeName}Values: Array<${tpeName}> = [""")
+
+        out.print(values.map { v =>
+          s"${indent}${tpeName}.${v}"
+        } mkString ",\n")
+        out.println(s"""\n]${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+        out.print(values.map { v =>
+          s"${indent}${indent}v == '${v}'"
+        } mkString " ||\n")
+        out.println(s"""\n${indent})${lineSep}
+}""")
       }
 
       case _ =>
@@ -137,13 +158,20 @@ object TypeScriptDeclarationMapper {
             s"'${name}'"
         }
 
-        import settings.{ typescriptLineSeparator => lineSep }
+        import settings.{
+          typescriptIndent => indent,
+          typescriptLineSeparator => lineSep
+        }
 
         val singleName = settings.typeNaming(settings, decl.reference)
 
         out.println(s"""export const ${singleName}Inhabitant = $constValue${lineSep}
 
-export type ${singleName} = typeof ${singleName}Inhabitant${lineSep}""")
+export type ${singleName} = typeof ${singleName}Inhabitant${lineSep}
+
+export function is${singleName}(v: any): v is ${singleName} {
+${indent}return ${singleName}Inhabitant == v${lineSep}
+}""")
       }
 
       case _ =>
@@ -168,11 +196,26 @@ export type ${singleName} = typeof ${singleName}Inhabitant${lineSep}""")
       declaration: Declaration,
       out: PrintStream): Option[Unit] = declaration match {
       case decl @ UnionDeclaration(_, _, possibilities, _) => Some {
-        val typeNaming = settings.typeNaming(settings, _: TypeRef)
+        import settings.{
+          typescriptIndent => indent,
+          typescriptLineSeparator => lineSep
+        }
 
-        out.print(s"export type ${typeNaming(decl.reference)} = ")
-        out.print(possibilities.map(typeNaming).toSeq.sorted mkString " | ")
-        out.println(settings.typescriptLineSeparator)
+        val typeNaming = settings.typeNaming(settings, _: TypeRef)
+        val tpeName = typeNaming(decl.reference)
+        val ps = possibilities.map(typeNaming).toSeq.sorted
+
+        out.print(s"""export type ${tpeName} = ${ps mkString " | "}${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (
+${indent}${indent}""")
+
+        out.println(ps.map { p => s"is${p}(v)" }.
+          mkString(s" ||\n${indent}${indent}"))
+
+        out.println(s"""${indent})${lineSep}
+}""")
       }
 
       case decl @ InterfaceDeclaration(_, _, _, Some(

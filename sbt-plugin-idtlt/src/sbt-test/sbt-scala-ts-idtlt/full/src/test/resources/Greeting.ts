@@ -29,5 +29,16 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
 export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;
 
 export const idtltGreetingKnownValues: Array<Greeting> = [
-  
+  'Bye', 'GoodBye', 'Hello', 'Hi'
 ];
+
+export function isGreeting(v: any): v is Greeting {
+  return (
+    nsBye.isBye(v) ||
+    nsGoodBye.isGoodBye(v) ||
+    nsHello.isHello(v) ||
+    nsHi.isHi(v) ||
+    nsWhatever.isWhatever(v)
+  );
+}
+

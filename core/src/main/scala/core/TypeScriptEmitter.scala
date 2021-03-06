@@ -41,6 +41,8 @@ final class TypeScriptEmitter(
 
   private val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
+  private val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(_: String, _: String, _: Iterable[Member], t => s"is${typeNaming(t)}", settings)
+
   private val declMapper: Function3[TypeScriptDeclarationMapper.Resolved, Declaration, PrintStream, Option[Unit]] = declarationMapper(_: TypeScriptDeclarationMapper.Resolved, settings, resolvedTypeMapper, fieldMapper, _: Declaration, _: PrintStream)
 
   private val requires: TypeScriptImportResolver.Resolved = { decl =>
@@ -52,8 +54,10 @@ final class TypeScriptEmitter(
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case UnionDeclaration(name, fields, _, superInterface) => {
+          val tpeName = typeNaming(decl.reference)
+
           // Union interface
-          o.print(s"export interface ${typeNaming(decl.reference)}")
+          o.print(s"export interface ${tpeName}")
 
           superInterface.foreach { iface =>
             o.print(s" extends ${typeNaming(iface.reference)}")
@@ -62,9 +66,20 @@ final class TypeScriptEmitter(
           o.println(" {")
 
           // Abstract fields - common to all the subtypes
-          list(fields).foreach(emitField(o, name, _))
+          val fieldList = list(fields)
 
-          o.println("}")
+          fieldList.foreach(emitField(o, name, _))
+
+          // Type guard
+          o.println(s"""}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+          o.println(interfaceTypeGuard(indent + indent, name, fieldList))
+
+          o.println(s"""${indent})${lineSeparator}
+}""")
         }
 
         case _ =>
@@ -124,7 +139,11 @@ final class TypeScriptEmitter(
           o.println(s"${indent}${indent}return ${tpeName}.instance${lineSeparator}")
           o.println(s"${indent}}")
 
-          o.println("}")
+          o.println(s"""}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}.getInstance())${lineSeparator}
+}""")
         }
 
         case _ =>
@@ -142,8 +161,9 @@ final class TypeScriptEmitter(
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case InterfaceDeclaration(n, fields, typeParams, superInterface, _) => {
+          val tpeName = typeNaming(decl.reference)
 
-          o.print(s"export interface ${typeNaming(decl.reference)}${typeParameters(typeParams)}")
+          o.print(s"export interface ${tpeName}${typeParameters(typeParams)}")
 
           superInterface.foreach { iface =>
             o.print(s" extends ${typeNaming(iface.reference)}")
@@ -151,9 +171,20 @@ final class TypeScriptEmitter(
 
           o.println(" {")
 
-          list(fields).reverse.foreach(emitField(o, n, _))
+          val fieldList = list(fields)
 
-          o.println("}")
+          fieldList.reverse.foreach(emitField(o, n, _))
+
+          // Type guard
+          o.println(s"""}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+          o.println(interfaceTypeGuard(indent + indent, n, fieldList))
+
+          o.println(s"""${indent})${lineSeparator}
+}""")
         }
 
         case _ =>
@@ -177,10 +208,20 @@ final class TypeScriptEmitter(
       val tpeName = typeNaming(decl.reference)
       val vs = list(values).map(v => s"'${v}'")
 
-      o.println(s"""export type ${tpeName} = ${vs mkString " | "}""")
+      o.println(s"""export type ${tpeName} = ${vs mkString " | "}${lineSeparator}""")
       o.println()
-      o.print(s"export const ${tpeName}Values = ")
-      o.println(vs.mkString("[ ", ", ", " ]"))
+      o.println(s"""export const ${tpeName}Values = ${
+        vs.mkString("[ ", ", ", " ]")
+      }${lineSeparator}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+      o.print(values.map { v =>
+        s"${indent}${indent}v == '${v}'"
+      } mkString " ||\n")
+      o.println(s"""\n${indent})${lineSeparator}
+}""")
     }
 
     { decl =>
@@ -290,4 +331,76 @@ private[scalats] object TypeScriptEmitter {
 
   /* See `TypeScriptPrinter` */
   type Printer = Function4[Settings, Declaration.Kind, String, ListSet[TypeRef], PrintStream]
+
+  // ---
+
+  def interfaceTypeGuard(
+    indent: String,
+    tpeName: String,
+    fields: Iterable[Member],
+    guardNaming: TypeRef => String,
+    settings: Settings): String = {
+
+    val check = fieldCheck(tpeName, _: Member, guardNaming, settings)
+
+    if (fields.isEmpty) {
+      s"${indent}v === {}"
+    } else {
+      fields.map(check).mkString(s"${indent}(", s") &&\n${indent}(", ")")
+    }
+  }
+
+  private def fieldCheck(
+    tpeName: String,
+    member: Member,
+    guardNaming: TypeRef => String,
+    settings: Settings): String = {
+    import settings.fieldMapper
+
+    val tsField = fieldMapper(settings, tpeName, member.name, member.typeRef)
+
+    valueCheck(s"v['${tsField.name}']", member.typeRef, guardNaming)
+  }
+
+  @SuppressWarnings(Array("ListSize"))
+  private def valueCheck(
+    name: String,
+    typeRef: TypeRef,
+    guardNaming: TypeRef => String): String =
+    typeRef match {
+      case DateRef | DateTimeRef =>
+        s"${name} && (${name} instanceof Date)"
+
+      case SimpleTypeRef(tpe) =>
+        s"(typeof ${name}) === '${tpe}'"
+
+      case t @ (CustomTypeRef(_, _) | SingletonTypeRef(_, _)) =>
+        s"${name} && ${guardNaming(t)}(${name})"
+
+      case ArrayRef(t) =>
+        s"Array.isArray(${name}) && ${name}.every(elmt => ${valueCheck("elmt", t, guardNaming)})"
+
+      case TupleRef(ts) => {
+        def checkElmts = ts.zipWithIndex.map {
+          case (t, i) => valueCheck(s"${name}[${i}]", t, guardNaming)
+        }.mkString("(", ") && (", ")")
+
+        s"Array.isArray(${name}) && ${name}.length == ${ts.size} && $checkElmts"
+      }
+
+      case MapType(keyType, valueType) => {
+        def subCheck = valueCheck(s"${name}[key]", valueType, guardNaming)
+
+        s"(typeof ${name}) == 'object' && Object.keys(${name}).every(key => (${valueCheck("key", keyType, guardNaming)}) && ($subCheck))"
+      }
+
+      case UnionType(ps) =>
+        ps.map { valueCheck(name, _, guardNaming) }.mkString("(", ") || (", ")")
+
+      case NullableType(tpe) =>
+        s"!${name} || (${valueCheck(name, tpe, guardNaming)})"
+
+      case _ =>
+        "false" // Unprovable pattern (not happen)
+    }
 }

@@ -24,3 +24,11 @@ export const idtltDiscriminatedBusLine = idtlt.intersection(
 export type DiscriminatedBusLine = typeof idtltDiscriminatedBusLine.T;
 
 export const discriminatedBusLine: (_: BusLine) => DiscriminatedBusLine = (v: BusLine) => ({ _type: 'BusLine', ...v });
+
+export function isBusLine(v: any): v is BusLine {
+  return (
+    (Array.isArray(v['stopIds']) && v['stopIds'].every(elmt => (typeof elmt) === 'string')) &&
+    ((typeof v['name']) === 'string') &&
+    ((typeof v['id']) === 'number')
+  );
+}

@@ -1,12 +1,15 @@
-import type { Greeting } from '../Greeting';
+import { Greeting, isGreeting } from '../Greeting';
 import * as hello from '../Hello';
 import * as hi from '../Hi';
 import * as bye from '../Bye';
 import * as goodbye from '../GoodBye';
-import type { Whatever } from '../Whatever';
+import { Whatever, isWhatever } from '../Whatever';
 
 describe('Greeting', () => {
   it('should be asserted as Hello', () => {
+    expect(hello.isHello('Hello')).toBe(true)
+    expect(isGreeting('Hello')).toBe(true)
+
     const value1: hello.Hello = 'Hello'
     const value2: hello.Hello = hello.HelloInhabitant
 
@@ -22,6 +25,9 @@ describe('Greeting', () => {
   })
 
   it('should be asserted as Hi', () => {
+    expect(hi.isHi('Hi')).toBe(true)
+    expect(isGreeting('Hi')).toBe(true)
+
     const value1: hi.Hi = 'Hi'
     const value2: hi.Hi = hi.HiInhabitant
 
@@ -37,6 +43,9 @@ describe('Greeting', () => {
   })
 
   it('should be asserted as Bye', () => {
+    expect(bye.isBye('Bye')).toBe(true)
+    expect(isGreeting('Bye')).toBe(true)
+
     const value1: bye.Bye = 'Bye'
     const value2: bye.Bye = bye.ByeInhabitant
 
@@ -52,6 +61,9 @@ describe('Greeting', () => {
   })
 
   it('should be asserted as GoodBye', () => {
+    expect(goodbye.isGoodBye('GoodBye')).toBe(true)
+    expect(isGreeting('GoodBye')).toBe(true)
+
     const value1: goodbye.GoodBye = 'GoodBye'
     const value2: goodbye.GoodBye = goodbye.GoodByeInhabitant
 
@@ -67,6 +79,9 @@ describe('Greeting', () => {
   })
 
   it('should be asserted as Whatever', () => {
+    expect(isWhatever({ word: 'Yo' })).toBe(true)
+    expect(isGreeting({ word: 'Yo' })).toBe(true)
+
     const value1: Whatever = { word: 'Yo' }
     const value2: Whatever = { word: 'Bonjour' }
 

@@ -1,3 +1,4 @@
+> clean
 $ absent common/target/scala-ts/src_managed/Feature.ts
 $ absent common/target/scala-ts/src_managed/Foo.ts
 $ absent common/target/scala-ts/src_managed/Bar.ts

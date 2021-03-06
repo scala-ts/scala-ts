@@ -3,3 +3,9 @@
 export interface Whatever {
   word: string;
 }
+
+export function isWhatever(v: any): v is Whatever {
+  return (
+    ((typeof v['word']) === 'string')
+  );
+}

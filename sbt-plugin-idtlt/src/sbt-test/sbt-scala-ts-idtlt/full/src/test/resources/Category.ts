@@ -23,5 +23,13 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
 export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;
 
 export const idtltCategoryKnownValues: Array<Category> = [
-  
+  'Ipsum', 'Lorem'
 ];
+
+export function isCategory(v: any): v is Category {
+  return (
+    nsIpsum.isIpsum(v) ||
+    nsLorem.isLorem(v)
+  );
+}
+

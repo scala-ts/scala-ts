@@ -23,3 +23,10 @@ export const idtltDiscriminatedNamedFeature = idtlt.intersection(
 export type DiscriminatedNamedFeature = typeof idtltDiscriminatedNamedFeature.T;
 
 export const discriminatedNamedFeature: (_: NamedFeature) => DiscriminatedNamedFeature = (v: NamedFeature) => ({ _type: 'NamedFeature', ...v });
+
+export function isNamedFeature(v: any): v is NamedFeature {
+  return (
+    (v['feature'] && nsFeature.isFeature(v['feature'])) &&
+    ((typeof v['name']) === 'string')
+  );
+}

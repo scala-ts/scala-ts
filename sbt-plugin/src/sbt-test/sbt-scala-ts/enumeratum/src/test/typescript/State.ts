@@ -1,9 +1,13 @@
-import type { State } from '../State';
+import { State, isState } from '../State';
 import * as alabama from '../Alabama';
 import * as alaska from '../Alaska';
 
 describe('State', () => {
   it('should be asserted as Alabama', () => {
+    expect(isState('AL')).toBe(true)
+    expect(alaska.isAlaska('AL')).toBe(false)
+    expect(alabama.isAlabama('AL')).toBe(true)
+
     const value1: alabama.Alabama = 'AL'
     const value2: alabama.Alabama = alabama.AlabamaInhabitant
 
@@ -19,6 +23,10 @@ describe('State', () => {
   })
 
   it('should be asserted as Alaska', () => {
+    expect(isState('AK')).toBe(true)
+    expect(alaska.isAlaska('AK')).toBe(true)
+    expect(alabama.isAlabama('AK')).toBe(false)
+
     const value1: alaska.Alaska = 'AK'
     const value2: alaska.Alaska = alaska.AlaskaInhabitant
 

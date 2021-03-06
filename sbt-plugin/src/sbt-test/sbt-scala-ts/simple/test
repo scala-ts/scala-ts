@@ -1,3 +1,4 @@
+> clean
 $ absent target/scala-ts/src_managed/CaseClassFoo.ts
 $ absent target/scala-ts/src_managed/CaseClassBar.ts
 $ absent target/scala-ts/src_managed/Transport.ts

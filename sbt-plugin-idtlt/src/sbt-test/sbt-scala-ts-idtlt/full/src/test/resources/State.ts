@@ -25,3 +25,11 @@ export type DiscriminatedState = typeof idtltDiscriminatedState.T;
 export const idtltStateKnownValues: Array<State> = [
   "AL", "AK"
 ];
+
+export function isState(v: any): v is State {
+  return (
+    nsAlabama.isAlabama(v) ||
+    nsAlaska.isAlaska(v)
+  );
+}
+

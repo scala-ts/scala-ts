@@ -27,3 +27,11 @@ export type DiscriminatedTransport = typeof idtltDiscriminatedTransport.T;
 export const idtltTransportKnownValues: Array<Transport> = [
   
 ];
+
+export function isTransport(v: any): v is Transport {
+  return (
+    nsBusLine.isBusLine(v) ||
+    nsTrainLine.isTrainLine(v)
+  );
+}
+

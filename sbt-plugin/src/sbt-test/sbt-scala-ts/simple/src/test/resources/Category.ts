@@ -2,3 +2,9 @@
 
 export interface Category {
 }
+
+export function isCategory(v: any): v is Category {
+  return (
+    v === {}
+  );
+}

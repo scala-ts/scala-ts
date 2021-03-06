@@ -1,3 +1,4 @@
+> clean
 $ absent target/scala-ts/src_managed/State.ts
 $ absent target/scala-ts/src_managed/Alabama.ts
 $ absent target/scala-ts/src_managed/Alaska.ts
