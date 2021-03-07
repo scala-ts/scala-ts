@@ -67,7 +67,7 @@ Finally, frontend handles the response as TypeScript `UserName`, and the Sign Up
 
 ![SignUp response](../assets/demo-akka-http-svelte/signup4.png)
 
-> *Note:* In this sample frontend, it's possible to 'quite' safely [assert the JSON response as the expected type](https://www.typescriptlang.org/docs/handbook/basic-types.html#type-assertions). In many case, validating the response must be done (e.g. [io-ts](https://gcanti.github.io/io-ts/), [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat), ...).
+> *Note:* In this sample frontend, it's possible to 'quite' safely [assert the JSON response as the expected type](https://www.typescriptlang.org/docs/handbook/basic-types.html#type-assertions). In many case, validating the response must be done (e.g. [io-ts](https://gcanti.github.io/io-ts/), [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat), ...); See [demo with idonttrustlikethat](./demo-idtlt.html).
 
 ### Login
 
@@ -89,7 +89,7 @@ Then the frontend `POST`s as JSON the TypeScript `Credentials`.
 
 The REST API receives the JSON data and decodes it as [Scala `Credentials`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/common/src/main/scala/Account.scala#L46).
 
-> *See [Scala SignIn endpoint](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L51)
+> *See [Scala SignIn endpoint](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L56)
 
 If it's Ok, a [user token](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/http-api/src/main/scala/Router.scala#L109) is sent back as JSON response.
 
@@ -161,6 +161,7 @@ Since *#1* is ok, the TypeScript/Svelte frontend can be built (using the generat
 
 ```bash
 cd frontend
+export BACKEND_URL=http://http-api-base-url
 yarn build
 ```
 
@@ -170,3 +171,7 @@ It can be deploy to [Heroku](https://www.heroku.com/) using Docker build.
 
 - [`heroku.yml`](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/heroku.yml)
 - `Dockerfile` ([copy frontend](https://github.com/scala-ts/scala-ts/blob/demo/akka-http-svlete/Dockerfile#L12) to `src/main/resources/webroot` so it's served as static resources).
+
+## Go further
+
+- [Similar demo with idonttrustlikethat](./demo-idtlt.html)

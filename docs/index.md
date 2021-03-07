@@ -14,7 +14,7 @@ layout: default
 
 ![Akka HTTP & Svelte example](assets/demo-akka-http-svelte/components.svg)
 
-*Scala-TS* is not [Scala.js](https://www.scala-js.org/); Scala.js is a great tool to port Scala code to JavaScript, so it can be executed as any JS functions, whereas Scala-TS is focused on transpiling only data model types.
+*Scala-TS* is not [Scala.js](https://www.scala-js.org/); Scala.js is a great tool to port Scala code to JavaScript, so it can be executed as any JS functions, whereas Scala-TS is focused on transpiling only data model types (so the frontend itself is coded in TypeScript, not in Scala).
 
 *Input Scala:*
 
@@ -44,6 +44,7 @@ const incident: Incident = {
 **More:**
 
 - [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
+  - Similar [demo with idonttrustlikethat](./articles/demo-idtlt.html)
 
 ### SBT plugin
 
