@@ -181,3 +181,5 @@ export const idtltDiscriminatedBar = idtlt.intersection(
 // Deriving TypeScript type from Bar validator
 export type Bar = typeof idtltBar.T;
 ```
+
+*See [demo with idonttrustlikethat](./articles/demo-idtlt.html)*
