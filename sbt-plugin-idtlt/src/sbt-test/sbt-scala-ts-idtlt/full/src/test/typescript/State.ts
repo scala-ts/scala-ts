@@ -61,4 +61,10 @@ describe('State', () => {
       nsAlaska.idtltAlaska,
     )
   })
+
+  it('should expose the known literal values', () => {
+    const knownValues: Array<nsState.State> = nsState.idtltStateKnownValues
+
+    expect(knownValues).toEqual([ 'AL', 'AK' ])
+  })
 })

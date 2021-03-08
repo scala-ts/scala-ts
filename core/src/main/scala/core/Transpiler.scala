@@ -50,8 +50,15 @@ final class Transpiler(config: Settings) {
           idToString(id),
           ifaceFields,
           possibilities.map {
-            case ScalaModel.CaseObject(pid, _) =>
-              CustomTypeRef(idToString(pid), List.empty)
+            case ScalaModel.CaseObject(pid, values) =>
+              SingletonTypeRef(
+                name = idToString(pid),
+                values = values.map { v =>
+                  Value(
+                    name = v.name,
+                    typeRef = transpileTypeRef(v.typeRef, false),
+                    rawValue = v.value)
+                })
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
               CustomTypeRef(

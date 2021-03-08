@@ -30,6 +30,8 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
 
 }
 
+sealed trait UnionMemberRef { _: TypeRef => }
+
 /**
  * Reference to a custom type.
  *
@@ -38,9 +40,22 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
  */
 case class CustomTypeRef(
   name: String,
-  typeArgs: List[TypeRef] = Nil) extends TypeRef with GenericTypeRef {
+  typeArgs: List[TypeRef] = Nil)
+  extends TypeRef with UnionMemberRef with GenericTypeRef {
   override def requires: ListSet[TypeRef] =
     super.requires + this
+}
+
+/**
+ * @param name the type name
+ * @param values the invariant values
+ */
+case class SingletonTypeRef(
+  name: String,
+  values: ListSet[Value]) extends TypeRef with UnionMemberRef {
+  override val requires = ListSet.empty[TypeRef]
+
+  override lazy val toString = s"#${name}{${values mkString ", "}}"
 }
 
 /**

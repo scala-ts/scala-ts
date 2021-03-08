@@ -2,6 +2,8 @@ package io.github.scalats.idtlt
 
 import java.io.PrintStream
 
+import scala.collection.immutable.ListSet
+
 import io.github.scalats.core.{
   Settings,
   TypeScriptDeclarationMapper,
@@ -94,9 +96,18 @@ export const idtlt${tpeName} = idtlt.union(""")
 // Fields are ignored: ${fields.map(_.name) mkString ", "}""")
         }
 
-        out.print(s"""
+        out.println(s"""
 $deriving
-$discrimitedDecl""")
+$discrimitedDecl
+
+export const idtlt${tpeName}KnownValues: Array<${tpeName}> = [""")
+
+        val knownValues: ListSet[String] = possibilities.flatMap {
+          case SingletonTypeRef(_, values) => values.map(_.rawValue)
+          case _ => List.empty[String]
+        }
+
+        out.println(s"${indent}${knownValues mkString ", "}\n]${lineSep}")
       }
 
       case _: UnionDeclaration =>

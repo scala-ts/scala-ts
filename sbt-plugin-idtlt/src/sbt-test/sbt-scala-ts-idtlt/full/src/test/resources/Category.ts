@@ -21,3 +21,7 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
 
 // Deriving TypeScript type from idtltDiscriminatedCategory validator
 export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;
+
+export const idtltCategoryKnownValues: Array<Category> = [
+  
+];

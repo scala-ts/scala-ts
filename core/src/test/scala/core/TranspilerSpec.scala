@@ -183,8 +183,12 @@ object TranspilerResults {
     fields = ListSet(Member("foo", StringRef)),
     possibilities = ListSet(
       CustomTypeRef("ScalaRuntimeFixturesFamilyMember1", List.empty),
-      CustomTypeRef("ScalaRuntimeFixturesFamilyMember2", List.empty),
-      CustomTypeRef("ScalaRuntimeFixturesFamilyMember3", List.empty)),
+      SingletonTypeRef(
+        "ScalaRuntimeFixturesFamilyMember2",
+        ListSet(Value("foo", StringRef, "\"bar\""))),
+      SingletonTypeRef(
+        "ScalaRuntimeFixturesFamilyMember3",
+        ListSet(Value("foo", StringRef, "\"lorem\"")))),
     superInterface = Option.empty)
 
   val unionIface = InterfaceDeclaration(

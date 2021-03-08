@@ -23,3 +23,7 @@ export const idtltDiscriminatedTransport = idtlt.intersection(
 
 // Deriving TypeScript type from idtltDiscriminatedTransport validator
 export type DiscriminatedTransport = typeof idtltDiscriminatedTransport.T;
+
+export const idtltTransportKnownValues: Array<Transport> = [
+  
+];

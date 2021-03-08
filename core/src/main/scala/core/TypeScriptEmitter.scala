@@ -229,6 +229,9 @@ final class TypeScriptEmitter(
       case custom @ CustomTypeRef(_, Nil) =>
         typeNaming(custom)
 
+      case singleton @ SingletonTypeRef(_, _) =>
+        typeNaming(singleton)
+
       case custom @ CustomTypeRef(_, params) =>
         s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
 

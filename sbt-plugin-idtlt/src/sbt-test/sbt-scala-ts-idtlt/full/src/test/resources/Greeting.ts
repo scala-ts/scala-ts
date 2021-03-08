@@ -27,3 +27,7 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
 
 // Deriving TypeScript type from idtltDiscriminatedGreeting validator
 export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;
+
+export const idtltGreetingKnownValues: Array<Greeting> = [
+  
+];
