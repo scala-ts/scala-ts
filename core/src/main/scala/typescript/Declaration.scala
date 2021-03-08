@@ -83,7 +83,9 @@ case class Value(
 case class SingletonDeclaration(
   name: String,
   values: ListSet[Value],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration
+  superInterface: Option[InterfaceDeclaration]) extends Declaration {
+  override def reference: TypeRef = SingletonTypeRef(name, values)
+}
 
 /**
  * A declaration for an enumerated type.
@@ -97,5 +99,5 @@ case class EnumDeclaration(
 case class UnionDeclaration(
   name: String,
   fields: ListSet[Member],
-  possibilities: ListSet[CustomTypeRef],
+  possibilities: ListSet[TypeRef with UnionMemberRef],
   superInterface: Option[InterfaceDeclaration]) extends Declaration
