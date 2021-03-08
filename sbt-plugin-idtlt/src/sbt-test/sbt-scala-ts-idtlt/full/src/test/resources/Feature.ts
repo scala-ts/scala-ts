@@ -21,3 +21,7 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
 
 // Deriving TypeScript type from idtltDiscriminatedFeature validator
 export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;
+
+export const idtltFeatureKnownValues: Array<Feature> = [
+  
+];

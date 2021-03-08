@@ -38,7 +38,7 @@ sealed trait UnionMemberRef { _: TypeRef => }
  * @param name the type name
  * @param typeArgs the type arguments (e.g. `string` for `CustomType<string>`)
  */
-private[scalats] case class CustomTypeRef(
+case class CustomTypeRef(
   name: String,
   typeArgs: List[TypeRef] = Nil)
   extends TypeRef with UnionMemberRef with GenericTypeRef {
@@ -50,7 +50,7 @@ private[scalats] case class CustomTypeRef(
  * @param name the type name
  * @param values the invariant values
  */
-private[scalats] case class SingletonTypeRef(
+case class SingletonTypeRef(
   name: String,
   values: ListSet[Value]) extends TypeRef with UnionMemberRef {
   override val requires = ListSet.empty[TypeRef]

@@ -21,3 +21,7 @@ export const idtltDiscriminatedState = idtlt.intersection(
 
 // Deriving TypeScript type from idtltDiscriminatedState validator
 export type DiscriminatedState = typeof idtltDiscriminatedState.T;
+
+export const idtltStateKnownValues: Array<State> = [
+  "AL", "AK"
+];
