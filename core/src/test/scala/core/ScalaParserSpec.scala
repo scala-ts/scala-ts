@@ -27,7 +27,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass1Type -> TestClass1Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass1) and {
         res.parsed must have size 1
@@ -38,7 +39,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass2Type -> TestClass2Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass2) and {
         res.parsed must have size 1
@@ -49,7 +51,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass3Type -> TestClass3Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass3) and {
         res.parsed must have size 1
@@ -60,7 +63,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass5Type -> TestClass5Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass5) and {
         res.parsed must have size 1
@@ -90,7 +94,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
             fullName -> (TestClass3Type -> TestClass3Tree),
           TestClass5Type.typeSymbol. // 'age' in 6
             fullName -> (TestClass5Type -> TestClass5Tree)),
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       import res.parsed
 
@@ -117,7 +122,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
             fullName -> (TestClass1Type -> TestClass1Tree),
           TestClass1BType.typeSymbol. // 'name' in 7
             fullName -> (TestClass1BType -> TestClass1BTree)),
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       import res.parsed
 
@@ -134,7 +140,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(AnyValChildType -> AnyValChildTree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must beEmpty
     }
@@ -143,7 +150,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass8Type -> TestClass8Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass8) and {
         res.parsed must have size 1
@@ -155,7 +163,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         val res = scalaParser.parseTypes(
           List(TestEnumerationType -> TestEnumerationTree),
           Map.empty,
-          ListSet.empty)
+          ListSet.empty,
+          _ => true)
 
         res.parsed must contain(testEnumeration) and {
           res.parsed must have size 1
@@ -166,7 +175,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         val res = scalaParser.parseTypes(
           List(TestClass9Type -> TestClass9Tree),
           Map.empty,
-          ListSet.empty)
+          ListSet.empty,
+          _ => true)
 
         res.parsed must contain(caseClass9) and {
           res.parsed must contain(testEnumeration)
@@ -180,7 +190,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(TestClass10Type -> TestClass10Tree),
         Map.empty,
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(caseClass10) and {
         res.parsed must have size 1
@@ -192,7 +203,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         val res = scalaParser.parseTypes(
           List(ScalaRuntimeFixtures.TestObject1Type -> EmptyTree),
           Map.empty,
-          ListSet.empty)
+          ListSet.empty,
+          _ => true)
 
         res.parsed must contain(caseObject1) and {
           res.parsed must have size 1
@@ -203,7 +215,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         val res = scalaParser.parseTypes(
           List(TestClass1CompanionType -> TestClass1CompanionTree),
           Map.empty,
-          ListSet.empty)
+          ListSet.empty,
+          _ => true)
 
         res.parsed must beEmpty
       }
@@ -212,7 +225,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         val res = scalaParser.parseTypes(
           List(TestObject2Type -> TestObject2Tree),
           Map.empty,
-          ListSet.empty)
+          ListSet.empty,
+          _ => true)
 
         res.parsed must contain(caseObject2) and {
           res.parsed must have size 1
@@ -230,7 +244,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
             fullName -> (FamilyMember2Type -> FamilyMember2Tree),
           FamilyMember3Type.typeSymbol.
             fullName -> (FamilyMember3Type -> FamilyMember3Tree)),
-        ListSet.empty)
+        ListSet.empty,
+        _ => true)
 
       res.parsed must contain(sealedFamily1) and {
         res.parsed must have size 1

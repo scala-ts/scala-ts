@@ -40,8 +40,9 @@ final class ScalaParser[Uni <: Universe](
   private[scalats] def parseTypes(
     types: List[(Type, Tree)],
     symtab: Map[String, (Type, Tree)],
-    examined: ListSet[TypeFullId]): Result[ListSet, TypeFullId] =
-    parse(types, symtab, examined, ListSet.empty[TypeDef])
+    examined: ListSet[TypeFullId],
+    acceptsType: Symbol => Boolean): Result[ListSet, TypeFullId] =
+    parse(types, symtab, examined, acceptsType, ListSet.empty[TypeDef])
 
   // ---
 
@@ -50,14 +51,21 @@ final class ScalaParser[Uni <: Universe](
     types: List[(Type, Tree)],
     symtab: Map[String, (Type, Tree)],
     examined: ListSet[TypeFullId],
+    acceptsType: Symbol => Boolean,
     parsed: ListSet[TypeDef]): Result[ListSet, TypeFullId] = types match {
+    case ((scalaType, _) :: tail) if (!acceptsType(scalaType.typeSymbol)) => {
+      logger.debug(s"Type ${scalaType} is excluded")
+
+      parse(tail, symtab, examined, acceptsType, parsed)
+    }
+
     case (tpe @ (scalaType, tree)) :: tail => {
       val pos = scalaType.typeSymbol.pos
       val notDefined: Boolean = (pos != universe.NoPosition &&
         !compiled.contains(pos.source.file.canonicalPath))
 
       if (notDefined) {
-        logger.info(s"Postpone parsing of ${scalaType} (${pos}) is not yet compiled")
+        logger.info(s"Postpone parsing of ${scalaType} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
       }
 
       if (examined.contains(fullId(scalaType)) ||
@@ -70,6 +78,7 @@ final class ScalaParser[Uni <: Universe](
           tail,
           symtab,
           /*res.*/ examined,
+          acceptsType,
           parsed /* ++ res.parsed*/ )
 
       } else {
@@ -134,7 +143,7 @@ final class ScalaParser[Uni <: Universe](
           }
 
         val members = walk(Seq(tree), Map.empty)
-        val res = parseType(tpe, symtab, examined)
+        val res = parseType(tpe, symtab, examined, acceptsType)
 
         val mappedTypeArgs = typeArgs.flatMap { st =>
           symtab.get(fullId(st).takeWhile(_ != '['))
@@ -144,6 +153,7 @@ final class ScalaParser[Uni <: Universe](
           members ++: mappedTypeArgs ++: tail,
           symtab,
           res.examined,
+          acceptsType,
           parsed ++ res.parsed)
 
       }
@@ -159,7 +169,8 @@ final class ScalaParser[Uni <: Universe](
   private def parseType(
     tpe: (Type, Tree),
     symtab: Map[String, (Type, Tree)],
-    examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    examined: ListSet[TypeFullId],
+    acceptsType: Symbol => Boolean): Result[Option, TypeFullId] = {
     val tpeSym = tpe._1.typeSymbol
 
     import tpe.{ _1 => scalaType }
@@ -185,7 +196,7 @@ final class ScalaParser[Uni <: Universe](
 
         if (classSym.isAbstract /*isTrait*/ && classSym.isSealed &&
           scalaType.typeParams.isEmpty) {
-          parseSealedUnion(scalaType, symtab, examined)
+          parseSealedUnion(scalaType, symtab, examined, acceptsType)
         } else if (isCaseClass(scalaType)) {
           parseCaseClass(tpe, examined)
         } else if (isEnumerationValue(scalaType)) {
@@ -381,7 +392,8 @@ final class ScalaParser[Uni <: Universe](
   private def parseSealedUnion(
     tpe: Type,
     symtab: Map[String, (Type, Tree)],
-    examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    examined: ListSet[TypeFullId],
+    acceptsType: Symbol => Boolean): Result[Option, TypeFullId] = {
     // TODO: (low priority) Check & warn there is no type parameters for a union type
 
     // Members
@@ -400,6 +412,7 @@ final class ScalaParser[Uni <: Universe](
           possibilities,
           symtab,
           examined,
+          acceptsType,
           ListSet.empty[TypeDef])
 
         Result(
