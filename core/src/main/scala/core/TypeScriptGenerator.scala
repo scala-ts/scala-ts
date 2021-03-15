@@ -75,13 +75,16 @@ object TypeScriptGenerator {
     typeMapper: TypeScriptTypeMapper,
     printer: TypeScriptPrinter,
     examined: ListSet[ScalaParser.TypeFullId],
-    compiled: Set[String])(
+    compiled: Set[String],
+    acceptsType: universe.Symbol => Boolean)(
     implicit
     cu: CompileUniverse[universe.type]): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser[universe.type](universe, compiled, logger)
     val transpiler = new Transpiler(settings)
 
-    val parseResult = scalaParser.parseTypes(types, symtab, examined)
+    val parseResult = scalaParser.parseTypes(
+      types, symtab, examined, acceptsType)
+
     import parseResult.{ parsed => scalaTypes }
 
     val typeScriptTypes = transpiler(scalaTypes)
