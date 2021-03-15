@@ -285,7 +285,8 @@ final class CompilerPlugin(val global: Global)
         typeMapper = typeMapper,
         printer = config.printer,
         examined = examined,
-        compiled = compiled.toSet)
+        compiled = compiled.toSet,
+        acceptsType = acceptsType)
 
       examined = examined ++ ex
     }
