@@ -1,0 +1,72 @@
+$ absent common/target/scala-ts/src_managed/Feature.ts
+$ absent common/target/scala-ts/src_managed/Foo.ts
+$ absent common/target/scala-ts/src_managed/Bar.ts
+$ absent common/target/scala-ts/src_managed/Category.ts
+$ absent common/target/scala-ts/src_managed/Lorem.ts
+$ absent common/target/scala-ts/src_managed/Ipsum.ts
+$ absent common/target/scala-ts/src_managed/NamedFeature.ts
+
+$ absent api/target/scala-ts/src_managed/Feature.ts
+$ absent api/target/scala-ts/src_managed/Foo.ts
+$ absent api/target/scala-ts/src_managed/Bar.ts
+$ absent api/target/scala-ts/src_managed/Category.ts
+$ absent api/target/scala-ts/src_managed/Lorem.ts
+$ absent api/target/scala-ts/src_managed/Ipsum.ts
+$ absent api/target/scala-ts/src_managed/NamedFeature.ts
+
+$ absent api/target/scala-ts/src_managed/CaseClassFoo.ts
+$ absent api/target/scala-ts/src_managed/CaseClassBar.ts
+$ absent api/target/scala-ts/src_managed/Transport.ts
+$ absent api/target/scala-ts/src_managed/BusLine.ts
+$ absent api/target/scala-ts/src_managed/TrainLine.ts
+
+# Simple generation from Scala case class
+> +compile
+
+# Check the generated files is as expected
+$ exists common/target/scala-ts.conf
+$ exists api/target/scala-ts.conf
+
+$ exists api/target/scala-ts/src_managed/CaseClassFoo.ts
+$ must-mirror api/target/scala-ts/src_managed/CaseClassFoo.ts api/src/test/resources/CaseClassFoo.ts
+
+$ exists api/target/scala-ts/src_managed/CaseClassBar.ts
+$ must-mirror api/target/scala-ts/src_managed/CaseClassBar.ts api/src/test/resources/CaseClassBar.ts
+
+$ exists api/target/scala-ts/src_managed/Transport.ts
+$ must-mirror api/target/scala-ts/src_managed/Transport.ts api/src/test/resources/Transport.ts
+
+$ exists api/target/scala-ts/src_managed/BusLine.ts
+$ must-mirror api/target/scala-ts/src_managed/BusLine.ts api/src/test/resources/BusLine.ts
+
+$ exists api/target/scala-ts/src_managed/TrainLine.ts
+$ must-mirror api/target/scala-ts/src_managed/TrainLine.ts api/src/test/resources/TrainLine.ts
+
+$ exists common/target/scala-ts/src_managed/Feature.ts
+$ must-mirror common/target/scala-ts/src_managed/Feature.ts common/src/test/resources/Feature.ts
+
+$ exists common/target/scala-ts/src_managed/Foo.ts
+$ must-mirror common/target/scala-ts/src_managed/Foo.ts common/src/test/resources/Foo.ts
+
+$ exists common/target/scala-ts/src_managed/Bar.ts
+$ must-mirror common/target/scala-ts/src_managed/Bar.ts common/src/test/resources/Bar.ts
+
+$ exists common/target/scala-ts/src_managed/Category.ts
+$ must-mirror common/target/scala-ts/src_managed/Category.ts common/src/test/resources/Category.ts
+
+$ exists common/target/scala-ts/src_managed/Lorem.ts
+$ must-mirror common/target/scala-ts/src_managed/Lorem.ts common/src/test/resources/Lorem.ts
+
+$ exists common/target/scala-ts/src_managed/Ipsum.ts
+$ must-mirror common/target/scala-ts/src_managed/Ipsum.ts common/src/test/resources/Ipsum.ts
+
+$ exists common/target/scala-ts/src_managed/NamedFeature.ts
+$ must-mirror common/target/scala-ts/src_managed/NamedFeature.ts common/src/test/resources/NamedFeature.ts
+
+$ absent api/target/scala-ts/src_managed/Feature.ts
+$ absent api/target/scala-ts/src_managed/Foo.ts
+$ absent api/target/scala-ts/src_managed/Bar.ts
+$ absent api/target/scala-ts/src_managed/Category.ts
+$ absent api/target/scala-ts/src_managed/Lorem.ts
+$ absent api/target/scala-ts/src_managed/Ipsum.ts
+$ absent api/target/scala-ts/src_managed/NamedFeature.ts
