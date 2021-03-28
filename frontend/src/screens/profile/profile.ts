@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import type { Account } from "@shared/Account";
+import { Account, isAccount } from "@shared/Account";
 import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
@@ -57,5 +57,16 @@ export async function load(token: String) {
 
   pending.set(false);
 
-  account.set(resp as Account);
+  if (!isAccount(resp)) {
+    modalStore.set({
+      id: "error-modal",
+      title: "Error",
+      message: "Invalid account",
+      headerClass: "bg-danger",
+      bodyClass: "text-danger",
+      closeBtnClass: "btn-danger",
+    });
+  } else {
+    account.set(resp);
+  }
 }
