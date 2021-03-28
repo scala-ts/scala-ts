@@ -67,7 +67,7 @@ Finally, frontend handles the response as TypeScript `UserName`, and the Sign Up
 
 ![SignUp response](../assets/demo-akka-http-svelte/signup4.png)
 
-> *Note:* In this sample frontend, it's possible to 'quite' safely [assert the JSON response as the expected type](https://www.typescriptlang.org/docs/handbook/basic-types.html#type-assertions). In many case, validating the response must be done (e.g. [io-ts](https://gcanti.github.io/io-ts/), [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat), ...); See [demo with idonttrustlikethat](./demo-idtlt.html).
+> *Note:* In this sample frontend, a type guard is used. In many case, validating the response must be done (e.g. [io-ts](https://gcanti.github.io/io-ts/), [idonttrustlikethat](https://scala-ts.github.io/scala-ts/#idonttrustlikethat), ...); See [demo with idonttrustlikethat](./demo-idtlt.html).
 
 ### Login
 
