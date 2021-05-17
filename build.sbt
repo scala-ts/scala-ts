@@ -19,7 +19,7 @@ lazy val shaded = project.in(file("shaded")).settings(
 
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
   unmanagedJars in Compile += (shaded / assembly).value,
   unmanagedSourceDirectories in Compile += {
     val base = (sourceDirectory in Compile).value
@@ -115,7 +115,7 @@ object Manifest {
 
 lazy val idtlt = project.in(file("idtlt")).settings(
   name := "scala-ts-idtlt",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
   unmanagedJars in Compile += (shaded / assembly).value,
   pomPostProcess := XmlUtil.transformPomDependencies { dep =>
     (dep \ "groupId").headOption.map(_.text) match {

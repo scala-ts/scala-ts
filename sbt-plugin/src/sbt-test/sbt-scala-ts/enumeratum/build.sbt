@@ -4,7 +4,7 @@ name := "sbt-plugin-test-enumeratum"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.12", "2.13.4")
+crossScalaVersions := Seq("2.12.12", "2.13.6")
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
