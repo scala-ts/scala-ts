@@ -8,7 +8,7 @@ enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.4"
 
-crossScalaVersions := Seq("2.12.12", scalaVersion.value)
+crossScalaVersions := Seq("2.12.14", scalaVersion.value)
 
 // ---
 

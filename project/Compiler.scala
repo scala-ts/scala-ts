@@ -7,7 +7,7 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override lazy val projectSettings = Seq(
-    scalaVersion := "2.12.12",
+    scalaVersion := "2.12.14",
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
     scalacOptions ++= Seq(
