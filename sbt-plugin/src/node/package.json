@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "space-monad": "^1.0.0",
-    "idonttrustlikethat": "^1.0.7"
+    "idonttrustlikethat": "^2.0.7"
   }
 }
