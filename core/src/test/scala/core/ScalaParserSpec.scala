@@ -136,25 +136,29 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "skip declaration ValueClass (as replaced by primitive)" in {
-      val res = scalaParser.parseTypes(
-        List(AnyValChildType -> AnyValChildTree),
-        Map.empty,
-        ListSet.empty,
-        _ => true)
+    "handle ValueClass" >> {
+      "declaration" in {
+        val res = scalaParser.parseTypes(
+          List(AnyValChildType -> AnyValChildTree),
+          Map.empty,
+          ListSet.empty,
+          _ => true)
 
-      res.parsed must beEmpty
-    }
+        res.parsed must_=== ListSet(tagged1)
+      }
 
-    "handle ValueClass member as a primitive type" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass8Type -> TestClass8Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true)
+      "as member" in {
+        val res = scalaParser.parseTypes(
+          List(TestClass8Type -> TestClass8Tree),
+          Map.empty,
+          ListSet.empty,
+          _ => true)
 
-      res.parsed must contain(caseClass8) and {
-        res.parsed must have size 1
+        res.parsed must contain(caseClass8) and {
+          res.parsed must contain(tagged1)
+        } and {
+          res.parsed must have size 2
+        }
       }
     }
 
@@ -550,10 +554,18 @@ object ScalaParserResults {
     values = ListSet.empty,
     typeArgs = List("T"))
 
+  val tagged1 = ValueClass(
+    identifier = QualifiedIdentifier(
+      "AnyValChild", List("ScalaRuntimeFixtures")),
+    field = TypeMember("value", StringRef))
+
   val caseClass8 = CaseClass(
     identifier = QualifiedIdentifier(
       "TestClass8", List("ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", StringRef)),
+    fields = ListSet(TypeMember("name", TaggedRef(
+      identifier = QualifiedIdentifier(
+        "AnyValChild", List("ScalaRuntimeFixtures")),
+      tagged = StringRef))),
     values = ListSet.empty,
     typeArgs = List.empty)
 

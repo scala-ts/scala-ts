@@ -2,14 +2,14 @@ import sbt.Keys._
 
 name := "scala-ts"
 
-organization in ThisBuild := "io.github.scala-ts"
+ThisBuild / organization := "io.github.scala-ts"
 
 lazy val shaded = project.in(file("shaded")).settings(
   name := "scala-ts-shaded",
   crossPaths := false,
   autoScalaLibrary := false,
   libraryDependencies += "com.typesafe" % "config" % "1.4.1",
-  assemblyShadeRules in assembly := Seq(
+  assembly / assemblyShadeRules := Seq(
     ShadeRule.rename(
       "com.typesafe.config.**" -> "io.github.scalats.tsconfig.@1").inAll
   ),
@@ -19,10 +19,10 @@ lazy val shaded = project.in(file("shaded")).settings(
 
 lazy val core = project.in(file("core")).settings(
   name := "scala-ts-core",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
-  unmanagedJars in Compile += (shaded / assembly).value,
-  unmanagedSourceDirectories in Compile += {
-    val base = (sourceDirectory in Compile).value
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
+  Compile / unmanagedJars += (shaded / assembly).value,
+  Compile / unmanagedSourceDirectories += {
+    val base = (Compile / sourceDirectory).value
 
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n >= 12 => base / "scala-2.12+"
@@ -35,13 +35,13 @@ lazy val core = project.in(file("core")).settings(
     Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "org.slf4j" % "slf4j-api" % "1.7.32",
       "ch.qos.logback" % "logback-classic" % "1.1.7" % Test,
       "org.specs2" %% "specs2-core" % specsVer % Test,
       "org.specs2" %% "specs2-junit" % specsVer % Test)
   },
-  assemblyExcludedJars in assembly := {
-    (fullClasspath in assembly).value.filterNot {
+  assembly / assemblyExcludedJars := {
+    (assembly / fullClasspath).value.filterNot {
       _.data.getName startsWith "scala-ts-shaded"
     }
   },
@@ -63,11 +63,11 @@ lazy val core = project.in(file("core")).settings(
         Some(dep)
     }
   },
-  packageBin in Compile := crossTarget.value / (
-    assemblyJarName in assembly).value,
+  Compile / packageBin := crossTarget.value / (
+    assembly / assemblyJarName).value,
   makePom := makePom.dependsOn(assembly).value,
-  mainClass in assembly := Some("io.github.scalats.Main"),
-  mainClass in (Compile, run) := (mainClass in assembly).value
+  assembly / mainClass := Some("io.github.scalats.Main"),
+  Compile / run / mainClass := (assembly / mainClass).value
 )
 
 lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
@@ -82,18 +82,18 @@ lazy val `sbt-plugin` = project.in(file("sbt-plugin")).
       s"-Dscala-ts.version=${version.value}",
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
-    unmanagedJars in Compile += {
+    Compile / unmanagedJars += {
       val jarName = (shaded / assembly / assemblyJarName).value
 
       (shaded / target).value / jarName
     },
-    scripted := scripted.dependsOn(publishLocal in core).evaluated,
+    scripted := scripted.dependsOn(core / publishLocal).evaluated,
     scriptedBufferLog := false,
-    sourceGenerators in Compile += Def.task {
+    Compile / sourceGenerators += Def.task {
       val groupId = organization.value
       val coreArtifactId = (core / name).value
       val ver = version.value
-      val dir = (sourceManaged in Compile).value
+      val dir = (Compile / sourceManaged).value
       val outdir = dir / "org" / "scalats" / "sbt"
       val f = outdir / "Manifest.scala"
 
@@ -115,8 +115,8 @@ object Manifest {
 
 lazy val idtlt = project.in(file("idtlt")).settings(
   name := "scala-ts-idtlt",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.4"),
-  unmanagedJars in Compile += (shaded / assembly).value,
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
+  Compile / unmanagedJars += (shaded / assembly).value,
   pomPostProcess := XmlUtil.transformPomDependencies { dep =>
     (dep \ "groupId").headOption.map(_.text) match {
       case Some(
@@ -146,9 +146,9 @@ lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
       `sbt-plugin` / pluginCrossBuild / sbtVersion).value,
     sbtPlugin := true,
     scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
-    compile in Compile := (compile in Compile).
+    Compile / compile := (Compile / compile).
       dependsOn(`sbt-plugin` / Compile / compile).value,
-    unmanagedJars in Compile ++= {
+    Compile / unmanagedJars ++= {
       val jarName = (shaded / assembly / assemblyJarName).value
 
       Seq(
@@ -157,15 +157,15 @@ lazy val `sbt-plugin-idtlt` = project.in(file("sbt-plugin-idtlt")).
       )
     },
     scripted := scripted.
-      dependsOn(publishLocal in core).
-      dependsOn(publishLocal in idtlt).
-      dependsOn(publishLocal in `sbt-plugin`).
+      dependsOn(core / publishLocal).
+      dependsOn(idtlt / publishLocal).
+      dependsOn(`sbt-plugin` / publishLocal).
       evaluated,
-    sourceGenerators in Compile += Def.task {
+    Compile / sourceGenerators += Def.task {
       val groupId = organization.value
       val coreArtifactId = (core / name).value
       val ver = version.value
-      val dir = (sourceManaged in Compile).value
+      val dir = (Compile / sourceManaged).value
       val outdir = dir / "org" / "scalats" / "sbt" / "idtlt"
       val f = outdir / "Manifest.scala"
 

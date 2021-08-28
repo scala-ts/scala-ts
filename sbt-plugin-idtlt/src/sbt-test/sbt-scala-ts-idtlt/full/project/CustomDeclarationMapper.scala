@@ -43,76 +43,79 @@ ${indent}})
 """
 
     def emit: Unit = declaration match {
+      case tagged @ TaggedDeclaration(_, _) =>
+        parent(tagged, out)
+
       case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
-          out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
+        out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.object({""")
 
-          // TODO: list(fields).reverse
-          fields.foreach {
-            emitField(settings, fieldMapper, typeMapper, out, name, _)
-          }
+        // TODO: list(fields).reverse
+        fields.foreach {
+          emitField(settings, fieldMapper, typeMapper, out, name, _)
+        }
 
-          out.println(s"})${lineSep}")
+        out.println(s"})${lineSep}")
 
-          superInterface.foreach { si =>
-            out.println(s"""
+        superInterface.foreach { si =>
+          out.println(s"""
 // Super-type declaration ${si.name} is ignored""")
-          }
+        }
 
-          out.print(s"""
+        out.print(s"""
 $discrimitedObj
 $deriving""")
-        }
+      }
 
       case i: InterfaceDeclaration => {
-          out.println(s"// Not supported: InterfaceDeclaration '${name}'")
+        out.println(s"// Not supported: InterfaceDeclaration '${name}'")
 
-          if (i.typeParams.nonEmpty) {
-            out.println(s"// - type parameters: ${i.typeParams mkString ", "}")
-          }
+        if (i.typeParams.nonEmpty) {
+          out.println(s"// - type parameters: ${i.typeParams mkString ", "}")
         }
+      }
 
       case UnionDeclaration(_, fields, possibilities, None) => {
-          out.println(s"""// Validator for UnionDeclaration ${tpeName}
+        out.println(s"""// Validator for UnionDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 
         out.print(possibilities.map { p =>
           val n = typeNaming(p)
 
-            s"${indent}ns${n}.idtltDiscriminated${n}"
-          }.toSeq.sorted mkString ",\n")
+          s"${indent}ns${n}.idtltDiscriminated${n}"
+        }.toSeq.sorted mkString ",\n")
 
-          out.println(s")${lineSep}")
+        out.println(s")${lineSep}")
 
-          if (fields.nonEmpty) {
-            // TODO: Intersection?
+        if (fields.nonEmpty) {
+          // TODO: Intersection?
 
-            out.println(s"""
+          out.println(s"""
 // Fields are ignored: ${fields.map(_.name) mkString ", "}""")
-          }
+        }
 
-          out.print(s"""
+        out.print(s"""
 $discrimitedObj
 $deriving""")
-        }
+      }
 
       case _: UnionDeclaration =>
         out.println(s"// Not supported: UnionDeclaration '${name}'")
 
-        // TODO: $discrimitedObj
+      // TODO: $discrimitedObj
       case EnumDeclaration(_, values) => {
-          out.println(s"""// Validator for EnumDeclaration ${tpeName}
+        out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 
-          out.print(values.map { v =>
-            s"${indent}idtlt.literal('${v}')"
-          } mkString ",\n")
+        out.print(values.map { v =>
+          s"${indent}idtlt.literal('${v}')"
+        } mkString ",\n")
 
-          out.print(s""")
+        out.print(s""")
 
 $discrimitedObj
 $deriving""")
-        }
+      }
 
       case SingletonDeclaration(_, values, superInterface) => {
         out.print(s"""// Validator for SingletonDeclaration ${tpeName}

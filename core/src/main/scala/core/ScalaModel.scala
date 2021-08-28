@@ -17,6 +17,10 @@ object ScalaModel {
     values: ListSet[TypeInvariant],
     typeArgs: List[String]) extends TypeDef
 
+  case class ValueClass(
+    identifier: QualifiedIdentifier,
+    field: TypeMember) extends TypeDef
+
   case class CaseObject(
     identifier: QualifiedIdentifier,
     values: ListSet[TypeInvariant]) extends TypeDef
@@ -107,6 +111,10 @@ object ScalaModel {
   case class TypeParamRef(name: String) extends TypeRef
 
   case class EnumerationRef(identifier: QualifiedIdentifier) extends TypeRef
+
+  case class TaggedRef(
+    identifier: QualifiedIdentifier,
+    tagged: TypeRef) extends TypeRef
 
   case class TupleRef(typeArgs: List[TypeRef]) extends TypeRef
 

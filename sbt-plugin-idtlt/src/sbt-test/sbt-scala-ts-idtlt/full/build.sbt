@@ -6,17 +6,17 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.4"
+scalaVersion := "2.13.6"
 
-crossScalaVersions := Seq("2.12.12", scalaVersion.value)
+crossScalaVersions := Seq("2.12.14", scalaVersion.value)
 
 // ---
 
 // Distribute src/test/typescript as ts-test
 Compile / compile := {
   val res = (Compile / compile).value
-  val src = (sourceDirectory in Test).value / "typescript"
-  val dest = (sourceManaged in scalatsOnCompile).value / "ts-test"
+  val src = (Test / sourceDirectory).value / "typescript"
+  val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
 
   sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 

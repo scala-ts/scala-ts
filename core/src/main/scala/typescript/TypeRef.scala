@@ -33,6 +33,19 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
 sealed trait UnionMemberRef { _: TypeRef => }
 
 /**
+ * Tagged type.
+ *
+ * @param name the type name
+ */
+case class TaggedRef(
+  name: String,
+  tagged: TypeRef) extends TypeRef {
+  override def requires: ListSet[TypeRef] = tagged.requires + this
+
+  override lazy val toString = s"${name}~${tagged.toString}"
+}
+
+/**
  * Reference to a custom type.
  *
  * @param name the type name

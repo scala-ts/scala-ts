@@ -3,6 +3,7 @@ import { CaseClassBar, isCaseClassBar } from '../CaseClassBar';
 const bar1: CaseClassBar = {
   firstName: 'First1',
   lastName: 'Last1',
+  grade: 1
 }
 
 describe('Bar', () => {
@@ -10,9 +11,10 @@ describe('Bar', () => {
     const result = {
       firstName: 'First1',
       lastName: 'Last1',
+      grade: 1
     }
 
-    expect(isCaseClassBar({})).toBe(false)
+    expect(!!isCaseClassBar({})).toBe(false)
     expect(isCaseClassBar(result)).toBe(true)
 
     const barRes: CaseClassBar = result

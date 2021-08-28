@@ -1,4 +1,5 @@
 > clean
+$ absent target/scala-ts/src_managed/Name.ts
 $ absent target/scala-ts/src_managed/Bar.ts
 $ absent target/scala-ts/src_managed/Foo.ts
 
@@ -24,6 +25,7 @@ $ absent target/scala-ts/src_managed/NotSupportedAsNotSupportedField.ts
 
 $ absent target/scala-ts/src_managed/Feature.ts
 $ absent target/scala-ts/src_managed/Foo.ts
+$ absent target/scala-ts/src_managed/Name.ts
 $ absent target/scala-ts/src_managed/Bar.ts
 $ absent target/scala-ts/src_managed/Category.ts
 $ absent target/scala-ts/src_managed/Lorem.ts
@@ -35,6 +37,9 @@ $ absent target/scala-ts/src_managed/NamedFeature.ts
 
 # Check the generated files is as expected
 $ exists target/scala-ts.conf
+
+$ exists target/scala-ts/src_managed/Name.ts
+$ must-mirror target/scala-ts/src_managed/Name.ts src/test/resources/Name.ts
 
 $ exists target/scala-ts/src_managed/Bar.ts
 $ must-mirror target/scala-ts/src_managed/Bar.ts src/test/resources/Bar.ts

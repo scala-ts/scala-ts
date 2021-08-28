@@ -1,10 +1,11 @@
 import { Option } from 'space-monad'
 // could be useful to import common types
 
+import { TSName, isTSName } from './scalatsName';
 import { TSTransport, isTSTransport } from './scalatsTransport';
 
 export interface TSBar {
-  _name: string;
+  _name: TSName;
   _age: number;
   _amount: Option<number>;
   _transports: ReadonlyArray<TSTransport>;
@@ -19,6 +20,6 @@ export function isTSBar(v: any): v is TSBar {
     (Array.isArray(v['_transports']) && v['_transports'].every(elmt => elmt && isTSTransport(elmt))) &&
     (!v['_amount'] || ((typeof v['_amount']) === 'number')) &&
     ((typeof v['_age']) === 'number') &&
-    ((typeof v['_name']) === 'string')
+    (v['_name'] && isTSName(v['_name']))
   );
 }

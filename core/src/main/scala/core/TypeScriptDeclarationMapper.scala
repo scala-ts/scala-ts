@@ -47,6 +47,7 @@ object TypeScriptDeclarationMapper {
     EnumDeclaration,
     InterfaceDeclaration,
     SingletonDeclaration,
+    TaggedDeclaration,
     TypeRef,
     UnionDeclaration,
     Value
@@ -67,6 +68,58 @@ object TypeScriptDeclarationMapper {
       declaration: Declaration,
       out: PrintStream): Option[Unit] = None
   }
+
+  /**
+   * Maps `TaggedDeclaration` as TypeScript
+   * `<valueType> & { <name>: undefined }`
+   * (rather than type alias for `<valueType>`).
+   */
+  final class ValueClassAsTagged extends TypeScriptDeclarationMapper {
+
+    def apply(
+      parent: Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream): Option[Unit] = declaration match {
+      case decl @ TaggedDeclaration(name, field) => Some {
+        val typeNaming = settings.typeNaming(settings, _: TypeRef)
+        import settings.{
+          typescriptIndent => indent,
+          typescriptLineSeparator => lineSep
+        }
+
+        val tpeName = typeNaming(decl.reference)
+
+        val valueType = typeMapper(
+          settings, name, TypeScriptField(field.name), field.typeRef)
+
+        out.print(s"export type ${tpeName} = ${valueType}")
+        out.print(s" & { __tag: '${tpeName}' }${lineSep}")
+
+        out.println(s"""
+
+export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
+  return ${field.name} as ${tpeName}
+}""")
+
+        // Type guard
+        val simpleCheck = TypeScriptEmitter.valueCheck(
+          "v", field.typeRef, t => s"is${typeNaming(t)}")
+
+        out.println(s"""
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return ${simpleCheck}${lineSep}
+}""")
+      }
+
+      case _ =>
+        None
+    }
+  }
+
+  lazy val valueClassAsTagged = new ValueClassAsTagged
 
   /**
    * Maps `EnumDeclaration` as TypeScript `enum`

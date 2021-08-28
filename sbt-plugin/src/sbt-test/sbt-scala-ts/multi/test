@@ -17,6 +17,7 @@ $ absent api/target/scala-ts/src_managed/NamedFeature.ts
 
 $ absent api/target/scala-ts/src_managed/CaseClassFoo.ts
 $ absent api/target/scala-ts/src_managed/CaseClassBar.ts
+$ absent api/target/scala-ts/src_managed/Grade.ts
 $ absent api/target/scala-ts/src_managed/Transport.ts
 $ absent api/target/scala-ts/src_managed/BusLine.ts
 $ absent api/target/scala-ts/src_managed/TrainLine.ts
@@ -33,6 +34,9 @@ $ must-mirror api/target/scala-ts/src_managed/CaseClassFoo.ts api/src/test/resou
 
 $ exists api/target/scala-ts/src_managed/CaseClassBar.ts
 $ must-mirror api/target/scala-ts/src_managed/CaseClassBar.ts api/src/test/resources/CaseClassBar.ts
+
+$ exists api/target/scala-ts/src_managed/Grade.ts
+$ must-mirror api/target/scala-ts/src_managed/Grade.ts api/src/test/resources/Grade.ts
 
 $ exists api/target/scala-ts/src_managed/Transport.ts
 $ must-mirror api/target/scala-ts/src_managed/Transport.ts api/src/test/resources/Transport.ts
@@ -71,3 +75,6 @@ $ absent api/target/scala-ts/src_managed/Category.ts
 $ absent api/target/scala-ts/src_managed/Lorem.ts
 $ absent api/target/scala-ts/src_managed/Ipsum.ts
 $ absent api/target/scala-ts/src_managed/NamedFeature.ts
+
+# Preserve the generated files (to compile with tsc after)
+> preserveGeneratedTypescript

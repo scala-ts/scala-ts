@@ -37,6 +37,7 @@ const ts2: Date = new Date()
 const bar1: CaseClassBar = {
   firstName: 'First2',
   lastName: 'Last2',
+  grade: 1
 }
 
 const foo2: CaseClassFoo = {
@@ -57,6 +58,7 @@ const foo2: CaseClassFoo = {
   bar: {
     firstName: 'First2',
     lastName: 'Last2',
+    grade: 2,
   }
 }
 
@@ -101,6 +103,7 @@ describe('Foo', () => {
       bar: {
         firstName: 'First2',
         lastName: 'Last2',
+        grade: 2,
       }
     }
 

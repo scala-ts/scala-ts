@@ -35,6 +35,9 @@ final class TypeScriptEmitter(
 
       case decl: UnionDeclaration =>
         emitUnionDeclaration(decl)
+
+      case decl: TaggedDeclaration =>
+        emitTaggedDeclaration(decl)
     }
 
   // ---
@@ -88,6 +91,39 @@ ${indent}return (""")
 
     { decl =>
       withOut(Declaration.Union, decl.name, requires(decl)) { o =>
+        declMapper(default, decl, o).getOrElse(default(decl, o))
+      }
+    }
+  }
+
+  private def emitTaggedDeclaration: TaggedDeclaration => Unit = {
+    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+      decl match {
+        case TaggedDeclaration(name, field) => {
+          val tpeName = typeNaming(decl.reference)
+
+          val valueType = resolvedTypeMapper(
+            settings, name, TypeScriptField(field.name), field.typeRef)
+
+          o.print(s"export type ${tpeName} = ${valueType}${lineSeparator}")
+
+          val simpleCheck = TypeScriptEmitter.valueCheck(
+            "v", field.typeRef, t => s"is${typeNaming(t)}")
+
+          // Type guard
+          o.println(s"""
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return ${simpleCheck}${lineSeparator}
+}""")
+        }
+
+        case _ =>
+      }
+    }
+
+    { decl =>
+      withOut(Declaration.Tagged, decl.name, requires(decl)) { o =>
         declMapper(default, decl, o).getOrElse(default(decl, o))
       }
     }
@@ -249,56 +285,9 @@ ${indent}return (""")
   private def defaultTypeMapping(
     ownerType: String,
     member: TypeScriptField,
-    typeRef: TypeRef): String = {
-    val tr = resolvedTypeMapper(settings, ownerType, member, _: TypeRef)
-
-    typeRef match {
-      case NumberRef => "number"
-
-      case BooleanRef => "boolean"
-
-      case StringRef => "string"
-
-      case DateRef | DateTimeRef => "Date"
-
-      case ArrayRef(innerType) =>
-        s"ReadonlyArray<${tr(innerType)}>"
-
-      case TupleRef(params) =>
-        params.map(tr).mkString("[", ", ", "]")
-
-      case custom @ CustomTypeRef(_, Nil) =>
-        typeNaming(custom)
-
-      case singleton @ SingletonTypeRef(_, _) =>
-        typeNaming(singleton)
-
-      case custom @ CustomTypeRef(_, params) =>
-        s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
-
-      case tpe: SimpleTypeRef =>
-        typeNaming(tpe)
-
-      case NullableType(innerType) if settings.optionToNullable =>
-        s"(${tr(innerType)} | null)"
-
-      case NullableType(innerType) if (
-        member.flags contains TypeScriptField.omitable) => {
-        // omitable and !optionToNullable
-        tr(innerType)
-      }
-
-      case NullableType(innerType) =>
-        s"(${tr(innerType)} | undefined)"
-
-      case UnionType(possibilities) =>
-        possibilities.map(tr).mkString("(", " | ", ")")
-
-      case MapType(keyType, valueType) =>
-        s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }" // TODO: Unit test
-
-    }
-  }
+    typeRef: TypeRef): String = TypeScriptEmitter.defaultTypeMapping(
+    settings, member, typeRef, typeNaming,
+    tr = resolvedTypeMapper(settings, ownerType, member, _: TypeRef))
 
   private def withOut[T](
     decl: Declaration.Kind,
@@ -350,7 +339,7 @@ private[scalats] object TypeScriptEmitter {
     }
   }
 
-  private def fieldCheck(
+  def fieldCheck(
     tpeName: String,
     member: Member,
     guardNaming: TypeRef => String,
@@ -363,7 +352,7 @@ private[scalats] object TypeScriptEmitter {
   }
 
   @SuppressWarnings(Array("ListSize"))
-  private def valueCheck(
+  private[core] def valueCheck(
     name: String,
     typeRef: TypeRef,
     guardNaming: TypeRef => String): String =
@@ -374,7 +363,9 @@ private[scalats] object TypeScriptEmitter {
       case SimpleTypeRef(tpe) =>
         s"(typeof ${name}) === '${tpe}'"
 
-      case t @ (CustomTypeRef(_, _) | SingletonTypeRef(_, _)) =>
+      case t @ (CustomTypeRef(_, _) |
+        SingletonTypeRef(_, _) |
+        TaggedRef(_, _)) =>
         s"${name} && ${guardNaming(t)}(${name})"
 
       case ArrayRef(t) =>
@@ -403,4 +394,59 @@ private[scalats] object TypeScriptEmitter {
       case _ =>
         "false" // Unprovable pattern (not happen)
     }
+
+  private[scalats] def defaultTypeMapping(
+    settings: Settings,
+    member: TypeScriptField,
+    typeRef: TypeRef,
+    typeNaming: TypeRef => String,
+    tr: TypeRef => String): String = typeRef match {
+    case NumberRef => "number"
+
+    case BooleanRef => "boolean"
+
+    case StringRef => "string"
+
+    case DateRef | DateTimeRef => "Date"
+
+    case ArrayRef(innerType) =>
+      s"ReadonlyArray<${tr(innerType)}>"
+
+    case TupleRef(params) =>
+      params.map(tr).mkString("[", ", ", "]")
+
+    case tpe: TaggedRef =>
+      typeNaming(tpe)
+
+    case custom @ CustomTypeRef(_, Nil) =>
+      typeNaming(custom)
+
+    case singleton @ SingletonTypeRef(_, _) =>
+      typeNaming(singleton)
+
+    case custom @ CustomTypeRef(_, params) =>
+      s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
+
+    case tpe: SimpleTypeRef =>
+      typeNaming(tpe)
+
+    case NullableType(innerType) if settings.optionToNullable =>
+      s"(${tr(innerType)} | null)"
+
+    case NullableType(innerType) if (
+      member.flags contains TypeScriptField.omitable) => {
+      // omitable and !optionToNullable
+      tr(innerType)
+    }
+
+    case NullableType(innerType) =>
+      s"(${tr(innerType)} | undefined)"
+
+    case UnionType(possibilities) =>
+      possibilities.map(tr).mkString("(", " | ", ")")
+
+    case MapType(keyType, valueType) =>
+      s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }" // TODO: Unit test
+
+  }
 }

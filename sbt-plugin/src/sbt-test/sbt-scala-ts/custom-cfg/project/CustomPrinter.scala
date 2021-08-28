@@ -8,8 +8,6 @@ import io.github.scalats.typescript.{ Declaration, TypeRef }
 import io.github.scalats.plugins.BasePrinter
 
 final class CustomPrinter(outDir: File) extends BasePrinter {
-  @volatile private var first = true
-
   def apply(
     conf: io.github.scalats.core.Settings,
     kind: Declaration.Kind,
@@ -17,8 +15,7 @@ final class CustomPrinter(outDir: File) extends BasePrinter {
     requires: ListSet[TypeRef]): PrintStream = {
 
     val writePrelude: Boolean = {
-      if (first) {
-        first = false
+      if (name == "Bar") {
         true
       } else {
         false

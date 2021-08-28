@@ -4,15 +4,15 @@ name := "sbt-plugin-test-simple"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.12", "2.13.4")
+crossScalaVersions := Seq("2.12.14", "2.13.6")
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
 // Distribute src/test/typescript as ts-test
 Compile / compile := {
   val res = (Compile / compile).value
-  val src = (sourceDirectory in Test).value / "typescript"
-  val dest = (sourceManaged in scalatsOnCompile).value / "ts-test"
+  val src = (Test / sourceDirectory).value / "typescript"
+  val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
 
   sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 

@@ -19,6 +19,9 @@ final class Transpiler(config: Settings) {
       case scalaClass: ScalaModel.CaseClass =>
         ListSet[Declaration](transpileInterface(scalaClass, superInterface))
 
+      case valueClass: ScalaModel.ValueClass =>
+        ListSet[Declaration](transpileValueClass(valueClass))
+
       case ScalaModel.EnumerationDef(id, values) =>
         ListSet[Declaration](EnumDeclaration(idToString(id), values))
 
@@ -71,6 +74,13 @@ final class Transpiler(config: Settings) {
       }
     }
 
+  private def transpileValueClass(valueClass: ScalaModel.ValueClass) =
+    TaggedDeclaration(
+      name = idToString(valueClass.identifier),
+      field = Member(
+        valueClass.field.name,
+        transpileTypeRef(valueClass.field.typeRef, inInterfaceContext = false)))
+
   private def transpileInterface(
     scalaClass: ScalaModel.CaseClass,
     superInterface: Option[InterfaceDeclaration]) = {
@@ -87,26 +97,6 @@ final class Transpiler(config: Settings) {
       union = false)
   }
 
-  /* TODO: (medium priority) Remove
-  private def transpileClass(
-    scalaClass: ScalaModel.CaseClass,
-    superInterface: Option[InterfaceDeclaration]) = {
-    ClassDeclaration(
-      idToString(scalaClass.identifier),
-      ClassConstructor(
-        scalaClass.fields map { scalaMember =>
-          ClassConstructorParameter(
-            scalaMember.name,
-            transpileTypeRef(scalaMember.typeRef, inInterfaceContext = false))
-        }),
-      values = scalaClass.values.map { v =>
-        Member(v.name, transpileTypeRef(v.typeRef, false))
-      },
-      typeParams = scalaClass.typeArgs,
-      superInterface)
-  }
-   */
-
   private def transpileTypeRef(
     scalaTypeRef: ScalaModel.TypeRef,
     inInterfaceContext: Boolean): TypeRef = scalaTypeRef match {
@@ -122,6 +112,9 @@ final class Transpiler(config: Settings) {
 
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
       StringRef
+
+    case ScalaModel.TaggedRef(id, tagged) =>
+      TaggedRef(idToString(id), transpileTypeRef(tagged, false))
 
     case ScalaModel.CollectionRef(innerType) =>
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
