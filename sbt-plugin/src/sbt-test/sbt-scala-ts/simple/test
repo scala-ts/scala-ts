@@ -1,5 +1,6 @@
 > clean
 $ absent target/scala-ts/src_managed/CaseClassFoo.ts
+$ absent target/scala-ts/src_managed/Grade.ts
 $ absent target/scala-ts/src_managed/CaseClassBar.ts
 $ absent target/scala-ts/src_managed/Transport.ts
 $ absent target/scala-ts/src_managed/BusLine.ts
@@ -21,6 +22,9 @@ $ exists target/scala-ts.conf
 
 $ exists target/scala-ts/src_managed/CaseClassFoo.ts
 $ must-mirror target/scala-ts/src_managed/CaseClassFoo.ts src/test/resources/CaseClassFoo.ts
+
+$ exists target/scala-ts/src_managed/Grade.ts
+$ must-mirror target/scala-ts/src_managed/Grade.ts src/test/resources/Grade.ts
 
 $ exists target/scala-ts/src_managed/CaseClassBar.ts
 $ must-mirror target/scala-ts/src_managed/CaseClassBar.ts src/test/resources/CaseClassBar.ts

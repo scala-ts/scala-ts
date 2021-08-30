@@ -2,6 +2,7 @@ import * as idtlt from 'idonttrustlikethat'
 
 import * as nsBar from '../Bar'
 import * as nsFoo from '../Foo'
+import * as nsName from '../Name'
 
 import * as testTransport from './Transport'
 
@@ -10,7 +11,7 @@ const date2 = '2021-01-26T21:06:45.459Z'
 
 // Bar
 const bar1: nsBar.Bar = {
-  name: 'One',
+  name: nsName.Name('One'),
   age: 2,
   amount: 456,
   transports: [],
@@ -19,7 +20,7 @@ const bar1: nsBar.Bar = {
 }
 
 const bar2: nsBar.Bar = {
-  name: 'Two',
+  name: nsName.Name('Two'),
   age: 3,
   transports: [],
   updated: new Date(date2),
@@ -27,7 +28,7 @@ const bar2: nsBar.Bar = {
 }
 
 const bar3: nsBar.Bar = {
-  name: 'Three',
+  name: nsName.Name('Three'),
   age: 4,
   amount: 6789,
   transports: [
@@ -78,7 +79,7 @@ describe('Bar', () => {
     expect(nsBar.isBar(raw)).toBe(true)
 
     if (nsBar.isBar(raw)) {
-      const b: nsBar.Bar = raw
+      const b: nsBar.Bar = { ...raw, name: nsName.Name(raw.name) }
       
       expect(b).toEqual(bar1)
     }
@@ -119,7 +120,7 @@ describe('Bar', () => {
     expect(nsBar.isBar(raw)).toBe(true)
 
     if (nsBar.isBar(raw)) {
-      const b: nsBar.Bar = raw
+      const b: nsBar.Bar = { ...raw, name: nsName.Name(raw.name) }
 
       expect(b).toEqual(bar2)
     }
@@ -168,8 +169,8 @@ describe('Bar', () => {
     }
 
     expect(nsBar.isBar(raw)).toBe(true)
-    
-    const b: nsBar.Bar = raw
+
+    const b: nsBar.Bar = { ...raw, name: nsName.Name(raw.name) }
 
     expect(b).toEqual(bar3)
   })

@@ -54,7 +54,8 @@ jobs:
         comment_title: 'Core tests statistics'
 
     - name: 'Run SBT plugin tests'
-      run: sbt ';error ;+publishLocal ;++2.12.12 ;^scripted'
+      run: |
+        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.14 ;^scripted'
 
     - name: 'Set up Node'
       uses: actions/setup-node@v1

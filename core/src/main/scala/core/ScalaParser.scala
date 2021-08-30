@@ -189,7 +189,6 @@ final class ScalaParser[Uni <: Universe](
         parseObject(tpe, examined)
 
       case _ if (tpeSym.isClass) => {
-        // TODO: Special case for ValueClass; See #ValueClass_1
         val classSym = tpeSym.asClass
 
         // TODO: Not sealed trait like CaseClass
@@ -197,6 +196,8 @@ final class ScalaParser[Uni <: Universe](
         if (classSym.isAbstract /*isTrait*/ && classSym.isSealed &&
           scalaType.typeParams.isEmpty) {
           parseSealedUnion(scalaType, symtab, examined, acceptsType)
+        } else if (isAnyValChild(scalaType)) {
+          parseValueClass(tpe, examined)
         } else if (isCaseClass(scalaType)) {
           parseCaseClass(tpe, examined)
         } else if (isEnumerationValue(scalaType)) {
@@ -453,6 +454,36 @@ final class ScalaParser[Uni <: Universe](
         EnumerationDef(identifier, ListSet(values.toSeq: _*))))
   }
 
+  private def parseValueClass(
+    tpe: (Type, Tree),
+    examined: ListSet[TypeFullId]): Result[Option, TypeFullId] = {
+    import tpe.{ _1 => valueClassType }
+
+    val m = valueClassType.members.filter(!_.isMethod).collectFirst {
+      case TermSymbolTag(sym) =>
+        new TypeMember(
+          sym.name.toString.trim, scalaTypeRef(
+            sym.info.map(_.dealias), Set.empty))
+
+    }
+
+    m match {
+      case Some(vm) =>
+        Result(
+          examined = examined + fullId(valueClassType),
+          parsed = Some[TypeDef](ValueClass(
+            buildQualifiedIdentifier(valueClassType.typeSymbol), vm)))
+
+      case _ => {
+        logger.warning(s"Unsupported Value class: ${valueClassType}")
+
+        Result(
+          examined = examined + fullId(valueClassType),
+          parsed = Option.empty[TypeDef])
+      }
+    }
+  }
+
   // TODO: Parse default field values
   private def parseCaseClass(
     tpe: (Type, Tree),
@@ -523,7 +554,9 @@ final class ScalaParser[Uni <: Universe](
           scalaType.members.filter(!_.isMethod).
             map(_.typeSignature).headOption match {
               case Some(valueTpe) =>
-                scalaTypeRef(valueTpe, Set.empty)
+                TaggedRef(
+                  identifier = buildQualifiedIdentifier(typeSymbol),
+                  tagged = scalaTypeRef(valueTpe, Set.empty))
 
               case _ =>
                 unknown
@@ -647,7 +680,8 @@ final class ScalaParser[Uni <: Universe](
       !scalaType.typeSymbol.fullName.startsWith("scala.") /* e.g. Skip Tuple */
 
   @inline private def isAnyValChild(scalaType: Type): Boolean =
-    scalaType <:< typeOf[AnyVal]
+    scalaType <:< typeOf[AnyVal] || scalaType.baseClasses.exists(
+      _.fullName == "scala.AnyVal")
 
   @inline private def isEnumerationValue(scalaType: Type): Boolean = {
     // TODO: (low priority) rather compare Type (than string)

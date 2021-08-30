@@ -96,6 +96,43 @@ export function isScalaRuntimeFixturesTestClass7(v: any): v is ScalaRuntimeFixtu
 """)
     }
 
+    "emit tagged type" >> {
+      "as type alias" in {
+        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesAnyValChild = string;
+
+export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
+  return (typeof v) === 'string';
+}
+""")
+      }
+
+      "as tagged type" in {
+        emit(ListSet(taggedDeclaration1), declMapper = TypeScriptDeclarationMapper.valueClassAsTagged) must beTypedEqualTo("""export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
+
+export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixturesAnyValChild {
+  return value as ScalaRuntimeFixturesAnyValChild
+}
+
+export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
+  return (typeof v) === 'string';
+}
+""")
+      }
+
+      "as member" in {
+        emit(ListSet(interface8)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass8 {
+  name: ScalaRuntimeFixturesAnyValChild;
+}
+
+export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
+  return (
+    (v['name'] && isScalaRuntimeFixturesAnyValChild(v['name']))
+  );
+}
+""")
+      }
+    }
+
     "for singleton" >> {
       "emit class #1" in {
         emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {

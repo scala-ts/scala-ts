@@ -2,8 +2,10 @@ package io.github.scalats.sbttest
 
 import java.time.{ LocalDate, OffsetDateTime }
 
+final class Name(val value: String) extends AnyVal
+
 case class Bar(
-  name: String,
+  name: Name,
   age: Int,
   amount: Option[BigInt],
   transports: Seq[Transport],

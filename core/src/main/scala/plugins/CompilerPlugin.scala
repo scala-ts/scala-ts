@@ -197,12 +197,7 @@ final class CompilerPlugin(val global: Global)
 
               tree.filter(_ != tree).foreach { b += _ }
 
-              val newTrees: Seq[Tree] = { // TODO: Check
-                //if (!sym.isModule) trees.tail
-                //else tree.children ++: trees.tail
-
-                b.result() ++: trees.tail
-              }
+              val newTrees: Seq[Tree] = b.result() ++: trees.tail
 
               val accepted = (
                 ClassDefTag.unapply(tree).nonEmpty ||

@@ -87,6 +87,8 @@ object TypeScriptGenerator {
 
     import parseResult.{ parsed => scalaTypes }
 
+    //println(s"scalaTypes = ${scalaTypes.map(_.identifier)}")
+
     val typeScriptTypes = transpiler(scalaTypes)
     val emiter = new TypeScriptEmitter(
       settings, printer, importResolver, declMapper, typeMapper)

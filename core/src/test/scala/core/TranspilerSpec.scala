@@ -54,6 +54,24 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       }
     }
 
+    "transpile a tagged type" >> {
+      "as tagged declaration" in {
+        val result = defaultTranspiler(ListSet(tagged1))
+
+        result must have size 1 and {
+          result must contain(taggedDeclaration1)
+        }
+      }
+
+      "interface member" in {
+        val result = defaultTranspiler(ListSet(caseClass8))
+
+        result must have size 1 and {
+          result must contain(interface8)
+        }
+      }
+    }
+
     "transpile Tuple types" in {
       val result = defaultTranspiler(ListSet(caseClass10))
 
@@ -148,6 +166,17 @@ object TranspilerResults {
         CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
         CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty))))),
     typeParams = List("T"),
+    superInterface = Option.empty,
+    union = false)
+
+  val taggedDeclaration1 = TaggedDeclaration(
+    name = "ScalaRuntimeFixturesAnyValChild",
+    field = Member("value", StringRef))
+
+  val interface8 = InterfaceDeclaration(
+    "ScalaRuntimeFixturesTestClass8", ListSet(
+      Member("name", TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef))),
+    typeParams = List.empty,
     superInterface = Option.empty,
     union = false)
 

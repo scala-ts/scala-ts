@@ -23,6 +23,8 @@ object Declaration {
 
   case object Union extends Kind
 
+  case object Tagged extends Kind
+
   object Kind {
     def unapply(repr: String): Option[Kind] = repr match {
       case "interface" => Some(Interface)
@@ -30,6 +32,7 @@ object Declaration {
       case "singleton" => Some(Singleton)
       case "enum" => Some(Enum)
       case "union" => Some(Union)
+      case "tagged" => Some(Tagged)
       case _ => None
     }
   }
@@ -60,6 +63,12 @@ case class InterfaceDeclaration(
   override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(CustomTypeRef(_)))
 
+}
+
+case class TaggedDeclaration(
+  name: String,
+  field: Member) extends Declaration {
+  override def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
 /**

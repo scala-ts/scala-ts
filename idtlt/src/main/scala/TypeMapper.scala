@@ -40,6 +40,11 @@ final class TypeMapper extends TypeScriptTypeMapper {
       case TupleRef(params) =>
         params.map(tr).mkString("idtlt.tuple(", ", ", ")")
 
+      case tpe: TaggedRef => {
+        val n = typeNaming(tpe)
+        s"ns${n}.idtlt${n}"
+      }
+
       case custom @ CustomTypeRef(_, Nil) => {
         val n = typeNaming(custom)
         s"ns${n}.idtlt${n}"

@@ -6,6 +6,10 @@ const trainLine1: TrainLine = {
   name: 'Train#1',
   startStationId: 'id1',
   endStationId: 'id2',
+  feature: {
+    name: 'Feature',
+    feature: {}
+  }
 }
 const transport1: Transport = trainLine1
 
@@ -24,6 +28,10 @@ describe('Transport', () => {
       name: 'Train#1',
       startStationId: 'id1',
       endStationId: 'id2',
+      feature: {
+        name: 'Feature',
+        feature: {}
+      },
     }
 
     expect(result as TrainLine).toEqual(trainLine1)

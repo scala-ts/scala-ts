@@ -6,11 +6,11 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.15.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.0.0")
 
-addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.0")
+addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.1")
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.25")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.30")
 
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 

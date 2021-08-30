@@ -1,4 +1,5 @@
 > clean
+$ absent target/_custom/scalatsName.ts
 $ absent target/_custom/scalatsBar.ts
 $ absent target/_custom/scalatsTransport.ts
 $ absent target/_custom/scalatsBusLine.ts
@@ -9,6 +10,9 @@ $ absent target/_custom/WeekDay.ts
 > ;clean ;compile
 
 # Check the generated files is as expected
+
+$ exists target/_custom/scalatsName.ts
+$ must-mirror target/_custom/scalatsName.ts src/test/resources/Name.ts
 
 $ exists target/_custom/scalatsBar.ts
 $ must-mirror target/_custom/scalatsBar.ts src/test/resources/Bar.ts

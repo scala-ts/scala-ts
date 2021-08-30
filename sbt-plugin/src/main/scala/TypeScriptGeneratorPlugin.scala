@@ -104,6 +104,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     lazy val scalatsSingletonAsLiteral =
       classOf[TypeScriptDeclarationMapper.SingletonAsLiteral]
 
+    lazy val scalatsValueClassAsTagged =
+      classOf[TypeScriptDeclarationMapper.ValueClassAsTagged]
+
     lazy val scalatsUnionAsSimpleUnion =
       classOf[TypeScriptDeclarationMapper.UnionAsSimpleUnion]
 

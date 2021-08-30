@@ -7,7 +7,7 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override lazy val projectSettings = Seq(
-    scalaVersion := "2.12.12",
+    scalaVersion := "2.12.14",
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
     scalacOptions ++= Seq(
@@ -50,10 +50,10 @@ object Compiler extends AutoPlugin {
           "-Wunused")
       }
     },
-    scalacOptions in (Compile, console) ~= { _.filterNot(excludeScalacOpts) },
-    scalacOptions in (Compile, doc) ~= { _.filterNot(excludeScalacOpts) },
+    Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
+    Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     libraryDependencies ++= {
-      val silencerVersion = "1.7.1"
+      val silencerVersion = "1.7.5"
 
       Seq(
         compilerPlugin(("com.github.ghik" %% "silencer-plugin" % silencerVersion).

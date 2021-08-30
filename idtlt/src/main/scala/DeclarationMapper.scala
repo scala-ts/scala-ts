@@ -7,6 +7,7 @@ import io.github.scalats.core.{
   Settings,
   TypeScriptDeclarationMapper,
   TypeScriptEmitter,
+  TypeScriptField,
   TypeScriptFieldMapper,
   TypeScriptTypeMapper
 }
@@ -149,6 +150,28 @@ ${indent})${lineSep}
 
       case _: UnionDeclaration =>
         out.println(s"// Not supported: UnionDeclaration '${name}'")
+
+      case TaggedDeclaration(id, field) => {
+        val member = TypeScriptField(field.name)
+        val tagged = typeMapper(settings, name, member, field.typeRef)
+
+        val fieldTpe = TypeScriptEmitter.defaultTypeMapping(
+          settings, member, field.typeRef, settings.typeNaming(settings, _),
+          tr = typeMapper(settings, name, member, _))
+
+        out.println(s"""// Validator for TaggedDeclaration ${tpeName}
+export type ${tpeName} = ${fieldTpe} & { __tag: '${id}' }${lineSep}
+
+export function ${tpeName}(${field.name}: ${fieldTpe}): ${tpeName} {
+  return ${field.name} as ${tpeName}
+}
+
+export const idtlt${tpeName} = ${tagged}.tagged<${tpeName}>()${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
+}""")
+      }
 
       case EnumDeclaration(_, values) => {
         out.println(s"""// Validator for EnumDeclaration ${tpeName}

@@ -112,6 +112,28 @@ export interface Message {
 
 > `Locale` type is provided a transpiler as `string`.
 
+### Example 4a
+
+The declaration mapped [`valueClassAsTagged`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$.html#valueClassAsTagged:io.github.scalats.core.TypeScriptDeclarationMapper.ValueClassAsTagged) in [configuration](./config.html) as below.
+
+```ocaml
+scalatsTypeScriptDeclarationMappers += valueClassAsTagged
+```
+
+Then the Value class `EventType` is generated as a tagged/[branded](https://medium.com/@KevinBGreene/surviving-the-typescript-ecosystem-branding-and-type-tagging-6cf6e516523d) type.
+
+```typescript
+export type EventType = string & { __tag: 'EventType' };
+
+export function EventType(value: string): EventType {
+  return value as EventType
+}
+
+export function isEventType(v: any): v is EventType {
+  return (typeof v) === 'string';
+}
+```
+
 ## Example 5
 
 [Sealed trait](https://docs.scala-lang.org/tour/traits.html#subtyping)/family `Transport`; By default, sealed trait is generated using inheritance.
@@ -205,7 +227,7 @@ export interface Whatever {
 export type Greeting = Bye | GoodBye | Hello | Hi | Whatever;
 ```
 
-> See `scalatsUnionWithLiteral` SBT settings, [`TypeScriptDeclarationMapper.SingletonAsLiteral`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$SingletonAsLiteral.html) and [`TypeScriptDeclarationMapper.UnionAsSimpleUnion`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$UnionAsSimpleUnion.html) for setting `typeScriptDeclarationMappers`, and [`TypeScriptImportResolver.UnionWithLiteralSingleton`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptImportResolver$$UnionWithLiteralSingleton.html) and `typeScriptImportResolvers` setting; Details bellow in [configuration](#Configuration) documentation.
+> See `scalatsUnionWithLiteral` SBT settings, [`TypeScriptDeclarationMapper.SingletonAsLiteral`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$SingletonAsLiteral.html) and [`TypeScriptDeclarationMapper.UnionAsSimpleUnion`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$$UnionAsSimpleUnion.html) for setting `typeScriptDeclarationMappers`, and [`TypeScriptImportResolver.UnionWithLiteralSingleton`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptImportResolver$$UnionWithLiteralSingleton.html) and `typeScriptImportResolvers` setting; Details below in [configuration](#Configuration) documentation.
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/enumeratum/) (example with [Enumeratum](https://github.com/lloydmeta/enumeratum#enumeratum------))
 

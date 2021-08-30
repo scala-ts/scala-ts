@@ -1,7 +1,9 @@
 package io.github.scalats.sbttest
 
+case class Name(value: String) extends AnyVal
+
 case class Bar(
-  name: String,
+  name: Name,
   age: Int,
   amount: Option[BigInt],
   transports: Seq[Transport],

@@ -18,7 +18,7 @@ scalatsTypeScriptTypeNaming := classOf[scalats.CustomTypeNaming]
 scalatsTypeScriptFieldMapper := classOf[scalats.CustomFieldMapper]
 
 // Overwrite the directory the printer is initialized with
-sourceManaged in scalatsOnCompile := {
+scalatsOnCompile / sourceManaged := {
   val dir = target.value / "_custom"
   dir.mkdirs()
   dir
@@ -34,6 +34,7 @@ scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
 // Custom declaration mapper (before type mapper)
 scalatsTypeScriptDeclarationMappers := Seq(
   scalatsEnumerationAsEnum,
+  scalatsValueClassAsTagged,
   classOf[scalats.CustomDeclarationMapper]
   // defined in `project/CustomDeclarationMapper.scala`
 )
@@ -44,6 +45,17 @@ scalatsTypeScriptTypeMappers := Seq(
   classOf[scalats.CustomTypeMapper]
   // defined in `project/CustomTypeMapper.scala`
 )
+
+// Distribute src/test/typescript as ts-test
+Compile / compile := {
+  val res = (Compile / compile).value
+  val src = (Test / sourceDirectory).value / "typescript"
+  val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
+
+  sbt.io.IO.copyDirectory(src, dest, overwrite = true)
+
+  res
+}
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO

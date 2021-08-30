@@ -1,7 +1,7 @@
 inThisBuild(Seq(
   organization := "io.github.scala-ts",
   version := "1.0-SNAPSHOT",
-  scalaVersion := "2.13.5"
+  scalaVersion := "2.13.6"
 ))
 
 val common = (project in file("common")).
@@ -10,8 +10,8 @@ val common = (project in file("common")).
     // Distribute src/test/typescript as ts-test
     Compile / compile := {
       val res = (Compile / compile).value
-      val src = (sourceDirectory in Test).value / "typescript"
-      val dest = (sourceManaged in scalatsOnCompile).value / "ts-test"
+      val src = (Test / sourceDirectory).value / "typescript"
+      val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
 
       sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 
@@ -26,8 +26,8 @@ val api = (project in file("api")).dependsOn(common).
     // Distribute src/test/typescript as ts-test
     Compile / compile := {
       val res = (Compile / compile).value
-      val src = (sourceDirectory in Test).value / "typescript"
-      val dest = (sourceManaged in scalatsOnCompile).value / "ts-test"
+      val src = (Test / sourceDirectory).value / "typescript"
+      val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
 
       sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 
@@ -40,3 +40,26 @@ lazy val root = (project in file(".")).settings(
   publish := ({}),
   publishTo := None
 ).aggregate(common, api)
+
+TaskKey[Unit]("preserveGeneratedTypescript") := {
+  import sbt.io.IO
+  val logger = streams.value.log
+
+  val tmpdir: File = sys.props.get("scala-ts.sbt-test-temp") match {
+    case Some(path) => {
+      val dir = new File(path)
+      dir.mkdirs()
+      dir
+    }
+
+    case _ => IO.createTemporaryDirectory
+  }
+  val destdir = tmpdir / name.value / "target"
+
+  destdir.mkdirs()
+
+  logger.info(s"Copying directory ${target.value} to ${destdir} ...")
+
+  IO.copyDirectory((common / target).value, destdir)
+  IO.copyDirectory((api / target).value, destdir)
+}
