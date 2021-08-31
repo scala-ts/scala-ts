@@ -77,13 +77,13 @@ By default, the TypeScript generation is executed in directory `target/scala-ts/
 - `-Xplugin:/path/to/scala-ts-core.jar`
 - `-P:scalats:configuration=/path/to/plugin.conf`
 
-The `plugin.conf` is a [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) file that define the generator settings (see [example](https://github.com/scala-ts/scala-ts/blob/master/core/src/test/resources/plugin-conf.xml).
+The `plugin.conf` is a [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) file that define the generator settings (see [example](https://github.com/scala-ts/scala-ts/blob/master/core/src/test/resources/plugin.conf).
 
 > See [compiler settings](./config.html#compiler-settings)
 
 ## Type reference
 
-*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](#examples)).
+*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](./examples.html)).
 
 | Scala         | TypeScript    |
 | ------------- | ------------- |
