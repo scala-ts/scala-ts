@@ -11,6 +11,7 @@ export const idtltBar = idtlt.object({
   transports: idtlt.array(nsTransport.idtltTransport),
   amount: idtlt.number.optional(),
   age: idtlt.number,
+  aliases: idtlt.array(nsName.idtltName),
   name: nsName.idtltName,
 });
 
@@ -36,6 +37,7 @@ export function isBar(v: any): v is Bar {
     (Array.isArray(v['transports']) && v['transports'].every(elmt => elmt && nsTransport.isTransport(elmt))) &&
     (!v['amount'] || ((typeof v['amount']) === 'number')) &&
     ((typeof v['age']) === 'number') &&
+    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsName.isName(elmt))) &&
     (v['name'] && nsName.isName(v['name']))
   );
 }

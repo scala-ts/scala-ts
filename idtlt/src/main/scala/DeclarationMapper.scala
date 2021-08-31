@@ -163,7 +163,7 @@ ${indent})${lineSep}
 export type ${tpeName} = ${fieldTpe} & { __tag: '${id}' }${lineSep}
 
 export function ${tpeName}(${field.name}: ${fieldTpe}): ${tpeName} {
-  return ${field.name} as ${tpeName}
+  return ${field.name} as ${tpeName}${lineSep}
 }
 
 export const idtlt${tpeName} = ${tagged}.tagged<${tpeName}>()${lineSep}

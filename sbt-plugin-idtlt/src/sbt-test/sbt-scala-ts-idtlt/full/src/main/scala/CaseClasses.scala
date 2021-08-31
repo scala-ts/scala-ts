@@ -6,6 +6,7 @@ final class Name(val value: String) extends AnyVal
 
 case class Bar(
   name: Name,
+  aliases: Seq[Name],
   age: Int,
   amount: Option[BigInt],
   transports: Seq[Transport],

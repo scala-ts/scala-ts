@@ -5,7 +5,7 @@ import * as idtlt from 'idonttrustlikethat';
 export type Name = string & { __tag: 'Name' };
 
 export function Name(value: string): Name {
-  return value as Name
+  return value as Name;
 }
 
 export const idtltName = idtlt.string.tagged<Name>();

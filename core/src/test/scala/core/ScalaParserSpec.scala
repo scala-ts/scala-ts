@@ -354,10 +354,13 @@ object ScalaRuntimeFixtures {
   lazy val AnyValChildTree: Tree = typecheck(
     q"case class AnyValChild(value: String)")
 
-  case class TestClass8(name: AnyValChild)
+  case class TestClass8(
+    name: AnyValChild,
+    aliases: Seq[AnyValChild])
 
   val TestClass8Type = typeOf[TestClass8]
-  val TestClass8Tree: Tree = q"case class TestClass8(name: AnyValChild)"
+  val TestClass8Tree: Tree = q"""case class TestClass8(
+    name: AnyValChild, aliases: Seq[AnyValChild])"""
 
   object TestEnumeration extends scala.Enumeration {
     val A, B, C = Value
@@ -562,10 +565,15 @@ object ScalaParserResults {
   val caseClass8 = CaseClass(
     identifier = QualifiedIdentifier(
       "TestClass8", List("ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", TaggedRef(
-      identifier = QualifiedIdentifier(
-        "AnyValChild", List("ScalaRuntimeFixtures")),
-      tagged = StringRef))),
+    fields = ListSet(
+      TypeMember("name", TaggedRef(
+        identifier = QualifiedIdentifier(
+          "AnyValChild", List("ScalaRuntimeFixtures")),
+        tagged = StringRef)),
+      TypeMember("aliases", CollectionRef(TaggedRef(
+        identifier = QualifiedIdentifier(
+          "AnyValChild", List("ScalaRuntimeFixtures")),
+        tagged = StringRef)))),
     values = ListSet.empty,
     typeArgs = List.empty)
 

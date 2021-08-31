@@ -175,7 +175,10 @@ object TranspilerResults {
 
   val interface8 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass8", ListSet(
-      Member("name", TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef))),
+      Member("name", TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)),
+      Member(
+        "aliases",
+        ArrayRef(TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)))),
     typeParams = List.empty,
     superInterface = Option.empty,
     union = false)

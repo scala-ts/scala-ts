@@ -8,6 +8,7 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   "TypeScript emitter" title
 
   import TranspilerResults._
+  import TypeScriptEmitterSpec._
 
   "Emitter" should {
     "emit empty interface" in {
@@ -121,12 +122,14 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
 
       "as member" in {
         emit(ListSet(interface8)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass8 {
+  aliases: ReadonlyArray<ScalaRuntimeFixturesAnyValChild>;
   name: ScalaRuntimeFixturesAnyValChild;
 }
 
 export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
   return (
-    (v['name'] && isScalaRuntimeFixturesAnyValChild(v['name']))
+    (v['name'] && isScalaRuntimeFixturesAnyValChild(v['name'])) &&
+    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && isScalaRuntimeFixturesAnyValChild(elmt)))
   );
 }
 """)
@@ -341,13 +344,9 @@ export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntime
     }
   }
 
-  // ---
-
-  private lazy val defaultConfig = Settings()
-
   def emit(
     decls: ListSet[Declaration],
-    config: Settings = defaultConfig,
+    config: Settings = Settings(),
     declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
     importResolver: TypeScriptImportResolver = TypeScriptImportResolver.Defaults,
     typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
