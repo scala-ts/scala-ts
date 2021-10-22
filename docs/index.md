@@ -6,7 +6,7 @@ layout: default
 
 *Scala-TS* is a simple tool which generates [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types, to easily integrate REST-ful Scala backends and TypeScript frontends.
 
-> See [release notes](./release-notes.html)
+> See [release notes](./release-notes.md)
 
 ## Usage
 
@@ -39,12 +39,12 @@ const incident: Incident = {
 }
 ```
 
-> See [examples](./examples.html)
+> See [examples](./examples.md)
 
 **More:**
 
-- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
-  - Similar [demo with idonttrustlikethat](./articles/demo-idtlt.html)
+- [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.md)
+  - Similar [demo with idonttrustlikethat](./articles/demo-idtlt.md)
 
 ### SBT plugin
 
@@ -64,9 +64,9 @@ The TypeScript files are generated at compile-time.
 
     sbt compile
 
-By default, the TypeScript generation is executed in directory `target/scala-ts/src_managed` (see `sourceManaged in scalatsOnCompile` in [configuration](./config.html)).
+By default, the TypeScript generation is executed in directory `target/scala-ts/src_managed` (see `sourceManaged in scalatsOnCompile` in [configuration](./config.md)).
 
-> See [SBT plugin settings](./config.html#sbt-plugin-settings)
+> See [SBT plugin settings](./config.md#sbt-plugin-settings)
 
 > See [SBT examples on GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/)
 
@@ -79,11 +79,11 @@ By default, the TypeScript generation is executed in directory `target/scala-ts/
 
 The `plugin.conf` is a [HOCON](https://github.com/lightbend/config#using-hocon-the-json-superset) file that define the generator settings (see [example](https://github.com/scala-ts/scala-ts/blob/master/core/src/test/resources/plugin.conf).
 
-> See [compiler settings](./config.html#compiler-settings)
+> See [compiler settings](./config.md#compiler-settings)
 
 ## Type reference
 
-*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](./examples.html)).
+*Scala-TS* can emit TypeScript for different kinds of Scala types declaration (see [examples](./examples.md)).
 
 | Scala         | TypeScript    |
 | ------------- | ------------- |
@@ -182,4 +182,4 @@ export const idtltDiscriminatedBar = idtlt.intersection(
 export type Bar = typeof idtltBar.T;
 ```
 
-*See [demo with idonttrustlikethat](./articles/demo-idtlt.html)*
+*See [demo with idonttrustlikethat](./articles/demo-idtlt.md)*
