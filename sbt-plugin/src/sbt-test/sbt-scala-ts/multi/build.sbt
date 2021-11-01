@@ -1,7 +1,7 @@
 inThisBuild(Seq(
   organization := "io.github.scala-ts",
   version := "1.0-SNAPSHOT",
-  scalaVersion := "2.13.6"
+  scalaVersion := "2.13.7"
 ))
 
 val common = (project in file("common")).
