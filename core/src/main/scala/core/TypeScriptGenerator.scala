@@ -65,33 +65,40 @@ object TypeScriptGenerator {
    * (including the input `types` and the transitively required types).
    */
   @SuppressWarnings(Array("MaxParameters"))
-  def generate[U <: Universe](universe: U)(
-    settings: Settings,
-    types: List[(universe.Type, universe.Tree)],
-    symtab: Map[String, (universe.Type, universe.Tree)],
-    logger: Logger,
-    importResolver: TypeScriptImportResolver,
-    declMapper: TypeScriptDeclarationMapper,
-    typeMapper: TypeScriptTypeMapper,
-    printer: TypeScriptPrinter,
-    examined: ListSet[ScalaParser.TypeFullId],
-    compiled: Set[String],
-    acceptsType: universe.Symbol => Boolean)(
-    implicit
-    cu: CompileUniverse[universe.type]): ListSet[ScalaParser.TypeFullId] = {
+  def generate[U <: Universe](
+      universe: U
+    )(settings: Settings,
+      types: List[(universe.Type, universe.Tree)],
+      symtab: Map[String, (universe.Type, universe.Tree)],
+      logger: Logger,
+      importResolver: TypeScriptImportResolver,
+      declMapper: TypeScriptDeclarationMapper,
+      typeMapper: TypeScriptTypeMapper,
+      printer: TypeScriptPrinter,
+      examined: ListSet[ScalaParser.TypeFullId],
+      compiled: Set[String],
+      acceptsType: universe.Symbol => Boolean
+    )(implicit
+      cu: CompileUniverse[universe.type]
+    ): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser[universe.type](universe, compiled, logger)
     val transpiler = new Transpiler(settings)
 
-    val parseResult = scalaParser.parseTypes(
-      types, symtab, examined, acceptsType)
+    val parseResult =
+      scalaParser.parseTypes(types, symtab, examined, acceptsType)
 
     import parseResult.{ parsed => scalaTypes }
 
-    //println(s"scalaTypes = ${scalaTypes.map(_.identifier)}")
+    // println(s"scalaTypes = ${scalaTypes.map(_.identifier)}")
 
     val typeScriptTypes = transpiler(scalaTypes)
     val emiter = new TypeScriptEmitter(
-      settings, printer, importResolver, declMapper, typeMapper)
+      settings,
+      printer,
+      importResolver,
+      declMapper,
+      typeMapper
+    )
 
     emiter.emit(typeScriptTypes)
 

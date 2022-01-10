@@ -20,7 +20,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
   val scalaParser = new ScalaParser[runtimeUniverse.type](
     universe = runtimeUniverse,
     compiled = Set.empty,
-    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec"))
+    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
+  )
 
   "Parser" should {
     "handle case class with one primitive member" in {
@@ -28,7 +29,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass1Type -> TestClass1Tree),
         Map.empty,
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(caseClass1) and {
         res.parsed must have size 1
@@ -40,7 +42,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass2Type -> TestClass2Tree),
         Map.empty,
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(caseClass2) and {
         res.parsed must have size 1
@@ -52,7 +55,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass3Type -> TestClass3Tree),
         Map.empty,
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(caseClass3) and {
         res.parsed must have size 1
@@ -64,7 +68,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass5Type -> TestClass5Tree),
         Map.empty,
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(caseClass5) and {
         res.parsed must have size 1
@@ -91,11 +96,13 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         ),
         Map(
           TestClass3Type.typeSymbol. // 'age' in 6
-            fullName -> (TestClass3Type -> TestClass3Tree),
+          fullName -> (TestClass3Type -> TestClass3Tree),
           TestClass5Type.typeSymbol. // 'age' in 6
-            fullName -> (TestClass5Type -> TestClass5Tree)),
+          fullName -> (TestClass5Type -> TestClass5Tree)
+        ),
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       import res.parsed
 
@@ -119,11 +126,13 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass7Type -> TestClass7Tree),
         Map(
           TestClass1Type.typeSymbol. // 'name' in 7
-            fullName -> (TestClass1Type -> TestClass1Tree),
+          fullName -> (TestClass1Type -> TestClass1Tree),
           TestClass1BType.typeSymbol. // 'name' in 7
-            fullName -> (TestClass1BType -> TestClass1BTree)),
+          fullName -> (TestClass1BType -> TestClass1BTree)
+        ),
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       import res.parsed
 
@@ -142,7 +151,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(AnyValChildType -> AnyValChildTree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must_=== ListSet(tagged1)
       }
@@ -152,7 +162,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(TestClass8Type -> TestClass8Tree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must contain(caseClass8) and {
           res.parsed must contain(tagged1)
@@ -168,7 +179,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(TestEnumerationType -> TestEnumerationTree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must contain(testEnumeration) and {
           res.parsed must have size 1
@@ -180,7 +192,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(TestClass9Type -> TestClass9Tree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must contain(caseClass9) and {
           res.parsed must contain(testEnumeration)
@@ -195,7 +208,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         List(TestClass10Type -> TestClass10Tree),
         Map.empty,
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(caseClass10) and {
         res.parsed must have size 1
@@ -208,7 +222,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(ScalaRuntimeFixtures.TestObject1Type -> EmptyTree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must contain(caseObject1) and {
           res.parsed must have size 1
@@ -220,7 +235,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(TestClass1CompanionType -> TestClass1CompanionTree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must beEmpty
       }
@@ -230,7 +246,8 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           List(TestObject2Type -> TestObject2Tree),
           Map.empty,
           ListSet.empty,
-          _ => true)
+          _ => true
+        )
 
         res.parsed must contain(caseObject2) and {
           res.parsed must have size 1
@@ -242,14 +259,13 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       val res = scalaParser.parseTypes(
         List(FamilyType -> FamilyTree),
         Map(
-          FamilyMember1Type.typeSymbol.
-            fullName -> (FamilyMember1Type -> FamilyMember1Tree),
-          FamilyMember2Type.typeSymbol.
-            fullName -> (FamilyMember2Type -> FamilyMember2Tree),
-          FamilyMember3Type.typeSymbol.
-            fullName -> (FamilyMember3Type -> FamilyMember3Tree)),
+          FamilyMember1Type.typeSymbol.fullName -> (FamilyMember1Type -> FamilyMember1Tree),
+          FamilyMember2Type.typeSymbol.fullName -> (FamilyMember2Type -> FamilyMember2Tree),
+          FamilyMember3Type.typeSymbol.fullName -> (FamilyMember3Type -> FamilyMember3Tree)
+        ),
         ListSet.empty,
-        _ => true)
+        _ => true
+      )
 
       res.parsed must contain(sealedFamily1) and {
         res.parsed must have size 1
@@ -268,15 +284,16 @@ object ScalaRuntimeFixtures {
     runtimeUniverse.rootMirror.mkToolBox()
   }
 
-  @inline private def retry[T](n: Int)(f: => T): T = try {
-    f
-  } catch {
-    case NonFatal(_) if (n > 0) =>
-      retry(n - 1)(f)
+  @inline private def retry[T](n: Int)(f: => T): T =
+    try {
+      f
+    } catch {
+      case NonFatal(_) if (n > 0) =>
+        retry(n - 1)(f)
 
-    case NonFatal(cause) =>
-      throw cause
-  }
+      case NonFatal(cause) =>
+        throw cause
+    }
 
   @inline private def typecheck(tree: Tree) =
     retry(5)(tb.typecheck(tree))
@@ -304,14 +321,16 @@ object ScalaRuntimeFixtures {
   val TestClass2Type = typeOf[TestClass2[_]]
 
   lazy val TestClass2Tree: Tree = typecheck(
-    q"case class TestClass2[T](name: T)")
+    q"case class TestClass2[T](name: T)"
+  )
 
   case class TestClass3[T](name: List[T])
 
   val TestClass3Type = typeOf[TestClass3[_]]
 
   lazy val TestClass3Tree: Tree = typecheck(
-    q"case class TestClass3[T](name: List[T])")
+    q"case class TestClass3[T](name: List[T])"
+  )
 
   case class TestClass4[T](name: TestClass3[T])
 
@@ -321,8 +340,8 @@ object ScalaRuntimeFixtures {
     q"case class TestClass4[T](name: TestClass3[T])"
 
   case class TestClass5[T](
-    name: Option[T],
-    counters: Map[String, java.math.BigInteger])
+      name: Option[T],
+      counters: Map[String, java.math.BigInteger])
 
   val TestClass5Type = typeOf[TestClass5[_]]
 
@@ -331,8 +350,8 @@ object ScalaRuntimeFixtures {
     counters: Map[String, java.math.BigInteger])""")
 
   case class TestClass6[T](
-    name: Option[TestClass5[List[Option[TestClass4[String]]]]],
-    age: TestClass3[TestClass2[TestClass1]])
+      name: Option[TestClass5[List[Option[TestClass4[String]]]]],
+      age: TestClass3[TestClass2[TestClass1]])
 
   val TestClass6Type = typeOf[TestClass6[_]]
 
@@ -352,13 +371,15 @@ object ScalaRuntimeFixtures {
   val AnyValChildType = typeOf[AnyValChild]
 
   lazy val AnyValChildTree: Tree = typecheck(
-    q"case class AnyValChild(value: String)")
+    q"case class AnyValChild(value: String)"
+  )
 
   case class TestClass8(
-    name: AnyValChild,
-    aliases: Seq[AnyValChild])
+      name: AnyValChild,
+      aliases: Seq[AnyValChild])
 
   val TestClass8Type = typeOf[TestClass8]
+
   val TestClass8Tree: Tree = q"""case class TestClass8(
     name: AnyValChild, aliases: Seq[AnyValChild])"""
 
@@ -371,7 +392,8 @@ object ScalaRuntimeFixtures {
   lazy val TestEnumerationTree: Tree = typecheck(
     q"""object TestEnumeration extends scala.Enumeration {
     val A, B, C = Value
-  }""")
+  }"""
+  )
 
   case class TestClass9(name: TestEnumeration.Value)
 
@@ -381,11 +403,11 @@ object ScalaRuntimeFixtures {
     q"case class TestClass9(name: TestEnumeration.Value)"
 
   case class TestClass10(
-    name: String,
-    tuple: Tuple1[Int],
-    tupleA: (String, Int),
-    tupleB: Tuple2[String, Long],
-    tupleC: Tuple3[String, String, Long])
+      name: String,
+      tuple: Tuple1[Int],
+      tupleA: (String, Int),
+      tupleB: Tuple2[String, Long],
+      tupleC: Tuple3[String, String, Long])
 
   val TestClass10Type = typeOf[TestClass10]
 
@@ -439,7 +461,8 @@ object ScalaRuntimeFixtures {
   lazy val FamilyMember1Tree: Tree = typecheck(
     q"""${tb untypecheck FamilyTree}; case class FamilyMember1(foo: String) extends Family {
       val code = 1
-    }""")
+    }"""
+  )
 
   case object FamilyMember2 extends Family {
     // Members are unsupported for object,
@@ -452,7 +475,8 @@ object ScalaRuntimeFixtures {
   lazy val FamilyMember2Tree: Tree = typecheck(
     q"""${tb untypecheck FamilyTree}; object FamilyMember2 extends Family {
       val foo = "bar"
-    }""")
+    }"""
+  )
 
   object FamilyMember3 extends Family {
     def foo = "lorem"
@@ -463,154 +487,224 @@ object ScalaRuntimeFixtures {
   lazy val FamilyMember3Tree: Tree = typecheck(
     q"""${tb untypecheck FamilyTree}; object FamilyMember3 extends Family {
       def foo = "lorem"
-    }""")
+    }"""
+  )
 }
 
 object ScalaParserResults {
+
   val caseClass1 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass1", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass1", List("ScalaRuntimeFixtures")),
     fields = ListSet(TypeMember("name", StringRef)),
     values = ListSet.empty,
-    typeArgs = List.empty)
+    typeArgs = List.empty
+  )
 
   val caseClass1B = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass1B", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass1B", List("ScalaRuntimeFixtures")),
     fields = ListSet(TypeMember("foo", StringRef)),
     values = ListSet.empty,
-    typeArgs = List.empty)
+    typeArgs = List.empty
+  )
 
   val caseClass2 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass2", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass2", List("ScalaRuntimeFixtures")),
     fields = ListSet(TypeMember("name", TypeParamRef("T"))),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val caseClass3 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass3", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
     fields = ListSet(TypeMember("name", CollectionRef(TypeParamRef("T")))),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val caseClass4 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass4", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass4", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember("name", CaseClassRef(
-        QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
-        typeArgs = List(TypeParamRef("T"))))),
+      TypeMember(
+        "name",
+        CaseClassRef(
+          QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
+          typeArgs = List(TypeParamRef("T"))
+        )
+      )
+    ),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val caseClass5 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass5", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass5", List("ScalaRuntimeFixtures")),
     fields = ListSet(
       TypeMember("counters", MapRef(StringRef, BigIntegerRef)),
-      TypeMember("name", OptionRef(TypeParamRef("T")))),
+      TypeMember("name", OptionRef(TypeParamRef("T")))
+    ),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val caseClass6 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass6", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass6", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember("age", CaseClassRef(
-        QualifiedIdentifier(
-          "TestClass3", List("ScalaRuntimeFixtures")),
-        typeArgs = List(
-          CaseClassRef(
-            QualifiedIdentifier(
-              "TestClass2", List("ScalaRuntimeFixtures")),
-            typeArgs = List(
-              CaseClassRef(
-                QualifiedIdentifier(
-                  "TestClass1", List("ScalaRuntimeFixtures")),
-                typeArgs = List.empty)))))),
-      TypeMember("name", OptionRef(
+      TypeMember(
+        "age",
         CaseClassRef(
-          QualifiedIdentifier(
-            "TestClass5", List("ScalaRuntimeFixtures")),
-          typeArgs = List(CollectionRef(OptionRef(
+          QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
+          typeArgs = List(
             CaseClassRef(
-              QualifiedIdentifier(
-                "TestClass4", List("ScalaRuntimeFixtures")),
-              typeArgs = List(StringRef))))))))),
+              QualifiedIdentifier("TestClass2", List("ScalaRuntimeFixtures")),
+              typeArgs = List(
+                CaseClassRef(
+                  QualifiedIdentifier(
+                    "TestClass1",
+                    List("ScalaRuntimeFixtures")
+                  ),
+                  typeArgs = List.empty
+                )
+              )
+            )
+          )
+        )
+      ),
+      TypeMember(
+        "name",
+        OptionRef(
+          CaseClassRef(
+            QualifiedIdentifier("TestClass5", List("ScalaRuntimeFixtures")),
+            typeArgs = List(
+              CollectionRef(
+                OptionRef(
+                  CaseClassRef(
+                    QualifiedIdentifier(
+                      "TestClass4",
+                      List("ScalaRuntimeFixtures")
+                    ),
+                    typeArgs = List(StringRef)
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val caseClass7 = CaseClass(
-    identifier = QualifiedIdentifier("TestClass7", List(
-      "ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", UnionRef(ListSet(
-      CaseClassRef(
-        QualifiedIdentifier(
-          "TestClass1", List("ScalaRuntimeFixtures")),
-        typeArgs = List.empty),
-      CaseClassRef(
-        QualifiedIdentifier(
-          "TestClass1B", List("ScalaRuntimeFixtures")),
-        typeArgs = List.empty))))),
+    identifier =
+      QualifiedIdentifier("TestClass7", List("ScalaRuntimeFixtures")),
+    fields = ListSet(
+      TypeMember(
+        "name",
+        UnionRef(
+          ListSet(
+            CaseClassRef(
+              QualifiedIdentifier("TestClass1", List("ScalaRuntimeFixtures")),
+              typeArgs = List.empty
+            ),
+            CaseClassRef(
+              QualifiedIdentifier("TestClass1B", List("ScalaRuntimeFixtures")),
+              typeArgs = List.empty
+            )
+          )
+        )
+      )
+    ),
     values = ListSet.empty,
-    typeArgs = List("T"))
+    typeArgs = List("T")
+  )
 
   val tagged1 = ValueClass(
-    identifier = QualifiedIdentifier(
-      "AnyValChild", List("ScalaRuntimeFixtures")),
-    field = TypeMember("value", StringRef))
+    identifier =
+      QualifiedIdentifier("AnyValChild", List("ScalaRuntimeFixtures")),
+    field = TypeMember("value", StringRef)
+  )
 
   val caseClass8 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass8", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass8", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember("name", TaggedRef(
-        identifier = QualifiedIdentifier(
-          "AnyValChild", List("ScalaRuntimeFixtures")),
-        tagged = StringRef)),
-      TypeMember("aliases", CollectionRef(TaggedRef(
-        identifier = QualifiedIdentifier(
-          "AnyValChild", List("ScalaRuntimeFixtures")),
-        tagged = StringRef)))),
+      TypeMember(
+        "name",
+        TaggedRef(
+          identifier =
+            QualifiedIdentifier("AnyValChild", List("ScalaRuntimeFixtures")),
+          tagged = StringRef
+        )
+      ),
+      TypeMember(
+        "aliases",
+        CollectionRef(
+          TaggedRef(
+            identifier =
+              QualifiedIdentifier("AnyValChild", List("ScalaRuntimeFixtures")),
+            tagged = StringRef
+          )
+        )
+      )
+    ),
     values = ListSet.empty,
-    typeArgs = List.empty)
+    typeArgs = List.empty
+  )
 
   val caseClass9 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass9", List("ScalaRuntimeFixtures")),
-    fields = ListSet(TypeMember("name", EnumerationRef(
-      QualifiedIdentifier("TestEnumeration", List("ScalaRuntimeFixtures"))))),
+    identifier =
+      QualifiedIdentifier("TestClass9", List("ScalaRuntimeFixtures")),
+    fields = ListSet(
+      TypeMember(
+        "name",
+        EnumerationRef(
+          QualifiedIdentifier("TestEnumeration", List("ScalaRuntimeFixtures"))
+        )
+      )
+    ),
     values = ListSet.empty,
-    typeArgs = List.empty)
+    typeArgs = List.empty
+  )
 
   val testEnumeration = EnumerationDef(
-    QualifiedIdentifier(
-      "TestEnumeration", List("ScalaRuntimeFixtures")),
-    ListSet("A", "B", "C"))
+    QualifiedIdentifier("TestEnumeration", List("ScalaRuntimeFixtures")),
+    ListSet("A", "B", "C")
+  )
 
   val caseClass10 = CaseClass(
-    identifier = QualifiedIdentifier(
-      "TestClass10", List("ScalaRuntimeFixtures")),
+    identifier =
+      QualifiedIdentifier("TestClass10", List("ScalaRuntimeFixtures")),
     fields = ListSet(
       TypeMember("tupleC", TupleRef(List(StringRef, StringRef, LongRef))),
       TypeMember("tupleB", TupleRef(List(StringRef, LongRef))),
       TypeMember("tupleA", TupleRef(List(StringRef, IntRef))),
       TypeMember("tuple", TupleRef(List(IntRef))),
-      TypeMember("name", StringRef)),
+      TypeMember("name", StringRef)
+    ),
     values = ListSet.empty,
-    typeArgs = List.empty)
+    typeArgs = List.empty
+  )
 
-  val caseObject1 = CaseObject(QualifiedIdentifier(
-    "TestObject1", List("ScalaRuntimeFixtures")), ListSet.empty)
+  val caseObject1 = CaseObject(
+    QualifiedIdentifier("TestObject1", List("ScalaRuntimeFixtures")),
+    ListSet.empty
+  )
 
   val caseObject2 = CaseObject(
-    QualifiedIdentifier(
-      "TestObject2", List("ScalaRuntimeFixtures")),
+    QualifiedIdentifier("TestObject2", List("ScalaRuntimeFixtures")),
     ListSet(
       TypeInvariant("name", StringRef, "\"Foo\""),
-      TypeInvariant("code", IntRef, "1")))
+      TypeInvariant("code", IntRef, "1")
+    )
+  )
 
   val sealedFamily1 = {
     // Not 'bar', as not abstract
@@ -624,14 +718,21 @@ object ScalaParserResults {
       ListSet(fooMember),
       ListSet(
         CaseClass(
-          identifier = QualifiedIdentifier(
-            "FamilyMember1", List("ScalaRuntimeFixtures")),
+          identifier =
+            QualifiedIdentifier("FamilyMember1", List("ScalaRuntimeFixtures")),
           fields = ListSet(fooMember),
           values = ListSet(code),
-          typeArgs = List.empty),
-        CaseObject(QualifiedIdentifier(
-          "FamilyMember2", List("ScalaRuntimeFixtures")), ListSet(fooBar)),
-        CaseObject(QualifiedIdentifier(
-          "FamilyMember3", List("ScalaRuntimeFixtures")), ListSet(fooLorem))))
+          typeArgs = List.empty
+        ),
+        CaseObject(
+          QualifiedIdentifier("FamilyMember2", List("ScalaRuntimeFixtures")),
+          ListSet(fooBar)
+        ),
+        CaseObject(
+          QualifiedIdentifier("FamilyMember3", List("ScalaRuntimeFixtures")),
+          ListSet(fooLorem)
+        )
+      )
+    )
   }
 }

@@ -15,9 +15,9 @@ object CompileUniverse {
   }
 
   private[scalats] implicit def javaUniverse[J <: JavaUniverse](
-    implicit
-    classLoader: ClassLoader) = new CompileUniverse[J] {
+      implicit
+      classLoader: ClassLoader
+    ) = new CompileUniverse[J] {
     def defaultMirror(j: J): j.Mirror = j.runtimeMirror(classLoader)
   }
 }
-

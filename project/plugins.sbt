@@ -1,10 +1,11 @@
 resolvers ++= Seq(
   Resolver.bintrayIvyRepo("typesafe", "sbt-plugins"),
-  "Tatami Releases" at "https://raw.github.com/cchantep/tatami/master/releases")
+  "Tatami Releases" at "https://raw.github.com/cchantep/tatami/master/releases"
+)
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
-addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.6")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.0.0")
 

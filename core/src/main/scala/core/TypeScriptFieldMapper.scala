@@ -25,7 +25,7 @@ import io.github.scalats.typescript.{ NullableType, TypeRef }
  * }}}
  */
 trait TypeScriptFieldMapper
-  extends Function4[Settings, String, String, TypeRef, TypeScriptField] {
+    extends Function4[Settings, String, String, TypeRef, TypeScriptField] {
 
   /**
    * Returns the TypeScript field/signature for the given field name
@@ -36,21 +36,25 @@ trait TypeScriptFieldMapper
    * @param propertyType the type transpiled for the specified property
    */
   def apply(
-    settings: Settings,
-    ownerType: String,
-    propertyName: String,
-    propertyType: TypeRef): TypeScriptField
+      settings: Settings,
+      ownerType: String,
+      propertyName: String,
+      propertyType: TypeRef
+    ): TypeScriptField
 
 }
 
 object TypeScriptFieldMapper {
+
   /** Identity naming */
   object Identity extends TypeScriptFieldMapper {
+
     def apply(
-      settings: Settings,
-      ownerType: String,
-      propertyName: String,
-      propertyType: TypeRef) = TypeScriptField(propertyName, flags(settings, propertyType))
+        settings: Settings,
+        ownerType: String,
+        propertyName: String,
+        propertyType: TypeRef
+      ) = TypeScriptField(propertyName, flags(settings, propertyType))
   }
 
   /**
@@ -58,11 +62,13 @@ object TypeScriptFieldMapper {
    * to name its column (e.g. fooBar -> foo_bar).
    */
   object SnakeCase extends TypeScriptFieldMapper {
+
     def apply(
-      settings: Settings,
-      ownerType: String,
-      propertyName: String,
-      propertyType: TypeRef): TypeScriptField = {
+        settings: Settings,
+        ownerType: String,
+        propertyName: String,
+        propertyType: TypeRef
+      ): TypeScriptField = {
       val length = propertyName.length
       val result = new StringBuilder(length * 2)
       var resultLength = 0
@@ -73,8 +79,10 @@ object TypeScriptFieldMapper {
         if (i > 0 || i != '_') {
           if (i > 0 && Character.isUpperCase(c)) {
             // append a underscore if the previous result wasn't translated
-            if (!wasPrevTranslated && resultLength > 0 &&
-              result.charAt(resultLength - 1) != '_') {
+            if (
+              !wasPrevTranslated && resultLength > 0 &&
+              result.charAt(resultLength - 1) != '_'
+            ) {
 
               result.append('_')
               resultLength += 1

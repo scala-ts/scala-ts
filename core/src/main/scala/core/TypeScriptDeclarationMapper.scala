@@ -10,7 +10,17 @@ import io.github.scalats.typescript.Declaration
  * See:
  * - [[TypeScriptDeclarationMapper.EnumerationAsEnum]]
  */
-trait TypeScriptDeclarationMapper extends Function6[TypeScriptDeclarationMapper.Resolved, Settings, TypeScriptTypeMapper.Resolved, TypeScriptFieldMapper, Declaration, PrintStream, Option[Unit]] { self =>
+trait TypeScriptDeclarationMapper
+    extends Function6[
+      TypeScriptDeclarationMapper.Resolved,
+      Settings,
+      TypeScriptTypeMapper.Resolved,
+      TypeScriptFieldMapper,
+      Declaration,
+      PrintStream,
+      Option[Unit]
+    ] { self =>
+
   /**
    * @param parent the parent declaration mapper
    * @param settings the current settings
@@ -21,24 +31,29 @@ trait TypeScriptDeclarationMapper extends Function6[TypeScriptDeclarationMapper.
    * @return Some print operation, or None if `declaration` is not handled
    */
   def apply(
-    parent: TypeScriptDeclarationMapper.Resolved,
-    settings: Settings,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    fieldMapper: TypeScriptFieldMapper,
-    declaration: Declaration,
-    out: PrintStream): Option[Unit]
+      parent: TypeScriptDeclarationMapper.Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream
+    ): Option[Unit]
 
   def andThen(m: TypeScriptDeclarationMapper): TypeScriptDeclarationMapper =
     new TypeScriptDeclarationMapper {
+
       @inline def apply(
-        parent: TypeScriptDeclarationMapper.Resolved,
-        settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
-        declaration: Declaration,
-        out: PrintStream): Option[Unit] =
-        self(parent, settings, typeMapper, fieldMapper, declaration, out).
-          orElse(m(parent, settings, typeMapper, fieldMapper, declaration, out))
+          parent: TypeScriptDeclarationMapper.Resolved,
+          settings: Settings,
+          typeMapper: TypeScriptTypeMapper.Resolved,
+          fieldMapper: TypeScriptFieldMapper,
+          declaration: Declaration,
+          out: PrintStream
+        ): Option[Unit] =
+        self(parent, settings, typeMapper, fieldMapper, declaration, out)
+          .orElse(
+            m(parent, settings, typeMapper, fieldMapper, declaration, out)
+          )
     }
 }
 
@@ -57,16 +72,18 @@ object TypeScriptDeclarationMapper {
 
   type Resolved = Function2[Declaration, PrintStream, Unit]
 
-  //import com.github.ghik.silencer.silent
+  // import com.github.ghik.silencer.silent
 
   object Defaults extends TypeScriptDeclarationMapper {
+
     def apply(
-      parent: Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream): Option[Unit] = None
+        parent: Resolved,
+        settings: Settings,
+        typeMapper: TypeScriptTypeMapper.Resolved,
+        fieldMapper: TypeScriptFieldMapper,
+        declaration: Declaration,
+        out: PrintStream
+      ): Option[Unit] = None
   }
 
   /**
@@ -77,42 +94,51 @@ object TypeScriptDeclarationMapper {
   final class ValueClassAsTagged extends TypeScriptDeclarationMapper {
 
     def apply(
-      parent: Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream): Option[Unit] = declaration match {
-      case decl @ TaggedDeclaration(name, field) => Some {
-        val typeNaming = settings.typeNaming(settings, _: TypeRef)
-        import settings.{
-          typescriptIndent => indent,
-          typescriptLineSeparator => lineSep
-        }
+        parent: Resolved,
+        settings: Settings,
+        typeMapper: TypeScriptTypeMapper.Resolved,
+        fieldMapper: TypeScriptFieldMapper,
+        declaration: Declaration,
+        out: PrintStream
+      ): Option[Unit] = declaration match {
+      case decl @ TaggedDeclaration(name, field) =>
+        Some {
+          val typeNaming = settings.typeNaming(settings, _: TypeRef)
+          import settings.{
+            typescriptIndent => indent,
+            typescriptLineSeparator => lineSep
+          }
 
-        val tpeName = typeNaming(decl.reference)
+          val tpeName = typeNaming(decl.reference)
 
-        val valueType = typeMapper(
-          settings, name, TypeScriptField(field.name), field.typeRef)
+          val valueType = typeMapper(
+            settings,
+            name,
+            TypeScriptField(field.name),
+            field.typeRef
+          )
 
-        out.print(s"export type ${tpeName} = ${valueType}")
-        out.print(s" & { __tag: '${tpeName}' }${lineSep}")
+          out.print(s"export type ${tpeName} = ${valueType}")
+          out.print(s" & { __tag: '${tpeName}' }${lineSep}")
 
-        out.println(s"""
+          out.println(s"""
 
 export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
   return ${field.name} as ${tpeName}
 }""")
 
-        // Type guard
-        val simpleCheck = TypeScriptEmitter.valueCheck(
-          "v", field.typeRef, t => s"is${typeNaming(t)}")
+          // Type guard
+          val simpleCheck = TypeScriptEmitter.valueCheck(
+            "v",
+            field.typeRef,
+            t => s"is${typeNaming(t)}"
+          )
 
-        out.println(s"""
+          out.println(s"""
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return ${simpleCheck}${lineSep}
 }""")
-      }
+        }
 
       case _ =>
         None
@@ -126,52 +152,55 @@ ${indent}return ${simpleCheck}${lineSep}
    * (rather than union type as default).
    */
   final class EnumerationAsEnum extends TypeScriptDeclarationMapper {
+
     def apply(
-      parent: Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream): Option[Unit] = declaration match {
-      case decl @ EnumDeclaration(_, values) => Some {
-        val typeNaming = settings.typeNaming(settings, _: TypeRef)
-        import settings.{
-          typescriptIndent => indent,
-          typescriptLineSeparator => lineSep
-        }
+        parent: Resolved,
+        settings: Settings,
+        typeMapper: TypeScriptTypeMapper.Resolved,
+        fieldMapper: TypeScriptFieldMapper,
+        declaration: Declaration,
+        out: PrintStream
+      ): Option[Unit] = declaration match {
+      case decl @ EnumDeclaration(_, values) =>
+        Some {
+          val typeNaming = settings.typeNaming(settings, _: TypeRef)
+          import settings.{
+            typescriptIndent => indent,
+            typescriptLineSeparator => lineSep
+          }
 
-        val tpeName = typeNaming(decl.reference)
+          val tpeName = typeNaming(decl.reference)
 
-        out.println(s"export enum ${tpeName} {")
+          out.println(s"export enum ${tpeName} {")
 
-        list(values).zipWithIndex.foreach {
-          case (value, idx) =>
-            if (idx > 0) {
-              out.println(",")
-            }
+          list(values).zipWithIndex.foreach {
+            case (value, idx) =>
+              if (idx > 0) {
+                out.println(",")
+              }
 
-            out.print(s"${indent}${value} = '${value}'")
-        }
+              out.print(s"${indent}${value} = '${value}'")
+          }
 
-        out.println()
-        out.println(s"""}
+          out.println()
+          out.println(s"""}
 
 export const ${tpeName}Values: Array<${tpeName}> = [""")
 
-        out.print(values.map { v =>
-          s"${indent}${tpeName}.${v}"
-        } mkString ",\n")
-        out.println(s"""\n]${lineSep}
+          out.print(values.map { v =>
+            s"${indent}${tpeName}.${v}"
+          } mkString ",\n")
+          out.println(s"""\n]${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")
 
-        out.print(values.map { v =>
-          s"${indent}${indent}v == '${v}'"
-        } mkString " ||\n")
-        out.println(s"""\n${indent})${lineSep}
+          out.print(values.map { v =>
+            s"${indent}${indent}v == '${v}'"
+          } mkString " ||\n")
+          out.println(s"""\n${indent})${lineSep}
 }""")
-      }
+        }
 
       case _ =>
         None
@@ -188,44 +217,48 @@ ${indent}return (""")
    * - If the singleton declared multiple values, uses them as literal object.
    */
   final class SingletonAsLiteral extends TypeScriptDeclarationMapper {
+
     def apply(
-      parent: Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream): Option[Unit] = declaration match {
-      case decl @ SingletonDeclaration(name, values, _) => Some {
-        val constValue: String = values.headOption match {
-          case Some(Value(_, _, raw)) => {
-            if (values.size > 1) {
-              values.map {
-                case Value(n, _, r) => s"${n}: $r"
-              }.mkString("{ ", ", ", " }")
-            } else {
-              raw
+        parent: Resolved,
+        settings: Settings,
+        typeMapper: TypeScriptTypeMapper.Resolved,
+        fieldMapper: TypeScriptFieldMapper,
+        declaration: Declaration,
+        out: PrintStream
+      ): Option[Unit] = declaration match {
+      case decl @ SingletonDeclaration(name, values, _) =>
+        Some {
+          val constValue: String = values.headOption match {
+            case Some(Value(_, _, raw)) => {
+              if (values.size > 1) {
+                values.map { case Value(n, _, r) => s"${n}: $r" }
+                  .mkString("{ ", ", ", " }")
+              } else {
+                raw
+              }
             }
+
+            case _ =>
+              s"'${name}'"
           }
 
-          case _ =>
-            s"'${name}'"
-        }
+          import settings.{
+            typescriptIndent => indent,
+            typescriptLineSeparator => lineSep
+          }
 
-        import settings.{
-          typescriptIndent => indent,
-          typescriptLineSeparator => lineSep
-        }
+          val singleName = settings.typeNaming(settings, decl.reference)
 
-        val singleName = settings.typeNaming(settings, decl.reference)
-
-        out.println(s"""export const ${singleName}Inhabitant = $constValue${lineSep}
+          out.println(
+            s"""export const ${singleName}Inhabitant = $constValue${lineSep}
 
 export type ${singleName} = typeof ${singleName}Inhabitant${lineSep}
 
 export function is${singleName}(v: any): v is ${singleName} {
 ${indent}return ${singleName}Inhabitant == v${lineSep}
-}""")
-      }
+}"""
+          )
+        }
 
       case _ =>
         None
@@ -241,39 +274,49 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
    * Declared fields and super interface are ignored.
    */
   final class UnionAsSimpleUnion extends TypeScriptDeclarationMapper {
+
     def apply(
-      parent: Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream): Option[Unit] = declaration match {
-      case decl @ UnionDeclaration(_, _, possibilities, _) => Some {
-        import settings.{
-          typescriptIndent => indent,
-          typescriptLineSeparator => lineSep
-        }
+        parent: Resolved,
+        settings: Settings,
+        typeMapper: TypeScriptTypeMapper.Resolved,
+        fieldMapper: TypeScriptFieldMapper,
+        declaration: Declaration,
+        out: PrintStream
+      ): Option[Unit] = declaration match {
+      case decl @ UnionDeclaration(_, _, possibilities, _) =>
+        Some {
+          import settings.{
+            typescriptIndent => indent,
+            typescriptLineSeparator => lineSep
+          }
 
-        val typeNaming = settings.typeNaming(settings, _: TypeRef)
-        val tpeName = typeNaming(decl.reference)
-        val ps = possibilities.map(typeNaming).toSeq.sorted
+          val typeNaming = settings.typeNaming(settings, _: TypeRef)
+          val tpeName = typeNaming(decl.reference)
+          val ps = possibilities.map(typeNaming).toSeq.sorted
 
-        out.print(s"""export type ${tpeName} = ${ps mkString " | "}${lineSep}
+          out.print(s"""export type ${tpeName} = ${ps mkString " | "}${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (
 ${indent}${indent}""")
 
-        out.println(ps.map { p => s"is${p}(v)" }.
-          mkString(s" ||\n${indent}${indent}"))
+          out.println(
+            ps.map { p => s"is${p}(v)" }.mkString(s" ||\n${indent}${indent}")
+          )
 
-        out.println(s"""${indent})${lineSep}
+          out.println(s"""${indent})${lineSep}
 }""")
-      }
+        }
 
-      case decl @ InterfaceDeclaration(_, _, _, Some(
-        InterfaceDeclaration(_, _, _, _, true)
-        ), false) => {
+      case decl @ InterfaceDeclaration(
+            _,
+            _,
+            _,
+            Some(
+              InterfaceDeclaration(_, _, _, _, true)
+            ),
+            false
+          ) => {
         // Ignore super interface for interface member of union
         Some(parent(decl.copy(superInterface = None), out))
       }
@@ -285,16 +328,18 @@ ${indent}${indent}""")
 
   lazy val unionAsSimpleUnion = new UnionAsSimpleUnion()
 
-  def chain(multi: Seq[TypeScriptDeclarationMapper]): Option[TypeScriptDeclarationMapper] = {
-    @scala.annotation.tailrec def go(
-      in: Seq[TypeScriptDeclarationMapper],
-      out: TypeScriptDeclarationMapper): TypeScriptDeclarationMapper = in.headOption match {
+  def chain(
+      multi: Seq[TypeScriptDeclarationMapper]
+    ): Option[TypeScriptDeclarationMapper] = {
+    @scala.annotation.tailrec
+    def go(
+        in: Seq[TypeScriptDeclarationMapper],
+        out: TypeScriptDeclarationMapper
+      ): TypeScriptDeclarationMapper = in.headOption match {
       case Some(next) => go(in.tail, out.andThen(next))
-      case _ => out
+      case _          => out
     }
 
-    multi.headOption.map { first =>
-      go(multi.tail, first)
-    }
+    multi.headOption.map { first => go(multi.tail, first) }
   }
 }

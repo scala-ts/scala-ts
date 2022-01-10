@@ -14,6 +14,7 @@ sealed trait TypeRef {
 }
 
 private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
+
   /** The type name */
   def name: String
 
@@ -38,8 +39,9 @@ sealed trait UnionMemberRef { _: TypeRef => }
  * @param name the type name
  */
 case class TaggedRef(
-  name: String,
-  tagged: TypeRef) extends TypeRef {
+    name: String,
+    tagged: TypeRef)
+    extends TypeRef {
   override def requires: ListSet[TypeRef] = tagged.requires + this
 
   override lazy val toString = s"${name}~${tagged.toString}"
@@ -52,9 +54,12 @@ case class TaggedRef(
  * @param typeArgs the type arguments (e.g. `string` for `CustomType<string>`)
  */
 case class CustomTypeRef(
-  name: String,
-  typeArgs: List[TypeRef] = Nil)
-  extends TypeRef with UnionMemberRef with GenericTypeRef {
+    name: String,
+    typeArgs: List[TypeRef] = Nil)
+    extends TypeRef
+    with UnionMemberRef
+    with GenericTypeRef {
+
   override def requires: ListSet[TypeRef] =
     super.requires + this
 }
@@ -64,8 +69,10 @@ case class CustomTypeRef(
  * @param values the invariant values
  */
 case class SingletonTypeRef(
-  name: String,
-  values: ListSet[Value]) extends TypeRef with UnionMemberRef {
+    name: String,
+    values: ListSet[Value])
+    extends TypeRef
+    with UnionMemberRef {
   override val requires = ListSet.empty[TypeRef]
 
   override lazy val toString = s"#${name}{${values mkString ", "}}"
@@ -90,7 +97,8 @@ case class ArrayRef(innerType: TypeRef) extends TypeRef {
  * @param typeArgs the types for the tuple elements
  */
 case class TupleRef(typeArgs: List[TypeRef])
-  extends TypeRef with GenericTypeRef {
+    extends TypeRef
+    with GenericTypeRef {
 
   @SuppressWarnings(Array("ListSize"))
   def name = s"Tuple${typeArgs.size}"
@@ -160,6 +168,7 @@ case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
  * @param valueType the type of the values
  */
 case class MapType(keyType: TypeRef, valueType: TypeRef) extends TypeRef {
+
   def requires: ListSet[TypeRef] =
     keyType.requires ++ valueType.requires
 

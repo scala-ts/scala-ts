@@ -4,6 +4,7 @@ import scala.collection.immutable.ListSet
 
 /** A TypeScript type declaration */
 sealed trait Declaration {
+
   /** The type name */
   def name: String
 
@@ -26,14 +27,15 @@ object Declaration {
   case object Tagged extends Kind
 
   object Kind {
+
     def unapply(repr: String): Option[Kind] = repr match {
       case "interface" => Some(Interface)
-      case "class" => Some(Class)
+      case "class"     => Some(Class)
       case "singleton" => Some(Singleton)
-      case "enum" => Some(Enum)
-      case "union" => Some(Union)
-      case "tagged" => Some(Tagged)
-      case _ => None
+      case "enum"      => Some(Enum)
+      case "union"     => Some(Union)
+      case "tagged"    => Some(Tagged)
+      case _           => None
     }
   }
 }
@@ -55,19 +57,22 @@ case class Member(name: String, typeRef: TypeRef)
  * @param union this interface represents a union type
  */
 case class InterfaceDeclaration(
-  name: String,
-  fields: ListSet[Member],
-  typeParams: List[String],
-  superInterface: Option[InterfaceDeclaration],
-  union: Boolean) extends Declaration {
+    name: String,
+    fields: ListSet[Member],
+    typeParams: List[String],
+    superInterface: Option[InterfaceDeclaration],
+    union: Boolean)
+    extends Declaration {
+
   override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(CustomTypeRef(_)))
 
 }
 
 case class TaggedDeclaration(
-  name: String,
-  field: Member) extends Declaration {
+    name: String,
+    field: Member)
+    extends Declaration {
   override def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
@@ -79,9 +84,9 @@ case class TaggedDeclaration(
  * @param rawValue
  */
 case class Value(
-  name: String,
-  typeRef: TypeRef,
-  rawValue: String)
+    name: String,
+    typeRef: TypeRef,
+    rawValue: String)
 
 /**
  * A singleton declaration.
@@ -90,9 +95,10 @@ case class Value(
  * @param superInterface the super interface (if any)
  */
 case class SingletonDeclaration(
-  name: String,
-  values: ListSet[Value],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration {
+    name: String,
+    values: ListSet[Value],
+    superInterface: Option[InterfaceDeclaration])
+    extends Declaration {
   override def reference: TypeRef = SingletonTypeRef(name, values)
 }
 
@@ -102,11 +108,13 @@ case class SingletonDeclaration(
  * @param values the allowed values
  */
 case class EnumDeclaration(
-  name: String,
-  values: ListSet[String]) extends Declaration
+    name: String,
+    values: ListSet[String])
+    extends Declaration
 
 case class UnionDeclaration(
-  name: String,
-  fields: ListSet[Member],
-  possibilities: ListSet[TypeRef with UnionMemberRef],
-  superInterface: Option[InterfaceDeclaration]) extends Declaration
+    name: String,
+    fields: ListSet[Member],
+    possibilities: ListSet[TypeRef with UnionMemberRef],
+    superInterface: Option[InterfaceDeclaration])
+    extends Declaration
