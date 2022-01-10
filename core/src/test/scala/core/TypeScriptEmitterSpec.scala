@@ -8,7 +8,6 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   "TypeScript emitter" title
 
   import TranspilerResults._
-  import TypeScriptEmitterSpec._
 
   "Emitter" should {
     "emit empty interface" in {
