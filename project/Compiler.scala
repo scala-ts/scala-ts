@@ -53,14 +53,18 @@ object Compiler extends AutoPlugin {
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     libraryDependencies ++= {
-      val silencerVersion = "1.7.5"
+      if (scalaBinaryVersion.value != "3") {
+        val silencerVersion = "1.7.7"
 
-      Seq(
-        compilerPlugin(("com.github.ghik" %% "silencer-plugin" % silencerVersion).
-          cross(CrossVersion.full)),
-        ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided).
-          cross(CrossVersion.full)
-      )
+        Seq(
+          compilerPlugin(
+            ("com.github.ghik" %% "silencer-plugin" % silencerVersion)
+              .cross(CrossVersion.full)
+          ),
+          ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided)
+            .cross(CrossVersion.full)
+        )
+      } else Seq.empty
     }
   )
 
