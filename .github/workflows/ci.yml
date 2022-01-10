@@ -29,7 +29,7 @@ jobs:
         extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Check code quality' # TODO: Separate job
-      run: '|
+      run: |
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'
 
     - name: 'Run core tests'
