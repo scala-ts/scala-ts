@@ -14,14 +14,14 @@ final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
   "Identity mapper" should {
     import TypeScriptFieldMapper.Identity
 
-    Fragments.foreach(Seq(
-      "lorem" -> "lorem",
-      "fooBar" -> "fooBar",
-      "Ipsum" -> "Ipsum")) {
+    Fragments.foreach(
+      Seq("lorem" -> "lorem", "fooBar" -> "fooBar", "Ipsum" -> "Ipsum")
+    ) {
       case (name, encoded) =>
         s"be ok for '${name}'" in {
-          Identity(settings, "Foo", name, NumberRef).
-            aka("field") must_=== TypeScriptField(encoded, Set.empty)
+          Identity(settings, "Foo", name, NumberRef).aka(
+            "field"
+          ) must_=== TypeScriptField(encoded, Set.empty)
         }
     }
   }
@@ -29,14 +29,14 @@ final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
   "Snake case mapper" should {
     import TypeScriptFieldMapper.SnakeCase
 
-    Fragments.foreach(Seq(
-      "lorem" -> "lorem",
-      "fooBar" -> "foo_bar",
-      "Ipsum" -> "Ipsum")) {
+    Fragments.foreach(
+      Seq("lorem" -> "lorem", "fooBar" -> "foo_bar", "Ipsum" -> "Ipsum")
+    ) {
       case (name, encoded) =>
         s"be ok for '${name}'" in {
-          SnakeCase(settings, "Bar", name, NumberRef).
-            aka("field") must_=== TypeScriptField(encoded, Set.empty)
+          SnakeCase(settings, "Bar", name, NumberRef).aka(
+            "field"
+          ) must_=== TypeScriptField(encoded, Set.empty)
         }
     }
   }

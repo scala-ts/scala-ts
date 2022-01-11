@@ -10,11 +10,14 @@ import io.github.scalats.typescript._
 final class Transpiler(config: Settings) {
   // TODO: (low priority) Remove the transpiler phase?
 
-  @inline def apply(scalaTypes: ListSet[ScalaModel.TypeDef]): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
+  @inline def apply(
+      scalaTypes: ListSet[ScalaModel.TypeDef]
+    ): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
 
   def apply(
-    scalaTypes: ListSet[ScalaModel.TypeDef],
-    superInterface: Option[InterfaceDeclaration]): ListSet[Declaration] =
+      scalaTypes: ListSet[ScalaModel.TypeDef],
+      superInterface: Option[InterfaceDeclaration]
+    ): ListSet[Declaration] =
     scalaTypes.flatMap {
       case scalaClass: ScalaModel.CaseClass =>
         ListSet[Declaration](transpileInterface(scalaClass, superInterface))
@@ -30,24 +33,27 @@ final class Transpiler(config: Settings) {
           Value(
             scalaMember.name,
             transpileTypeRef(scalaMember.typeRef, false),
-            scalaMember.value)
+            scalaMember.value
+          )
         }
 
         ListSet[Declaration](
-          SingletonDeclaration(idToString(id), values, superInterface))
+          SingletonDeclaration(idToString(id), values, superInterface)
+        )
       }
 
       case ScalaModel.SealedUnion(id, fields, possibilities) => {
         val ifaceFields = fields.map { scalaMember =>
-          Member(
-            scalaMember.name,
-            transpileTypeRef(scalaMember.typeRef, false))
+          Member(scalaMember.name, transpileTypeRef(scalaMember.typeRef, false))
         }
 
         val unionRef = InterfaceDeclaration(
           idToString(id),
-          ifaceFields, List.empty[String], superInterface,
-          union = true)
+          ifaceFields,
+          List.empty[String],
+          superInterface,
+          union = true
+        )
 
         apply(possibilities, Some(unionRef)) + UnionDeclaration(
           idToString(id),
@@ -60,17 +66,19 @@ final class Transpiler(config: Settings) {
                   Value(
                     name = v.name,
                     typeRef = transpileTypeRef(v.typeRef, false),
-                    rawValue = v.value)
-                })
+                    rawValue = v.value
+                  )
+                }
+              )
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
-              CustomTypeRef(
-                idToString(pid), tpeArgs.map { SimpleTypeRef(_) })
+              CustomTypeRef(idToString(pid), tpeArgs.map { SimpleTypeRef(_) })
 
             case m =>
               CustomTypeRef(idToString(m.identifier), List.empty)
           },
-          superInterface)
+          superInterface
+        )
       }
     }
 
@@ -79,32 +87,35 @@ final class Transpiler(config: Settings) {
       name = idToString(valueClass.identifier),
       field = Member(
         valueClass.field.name,
-        transpileTypeRef(valueClass.field.typeRef, inInterfaceContext = false)))
+        transpileTypeRef(valueClass.field.typeRef, inInterfaceContext = false)
+      )
+    )
 
   private def transpileInterface(
-    scalaClass: ScalaModel.CaseClass,
-    superInterface: Option[InterfaceDeclaration]) = {
+      scalaClass: ScalaModel.CaseClass,
+      superInterface: Option[InterfaceDeclaration]
+    ) = {
     // TODO: (medium priority) Transpile values? (see former transpileClass)
     InterfaceDeclaration(
       idToString(scalaClass.identifier),
       scalaClass.fields.map { scalaMember =>
         Member(
           scalaMember.name,
-          transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true))
+          transpileTypeRef(scalaMember.typeRef, inInterfaceContext = true)
+        )
       },
       typeParams = scalaClass.typeArgs,
       superInterface = superInterface,
-      union = false)
+      union = false
+    )
   }
 
   private def transpileTypeRef(
-    scalaTypeRef: ScalaModel.TypeRef,
-    inInterfaceContext: Boolean): TypeRef = scalaTypeRef match {
-    case ScalaModel.BigDecimalRef |
-      ScalaModel.BigIntegerRef |
-      ScalaModel.DoubleRef |
-      ScalaModel.IntRef |
-      ScalaModel.LongRef =>
+      scalaTypeRef: ScalaModel.TypeRef,
+      inInterfaceContext: Boolean
+    ): TypeRef = scalaTypeRef match {
+    case ScalaModel.BigDecimalRef | ScalaModel.BigIntegerRef |
+        ScalaModel.DoubleRef | ScalaModel.IntRef | ScalaModel.LongRef =>
       NumberRef
 
     case ScalaModel.BooleanRef =>
@@ -123,8 +134,7 @@ final class Transpiler(config: Settings) {
       CustomTypeRef(idToString(id))
 
     case ScalaModel.TupleRef(typeArgs) =>
-      TupleRef(
-        typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
+      TupleRef(typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
 
     case ScalaModel.CaseClassRef(id, typeArgs) => {
       val name = {
@@ -132,8 +142,7 @@ final class Transpiler(config: Settings) {
         else idToString(id)
       }
 
-      CustomTypeRef(
-        name, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
+      CustomTypeRef(name, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
     }
 
     case ScalaModel.DateRef =>
@@ -146,12 +155,13 @@ final class Transpiler(config: Settings) {
       SimpleTypeRef(name)
 
     case ScalaModel.OptionRef(innerType) =>
-      NullableType(
-        transpileTypeRef(innerType, inInterfaceContext))
+      NullableType(transpileTypeRef(innerType, inInterfaceContext))
 
-    case ScalaModel.MapRef(kT, vT) => MapType(
-      transpileTypeRef(kT, inInterfaceContext),
-      transpileTypeRef(vT, inInterfaceContext))
+    case ScalaModel.MapRef(kT, vT) =>
+      MapType(
+        transpileTypeRef(kT, inInterfaceContext),
+        transpileTypeRef(vT, inInterfaceContext)
+      )
 
     case ScalaModel.UnionRef(possibilities) =>
       UnionType(possibilities.map { i =>

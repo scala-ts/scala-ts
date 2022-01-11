@@ -1,4 +1,4 @@
-ThisBuild / scapegoatVersion := "1.4.9"
+ThisBuild / scapegoatVersion := "1.4.11"
 
 ThisBuild / scapegoatReports := Seq("text") // xml in 2.13 require extra dep
 
@@ -16,16 +16,19 @@ pomPostProcess := {
 
     import scala.xml.{ Elem => XmlElem, Node => XmlNode }
 
-    private def transformPomDependencies(tx: XmlElem => Option[XmlNode]): XmlNode => XmlNode = { node: XmlNode =>
+    private def transformPomDependencies(
+        tx: XmlElem => Option[XmlNode]
+      ): XmlNode => XmlNode = { node: XmlNode =>
       import scala.xml.{ NodeSeq, XML }
       import scala.xml.transform.{ RewriteRule, RuleTransformer }
 
       val tr = new RuleTransformer(new RewriteRule {
         override def transform(node: XmlNode): NodeSeq = node match {
-          case e: XmlElem if e.label == "dependency" => tx(e) match {
-            case Some(n) => n
-            case _       => NodeSeq.Empty
-          }
+          case e: XmlElem if e.label == "dependency" =>
+            tx(e) match {
+              case Some(n) => n
+              case _       => NodeSeq.Empty
+            }
 
           case _ => node
         }

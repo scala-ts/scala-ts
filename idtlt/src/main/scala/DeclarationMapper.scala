@@ -14,13 +14,15 @@ import io.github.scalats.core.{
 import io.github.scalats.typescript._
 
 final class DeclarationMapper extends TypeScriptDeclarationMapper {
+
   def apply(
-    parent: TypeScriptDeclarationMapper.Resolved,
-    settings: Settings,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    fieldMapper: TypeScriptFieldMapper,
-    declaration: Declaration,
-    out: PrintStream): Option[Unit] = {
+      parent: TypeScriptDeclarationMapper.Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream
+    ): Option[Unit] = {
     import settings.{
       typescriptLineSeparator => lineSep,
       typescriptIndent => indent
@@ -31,10 +33,16 @@ final class DeclarationMapper extends TypeScriptDeclarationMapper {
     import declaration.name
     val tpeName = typeNaming(declaration.reference)
 
-    val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(indent + indent, _: String, _: Iterable[Member], { t =>
-      val tn = typeNaming(t)
-      s"ns${tn}.is${tn}"
-    }, settings)
+    val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(
+      indent + indent,
+      _: String,
+      _: Iterable[Member],
+      { t =>
+        val tn = typeNaming(t)
+        s"ns${tn}.is${tn}"
+      },
+      settings
+    )
 
     def deriving = s"""// Deriving TypeScript type from ${tpeName} validator
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
@@ -156,8 +164,12 @@ ${indent})${lineSep}
         val tagged = typeMapper(settings, name, member, field.typeRef)
 
         val fieldTpe = TypeScriptEmitter.defaultTypeMapping(
-          settings, member, field.typeRef, settings.typeNaming(settings, _),
-          tr = typeMapper(settings, name, member, _))
+          settings,
+          member,
+          field.typeRef,
+          settings.typeNaming(settings, _),
+          tr = typeMapper(settings, name, member, _)
+        )
 
         out.println(s"""// Validator for TaggedDeclaration ${tpeName}
 export type ${tpeName} = ${fieldTpe} & { __tag: '${id}' }${lineSep}
@@ -229,9 +241,8 @@ export const idtlt${tpeName} = """)
         val constValue: String = values.headOption match {
           case Some(Value(_, _, raw)) => {
             if (values.size > 1) {
-              values.map {
-                case Value(n, _, r) => s"${n}: $r"
-              }.mkString("{ ", ", ", " }")
+              values.map { case Value(n, _, r) => s"${n}: $r" }
+                .mkString("{ ", ", ", " }")
             } else {
               raw
             }
@@ -259,14 +270,17 @@ ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
   // ---
 
   private def emitField(
-    settings: Settings,
-    fieldMapper: TypeScriptFieldMapper,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    o: PrintStream,
-    name: String,
-    member: Member): Unit = {
+      settings: Settings,
+      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      o: PrintStream,
+      name: String,
+      member: Member
+    ): Unit = {
     val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
-    o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},")
+    o.println(
+      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},"
+    )
   }
 }

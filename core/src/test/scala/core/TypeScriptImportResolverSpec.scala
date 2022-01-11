@@ -11,7 +11,7 @@ import io.github.scalats.typescript.{
 import org.specs2.specification.core.Fragments
 
 final class TypeScriptImportResolverSpec
-  extends org.specs2.mutable.Specification {
+    extends org.specs2.mutable.Specification {
   "TypeScript import resolver" title
 
   "Required types of type declaration" should {
@@ -25,9 +25,17 @@ final class TypeScriptImportResolverSpec
       }
 
       "be resolved as an empty set for interface" >> {
-        Fragments.foreach(Seq[InterfaceDeclaration](
-          interface1, interface2, interface3, interface5, interface7,
-          unionIface, interface10)) { i =>
+        Fragments.foreach(
+          Seq[InterfaceDeclaration](
+            interface1,
+            interface2,
+            interface3,
+            interface5,
+            interface7,
+            unionIface,
+            interface10
+          )
+        ) { i =>
           i.name in {
             defaultResolver(i) must beEmpty
           }
@@ -41,7 +49,8 @@ final class TypeScriptImportResolverSpec
 
         singleton2.name in {
           defaultResolver(singleton2) must_=== ListSet(
-            CustomTypeRef("SupI", List.empty))
+            CustomTypeRef("SupI", List.empty)
+          )
         }
       }
     }

@@ -3,8 +3,8 @@ package io.github.scalats.core
 import scala.collection.immutable.Set
 
 final class TypeScriptField(
-  val name: String,
-  val flags: Set[TypeScriptField.Flag]) {
+    val name: String,
+    val flags: Set[TypeScriptField.Flag]) {
 
   override def toString = s"TypeScriptField${tupled.toString}"
 
@@ -22,9 +22,11 @@ final class TypeScriptField(
 }
 
 object TypeScriptField {
+
   def apply(
-    name: String,
-    flags: Set[Flag] = Set.empty): TypeScriptField =
+      name: String,
+      flags: Set[Flag] = Set.empty
+    ): TypeScriptField =
     new TypeScriptField(name, flags)
 
   final class Flag(val name: String) extends AnyVal

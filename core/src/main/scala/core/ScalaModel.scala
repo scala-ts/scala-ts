@@ -3,36 +3,42 @@ package io.github.scalats.core
 import scala.collection.immutable.ListSet
 
 object ScalaModel {
+
   case class QualifiedIdentifier(
-    name: String,
-    enclosingClassNames: List[String])
+      name: String,
+      enclosingClassNames: List[String])
 
   sealed trait TypeDef {
     def identifier: QualifiedIdentifier
   }
 
   case class CaseClass(
-    identifier: QualifiedIdentifier,
-    fields: ListSet[TypeMember],
-    values: ListSet[TypeInvariant],
-    typeArgs: List[String]) extends TypeDef
+      identifier: QualifiedIdentifier,
+      fields: ListSet[TypeMember],
+      values: ListSet[TypeInvariant],
+      typeArgs: List[String])
+      extends TypeDef
 
   case class ValueClass(
-    identifier: QualifiedIdentifier,
-    field: TypeMember) extends TypeDef
+      identifier: QualifiedIdentifier,
+      field: TypeMember)
+      extends TypeDef
 
   case class CaseObject(
-    identifier: QualifiedIdentifier,
-    values: ListSet[TypeInvariant]) extends TypeDef
+      identifier: QualifiedIdentifier,
+      values: ListSet[TypeInvariant])
+      extends TypeDef
 
   case class SealedUnion(
-    identifier: QualifiedIdentifier,
-    fields: ListSet[TypeMember],
-    possibilities: ListSet[TypeDef]) extends TypeDef
+      identifier: QualifiedIdentifier,
+      fields: ListSet[TypeMember],
+      possibilities: ListSet[TypeDef])
+      extends TypeDef
 
   case class EnumerationDef(
-    identifier: QualifiedIdentifier,
-    values: ListSet[String]) extends TypeDef
+      identifier: QualifiedIdentifier,
+      values: ListSet[String])
+      extends TypeDef
 
   // ---
 
@@ -47,18 +53,20 @@ object ScalaModel {
    * @param valueType the type of the `Map` values
    */
   case class MapRef(
-    keyType: TypeRef,
-    valueType: TypeRef) extends TypeRef
+      keyType: TypeRef,
+      valueType: TypeRef)
+      extends TypeRef
 
   case class CaseClassRef(
-    identifier: QualifiedIdentifier,
-    typeArgs: List[TypeRef]) extends TypeRef
+      identifier: QualifiedIdentifier,
+      typeArgs: List[TypeRef])
+      extends TypeRef
 
   case class CollectionRef(innerType: TypeRef) extends TypeRef
 
   sealed class TypeMember(
-    val name: String,
-    val typeRef: TypeRef) {
+      val name: String,
+      val typeRef: TypeRef) {
     private lazy val tupled = name -> typeRef
 
     override def toString = s"TypeMember${tupled.toString}"
@@ -75,14 +83,16 @@ object ScalaModel {
   }
 
   object TypeMember {
+
     @inline def apply(name: String, typeRef: TypeRef): TypeMember =
       new TypeMember(name, typeRef)
   }
 
   final class TypeInvariant(
-    name: String,
-    typeRef: TypeRef,
-    val value: String) extends TypeMember(name, typeRef) {
+      name: String,
+      typeRef: TypeRef,
+      val value: String)
+      extends TypeMember(name, typeRef) {
 
     private lazy val tupled = Tuple3(name, typeRef, value)
 
@@ -100,10 +110,12 @@ object ScalaModel {
   }
 
   object TypeInvariant {
+
     @inline def apply(
-      name: String,
-      typeRef: TypeRef,
-      value: String): TypeInvariant = new TypeInvariant(name, typeRef, value)
+        name: String,
+        typeRef: TypeRef,
+        value: String
+      ): TypeInvariant = new TypeInvariant(name, typeRef, value)
   }
 
   case class UnknownTypeRef(identifier: QualifiedIdentifier) extends TypeRef
@@ -113,8 +125,9 @@ object ScalaModel {
   case class EnumerationRef(identifier: QualifiedIdentifier) extends TypeRef
 
   case class TaggedRef(
-    identifier: QualifiedIdentifier,
-    tagged: TypeRef) extends TypeRef
+      identifier: QualifiedIdentifier,
+      tagged: TypeRef)
+      extends TypeRef
 
   case class TupleRef(typeArgs: List[TypeRef]) extends TypeRef
 

@@ -99,8 +99,16 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
     "transpile object" in {
       val result = defaultTranspiler(
         ListSet(caseObject2),
-        Some(InterfaceDeclaration(
-          "SupI", ListSet.empty, List.empty[String], Option.empty, false)))
+        Some(
+          InterfaceDeclaration(
+            "SupI",
+            ListSet.empty,
+            List.empty[String],
+            Option.empty,
+            false
+          )
+        )
+      )
 
       result must have size 1 and {
         result must contain(singleton2)
@@ -119,7 +127,10 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
         val member1Interface = InterfaceDeclaration(
           "ScalaRuntimeFixturesFamilyMember1",
           ListSet(Member("foo", StringRef)),
-          List.empty, Some(unionIface), false)
+          List.empty,
+          Some(unionIface),
+          false
+        )
 
         result must contain(member1Interface)
       } and {
@@ -127,88 +138,126 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
           SingletonDeclaration(
             "ScalaRuntimeFixturesFamilyMember3",
             ListSet(Value("foo", StringRef, "\"lorem\"")),
-            Some(unionIface)))
+            Some(unionIface)
+          )
+        )
       }
     }
   }
 }
 
 object TranspilerResults {
+
   val interface1 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass1",
-    ListSet(Member("name", StringRef)), List.empty, Option.empty, false)
+    ListSet(Member("name", StringRef)),
+    List.empty,
+    Option.empty,
+    false
+  )
 
   val interface2 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass2",
     ListSet(Member("name", SimpleTypeRef("T"))),
     typeParams = List("T"),
     superInterface = Option.empty,
-    union = false)
+    union = false
+  )
 
   val interface3 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass3",
     ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
     typeParams = List("T"),
     superInterface = Option.empty,
-    union = false)
+    union = false
+  )
 
   val interface5 = InterfaceDeclaration(
-    "ScalaRuntimeFixturesTestClass5", ListSet(
+    "ScalaRuntimeFixturesTestClass5",
+    ListSet(
       Member("counters", MapType(StringRef, NumberRef)),
-      Member("name", NullableType(SimpleTypeRef("T")))),
+      Member("name", NullableType(SimpleTypeRef("T")))
+    ),
     typeParams = List("T"),
     superInterface = Option.empty,
-    union = false)
+    union = false
+  )
 
   val interface7 = InterfaceDeclaration(
-    "ScalaRuntimeFixturesTestClass7", ListSet(
-      Member("name", UnionType(ListSet(
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
-        CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty))))),
+    "ScalaRuntimeFixturesTestClass7",
+    ListSet(
+      Member(
+        "name",
+        UnionType(
+          ListSet(
+            CustomTypeRef("ScalaRuntimeFixturesTestClass1", List.empty),
+            CustomTypeRef("ScalaRuntimeFixturesTestClass1B", List.empty)
+          )
+        )
+      )
+    ),
     typeParams = List("T"),
     superInterface = Option.empty,
-    union = false)
+    union = false
+  )
 
   val taggedDeclaration1 = TaggedDeclaration(
     name = "ScalaRuntimeFixturesAnyValChild",
-    field = Member("value", StringRef))
+    field = Member("value", StringRef)
+  )
 
   val interface8 = InterfaceDeclaration(
-    "ScalaRuntimeFixturesTestClass8", ListSet(
+    "ScalaRuntimeFixturesTestClass8",
+    ListSet(
       Member("name", TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)),
       Member(
         "aliases",
-        ArrayRef(TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)))),
+        ArrayRef(TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef))
+      )
+    ),
     typeParams = List.empty,
     superInterface = Option.empty,
-    union = false)
+    union = false
+  )
 
   val interface10 = InterfaceDeclaration(
-    "ScalaRuntimeFixturesTestClass10", ListSet(
+    "ScalaRuntimeFixturesTestClass10",
+    ListSet(
       Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
       Member("tupleB", TupleRef(List(StringRef, NumberRef))),
       Member("tupleA", TupleRef(List(StringRef, NumberRef))),
       Member("tuple", TupleRef(List(NumberRef))),
-      Member("name", StringRef)),
+      Member("name", StringRef)
+    ),
     typeParams = List.empty,
     superInterface = None,
-    union = false)
+    union = false
+  )
 
   val singleton1 = SingletonDeclaration(
     name = "ScalaRuntimeFixturesTestObject1",
     values = ListSet.empty,
-    superInterface = Option.empty)
+    superInterface = Option.empty
+  )
 
   val singleton2 = SingletonDeclaration(
-    "ScalaRuntimeFixturesTestObject2", ListSet(
-      Value("name", StringRef, "\"Foo\""),
-      Value("code", NumberRef, "1")),
-    superInterface = Some(InterfaceDeclaration(
-      "SupI", ListSet.empty, List.empty[String], None, false)))
+    "ScalaRuntimeFixturesTestObject2",
+    ListSet(Value("name", StringRef, "\"Foo\""), Value("code", NumberRef, "1")),
+    superInterface = Some(
+      InterfaceDeclaration(
+        "SupI",
+        ListSet.empty,
+        List.empty[String],
+        None,
+        false
+      )
+    )
+  )
 
   val enum1 = EnumDeclaration(
     "ScalaRuntimeFixturesTestEnumeration",
-    ListSet("A", "B", "C"))
+    ListSet("A", "B", "C")
+  )
 
   val union1 = UnionDeclaration(
     name = "ScalaRuntimeFixturesFamily",
@@ -217,22 +266,28 @@ object TranspilerResults {
       CustomTypeRef("ScalaRuntimeFixturesFamilyMember1", List.empty),
       SingletonTypeRef(
         "ScalaRuntimeFixturesFamilyMember2",
-        ListSet(Value("foo", StringRef, "\"bar\""))),
+        ListSet(Value("foo", StringRef, "\"bar\""))
+      ),
       SingletonTypeRef(
         "ScalaRuntimeFixturesFamilyMember3",
-        ListSet(Value("foo", StringRef, "\"lorem\"")))),
-    superInterface = Option.empty)
+        ListSet(Value("foo", StringRef, "\"lorem\""))
+      )
+    ),
+    superInterface = Option.empty
+  )
 
   val unionIface = InterfaceDeclaration(
     s"ScalaRuntimeFixtures${sealedFamily1.identifier.name}",
     ListSet(Member("foo", StringRef)),
     typeParams = List.empty[String],
     superInterface = Option.empty,
-    union = true)
+    union = true
+  )
 
   val unionMember2Singleton = SingletonDeclaration(
     "ScalaRuntimeFixturesFamilyMember2",
     ListSet(Value("foo", StringRef, "\"bar\"")),
-    Some(unionIface))
+    Some(unionIface)
+  )
 
 }

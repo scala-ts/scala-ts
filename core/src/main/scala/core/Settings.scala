@@ -10,25 +10,27 @@ import scala.util.control.NonFatal
  * @param optionToNullable generate nullable type as `T | null`
  */
 final class Settings(
-  val emitCodecs: Settings.EmitCodecs,
-  val optionToNullable: Boolean,
-  val prependEnclosingClassNames: Boolean,
-  val typescriptIndent: String,
-  val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
-  val typeNaming: TypeScriptTypeNaming,
-  val fieldMapper: TypeScriptFieldMapper,
-  val discriminator: Settings.Discriminator) {
+    val emitCodecs: Settings.EmitCodecs,
+    val optionToNullable: Boolean,
+    val prependEnclosingClassNames: Boolean,
+    val typescriptIndent: String,
+    val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
+    val typeNaming: TypeScriptTypeNaming,
+    val fieldMapper: TypeScriptFieldMapper,
+    val discriminator: Settings.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters"))
   private[scalats] def copy(
-    emitCodecs: Settings.EmitCodecs = this.emitCodecs,
-    optionToNullable: Boolean = this.optionToNullable,
-    prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
-    typescriptIndent: String = this.typescriptIndent,
-    typescriptLineSeparator: Settings.TypeScriptLineSeparator = this.typescriptLineSeparator,
-    typeNaming: TypeScriptTypeNaming = this.typeNaming,
-    fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
-    discriminator: Settings.Discriminator = this.discriminator): Settings =
+      emitCodecs: Settings.EmitCodecs = this.emitCodecs,
+      optionToNullable: Boolean = this.optionToNullable,
+      prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
+      typescriptIndent: String = this.typescriptIndent,
+      typescriptLineSeparator: Settings.TypeScriptLineSeparator =
+        this.typescriptLineSeparator,
+      typeNaming: TypeScriptTypeNaming = this.typeNaming,
+      fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
+      discriminator: Settings.Discriminator = this.discriminator
+    ): Settings =
     new Settings(
       emitCodecs,
       optionToNullable,
@@ -37,7 +39,8 @@ final class Settings(
       typescriptLineSeparator,
       typeNaming,
       fieldMapper,
-      discriminator)
+      discriminator
+    )
 
   override def equals(that: Any): Boolean = that match {
     case other: Settings => tupled == other.tupled
@@ -57,27 +60,25 @@ final class Settings(
     typescriptLineSeparator,
     typeNaming,
     fieldMapper,
-    discriminator)
+    discriminator
+  )
 }
 
 object Settings {
-  import io.github.scalats.tsconfig.{
-    ConfigFactory,
-    Config,
-    ConfigException
-  }
+  import io.github.scalats.tsconfig.{ ConfigFactory, Config, ConfigException }
 
   val DefaultTypeScriptIndent = "  "
 
   def apply(
-    emitCodecs: EmitCodecs = EmitCodecsEnabled,
-    optionToNullable: Boolean = false,
-    prependEnclosingClassNames: Boolean = true,
-    typescriptIndent: String = DefaultTypeScriptIndent,
-    typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
-    typeNaming: TypeScriptTypeNaming = TypeScriptTypeNaming.Identity,
-    fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
-    discriminator: Discriminator = DefaultDiscriminator): Settings =
+      emitCodecs: EmitCodecs = EmitCodecsEnabled,
+      optionToNullable: Boolean = false,
+      prependEnclosingClassNames: Boolean = true,
+      typescriptIndent: String = DefaultTypeScriptIndent,
+      typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
+      typeNaming: TypeScriptTypeNaming = TypeScriptTypeNaming.Identity,
+      fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
+      discriminator: Discriminator = DefaultDiscriminator
+    ): Settings =
     new Settings(
       emitCodecs,
       optionToNullable,
@@ -86,24 +87,27 @@ object Settings {
       typescriptLineSeparator,
       typeNaming,
       fieldMapper,
-      discriminator)
+      discriminator
+    )
 
   def load(
-    config: Config,
-    logger: Logger,
-    cl: Option[ClassLoader] = None): Settings = {
+      config: Config,
+      logger: Logger,
+      cl: Option[ClassLoader] = None
+    ): Settings = {
 
-    def opt[T](key: String)(get: String => T): Option[T] = try {
-      Option(get(key))
-    } catch {
-      case NonFatal(_: ConfigException.Missing) =>
-        Option.empty[T]
+    def opt[T](key: String)(get: String => T): Option[T] =
+      try {
+        Option(get(key))
+      } catch {
+        case NonFatal(_: ConfigException.Missing) =>
+          Option.empty[T]
 
-      case NonFatal(cause) => {
-        logger.warning(s"Fails to get $key: ${cause.getMessage}")
-        Option.empty[T]
+        case NonFatal(cause) => {
+          logger.warning(s"Fails to get $key: ${cause.getMessage}")
+          Option.empty[T]
+        }
       }
-    }
 
     @inline def bool(nme: String, default: Boolean): Boolean =
       opt(nme)(config.getBoolean(_)).getOrElse(default)
@@ -132,9 +136,12 @@ object Settings {
 
       case className =>
         try {
-          Option(loadClass(className).
-            asSubclass(classOf[TypeScriptTypeNaming]).
-            getDeclaredConstructor().newInstance())
+          Option(
+            loadClass(className)
+              .asSubclass(classOf[TypeScriptTypeNaming])
+              .getDeclaredConstructor()
+              .newInstance()
+          )
 
         } catch {
           case NonFatal(_) =>
@@ -155,9 +162,12 @@ object Settings {
 
       case className =>
         try {
-          Option(loadClass(className).
-            asSubclass(classOf[TypeScriptFieldMapper]).
-            getDeclaredConstructor().newInstance())
+          Option(
+            loadClass(className)
+              .asSubclass(classOf[TypeScriptFieldMapper])
+              .getDeclaredConstructor()
+              .newInstance()
+          )
 
         } catch {
           case NonFatal(_) =>
@@ -180,7 +190,8 @@ object Settings {
       typescriptLineSeparator,
       typeNaming,
       fieldMapper,
-      discriminator)
+      discriminator
+    )
 
   }
 
@@ -210,23 +221,16 @@ object Settings {
     repr.put(s"${p}emitCodecs", conf.emitCodecs.enabled)
     repr.put(s"${p}optionToNullable", conf.optionToNullable)
 
-    repr.put(
-      s"${p}prependEnclosingClassNames",
-      conf.prependEnclosingClassNames)
+    repr.put(s"${p}prependEnclosingClassNames", conf.prependEnclosingClassNames)
 
-    repr.put(
-      s"${p}typescriptIndent",
-      conf.typescriptIndent)
+    repr.put(s"${p}typescriptIndent", conf.typescriptIndent)
 
-    repr.put(
-      s"${p}typescriptLineSeparator",
-      conf.typescriptLineSeparator.value)
+    repr.put(s"${p}typescriptLineSeparator", conf.typescriptLineSeparator.value)
 
     repr.put(s"${p}typeNaming", typeNaming)
     repr.put(s"${p}fieldMapper", fieldMapper)
 
-    repr.put(
-      s"${p}discriminator", conf.discriminator.text)
+    repr.put(s"${p}discriminator", conf.discriminator.text)
 
     ConfigFactory.parseMap(repr)
   }
@@ -234,7 +238,8 @@ object Settings {
   // ---
 
   final class EmitCodecs private[scalats] (
-    val enabled: Boolean) extends AnyVal {
+      val enabled: Boolean)
+      extends AnyVal {
     @inline override def toString = enabled.toString
   }
 
