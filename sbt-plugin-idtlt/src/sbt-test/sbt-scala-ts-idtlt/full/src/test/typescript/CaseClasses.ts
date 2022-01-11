@@ -12,6 +12,7 @@ const date2 = '2021-01-26T21:06:45.459Z'
 // Bar
 const bar1: nsBar.Bar = {
   name: nsName.Name('One'),
+  aliases: [],
   age: 2,
   amount: 456,
   transports: [],
@@ -21,6 +22,7 @@ const bar1: nsBar.Bar = {
 
 const bar2: nsBar.Bar = {
   name: nsName.Name('Two'),
+  aliases: [nsName.Name('2'), nsName.Name('deux')],
   age: 3,
   transports: [],
   updated: new Date(date2),
@@ -29,6 +31,7 @@ const bar2: nsBar.Bar = {
 
 const bar3: nsBar.Bar = {
   name: nsName.Name('Three'),
+  aliases: [],
   age: 4,
   amount: 6789,
   transports: [
@@ -44,6 +47,7 @@ describe('Bar', () => {
   it('should be validated for bar1', () => {
     const input = {
       name: 'One',
+      aliases: [],
       age: 2,
       amount: 456,
       transports: [],
@@ -69,6 +73,7 @@ describe('Bar', () => {
 
     const raw = {
       name: 'One',
+      aliases: [],
       age: 2,
       amount: 456,
       transports: [],
@@ -88,6 +93,7 @@ describe('Bar', () => {
   it('should be validated for bar2', () => {
     const input = {
       name: 'Two',
+      aliases: ['2', 'deux'],
       age: 3,
       transports: [],
       updated: date2,
@@ -111,6 +117,7 @@ describe('Bar', () => {
 
     const raw = {
       name: 'Two',
+      aliases: ['2', 'deux'],
       age: 3,
       transports: [],
       updated: new Date(date2),
@@ -129,6 +136,7 @@ describe('Bar', () => {
   it('should be validated for bar3', () => {
     const input = {
       name: 'Three',
+      aliases: [],
       age: 4,
       amount: 6789,
       transports: [
@@ -157,6 +165,7 @@ describe('Bar', () => {
 
     const raw = {
       name: 'Three',
+      aliases: [],
       age: 4,
       amount: 6789,
       transports: [

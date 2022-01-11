@@ -24,8 +24,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
       case Some(pattern) =>
         pattern.format(_: String)
 
-      case _ =>
-        { tpeName: String => s"{ ${tpeName}, is${tpeName} }" }
+      case _ => { tpeName: String => s"{ ${tpeName}, is${tpeName} }" }
     }
 
   /**
@@ -35,9 +34,11 @@ abstract class BasePrinter extends TypeScriptPrinter {
    * @param importPath the function applied to each required type to determine the import path
    */
   protected def printImports(
-    settings: Settings,
-    requires: ListSet[TypeRef],
-    out: PrintStream)(importPath: TypeRef => String): Unit = {
+      settings: Settings,
+      requires: ListSet[TypeRef],
+      out: PrintStream
+    )(importPath: TypeRef => String
+    ): Unit = {
     import settings.{ typescriptLineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
@@ -45,7 +46,9 @@ abstract class BasePrinter extends TypeScriptPrinter {
     requires.toList.sortBy(_.name).foreach { tpe =>
       val tpeName = typeNaming(tpe)
 
-      out.println(s"import ${formatImport(tpeName)} from '${importPath(tpe)}'${sep}")
+      out.println(
+        s"import ${formatImport(tpeName)} from '${importPath(tpe)}'${sep}"
+      )
     }
 
     if (requires.nonEmpty) {

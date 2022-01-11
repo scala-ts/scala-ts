@@ -8,15 +8,16 @@ final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
   "TypeScript emitter" title
 
   import TranspilerResults._
-  import TypeScriptEmitterSpec._
 
   "Emitter" should {
     "emit empty interface" in {
       val empty = InterfaceDeclaration(
-        "Empty", ListSet.empty,
+        "Empty",
+        ListSet.empty,
         typeParams = List.empty,
         superInterface = None,
-        union = false)
+        union = false
+      )
 
       emit(ListSet(empty)) must beTypedEqualTo("""export interface Empty {
 }
@@ -30,7 +31,8 @@ export function isEmpty(v: any): v is Empty {
     }
 
     "emit interface for a class with one primitive member" in {
-      emit(ListSet(interface1)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass1 {
+      emit(ListSet(interface1)) must beTypedEqualTo(
+        """export interface ScalaRuntimeFixturesTestClass1 {
   name: string;
 }
 
@@ -39,11 +41,13 @@ export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixtu
     ((typeof v['name']) === 'string')
   );
 }
-""")
+"""
+      )
     }
 
     "emit interface for a class with generic member" in {
-      emit(ListSet(interface2)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass2<T> {
+      emit(ListSet(interface2)) must beTypedEqualTo(
+        """export interface ScalaRuntimeFixturesTestClass2<T> {
   name: T;
 }
 
@@ -52,11 +56,13 @@ export function isScalaRuntimeFixturesTestClass2(v: any): v is ScalaRuntimeFixtu
     ((typeof v['name']) === 'T')
   );
 }
-""")
+"""
+      )
     }
 
     "emit interface for a class with generic array" in {
-      emit(ListSet(interface3)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass3<T> {
+      emit(ListSet(interface3)) must beTypedEqualTo(
+        """export interface ScalaRuntimeFixturesTestClass3<T> {
   name: ReadonlyArray<T>;
 }
 
@@ -65,7 +71,8 @@ export function isScalaRuntimeFixturesTestClass3(v: any): v is ScalaRuntimeFixtu
     (Array.isArray(v['name']) && v['name'].every(elmt => (typeof elmt) === 'T'))
   );
 }
-""")
+"""
+      )
     }
 
     "emit interface for a generic case class with a optional member" in {
@@ -99,16 +106,22 @@ export function isScalaRuntimeFixturesTestClass7(v: any): v is ScalaRuntimeFixtu
 
     "emit tagged type" >> {
       "as type alias" in {
-        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesAnyValChild = string;
+        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
+          """export type ScalaRuntimeFixturesAnyValChild = string;
 
 export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
   return (typeof v) === 'string';
 }
-""")
+"""
+        )
       }
 
       "as tagged type" in {
-        emit(ListSet(taggedDeclaration1), declMapper = TypeScriptDeclarationMapper.valueClassAsTagged) must beTypedEqualTo("""export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
+        emit(
+          ListSet(taggedDeclaration1),
+          declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+        ) must beTypedEqualTo(
+          """export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
 
 export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixturesAnyValChild {
   return value as ScalaRuntimeFixturesAnyValChild
@@ -117,7 +130,8 @@ export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixt
 export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
   return (typeof v) === 'string';
 }
-""")
+"""
+        )
       }
 
       "as member" in {
@@ -184,7 +198,9 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
       }
 
       "emit class #3" in {
-        emit(ListSet(unionMember2Singleton)) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
+        emit(
+          ListSet(unionMember2Singleton)
+        ) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
   public foo: string = "bar";
 
   private static instance: ScalaRuntimeFixturesFamilyMember2;
@@ -207,20 +223,20 @@ export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFi
       }
 
       "emit literal types" >> {
-        val barVal = Value(
-          name = "bar",
-          typeRef = StringRef,
-          rawValue = "\"lorem\"")
+        val barVal =
+          Value(name = "bar", typeRef = StringRef, rawValue = "\"lorem\"")
 
         "using singleton name" in {
           val obj = SingletonDeclaration(
             name = "Foo",
             values = ListSet.empty,
-            superInterface = Option.empty)
+            superInterface = Option.empty
+          )
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = 'Foo';
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+          ) must_=== """export const FooInhabitant = 'Foo';
 
 export type Foo = typeof FooInhabitant;
 
@@ -234,11 +250,13 @@ export function isFoo(v: any): v is Foo {
           val obj = SingletonDeclaration(
             name = "Foo",
             values = ListSet(barVal),
-            superInterface = Option.empty)
+            superInterface = Option.empty
+          )
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = "lorem";
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+          ) must_=== """export const FooInhabitant = "lorem";
 
 export type Foo = typeof FooInhabitant;
 
@@ -253,15 +271,15 @@ export function isFoo(v: any): v is Foo {
             name = "Foo",
             values = ListSet(
               barVal,
-              Value(
-                name = "ipsum",
-                typeRef = NumberRef,
-                rawValue = "2")),
-            superInterface = Option.empty)
+              Value(name = "ipsum", typeRef = NumberRef, rawValue = "2")
+            ),
+            superInterface = Option.empty
+          )
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral) must_=== """export const FooInhabitant = { bar: "lorem", ipsum: 2 };
+            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+          ) must_=== """export const FooInhabitant = { bar: "lorem", ipsum: 2 };
 
 export type Foo = typeof FooInhabitant;
 
@@ -290,7 +308,8 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
       "as union" in {
         emit(
           ListSet(union1, unionIface),
-          declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion) must_=== """export type ScalaRuntimeFixturesFamily = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
+          declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion
+        ) must_=== """export type ScalaRuntimeFixturesFamily = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
 
 export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
   return (
@@ -305,7 +324,8 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
 
     "emit enumeration" >> {
       "as union" in {
-        emit(ListSet(enum1)) must beTypedEqualTo("""export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C';
+        emit(ListSet(enum1)) must beTypedEqualTo(
+          """export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C';
 
 export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ];
 
@@ -316,11 +336,15 @@ export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntime
     v == 'C'
   );
 }
-""")
+"""
+        )
       }
 
       "as enum" in {
-        emit(ListSet(enum1), declMapper = TypeScriptDeclarationMapper.enumerationAsEnum) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
+        emit(
+          ListSet(enum1),
+          declMapper = TypeScriptDeclarationMapper.enumerationAsEnum
+        ) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
   A = 'A',
   B = 'B',
   C = 'C'
@@ -345,19 +369,24 @@ export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntime
   }
 
   def emit(
-    decls: ListSet[Declaration],
-    config: Settings = Settings(),
-    declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
-    importResolver: TypeScriptImportResolver = TypeScriptImportResolver.Defaults,
-    typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults): String = {
+      decls: ListSet[Declaration],
+      config: Settings = Settings(),
+      declMapper: TypeScriptDeclarationMapper =
+        TypeScriptDeclarationMapper.Defaults,
+      importResolver: TypeScriptImportResolver =
+        TypeScriptImportResolver.Defaults,
+      typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults
+    ): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
     val emiter = new TypeScriptEmitter(
-      config, (_, _, _, _) => out,
+      config,
+      (_, _, _, _) => out,
       importResolver,
       declMapper,
-      typeMapper)
+      typeMapper
+    )
 
     try {
       emiter.emit(decls)

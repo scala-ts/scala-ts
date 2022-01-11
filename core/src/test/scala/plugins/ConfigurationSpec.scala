@@ -14,11 +14,18 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
 
   val compilationRuleSet = SourceRuleSet(
     includes = Set("ScalaParserSpec\\.scala", "Transpiler.*"),
-    excludes = Set("foo"))
+    excludes = Set("foo")
+  )
 
   val typeRuleSet = SourceRuleSet(
     includes = Set("org\\.scalats\\.core\\..*"),
-    excludes = Set(".*Spec", f"ScalaRuntimeFixtures$$", "object:.*ScalaParserResults", "FamilyMember(2|3)"))
+    excludes = Set(
+      ".*Spec",
+      f"ScalaRuntimeFixtures$$",
+      "object:.*ScalaParserResults",
+      "FamilyMember(2|3)"
+    )
+  )
 
   "Configuration" should {
     {
@@ -26,7 +33,10 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
 
       "be loaded from minimal" in {
         Configuration.load(
-          ConfigFactory.empty(), logger, None) must_=== defaultCfg
+          ConfigFactory.empty(),
+          logger,
+          None
+        ) must_=== defaultCfg
       }
 
       "be written with defaults" in {
@@ -43,9 +53,12 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   discriminator = "_dis"
 }""")
 
-        Configuration.load(source, logger, None) must_=== defaultCfg.
-          withSettings(defaultCfg.settings.copy(
-            discriminator = new Settings.Discriminator("_dis")))
+        Configuration.load(source, logger, None) must_=== defaultCfg
+          .withSettings(
+            defaultCfg.settings.copy(
+              discriminator = new Settings.Discriminator("_dis")
+            )
+          )
 
       }
     }
@@ -57,12 +70,16 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
         settings = Settings(
           typescriptIndent = "  ",
           prependEnclosingClassNames = false,
-          fieldMapper = TypeScriptFieldMapper.SnakeCase))
+          fieldMapper = TypeScriptFieldMapper.SnakeCase
+        )
+      )
 
       "be loaded from fully defined" in {
         val cfg = Configuration.load(
           ConfigFactory.parseURL(getClass getResource "/plugin.conf"),
-          logger, None)
+          logger,
+          None
+        )
 
         cfg must_=== customConfig
       }
@@ -103,11 +120,12 @@ settings {
 
     {
       lazy val source = ConfigFactory.parseString(
-        """additionalClasspath = [ "file:///tmp/foo1", "file:///tmp/foo2" ]""")
+        """additionalClasspath = [ "file:///tmp/foo1", "file:///tmp/foo2" ]"""
+      )
 
-      val cfg = Configuration(additionalClasspath = Seq(
-        new URL("file:///tmp/foo1"),
-        new URL("file:///tmp/foo2")))
+      val cfg = Configuration(additionalClasspath =
+        Seq(new URL("file:///tmp/foo1"), new URL("file:///tmp/foo2"))
+      )
 
       "be loaded with additional classpath" in {
         Configuration.load(source, logger, None) must_=== cfg
@@ -158,8 +176,12 @@ excludes = [ "foo" ]""")
     "be written" in {
       import ConfigRenderOptions.concise
 
-      SourceRuleSet.toConfig(typeRuleSet).
-        root.render(concise) must_=== """{"excludes":[".*Spec","ScalaRuntimeFixtures$","object:.*ScalaParserResults","FamilyMember(2|3)"],"includes":["org\\.scalats\\.core\\..*"]}"""
+      SourceRuleSet
+        .toConfig(typeRuleSet)
+        .root
+        .render(
+          concise
+        ) must_=== """{"excludes":[".*Spec","ScalaRuntimeFixtures$","object:.*ScalaParserResults","FamilyMember(2|3)"],"includes":["org\\.scalats\\.core\\..*"]}"""
     }
   }
 }

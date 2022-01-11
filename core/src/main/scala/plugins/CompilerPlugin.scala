@@ -20,7 +20,8 @@ import io.github.scalats.core.{
 import io.github.scalats.tsconfig.ConfigFactory
 
 final class CompilerPlugin(val global: Global)
-  extends Plugin with PluginCompat { plugin =>
+    extends Plugin
+    with PluginCompat { plugin =>
 
   val name = "scalats"
   val description = "Scala compiler plugin for TypeScript (scalats)"
@@ -32,8 +33,9 @@ final class CompilerPlugin(val global: Global)
 
   @SuppressWarnings(Array("NullParameter", "NullAssignment"))
   override def init(
-    options: List[String],
-    error: String => Unit): Boolean = {
+      options: List[String],
+      error: String => Unit
+    ): Boolean = {
     val cfgPrefix = "configuration="
     val outDirPrefix = "printerOutputDirectory="
 
@@ -75,9 +77,12 @@ final class CompilerPlugin(val global: Global)
       config = Configuration.load(
         ConfigFactory.parseFile(new File(configPath)),
         Logger(global),
-        Option(printerOutputDirectory))
+        Option(printerOutputDirectory)
+      )
 
-      global.inform(s"{${plugin.name}} Configuration loaded from '${configPath}': $config")
+      global.inform(
+        s"{${plugin.name}} Configuration loaded from '${configPath}': $config"
+      )
     }
 
     if (config == null) {
@@ -89,8 +94,8 @@ final class CompilerPlugin(val global: Global)
     true
   }
 
-  override val optionsHelp: Option[String] = Some(
-    "  -P:scalats:configuration=/path/to/config             Path to the plugin configuration as XML file\r\n  -P:scalats:debug             Enable plugin debug")
+  override val optionsHelp: Option[String] =
+    Some("  -P:scalats:configuration=/path/to/config             Path to the plugin configuration as XML file\r\n  -P:scalats:debug             Enable plugin debug")
 
   private object Component extends PluginComponent {
     val global: plugin.global.type = plugin.global
@@ -111,7 +116,9 @@ final class CompilerPlugin(val global: Global)
 
         if (acceptsCompilationUnit(compiledFile)) {
           if (plugin.debug) {
-            global.inform(s"${plugin.name}.debug: Checking ${compiledFile.getAbsolutePath}")
+            global.inform(
+              s"${plugin.name}.debug: Checking ${compiledFile.getAbsolutePath}"
+            )
           }
 
           handle(unit, acceptsType)
@@ -158,11 +165,12 @@ final class CompilerPlugin(val global: Global)
       @annotation.tailrec
       private def matches(str: String, s: Set[Regex]): Boolean =
         s.headOption match {
-          case Some(re) => re.findFirstIn(str) match {
-            case Some(_) => true
+          case Some(re) =>
+            re.findFirstIn(str) match {
+              case Some(_) => true
 
-            case _ => matches(str, s.tail)
-          }
+              case _ => matches(str, s.tail)
+            }
 
           case _ => false
         }
@@ -173,22 +181,26 @@ final class CompilerPlugin(val global: Global)
     private val compiled = scala.collection.mutable.Set.empty[String]
 
     private def handle(
-      unit: CompilationUnit,
-      acceptsType: Symbol => Boolean): Unit = {
+        unit: CompilationUnit,
+        acceptsType: Symbol => Boolean
+      ): Unit = {
 
       @annotation.tailrec
       def traverse[Acc](
-        trees: Seq[Tree],
-        acc: Acc,
-        examined: List[Type] = List.empty)(
-        f: ((Type, Tree), Acc) => Acc): Acc =
+          trees: Seq[Tree],
+          acc: Acc,
+          examined: List[Type] = List.empty
+        )(f: ((Type, Tree), Acc) => Acc
+        ): Acc =
         trees.headOption match {
           case Some(tree) => {
             import tree.{ symbol => sym }
 
-            if (sym != null && !(sym.fullName.startsWith("java.") ||
-              sym.fullName.startsWith("scala.")) &&
-              ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)) {
+            if (
+              sym != null && !(sym.fullName.startsWith("java.") ||
+                sym.fullName.startsWith("scala.")) &&
+              ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)
+            ) {
 
               val tpe = sym.typeSignature
               lazy val kind: String = if (sym.isModule) "object" else "class"
@@ -199,8 +211,7 @@ final class CompilerPlugin(val global: Global)
 
               val newTrees: Seq[Tree] = b.result() ++: trees.tail
 
-              val accepted = (
-                ClassDefTag.unapply(tree).nonEmpty ||
+              val accepted = (ClassDefTag.unapply(tree).nonEmpty ||
                 ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
 
               val add = !examined.contains(tpe) && accepted
@@ -208,7 +219,9 @@ final class CompilerPlugin(val global: Global)
               val newAcc = {
                 if (add) {
                   if (plugin.debug) {
-                    global.inform(s"${plugin.name}.debug: Handling $kind ${sym.fullName}")
+                    global.inform(
+                      s"${plugin.name}.debug: Handling $kind ${sym.fullName}"
+                    )
                   }
 
                   f(tpe -> tree, acc)
@@ -238,8 +251,8 @@ final class CompilerPlugin(val global: Global)
 
       val typeBuf = List.newBuilder[(Type, Tree)]
 
-      val symtab = (traverse(
-        unit.body.children, List.empty[(String, (Type, Tree))]) {
+      val symtab =
+        (traverse(unit.body.children, List.empty[(String, (Type, Tree))]) {
           case (ref @ (_, tree), acc) =>
             typeBuf += ref
             tree.symbol.fullName -> ref :: acc
@@ -253,17 +266,17 @@ final class CompilerPlugin(val global: Global)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
-      val declMapper = TypeScriptDeclarationMapper.
-        chain(config.typeScriptDeclarationMappers).
-        getOrElse(TypeScriptDeclarationMapper.Defaults)
+      val declMapper = TypeScriptDeclarationMapper
+        .chain(config.typeScriptDeclarationMappers)
+        .getOrElse(TypeScriptDeclarationMapper.Defaults)
 
-      val typeMapper = TypeScriptTypeMapper.
-        chain(config.typeScriptTypeMappers).
-        getOrElse(TypeScriptTypeMapper.Defaults)
+      val typeMapper = TypeScriptTypeMapper
+        .chain(config.typeScriptTypeMappers)
+        .getOrElse(TypeScriptTypeMapper.Defaults)
 
-      val importResolver = TypeScriptImportResolver.
-        chain(config.typeScriptImportResolvers).
-        getOrElse(TypeScriptImportResolver.Defaults)
+      val importResolver = TypeScriptImportResolver
+        .chain(config.typeScriptImportResolvers)
+        .getOrElse(TypeScriptImportResolver.Defaults)
 
       compiled.synchronized {
         // Include the current compilation unit as it's known
@@ -281,7 +294,8 @@ final class CompilerPlugin(val global: Global)
         printer = config.printer,
         examined = examined,
         compiled = compiled.toSet,
-        acceptsType = acceptsType)
+        acceptsType = acceptsType
+      )
 
       examined = examined ++ ex
     }
