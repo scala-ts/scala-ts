@@ -10,13 +10,16 @@ object Publish extends AutoPlugin {
   private val repoUrl = env("PUBLISH_REPO_URL")
 
   override lazy val projectSettings = Seq(
-    licenses := Seq(
-      "MIT" -> url("https://opensource.org/licenses/MIT")),
+    licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT")),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     publishTo := Some(repoUrl).map(repoName at _),
-    credentials += Credentials(repoName, env("PUBLISH_REPO_ID"),
-      env("PUBLISH_USER"), env("PUBLISH_PASS")),
+    credentials += Credentials(
+      repoName,
+      env("PUBLISH_REPO_ID"),
+      env("PUBLISH_USER"),
+      env("PUBLISH_PASS")
+    ),
     homepage := Some(url("https://scala-ts.github.io/scala-ts/")),
     autoAPIMappings := true,
     pomExtra :=

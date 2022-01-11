@@ -3,17 +3,18 @@ package io.github.scalats.plugins
 import scala.collection.immutable.Set
 
 final class SourceRuleSet(
-  val includes: Set[String],
-  val excludes: Set[String]) {
+    val includes: Set[String],
+    val excludes: Set[String]) {
 
   override def equals(that: Any): Boolean = that match {
     case other: SourceRuleSet => tupled == other.tupled
-    case _ => false
+    case _                    => false
   }
 
   override def hashCode: Int = tupled.hashCode
 
-  override def toString = s"{ includes: [${includes mkString ", "}], excludes: [${excludes mkString ", "}] }"
+  override def toString =
+    s"{ includes: [${includes mkString ", "}], excludes: [${excludes mkString ", "}] }"
 
   private[plugins] lazy val tupled = includes -> excludes
 }
@@ -24,8 +25,9 @@ object SourceRuleSet {
   import io.github.scalats.tsconfig.{ ConfigFactory, Config }
 
   def apply(
-    includes: Set[String] = Set.empty,
-    excludes: Set[String] = Set.empty): SourceRuleSet =
+      includes: Set[String] = Set.empty,
+      excludes: Set[String] = Set.empty
+    ): SourceRuleSet =
     new SourceRuleSet(includes, excludes)
 
   def load(conf: Config): SourceRuleSet = {
@@ -34,7 +36,8 @@ object SourceRuleSet {
 
     new SourceRuleSet(
       includes = strings("includes").toSet,
-      excludes = strings("excludes").toSet)
+      excludes = strings("excludes").toSet
+    )
   }
 
   @SuppressWarnings(Array("NullParameter"))

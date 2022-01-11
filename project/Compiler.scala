@@ -11,7 +11,9 @@ object Compiler extends AutoPlugin {
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
     scalacOptions ++= Seq(
-      "-encoding", "UTF-8", "-target:jvm-1.8",
+      "-encoding",
+      "UTF-8",
+      "-target:jvm-1.8",
       "-unchecked",
       "-deprecation",
       "-feature",
@@ -24,12 +26,17 @@ object Compiler extends AutoPlugin {
 
       if (ver == "2.11") {
         Seq(
-          "-Xmax-classfile-name", "128",
-          "-Yopt:_", "-Ydead-code", "-Yclosure-elim", "-Yconst-opt"
+          "-Xmax-classfile-name",
+          "128",
+          "-Yopt:_",
+          "-Ydead-code",
+          "-Yclosure-elim",
+          "-Yconst-opt"
         )
       } else if (ver == "2.12") {
         Seq(
-          "-Xmax-classfile-name", "128",
+          "-Xmax-classfile-name",
+          "128",
           "-Ywarn-numeric-widen",
           "-Ywarn-dead-code",
           "-Ywarn-value-discard",
@@ -47,7 +54,8 @@ object Compiler extends AutoPlugin {
           "-Wvalue-discard",
           "-Wextra-implicit",
           "-Wmacros:after",
-          "-Wunused")
+          "-Wunused"
+        )
       }
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },

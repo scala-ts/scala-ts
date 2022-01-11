@@ -7,6 +7,7 @@ trait Logger {
 }
 
 object Logger extends LoggerCompat {
+
   def apply(logger: org.slf4j.Logger): Logger = new Logger {
     def debug(msg: => String): Unit = logger.debug(msg)
     def info(msg: => String): Unit = logger.info(msg)

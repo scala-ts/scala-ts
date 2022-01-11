@@ -12,7 +12,7 @@ import io.github.scalats.typescript._
  * The implementations must be class with a no-arg constructor.
  */
 trait TypeScriptImportResolver
-  extends (Declaration => Option[ListSet[TypeRef]]) { self =>
+    extends (Declaration => Option[ListSet[TypeRef]]) { self =>
 
   /**
    * Resolves `Some` required import for the given `declaration`.
@@ -23,6 +23,7 @@ trait TypeScriptImportResolver
 
   def andThen(m: TypeScriptImportResolver): TypeScriptImportResolver =
     new TypeScriptImportResolver {
+
       @inline def apply(decl: Declaration): Option[ListSet[TypeRef]] =
         self(decl).orElse(m(decl))
     }
@@ -36,11 +37,11 @@ object TypeScriptImportResolver {
   }
 
   final class UnionWithLiteralSingleton extends TypeScriptImportResolver {
+
     def apply(declaration: Declaration): Option[ListSet[TypeRef]] =
       declaration match {
-        case InterfaceDeclaration(name, fields, _, superInterface, _) if (
-          superInterface.exists(_.union)) =>
-
+        case InterfaceDeclaration(name, fields, _, superInterface, _)
+            if (superInterface.exists(_.union)) =>
           Some(fields.flatMap(_.typeRef.requires).filterNot(_.name == name))
 
         case SingletonDeclaration(_, _, _) =>
@@ -57,35 +58,42 @@ object TypeScriptImportResolver {
   lazy val unionWithLiteralSingleton = new UnionWithLiteralSingleton
 
   def chain(
-    multi: Seq[TypeScriptImportResolver]): Option[TypeScriptImportResolver] = {
-    @scala.annotation.tailrec def go(
-      in: Seq[TypeScriptImportResolver],
-      out: TypeScriptImportResolver): TypeScriptImportResolver =
+      multi: Seq[TypeScriptImportResolver]
+    ): Option[TypeScriptImportResolver] = {
+    @scala.annotation.tailrec
+    def go(
+        in: Seq[TypeScriptImportResolver],
+        out: TypeScriptImportResolver
+      ): TypeScriptImportResolver =
       in.headOption match {
         case Some(next) => go(in.tail, out.andThen(next))
-        case _ => out
+        case _          => out
       }
 
-    multi.headOption.map { first =>
-      go(multi.tail, first)
-    }
+    multi.headOption.map { first => go(multi.tail, first) }
   }
 
   private[scalats] val defaultResolver: Resolved = (_: Declaration) match {
     case InterfaceDeclaration(name, fields, _, superInterface, _) =>
-      fields.flatMap(_.typeRef.requires).
-        filterNot(_.name == name) ++ superInterface.
-        map { i: InterfaceDeclaration => i.reference }
+      fields
+        .flatMap(_.typeRef.requires)
+        .filterNot(_.name == name) ++ superInterface.map {
+        i: InterfaceDeclaration => i.reference
+      }
 
     case SingletonDeclaration(name, values, superInterface) =>
-      values.flatMap(_.typeRef.requires).
-        filterNot(_.name == name) ++ superInterface.
-        map { i: InterfaceDeclaration => i.reference }
+      values
+        .flatMap(_.typeRef.requires)
+        .filterNot(_.name == name) ++ superInterface.map {
+        i: InterfaceDeclaration => i.reference
+      }
 
     case UnionDeclaration(name, fields, _, superInterface) =>
-      fields.flatMap(_.typeRef.requires).
-        filterNot(_.name == name) ++ superInterface.
-        map { i: InterfaceDeclaration => i.reference }
+      fields
+        .flatMap(_.typeRef.requires)
+        .filterNot(_.name == name) ++ superInterface.map {
+        i: InterfaceDeclaration => i.reference
+      }
 
     case _ =>
       ListSet.empty[TypeRef]

@@ -13,27 +13,28 @@ final class FilePrinter(outDir: File) extends BasePrinter {
 
   @com.github.ghik.silencer.silent(".*kind.*never used.*")
   def apply(
-    conf: Settings,
-    kind: Declaration.Kind,
-    name: String,
-    requires: ListSet[TypeRef]): PrintStream = {
+      conf: Settings,
+      kind: Declaration.Kind,
+      name: String,
+      requires: ListSet[TypeRef]
+    ): PrintStream = {
 
-    val f = tracker.getOrElseUpdate(name, {
-      val n = new File(outDir, s"${name}.ts")
+    val f = tracker.getOrElseUpdate(
+      name, {
+        val n = new File(outDir, s"${name}.ts")
 
-      // Make sure it's cleaned before the first output
-      n.delete()
+        // Make sure it's cleaned before the first output
+        n.delete()
 
-      n
-    })
+        n
+      }
+    )
 
     val stream = new PrintStream(new FileOutputStream(f, true))
 
     printPrelude(stream)
 
-    printImports(conf, requires, stream) { tpe =>
-      s"./${tpe.name}"
-    }
+    printImports(conf, requires, stream) { tpe => s"./${tpe.name}" }
 
     stream
   }

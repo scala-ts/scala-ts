@@ -36,12 +36,13 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
             p2.println("FOO")
 
             withPrinter(
-              printer("bar", ListSet(CustomTypeRef("Foo", List.empty)))) { p3 =>
-                p3.println("BAR")
-                p3.flush()
+              printer("bar", ListSet(CustomTypeRef("Foo", List.empty)))
+            ) { p3 =>
+              p3.println("BAR")
+              p3.flush()
 
-                spec(file)
-              }
+              spec(file)
+            }
           }
         }
       } finally {
@@ -79,8 +80,9 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
         withProp("scala-ts.printer.prelude-url", prelude.toURI.toString) {
           withTemp("scala.ts") { file =>
             file.getName must_=== "scala.ts" and {
-              fromFile(file).
-                mkString must_=== "// Prelude\n// ...\n\nFOO\n\nBAR\n"
+              fromFile(
+                file
+              ).mkString must_=== "// Prelude\n// ...\n\nFOO\n\nBAR\n"
             }
           }
         }

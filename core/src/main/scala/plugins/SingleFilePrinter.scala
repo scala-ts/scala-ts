@@ -18,14 +18,15 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
 
   private val flag = new java.util.concurrent.atomic.AtomicBoolean(false)
 
-  private lazy val filename = sys.props.getOrElse(
-    "scala-ts.single-filename", "scala.ts")
+  private lazy val filename =
+    sys.props.getOrElse("scala-ts.single-filename", "scala.ts")
 
   def apply(
-    conf: Settings,
-    kind: Declaration.Kind,
-    name: String,
-    requires: ListSet[TypeRef]): PrintStream = {
+      conf: Settings,
+      kind: Declaration.Kind,
+      name: String,
+      requires: ListSet[TypeRef]
+    ): PrintStream = {
 
     val f = new File(outDir, filename)
 
