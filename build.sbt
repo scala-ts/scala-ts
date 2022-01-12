@@ -24,8 +24,8 @@ val fullCrossScalaVersions = Def.setting {
   Seq(
     "2.11.12",
     scalaVersion.value,
-    "2.13.7",
-    "3.1.2-RC1-bin-20211222-c94b333-NIGHTLY"
+    "2.13.8",
+    "3.1.3"
   )
 }
 
@@ -51,8 +51,8 @@ lazy val core = project
       val base = (Compile / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n >= 12 => base / "scala-2.12+"
-        case _                       => base / "scala-2.12-"
+        case Some((2, n)) if n < 12 => base / "scala-2.12-"
+        case _                       => base / "scala-2.12+"
       }
     },
     libraryDependencies := libraryDependenciesWithScapegoat.value,
@@ -68,20 +68,19 @@ lazy val core = project
     libraryDependencies ++= {
       val specsVer = "4.10.6"
 
-      val deps = Seq(
+      Seq(
         "org.slf4j" % "slf4j-api" % "1.7.36",
         "ch.qos.logback" % "logback-classic" % "1.2.11") ++ Seq(
         "core", "junit").map(n =>
         ("org.specs2" %% s"specs2-${n}" % specsVer).
-          cross(CrossVersion.for3Use2_13))
-
-      deps.map(_ % Test)
+          cross(CrossVersion.for3Use2_13) % Test)
     },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
         _.data.getName startsWith "scala-ts-shaded"
       }
     },
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
@@ -158,6 +157,7 @@ lazy val idtlt = project
     crossScalaVersions := fullCrossScalaVersions.value,
     libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(

@@ -58,7 +58,7 @@ final class ScalaParser[Uni <: Universe](
       parsed: ListSet[TypeDef]
     ): Result[ListSet, TypeFullId] = types match {
     case ((scalaType, _) :: tail) if (!acceptsType(scalaType.typeSymbol)) => {
-      logger.debug(s"Type ${scalaType} is excluded")
+      logger.debug(s"Type is excluded: ${scalaType}")
 
       parse(tail, symtab, examined, acceptsType, parsed)
     }
@@ -79,6 +79,7 @@ final class ScalaParser[Uni <: Universe](
       ) {
         // Skip already examined type (or a type parameter)
         // val res = parseType(scalaType, examined)
+        logger.debug(s"Type is skipped (already examined of not fully defined): ${scalaType}")
 
         parse(
           tail,
@@ -233,8 +234,13 @@ final class ScalaParser[Uni <: Universe](
               case Some(enumerationObject) =>
                 parseEnumeration(enumerationObject.typeSignature, examined)
 
-              case _ =>
+              case _ => {
+                logger.debug(
+                  s"Fails to resolve enumeration object: ${scalaType}"
+                )
+
                 Result(examined, Option.empty[TypeDef])
+              }
             }
           } else {
             Result(examined + fullId(scalaType), Option.empty[TypeDef])
@@ -308,6 +314,7 @@ final class ScalaParser[Uni <: Universe](
 
   }
 
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   private def typeInvariant(
       k: String,
       owner: Tree,
@@ -682,6 +689,8 @@ final class ScalaParser[Uni <: Universe](
       }
 
     if (skipCompanion && classExists) {
+      logger.debug(s"Skip companion object: ${scalaType.typeSymbol.fullName}")
+
       Result(examined + fullId(scalaType), Option.empty[TypeDef])
     } else {
       lazy val declNames: ListSet[String] =
@@ -1214,7 +1223,8 @@ final class ScalaParser[Uni <: Universe](
         case Some(_) =>
           allSubclasses(path.tail, subclasses)
 
-        case _ => subclasses
+        case _ =>
+          subclasses
       }
 
     if (tpeSym.isSealed && tpeSym.isAbstract) {

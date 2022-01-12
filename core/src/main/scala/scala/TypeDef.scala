@@ -10,7 +10,7 @@ sealed trait TypeDef {
   def identifier: QualifiedIdentifier
 }
 
-case class CaseClass private (
+case class CaseClass(
     identifier: QualifiedIdentifier,
     fields: ListSet[TypeMember],
     values: ListSet[TypeInvariant],
@@ -22,7 +22,7 @@ case class ValueClass(
     field: TypeMember)
     extends TypeDef
 
-case class CaseObject private (
+case class CaseObject(
     identifier: QualifiedIdentifier,
     values: ListSet[TypeInvariant])
     extends TypeDef

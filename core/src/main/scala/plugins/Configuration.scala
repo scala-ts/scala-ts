@@ -155,13 +155,15 @@ object Configuration {
       case _ => Settings()
     }
 
+    @SuppressWarnings(Array("AsInstanceOf"))
     def customPrinter: Option[TypeScriptPrinter] =
       opt("printer")(config.getString(_)).map { pc =>
-        val printerClass = additionalClassLoader
+        val printerClass: Class[TypeScriptPrinter] = additionalClassLoader
           .fold[Class[_]](Class.forName(pc))(_.loadClass(pc))
-          .asSubclass(classOf[TypeScriptPrinter])
+          .asInstanceOf[Class[TypeScriptPrinter]]
 
-        def newInstance() = printerClass.getDeclaredConstructor().newInstance()
+        def newInstance() =
+          printerClass.getDeclaredConstructor().newInstance()
 
         printerOutputDirectory match {
           case Some(dir) =>

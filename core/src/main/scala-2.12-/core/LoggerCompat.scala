@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-private[core] trait LoggerCompat { _: Logger.type =>
+private[core] trait LoggerCompat { _self: Logger.type =>
 
   def apply(global: scala.tools.nsc.Global): Logger = new Logger {
     def debug(msg: => String): Unit = global.debuglog(msg)

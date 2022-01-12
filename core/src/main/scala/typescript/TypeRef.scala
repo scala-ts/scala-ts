@@ -27,11 +27,11 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
   }
 
   def requires: ListSet[TypeRef] =
-    ListSet.empty ++ typeArgs.flatMap { ta: TypeRef => ta.requires }
+    ListSet.empty ++ typeArgs.flatMap { (ta: TypeRef) => ta.requires }
 
 }
 
-sealed trait UnionMemberRef { _: TypeRef => }
+sealed trait UnionMemberRef { ref: TypeRef => }
 
 /**
  * Tagged type.

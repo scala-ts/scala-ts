@@ -4,9 +4,10 @@ import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript._
 
 final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
-  "TypeScript emitter" title
+  "TypeScript emitter".title
 
   import TranspilerResults._
+  import TranspilerCompat.{ ns, valueClassNs }
 
   "Emitter" should {
     "emit empty interface" in {
@@ -31,11 +32,11 @@ export function isEmpty(v: any): v is Empty {
 
     "emit interface for a class with one primitive member" in {
       emit(ListSet(interface1)) must beTypedEqualTo(
-        """export interface ScalaRuntimeFixturesTestClass1 {
+        s"""export interface ${ns}TestClass1 {
   name: string;
 }
 
-export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixturesTestClass1 {
+export function is${ns}TestClass1(v: any): v is ${ns}TestClass1 {
   return (
     ((typeof v['name']) === 'string')
   );
@@ -46,11 +47,11 @@ export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixtu
 
     "emit interface for a class with generic member" in {
       emit(ListSet(interface2)) must beTypedEqualTo(
-        """export interface ScalaRuntimeFixturesTestClass2<T> {
+        s"""export interface ${ns}TestClass2<T> {
   name: T;
 }
 
-export function isScalaRuntimeFixturesTestClass2(v: any): v is ScalaRuntimeFixturesTestClass2 {
+export function is${ns}TestClass2(v: any): v is ${ns}TestClass2 {
   return (
     ((typeof v['name']) === 'T')
   );
@@ -61,11 +62,11 @@ export function isScalaRuntimeFixturesTestClass2(v: any): v is ScalaRuntimeFixtu
 
     "emit interface for a class with generic array" in {
       emit(ListSet(interface3)) must beTypedEqualTo(
-        """export interface ScalaRuntimeFixturesTestClass3<T> {
+        s"""export interface ${ns}TestClass3<T> {
   name: ReadonlyArray<T>;
 }
 
-export function isScalaRuntimeFixturesTestClass3(v: any): v is ScalaRuntimeFixturesTestClass3 {
+export function is${ns}TestClass3(v: any): v is ${ns}TestClass3 {
   return (
     (Array.isArray(v['name']) && v['name'].every(elmt => (typeof elmt) === 'T'))
   );
@@ -75,40 +76,44 @@ export function isScalaRuntimeFixturesTestClass3(v: any): v is ScalaRuntimeFixtu
     }
 
     "emit interface for a generic case class with a optional member" in {
-      emit(ListSet(interface5)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass5<T> {
+      emit(ListSet(interface5)) must beTypedEqualTo(
+        s"""export interface ${ns}TestClass5<T> {
   name?: T;
   counters: { [key: string]: number };
 }
 
-export function isScalaRuntimeFixturesTestClass5(v: any): v is ScalaRuntimeFixturesTestClass5 {
+export function is${ns}TestClass5(v: any): v is ${ns}TestClass5 {
   return (
     (!v['name'] || ((typeof v['name']) === 'T')) &&
     ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number')))
   );
 }
-""")
+"""
+      )
     }
 
     "emit interface for a generic case class with disjunction" in {
       // TODO: Add example to documentation
-      emit(ListSet(interface7)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass7<T> {
-  name: (ScalaRuntimeFixturesTestClass1 | ScalaRuntimeFixturesTestClass1B);
+      emit(ListSet(interface7)) must beTypedEqualTo(
+        s"""export interface ${ns}TestClass7<T> {
+  name: (${ns}TestClass1 | ${ns}TestClass1B);
 }
 
-export function isScalaRuntimeFixturesTestClass7(v: any): v is ScalaRuntimeFixturesTestClass7 {
+export function is${ns}TestClass7(v: any): v is ${ns}TestClass7 {
   return (
-    ((v['name'] && nsScalaRuntimeFixturesTestClass1.isScalaRuntimeFixturesTestClass1(v['name'])) || (v['name'] && nsScalaRuntimeFixturesTestClass1B.isScalaRuntimeFixturesTestClass1B(v['name'])))
+    ((v['name'] && ns${ns}TestClass1.is${ns}TestClass1(v['name'])) || (v['name'] && ns${ns}TestClass1B.is${ns}TestClass1B(v['name'])))
   );
 }
-""")
+"""
+      )
     }
 
     "emit tagged type" >> {
       "as type alias" in {
         emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
-          """export type ScalaRuntimeFixturesAnyValChild = string;
+          s"""export type ${valueClassNs}AnyValChild = string;
 
-export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
+export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyValChild {
   return (typeof v) === 'string';
 }
 """
@@ -120,13 +125,13 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
           ListSet(taggedDeclaration1),
           declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
         ) must beTypedEqualTo(
-          """export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
+          s"""export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixturesAnyValChild {
-  return value as ScalaRuntimeFixturesAnyValChild
+export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
+  return value as ${valueClassNs}AnyValChild
 }
 
-export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
+export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyValChild {
   return (typeof v) === 'string';
 }
 """
@@ -134,49 +139,53 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
       }
 
       "as member" in {
-        emit(ListSet(interface8)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass8 {
-  name: ScalaRuntimeFixturesAnyValChild;
-  aliases: ReadonlyArray<ScalaRuntimeFixturesAnyValChild>;
+        emit(ListSet(interface8)) must beTypedEqualTo(
+          s"""export interface ${valueClassNs}TestClass8 {
+  name: ${valueClassNs}AnyValChild;
+  aliases: ReadonlyArray<${valueClassNs}AnyValChild>;
 }
 
-export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
+export function is${valueClassNs}TestClass8(v: any): v is ${valueClassNs}TestClass8 {
   return (
-    (v['name'] && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(v['name'])) &&
-    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(elmt)))
+    (v['name'] && ns${valueClassNs}AnyValChild.is${valueClassNs}AnyValChild(v['name'])) &&
+    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && ns${valueClassNs}AnyValChild.is${valueClassNs}AnyValChild(elmt)))
   );
 }
-""")
+"""
+        )
       }
     }
 
     "for singleton" >> {
       "emit class #1" in {
-        emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {
-  private static instance: ScalaRuntimeFixturesTestObject1;
+        emit(ListSet(singleton1)) must beTypedEqualTo(
+          s"""export class ${ns}TestObject1 {
+  private static instance: ${ns}TestObject1;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesTestObject1.instance) {
-      ScalaRuntimeFixturesTestObject1.instance = new ScalaRuntimeFixturesTestObject1();
+    if (!${ns}TestObject1.instance) {
+      ${ns}TestObject1.instance = new ${ns}TestObject1();
     }
 
-    return ScalaRuntimeFixturesTestObject1.instance;
+    return ${ns}TestObject1.instance;
   }
 }
 
-export const ScalaRuntimeFixturesTestObject1Inhabitant: ScalaRuntimeFixturesTestObject1 = ScalaRuntimeFixturesTestObject1.getInstance();
+export const ${ns}TestObject1Inhabitant: ${ns}TestObject1 = ${ns}TestObject1.getInstance();
 
-export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixturesTestObject1 {
-  return (v instanceof ScalaRuntimeFixturesTestObject1) && (v === ScalaRuntimeFixturesTestObject1Inhabitant);
+export function is${ns}TestObject1(v: any): v is ${ns}TestObject1 {
+  return (v instanceof ${ns}TestObject1) && (v === ${ns}TestObject1Inhabitant);
 }
-""")
+"""
+        )
       }
 
       "emit class #2" >> {
         "with value class as constant" in {
           // SCALATS1: No implements SupI
-          emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
+          emit(ListSet(singleton2)) must_=== s"""export class ${ns}TestObject2 implements SupI {
   public name: string = "Foo";
 
   public code: number = 1;
@@ -199,23 +208,23 @@ export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixt
 
   public mergedSet: ReadonlySet<number> = new Set([ ...this.set, ...new Set([ 3 ]) ]);
 
-  private static instance: ScalaRuntimeFixturesTestObject2;
+  private static instance: ${ns}TestObject2;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesTestObject2.instance) {
-      ScalaRuntimeFixturesTestObject2.instance = new ScalaRuntimeFixturesTestObject2();
+    if (!${ns}TestObject2.instance) {
+      ${ns}TestObject2.instance = new ${ns}TestObject2();
     }
 
-    return ScalaRuntimeFixturesTestObject2.instance;
+    return ${ns}TestObject2.instance;
   }
 }
 
-export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTestObject2 = ScalaRuntimeFixturesTestObject2.getInstance();
+export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = ${ns}TestObject2.getInstance();
 
-export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixturesTestObject2 {
-  return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2Inhabitant);
+export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
+  return (v instanceof ${ns}TestObject2) && (v === ${ns}TestObject2Inhabitant);
 }
 """
         }
@@ -224,28 +233,28 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
           emit(
             ListSet(singleton3),
             declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
-          ) must_=== """export class ScalaRuntimeFixturesTestObject3 {
-  public name: ScalaRuntimeFixturesAnyValChild = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("Foo");
+          ) must_=== s"""export class ${valueClassNs}TestObject3 {
+  public name: ${valueClassNs}AnyValChild = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
 
-  public readonly mapping: { [key: ScalaRuntimeFixturesAnyValChild]: string } = (() => { const __buf837556430: { [key: ScalaRuntimeFixturesAnyValChild]: string } = {}; __buf837556430[nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
+  public readonly mapping: { [key: ${valueClassNs}AnyValChild]: string } = (() => { const __buf837556430: { [key: ${valueClassNs}AnyValChild]: string } = {}; __buf837556430[ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
 
-  private static instance: ScalaRuntimeFixturesTestObject3;
+  private static instance: ${valueClassNs}TestObject3;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesTestObject3.instance) {
-      ScalaRuntimeFixturesTestObject3.instance = new ScalaRuntimeFixturesTestObject3();
+    if (!${valueClassNs}TestObject3.instance) {
+      ${valueClassNs}TestObject3.instance = new ${valueClassNs}TestObject3();
     }
 
-    return ScalaRuntimeFixturesTestObject3.instance;
+    return ${valueClassNs}TestObject3.instance;
   }
 }
 
-export const ScalaRuntimeFixturesTestObject3Inhabitant: ScalaRuntimeFixturesTestObject3 = ScalaRuntimeFixturesTestObject3.getInstance();
+export const ${valueClassNs}TestObject3Inhabitant: ${valueClassNs}TestObject3 = ${valueClassNs}TestObject3.getInstance();
 
-export function isScalaRuntimeFixturesTestObject3(v: any): v is ScalaRuntimeFixturesTestObject3 {
-  return (v instanceof ScalaRuntimeFixturesTestObject3) && (v === ScalaRuntimeFixturesTestObject3Inhabitant);
+export function is${valueClassNs}TestObject3(v: any): v is ${valueClassNs}TestObject3 {
+  return (v instanceof ${valueClassNs}TestObject3) && (v === ${valueClassNs}TestObject3Inhabitant);
 }
 """
 
@@ -350,26 +359,26 @@ export function isWords(v: any): v is Words {
       "emit class #3" in {
         emit(
           ListSet(unionMember2Singleton)
-        ) must_=== """export class ScalaRuntimeFixturesFamilyMember2 implements ScalaRuntimeFixturesFamily {
+        ) must_=== s"""export class ${ns}FamilyMember2 implements ${ns}Family {
   public foo: string = "bar";
 
-  private static instance: ScalaRuntimeFixturesFamilyMember2;
+  private static instance: ${ns}FamilyMember2;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesFamilyMember2.instance) {
-      ScalaRuntimeFixturesFamilyMember2.instance = new ScalaRuntimeFixturesFamilyMember2();
+    if (!${ns}FamilyMember2.instance) {
+      ${ns}FamilyMember2.instance = new ${ns}FamilyMember2();
     }
 
-    return ScalaRuntimeFixturesFamilyMember2.instance;
+    return ${ns}FamilyMember2.instance;
   }
 }
 
-export const ScalaRuntimeFixturesFamilyMember2Inhabitant: ScalaRuntimeFixturesFamilyMember2 = ScalaRuntimeFixturesFamilyMember2.getInstance();
+export const ${ns}FamilyMember2Inhabitant: ${ns}FamilyMember2 = ${ns}FamilyMember2.getInstance();
 
-export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFixturesFamilyMember2 {
-  return (v instanceof ScalaRuntimeFixturesFamilyMember2) && (v === ScalaRuntimeFixturesFamilyMember2Inhabitant);
+export function is${ns}FamilyMember2(v: any): v is ${ns}FamilyMember2 {
+  return (v instanceof ${ns}FamilyMember2) && (v === ${ns}FamilyMember2Inhabitant);
 }
 """
       }
@@ -392,7 +401,7 @@ export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFi
           emit(
             ListSet(obj),
             declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
-          ) must_=== """export const FooInhabitant = 'Foo';
+          ) must_=== s"""export const FooInhabitant = 'Foo';
 
 export type Foo = typeof FooInhabitant;
 
@@ -449,11 +458,11 @@ export function isFoo(v: any): v is Foo {
 
     "emit union" >> {
       "as interface" in {
-        emit(ListSet(union1)) must_=== """export interface ScalaRuntimeFixturesFamily {
+        emit(ListSet(union1)) must_=== s"""export interface ${ns}Family {
   foo: string;
 }
 
-export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
+export function is${ns}Family(v: any): v is ${ns}Family {
   return (
     ((typeof v['foo']) === 'string')
   );
@@ -465,18 +474,18 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
         emit(
           ListSet(union1, unionIface),
           declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion
-        ) must_=== """export type ScalaRuntimeFixturesFamily = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
+        ) must_=== s"""export type ${ns}Family = ${ns}FamilyMember1 | ${ns}FamilyMember2 | ${ns}FamilyMember3;
 
-export const ScalaRuntimeFixturesFamily = {
-  "bar": nsScalaRuntimeFixturesFamilyMember2.ScalaRuntimeFixturesFamilyMember2Inhabitant, 
-  "lorem": nsScalaRuntimeFixturesFamilyMember3.ScalaRuntimeFixturesFamilyMember3Inhabitant
+export const ${ns}Family = {
+  "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
 } as const;
 
-export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
+export function is${ns}Family(v: any): v is ${ns}Family {
   return (
-    nsScalaRuntimeFixturesFamilyMember1.isScalaRuntimeFixturesFamilyMember1(v) ||
-    nsScalaRuntimeFixturesFamilyMember2.isScalaRuntimeFixturesFamilyMember2(v) ||
-    nsScalaRuntimeFixturesFamilyMember3.isScalaRuntimeFixturesFamilyMember3(v)
+    ns${ns}FamilyMember1.is${ns}FamilyMember1(v) ||
+    ns${ns}FamilyMember2.is${ns}FamilyMember2(v) ||
+    ns${ns}FamilyMember3.is${ns}FamilyMember3(v)
   );
 }
 """
@@ -486,21 +495,21 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
     "emit enumeration" >> {
       "as union" in {
         emit(ListSet(enum1)) must beTypedEqualTo(
-          """const ScalaRuntimeFixturesTestEnumerationEntries = {
+          s"""const ${ns}TestEnumerationEntries = {
   A: 'A',
   B: 'B',
   C: 'C',
 };
 
-export type ScalaRuntimeFixturesTestEnumeration = keyof (typeof ScalaRuntimeFixturesTestEnumerationEntries);
+export type ${ns}TestEnumeration = keyof (typeof ${ns}TestEnumerationEntries);
 
-export const ScalaRuntimeFixturesTestEnumeration = {
-  ...ScalaRuntimeFixturesTestEnumerationEntries,
-  values: Object.keys(ScalaRuntimeFixturesTestEnumerationEntries)
+export const ${ns}TestEnumeration = {
+  ...${ns}TestEnumerationEntries,
+  values: Object.keys(${ns}TestEnumerationEntries)
 } as const;
 
-export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntimeFixturesTestEnumeration {
-  return ScalaRuntimeFixturesTestEnumeration.values.includes(v);
+export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
+  return ${ns}TestEnumeration.values.includes(v);
 }
 """
         )
@@ -510,19 +519,19 @@ export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntime
         emit(
           ListSet(enum1),
           declMapper = TypeScriptDeclarationMapper.enumerationAsEnum
-        ) must beTypedEqualTo("""export enum ScalaRuntimeFixturesTestEnumeration {
+        ) must beTypedEqualTo(s"""export enum ${ns}TestEnumeration {
   A = 'A',
   B = 'B',
   C = 'C'
 }
 
-export const ScalaRuntimeFixturesTestEnumerationValues: Array<ScalaRuntimeFixturesTestEnumeration> = [
-  ScalaRuntimeFixturesTestEnumeration.A,
-  ScalaRuntimeFixturesTestEnumeration.B,
-  ScalaRuntimeFixturesTestEnumeration.C
+export const ${ns}TestEnumerationValues: Array<${ns}TestEnumeration> = [
+  ${ns}TestEnumeration.A,
+  ${ns}TestEnumeration.B,
+  ${ns}TestEnumeration.C
 ];
 
-export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntimeFixturesTestEnumeration {
+export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
   return (
     v == 'A' ||
     v == 'B' ||
@@ -533,6 +542,8 @@ export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntime
       }
     }
   }
+
+  // ---
 
   def emit(
       decls: ListSet[Declaration],

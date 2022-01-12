@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import scala.tools.nsc.plugins.Plugin
 
-private[plugins] trait PluginCompat { _: Plugin =>
+private[plugins] trait PluginCompat { _self: Plugin =>
 
   protected def init(
       options: List[String],

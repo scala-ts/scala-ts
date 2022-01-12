@@ -8,7 +8,7 @@ import io.github.scalats.core.{ Logger, Settings, TypeScriptFieldMapper }
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class ConfigurationSpec extends org.specs2.mutable.Specification {
-  "Plugin configuration" title
+  "Plugin configuration".title
 
   lazy val logger = Logger(org.slf4j.LoggerFactory getLogger getClass)
 
