@@ -4,12 +4,11 @@ name := "sbt-plugin-test-enumeratum"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.15", "2.13.7")
+crossScalaVersions := Seq("2.12.15", "2.13.8")
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
-libraryDependencies ++= Seq(
-  "com.beachape" %% "enumeratum" % "1.6.1")
+libraryDependencies ++= Seq("com.beachape" %% "enumeratum" % "1.6.1")
 
 scalatsUnionWithLiteral
 
