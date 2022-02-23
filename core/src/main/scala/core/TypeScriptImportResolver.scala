@@ -44,7 +44,9 @@ object TypeScriptImportResolver {
             if (superInterface.exists(_.union)) =>
           Some(fields.flatMap(_.typeRef.requires).filterNot(_.name == name))
 
-        case SingletonDeclaration(_, _, _) =>
+        case SingletonDeclaration(_, _, Some(_)) =>
+          // Only if singleton has a superinterface,
+          // so it's a union member
           Some(ListSet.empty[TypeRef])
 
         case UnionDeclaration(_, _, possibilities, _) =>

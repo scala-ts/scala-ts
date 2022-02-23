@@ -242,7 +242,11 @@ object TranspilerResults {
 
   val singleton2 = SingletonDeclaration(
     "ScalaRuntimeFixturesTestObject2",
-    ListSet(Value("name", StringRef, "\"Foo\""), Value("code", NumberRef, "1")),
+    ListSet(
+      Value("name", StringRef, "\"Foo\""),
+      Value("const", StringRef, "\"value\""),
+      Value("code", NumberRef, "1")
+    ),
     superInterface = Some(
       InterfaceDeclaration(
         "SupI",

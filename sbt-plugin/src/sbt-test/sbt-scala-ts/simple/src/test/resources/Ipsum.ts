@@ -16,6 +16,8 @@ export class Ipsum implements Category {
   }
 }
 
+export const IpsumInhabitant: Ipsum = Ipsum.getInstance();
+
 export function isIpsum(v: any): v is Ipsum {
-  return (v instanceof Ipsum) && (v === Ipsum.getInstance());
+  return (v instanceof Ipsum) && (v === IpsumInhabitant);
 }

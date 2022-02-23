@@ -10,3 +10,7 @@ case class Bar(
   updated: java.time.LocalDate,
   created: java.time.LocalDate
 )
+
+object Constants {
+  val DefaultName = Name("default")
+}

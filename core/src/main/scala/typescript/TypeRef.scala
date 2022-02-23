@@ -44,7 +44,7 @@ case class TaggedRef(
     extends TypeRef {
   override def requires: ListSet[TypeRef] = tagged.requires + this
 
-  override lazy val toString = s"${name}~${tagged.toString}"
+  override lazy val toString = s"${name} /* ${tagged.toString} */"
 }
 
 /**

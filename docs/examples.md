@@ -281,3 +281,57 @@ export type Alaska = typeof AlaskaInhabitant;
 ```
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/enumeratum/)
+
+## Example 9
+
+Stable literal members (`val` or nullary `def`) in single objects as type invariants.
+
+```scala
+package scalats.examples
+
+final class Grade(val value: Int) extends AnyVal
+
+object Constants {
+  def code = 1
+  val name = "foo"
+  val LowerGrade = new Grade(0)
+}
+```
+
+*Generated TypeScript:* `code`, `name` and `LowerGrade` are generated
+
+```typescript
+import { Grade, isGrade } from './Grade';
+
+export class Constants {
+  public LowerGrade: Grade /* number */ = 0;
+  public name: string = "foo";
+  public code: number = 1;
+
+  private static instance: Constants;
+
+  private constructor() {}
+
+  public static getInstance() {
+    if (!Constants.instance) {
+      Constants.instance = new Constants();
+    }
+
+    return Constants.instance;
+  }
+}
+
+export function isConstants(v: any): v is Constants {
+  return (v instanceof Constants) && (v === Constants.getInstance());
+}
+```
+
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/simple/)
+
+Note that if `valueClassAsTagged` (see [Example 4a](#example-4a)) is applied, then `LowerGrade` is generated as below.
+
+```typescript
+public LowerGrade: Grade /* number */ = Grade(0);
+```
+
+> See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/)
