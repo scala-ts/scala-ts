@@ -27,3 +27,9 @@ case class NotSupportedClassAsTypeArgs[T](
 
 case class NotSupportedAsNotSupportedField(
   notSupportedClassAsTypeArgs: NotSupportedClassAsTypeArgs[Float])
+
+object Constants {
+  def code = 1
+  val UnknownName = new Name("unknown")
+  val defaultName = new Name("default")
+}

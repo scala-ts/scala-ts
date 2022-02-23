@@ -1,5 +1,6 @@
 > clean
 $ absent target/_custom/scalatsName.ts
+$ absent target/_custom/scalatsConstants.ts
 $ absent target/_custom/scalatsBar.ts
 $ absent target/_custom/scalatsTransport.ts
 $ absent target/_custom/scalatsBusLine.ts
@@ -13,6 +14,9 @@ $ absent target/_custom/WeekDay.ts
 
 $ exists target/_custom/scalatsName.ts
 $ must-mirror target/_custom/scalatsName.ts src/test/resources/Name.ts
+
+$ exists target/_custom/scalatsConstants.ts
+$ must-mirror target/_custom/scalatsConstants.ts src/test/resources/Constants.ts
 
 $ exists target/_custom/scalatsBar.ts
 $ must-mirror target/_custom/scalatsBar.ts src/test/resources/Bar.ts

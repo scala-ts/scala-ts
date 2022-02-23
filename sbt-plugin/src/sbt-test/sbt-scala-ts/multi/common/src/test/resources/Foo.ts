@@ -16,6 +16,8 @@ export class Foo implements Feature {
   }
 }
 
+export const FooInhabitant: Foo = Foo.getInstance();
+
 export function isFoo(v: any): v is Foo {
-  return (v instanceof Foo) && (v === Foo.getInstance());
+  return (v instanceof Foo) && (v === FooInhabitant);
 }

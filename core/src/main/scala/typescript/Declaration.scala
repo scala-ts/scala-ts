@@ -26,6 +26,8 @@ object Declaration {
 
   case object Tagged extends Kind
 
+  case object Value extends Kind
+
   object Kind {
 
     def unapply(repr: String): Option[Kind] = repr match {
@@ -35,6 +37,7 @@ object Declaration {
       case "enum"      => Some(Enum)
       case "union"     => Some(Union)
       case "tagged"    => Some(Tagged)
+      case "value"     => Some(Value)
       case _           => None
     }
   }
@@ -87,6 +90,10 @@ case class Value(
     name: String,
     typeRef: TypeRef,
     rawValue: String)
+    extends Declaration {
+
+  override def reference: TypeRef = typeRef
+}
 
 /**
  * A singleton declaration.

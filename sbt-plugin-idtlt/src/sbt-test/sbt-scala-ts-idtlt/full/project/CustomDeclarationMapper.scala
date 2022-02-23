@@ -152,6 +152,9 @@ export const idtltDiscriminated${tpeName} = idtlt${tpeName};
 
 $deriving""")
       }
+
+      case decl: Value =>
+        parent(decl, out)
     }
 
     Some(emit)
