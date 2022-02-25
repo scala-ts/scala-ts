@@ -8,7 +8,8 @@ crossScalaVersions := Seq("2.12.15", "2.13.7")
 
 enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 
-libraryDependencies ++= Seq("com.beachape" %% "enumeratum" % "1.6.1")
+libraryDependencies ++= Seq(
+  "com.beachape" %% "enumeratum" % "1.6.1")
 
 scalatsUnionWithLiteral
 

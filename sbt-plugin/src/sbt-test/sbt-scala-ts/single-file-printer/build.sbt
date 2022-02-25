@@ -9,8 +9,7 @@ enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
 scalatsPrinter := scalatsSingleFilePrinter("generated.ts")
 
 scalatsPrinterPrelude := scalatsPrinterUrlPrelude(
-  (baseDirectory.value / "project" / "prelude.ts").toURI.toURL
-)
+  (baseDirectory.value / "project" / "prelude.ts").toURI.toURL)
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO

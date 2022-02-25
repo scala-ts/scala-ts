@@ -12,15 +12,13 @@ import io.github.scalats.core.{
 import io.github.scalats.typescript._
 
 final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
-
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
-      settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
-      declaration: Declaration,
-      out: PrintStream
-    ): Option[Unit] = {
+    parent: TypeScriptDeclarationMapper.Resolved,
+    settings: Settings,
+    typeMapper: TypeScriptTypeMapper.Resolved,
+    fieldMapper: TypeScriptFieldMapper,
+    declaration: Declaration,
+    out: PrintStream): Option[Unit] = {
     import settings.{
       typescriptLineSeparator => lineSep,
       typescriptIndent => indent
@@ -162,17 +160,15 @@ $deriving""")
   // ---
 
   private def emitField(
-      settings: Settings,
-      fieldMapper: TypeScriptFieldMapper,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      o: PrintStream,
-      name: String,
-      member: Member
-    ): Unit = {
+    settings: Settings,
+    fieldMapper: TypeScriptFieldMapper,
+    typeMapper: TypeScriptTypeMapper.Resolved,
+    o: PrintStream,
+    name: String,
+    member: Member
+  ): Unit = {
     val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
-    o.println(
-      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},"
-    )
+    o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},")
   }
 }
