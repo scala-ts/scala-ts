@@ -427,15 +427,18 @@ object ScalaRuntimeFixtures {
   object TestObject2 {
     val name = "Foo"
     def code = 1
+    val const = new String("value")
   }
 
   val TestObject2Type = typeOf[TestObject2.type]
 
+  // TODO: Seq,List,Set of literals
   lazy val TestObject2Tree: Tree = typecheck(q"""
     class Foo(val name: String)
 
     object TestObject2 extends Foo("Foo") {
       def code = 1
+      val const = new String("value")
     }""").children.drop(1).head
 
   sealed trait Family {
@@ -702,6 +705,7 @@ object ScalaParserResults {
     QualifiedIdentifier("TestObject2", List("ScalaRuntimeFixtures")),
     ListSet(
       TypeInvariant("name", StringRef, "\"Foo\""),
+      TypeInvariant("const", StringRef, "\"value\""),
       TypeInvariant("code", IntRef, "1")
     )
   )

@@ -38,6 +38,11 @@ final class TypeScriptEmitter(
 
       case decl: TaggedDeclaration =>
         emitTaggedDeclaration(decl)
+
+      case decl: Value =>
+        withOut(Declaration.Value, decl.name, requires(decl)) { o =>
+          emitValue(decl, o)
+        }
     }
 
   // ---
@@ -63,9 +68,9 @@ final class TypeScriptEmitter(
     )
 
   private val requires: TypeScriptImportResolver.Resolved = { decl =>
-    importResolver(decl).getOrElse(
+    importResolver(decl).getOrElse({
       TypeScriptImportResolver.defaultResolver(decl)
-    )
+    })
   }
 
   private val emitUnionDeclaration: UnionDeclaration => Unit = {
@@ -164,6 +169,21 @@ ${indent}return ${simpleCheck}${lineSeparator}
     )
   }
 
+  private val emitValue: (Value, PrintStream) => Unit = {
+    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+      decl match {
+        case Value(nme, tpe, v) =>
+          o.println(s"${indent}public $nme: $tpe = $v${lineSeparator}")
+
+        case _ =>
+      }
+    }
+
+    { (decl, out) =>
+      declMapper(default, decl, out).getOrElse(default(decl, out))
+    }
+  }
+
   private val emitSingletonDeclaration: SingletonDeclaration => Unit = {
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
       decl match {
@@ -180,10 +200,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
           o.println(" {")
 
           if (values.nonEmpty) {
-            list(values).foreach {
-              case Value(nme, tpe, v) =>
-                o.println(s"${indent}public $nme: $tpe = $v${lineSeparator}")
-            }
+            list(values).foreach(emitValue(_: Value, o))
 
             o.println()
           }
@@ -204,8 +221,10 @@ ${indent}return ${simpleCheck}${lineSeparator}
 
           o.println(s"""}
 
+export const ${tpeName}Inhabitant: ${tpeName} = ${tpeName}.getInstance()${lineSeparator}
+
 export function is${tpeName}(v: any): v is ${tpeName} {
-${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}.getInstance())${lineSeparator}
+${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineSeparator}
 }""")
         }
 

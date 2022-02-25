@@ -208,7 +208,9 @@ ${indent} return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
       }
 
-      case SingletonDeclaration(_, values, superInterface) => {
+      case SingletonDeclaration(_, values, Some(superInterface)) => {
+        // Singleton as inhabitant of the superInterface
+
         out.print(s"""// Validator for SingletonDeclaration ${tpeName}
 export const idtlt${tpeName} = """)
 
@@ -233,16 +235,14 @@ export const idtlt${tpeName} = """)
 
         }
 
-        superInterface.foreach { si =>
-          out.print(s"""
-// Super-type declaration ${si.name} is ignored""")
-        }
+        out.print(s"""
+// Super-type declaration ${superInterface.name} is ignored""")
 
         val constValue: String = values.headOption match {
           case Some(Value(_, _, raw)) => {
             if (values.size > 1) {
               values.map { case Value(n, _, r) => s"${n}: $r" }
-                .mkString("{ ", ", ", " }")
+                .mkString(s"{\n${indent}", s",\n${indent}", "\n}")
             } else {
               raw
             }
@@ -262,6 +262,32 @@ export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
       }
+
+      case decl: SingletonDeclaration =>
+        parent(decl, out)
+
+      case Value(nme, tagged @ TaggedRef(_, _), v) => {
+        val typeNaming = settings.typeNaming(settings, _: TypeRef)
+        val n = typeNaming(tagged)
+
+        val tpeName = s"ns${n}.${n}"
+
+        out.println(
+          s"${indent}public $nme: ${tpeName} = ${tpeName}($v)${lineSep}"
+        )
+      }
+
+      case decl: Value =>
+        TypeScriptDeclarationMapper
+          .valueClassAsTagged(
+            parent,
+            settings,
+            typeMapper,
+            fieldMapper,
+            decl,
+            out
+          )
+          .getOrElse({})
     }
 
     Some(emit())

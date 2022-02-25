@@ -64,6 +64,7 @@ object TypeScriptDeclarationMapper {
     SingletonDeclaration,
     TaggedDeclaration,
     TypeRef,
+    TaggedRef,
     UnionDeclaration,
     Value
   }
@@ -100,48 +101,62 @@ object TypeScriptDeclarationMapper {
         fieldMapper: TypeScriptFieldMapper,
         declaration: Declaration,
         out: PrintStream
-      ): Option[Unit] = declaration match {
-      case decl @ TaggedDeclaration(name, field) =>
-        Some {
+      ): Option[Unit] = {
+      import settings.{
+        typescriptIndent => indent,
+        typescriptLineSeparator => lineSep
+      }
+
+      declaration match {
+        case Value(nme, tagged @ TaggedRef(_, _), v) => {
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
-          import settings.{
-            typescriptIndent => indent,
-            typescriptLineSeparator => lineSep
+          val tpeName = typeNaming(tagged)
+
+          Some {
+            out.println(
+              s"${indent}public $nme: ${tpeName} = ${tpeName}($v)${lineSep}"
+            )
           }
+        }
 
-          val tpeName = typeNaming(decl.reference)
+        case decl @ TaggedDeclaration(name, field) =>
+          Some {
+            val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
-          val valueType = typeMapper(
-            settings,
-            name,
-            TypeScriptField(field.name),
-            field.typeRef
-          )
+            val tpeName = typeNaming(decl.reference)
 
-          out.print(s"export type ${tpeName} = ${valueType}")
-          out.print(s" & { __tag: '${tpeName}' }${lineSep}")
+            val valueType = typeMapper(
+              settings,
+              name,
+              TypeScriptField(field.name),
+              field.typeRef
+            )
 
-          out.println(s"""
+            out.print(s"export type ${tpeName} = ${valueType}")
+            out.print(s" & { __tag: '${tpeName}' }${lineSep}")
+
+            out.println(s"""
 
 export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
   return ${field.name} as ${tpeName}
 }""")
 
-          // Type guard
-          val simpleCheck = TypeScriptEmitter.valueCheck(
-            "v",
-            field.typeRef,
-            t => s"is${typeNaming(t)}"
-          )
+            // Type guard
+            val simpleCheck = TypeScriptEmitter.valueCheck(
+              "v",
+              field.typeRef,
+              t => s"is${typeNaming(t)}"
+            )
 
-          out.println(s"""
+            out.println(s"""
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return ${simpleCheck}${lineSep}
 }""")
-        }
+          }
 
-      case _ =>
-        None
+        case _ =>
+          None
+      }
     }
   }
 

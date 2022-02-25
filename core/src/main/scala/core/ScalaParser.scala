@@ -301,6 +301,26 @@ final class ScalaParser[Uni <: Universe](
                 ) :: vs
               )
 
+            case universe.ApplyTag(a)
+                if (isAnyValChild(a.tpe) || a.tpe <:< typeOf[
+                  String
+                ] /* for test */ ) =>
+              a.args match {
+                case LiteralTag(v) :: Nil =>
+                  typeInvariants(
+                    declNames,
+                    tr.children ++: forest.tail,
+                    TypeInvariant(
+                      name = k,
+                      typeRef = scalaTypeRef(a.tpe.dealias, Set.empty),
+                      value = v.toString
+                    ) :: vs
+                  )
+
+                case _ =>
+                  typeInvariants(declNames, tr.children ++: forest.tail, vs)
+              }
+
             case _ =>
               typeInvariants(declNames, tr.children ++: forest.tail, vs)
           }
