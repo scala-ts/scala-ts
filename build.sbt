@@ -124,7 +124,7 @@ lazy val idtlt = project
   .in(file("idtlt"))
   .settings(
     name := "scala-ts-idtlt",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
+    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.8"),
     Compile / unmanagedJars += (shaded / assembly).value,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
@@ -145,7 +145,7 @@ lazy val idtlt = project
       }
     }
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val `sbt-plugin-idtlt` = project
   .in(file("sbt-plugin-idtlt"))

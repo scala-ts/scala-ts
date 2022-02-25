@@ -3,9 +3,19 @@
 import { Grade, isGrade } from './Grade';
 
 export class Constants {
-  public LowerGrade: Grade /* number */ = 0;
-  public name: string = "foo";
   public code: number = 1;
+
+  public name: string = "foo";
+
+  public LowerGrade: Grade = 0;
+
+  public list: ReadonlyArray<Grade> = [ this.LowerGrade ];
+
+  public set: ReadonlySet<string> = new Set([ "lorem", "ipsum" ]);
+
+  public readonly dict: { [key: string]: string } = { 'A': "value #1", 'B': this.name };
+
+  public listOfDict: ReadonlyArray<{ [key: string]: string }> = [ { 'title': "Foo", 'description': "..." }, { 'title': "Bar", 'description': "..." } ];
 
   private static instance: Constants;
 

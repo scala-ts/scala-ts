@@ -2,11 +2,11 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.typescript._
 
-// TODO: (low priority) Use a template engine (velocity?)
+import Internals.ListSet
+
+// TODO: Gather the emit as a default DeclarationMapper.Resolver
 /**
  * @param out the function to select a `PrintStream` from type name
  */
@@ -17,13 +17,11 @@ final class TypeScriptEmitter(
     declarationMapper: TypeScriptEmitter.DeclarationMapper,
     typeMapper: TypeScriptEmitter.TypeMapper) {
 
-  import Internals.list
-
   import settings.{ fieldMapper, typescriptIndent => indent }
   import settings.typescriptLineSeparator.{ value => lineSeparator }
 
   def emit(declarations: ListSet[Declaration]): Unit =
-    list(declarations).foreach {
+    declarations.foreach {
       case decl: InterfaceDeclaration =>
         emitInterfaceDeclaration(decl)
 
@@ -39,9 +37,14 @@ final class TypeScriptEmitter(
       case decl: TaggedDeclaration =>
         emitTaggedDeclaration(decl)
 
-      case decl: Value =>
+      case decl: ValueMemberDeclaration =>
         withOut(Declaration.Value, decl.name, requires(decl)) { o =>
-          emitValue(decl, o)
+          emitValueMember(decl, o)
+        }
+
+      case decl: ValueBodyDeclaration =>
+        withOut(Declaration.Value, decl.name, requires(decl)) { o =>
+          o.print(s"/* Unexpected value body: ${decl.value.name} */")
         }
     }
 
@@ -89,9 +92,9 @@ final class TypeScriptEmitter(
           o.println(" {")
 
           // Abstract fields - common to all the subtypes
-          val fieldList = list(fields)
+          val fieldList = fields.toList
 
-          fieldList.foreach(emitField(o, name, _))
+          fieldList.foreach(emitField(o, decl, _))
 
           // Type guard
           o.println(s"""}
@@ -105,7 +108,14 @@ ${indent}return (""")
 }""")
         }
 
+        case decl: ValueMemberDeclaration =>
+          emitValueMember(decl, o)
+
+        case decl: ValueBodyDeclaration =>
+          emitValueBody(decl, o)
+
         case _ =>
+          o.print(s"/* Unsupported on Union: $decl */")
       }
     }
 
@@ -119,12 +129,12 @@ ${indent}return (""")
   private def emitTaggedDeclaration: TaggedDeclaration => Unit = {
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
       decl match {
-        case TaggedDeclaration(name, field) => {
+        case TaggedDeclaration(_, field) => {
           val tpeName = typeNaming(decl.reference)
 
           val valueType = resolvedTypeMapper(
             settings,
-            name,
+            decl,
             TypeScriptField(field.name),
             field.typeRef
           )
@@ -146,6 +156,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
         }
 
         case _ =>
+          o.print(s"/* Unsupported on Tagged: $decl */")
       }
     }
 
@@ -156,8 +167,13 @@ ${indent}return ${simpleCheck}${lineSeparator}
     }
   }
 
-  private def emitField(o: PrintStream, name: String, member: Member): Unit = {
-    val tsField = fieldMapper(settings, name, member.name, member.typeRef)
+  private def emitField(
+      o: PrintStream,
+      ownerType: Declaration,
+      member: Member
+    ): Unit = {
+    val tsField =
+      fieldMapper(settings, ownerType.name, member.name, member.typeRef)
 
     val nameSuffix: String = {
       if (tsField.flags contains TypeScriptField.omitable) "?"
@@ -165,17 +181,214 @@ ${indent}return ${simpleCheck}${lineSeparator}
     }
 
     o.println(
-      s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(settings, name, tsField, member.typeRef)}${lineSeparator}"
+      s"${indent}${tsField.name}${nameSuffix}: ${resolvedTypeMapper(settings, ownerType, tsField, member.typeRef)}${lineSeparator}"
     )
   }
 
-  private val emitValue: (Value, PrintStream) => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
-      decl match {
-        case Value(nme, tpe, v) =>
-          o.println(s"${indent}public $nme: $tpe = $v${lineSeparator}")
+  private val emitValueBody: (ValueBodyDeclaration, PrintStream) => Unit = {
+    val default: TypeScriptDeclarationMapper.Resolved = {
+      val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
+        resolvedTypeMapper(
+          settings,
+          owner,
+          TypeScriptField(name),
+          tpe
+        )
+      }
 
-        case _ =>
+      { (decl, o) =>
+        val nestedEmit = emitValueBody(_: ValueBodyDeclaration, o)
+
+        decl match {
+          case vb @ ValueBodyDeclaration(value) => {
+            val tpeMapper = tm(vb.owner, value.name, _: TypeRef)
+
+            value match {
+              case LiteralValue(_, _, rawValue) =>
+                o.print(rawValue)
+
+              case SelectValue(_, _, qual, term) => {
+                val qualTpeNme = tpeMapper(qual)
+                val termNme =
+                  fieldMapper(settings, qualTpeNme, term, vb.reference).name
+
+                o.print(s"${qualTpeNme}.${termNme}")
+              }
+
+              case ListValue(_, _, _, elements) => {
+                o.print("[ ")
+
+                elements.zipWithIndex.foreach {
+                  case (e, i) =>
+                    if (i > 0) {
+                      o.print(", ")
+                    }
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, e))
+                }
+
+                o.print(" ]")
+              }
+
+              case MergedListsValue(_, _, children) => {
+                o.print("[ ...")
+
+                children.zipWithIndex.foreach {
+                  case (c, i) =>
+                    if (i > 0) {
+                      o.print(", ...")
+                    }
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, c))
+                }
+
+                o.print("]")
+              }
+
+              case SetValue(_, _, _, elements) => {
+                o.print("new Set([ ")
+
+                elements.zipWithIndex.foreach {
+                  case (e, i) =>
+                    if (i > 0) {
+                      o.print(", ")
+                    }
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, e))
+                }
+
+                o.print(" ])")
+              }
+
+              case MergedSetsValue(_, _, children) => {
+                o.print("new Set([ ...")
+
+                children.zipWithIndex.foreach {
+                  case (c, i) =>
+                    if (i > 0) {
+                      o.print(", ...")
+                    }
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, c))
+                }
+
+                o.print(" ])")
+              }
+
+              case DictionaryValue(_, _, _, entries) => {
+                o.print("{ ")
+
+                entries.zipWithIndex.foreach {
+                  case ((key, v), i) =>
+                    if (i > 0) {
+                      o.print(", ")
+                    }
+
+                    o.print(s"'${key}': ")
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, v))
+                }
+
+                o.print(" }")
+              }
+            }
+          }
+
+          case _ =>
+            o.print(s"/* Unsupported on ValueBody: $decl */")
+        }
+      }
+    }
+
+    { (decl, out) =>
+      declMapper(default, decl, out).getOrElse(default(decl, out))
+    }
+  }
+
+  private val emitValueMember: (ValueMemberDeclaration, PrintStream) => Unit = {
+    val default: TypeScriptDeclarationMapper.Resolved = {
+      val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
+        resolvedTypeMapper(
+          settings,
+          owner,
+          TypeScriptField(name),
+          tpe
+        )
+      }
+
+      { (decl, o) =>
+        decl match {
+          case vd: ValueMemberDeclaration => {
+            val tpeMapper = tm(vd.owner, decl.name, _: TypeRef)
+            val nme =
+              fieldMapper(settings, vd.owner.name, vd.name, vd.reference).name
+
+            vd.value match {
+              case l @ ListValue(_, _, tpe, _) => {
+                o.print(
+                  s"${indent}public $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, l), o)
+
+                o.println(lineSeparator)
+              }
+
+              case l @ MergedListsValue(_, tpe, _) => {
+                o.print(
+                  s"${indent}public $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, l), o)
+
+                o.println(lineSeparator)
+              }
+
+              case s @ SetValue(_, _, tpe, _) => {
+                o.print(
+                  s"${indent}public $nme: ReadonlySet<${tpeMapper(tpe)}> = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, s), o)
+
+                o.println(lineSeparator)
+              }
+
+              case l @ MergedSetsValue(_, tpe, _) => {
+                o.print(
+                  s"${indent}public $nme: ReadonlySet<${tpeMapper(tpe)}> = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, l), o)
+
+                o.println(lineSeparator)
+              }
+
+              case d @ DictionaryValue(_, tpe, _, _) => {
+                o.print(
+                  s"${indent}public readonly ${nme}: ${tpeMapper(tpe)} = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, d), o)
+
+                o.println(lineSeparator)
+              }
+
+              case v @ (_: SelectValue | _: LiteralValue) => {
+                o.print(
+                  s"${indent}public ${nme}: ${tpeMapper(v.reference)} = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, v), o)
+
+                o.println(lineSeparator)
+              }
+            }
+          }
+
+          case _ =>
+            o.print(s"/* Unsupported on ValueMember: $decl */")
+        }
       }
     }
 
@@ -187,7 +400,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
   private val emitSingletonDeclaration: SingletonDeclaration => Unit = {
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
       decl match {
-        case SingletonDeclaration(_, values, superInterface) => {
+        case sd @ SingletonDeclaration(_, values, superInterface) => {
           val tpeName = typeNaming(decl.reference)
 
           // Class definition
@@ -200,9 +413,10 @@ ${indent}return ${simpleCheck}${lineSeparator}
           o.println(" {")
 
           if (values.nonEmpty) {
-            list(values).foreach(emitValue(_: Value, o))
-
-            o.println()
+            values.toList.foreach { v =>
+              emitValueMember(ValueMemberDeclaration(sd, v), o)
+              o.println()
+            }
           }
 
           o.println(
@@ -228,7 +442,14 @@ ${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineS
 }""")
         }
 
+        case decl: ValueMemberDeclaration =>
+          emitValueMember(decl, o)
+
+        case decl: ValueBodyDeclaration =>
+          emitValueBody(decl, o)
+
         case _ =>
+          o.print(s"/* Unsupported on Singleton: $decl */")
       }
     }
 
@@ -253,9 +474,9 @@ ${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineS
 
           o.println(" {")
 
-          val fieldList = list(fields)
+          val fieldList = fields.toList
 
-          fieldList.reverse.foreach(emitField(o, n, _))
+          fieldList.foreach(emitField(o, decl, _))
 
           // Type guard
           o.println(s"""}
@@ -270,6 +491,7 @@ ${indent}return (""")
         }
 
         case _ =>
+          o.print(s"/* Unsupported on Interface: $decl */")
       }
     }
 
@@ -288,7 +510,7 @@ ${indent}return (""")
       }
 
       val tpeName = typeNaming(decl.reference)
-      val vs = list(values).map(v => s"'${v}'")
+      val vs = values.toList.map(v => s"'${v}'")
 
       o.println(
         s"""export type ${tpeName} = ${vs mkString " | "}${lineSeparator}"""
@@ -321,17 +543,17 @@ ${indent}return (""")
 
   private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
     (
-        settings: Settings,
-        ownerType: String,
+        _settings: Settings,
+        ownerType: Declaration,
         member: TypeScriptField,
         typeRef: TypeRef
     ) =>
-      typeMapper(resolvedTypeMapper, settings, ownerType, member, typeRef)
+      typeMapper(resolvedTypeMapper, _settings, ownerType, member, typeRef)
         .getOrElse(defaultTypeMapping(ownerType, member, typeRef))
   }
 
   private def defaultTypeMapping(
-      ownerType: String,
+      ownerType: Declaration,
       member: TypeScriptField,
       typeRef: TypeRef
     ): String = TypeScriptEmitter.defaultTypeMapping(
@@ -381,7 +603,7 @@ private[scalats] object TypeScriptEmitter {
   type TypeMapper = Function5[
     TypeScriptTypeMapper.Resolved,
     Settings,
-    String,
+    Declaration,
     TypeScriptField,
     TypeRef,
     Option[String]

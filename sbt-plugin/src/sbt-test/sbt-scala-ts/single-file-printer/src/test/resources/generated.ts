@@ -34,8 +34,8 @@ export interface Lorem {
 
 export function isLorem(v: any): v is Lorem {
   return (
-    (v['weekday'] && isWeekDay(v['weekday'])) &&
-    ((typeof v['year']) === 'number')
+    ((typeof v['year']) === 'number') &&
+    (v['weekday'] && isWeekDay(v['weekday']))
   );
 }
 
@@ -47,8 +47,8 @@ export interface Foo {
 
 export function isFoo(v: any): v is Foo {
   return (
-    (Array.isArray(v['score']) && v['score'].every(elmt => (typeof elmt) === 'number')) &&
+    ((typeof v['name']) === 'string') &&
     (!v['bar'] || (v['bar'] && isBar(v['bar']))) &&
-    ((typeof v['name']) === 'string')
+    (Array.isArray(v['score']) && v['score'].every(elmt => (typeof elmt) === 'number'))
   );
 }

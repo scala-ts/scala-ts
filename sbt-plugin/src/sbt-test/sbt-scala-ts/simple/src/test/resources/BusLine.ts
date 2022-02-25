@@ -10,8 +10,8 @@ export interface BusLine extends Transport {
 
 export function isBusLine(v: any): v is BusLine {
   return (
-    (Array.isArray(v['stopIds']) && v['stopIds'].every(elmt => (typeof elmt) === 'string')) &&
+    ((typeof v['id']) === 'number') &&
     ((typeof v['name']) === 'string') &&
-    ((typeof v['id']) === 'number')
+    (Array.isArray(v['stopIds']) && v['stopIds'].every(elmt => (typeof elmt) === 'string'))
   );
 }

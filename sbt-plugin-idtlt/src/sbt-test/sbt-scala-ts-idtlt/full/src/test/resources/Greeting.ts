@@ -41,4 +41,3 @@ export function isGreeting(v: any): v is Greeting {
     nsWhatever.isWhatever(v)
   );
 }
-

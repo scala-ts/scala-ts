@@ -2,10 +2,9 @@ package io.github.scalats.plugins
 
 import java.io.{ File, PrintStream }
 
-import scala.collection.immutable.ListSet
-
 import scala.io.Source.fromFile
 
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript.{ CustomTypeRef, Declaration, TypeRef }
 
 final class FilePrinterSpec extends org.specs2.mutable.Specification {

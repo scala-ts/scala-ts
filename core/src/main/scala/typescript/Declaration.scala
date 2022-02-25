@@ -1,6 +1,6 @@
 package io.github.scalats.typescript
 
-import scala.collection.immutable.ListSet
+import io.github.scalats.core.Internals.ListSet
 
 /** A TypeScript type declaration */
 sealed trait Declaration {
@@ -59,17 +59,66 @@ case class Member(name: String, typeRef: TypeRef)
  * @param superInterface the super interface (if any)
  * @param union this interface represents a union type
  */
-case class InterfaceDeclaration(
-    name: String,
-    fields: ListSet[Member],
-    typeParams: List[String],
-    superInterface: Option[InterfaceDeclaration],
-    union: Boolean)
+final class InterfaceDeclaration private (
+    val name: String,
+    val fields: ListSet[Member],
+    val typeParams: List[String],
+    val superInterface: Option[InterfaceDeclaration],
+    val union: Boolean)
     extends Declaration {
 
   override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(CustomTypeRef(_)))
 
+  private lazy val tupled =
+    Tuple5(name, fields.toList, typeParams, superInterface, union)
+
+  override def toString: String = s"InterfaceDeclaration${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: InterfaceDeclaration =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+
+  @SuppressWarnings(Array("VariableShadowing"))
+  def copy(
+      name: String = this.name,
+      fields: ListSet[Member] = this.fields,
+      typeParams: List[String] = this.typeParams,
+      superInterface: Option[InterfaceDeclaration] = this.superInterface,
+      union: Boolean = this.union
+    ): InterfaceDeclaration =
+    new InterfaceDeclaration(name, fields, typeParams, superInterface, union)
+}
+
+object InterfaceDeclaration {
+
+  def apply(
+      name: String,
+      fields: ListSet[Member],
+      typeParams: List[String],
+      superInterface: Option[InterfaceDeclaration],
+      union: Boolean
+    ): InterfaceDeclaration =
+    new InterfaceDeclaration(name, fields, typeParams, superInterface, union)
+
+  def unapply(
+      decl: InterfaceDeclaration
+    ): Option[Tuple5[String, ListSet[Member], List[String], Option[InterfaceDeclaration], Boolean]] =
+    Some(
+      Tuple5(
+        decl.name,
+        decl.fields,
+        decl.typeParams,
+        decl.superInterface,
+        decl.union
+      )
+    )
 }
 
 case class TaggedDeclaration(
@@ -79,20 +128,76 @@ case class TaggedDeclaration(
   override def reference: TypeRef = CustomTypeRef(name, List.empty)
 }
 
-/**
- * A value [[Declaration]].
- *
- * @param name the member name
- * @param typeRef the reference for the member type
- * @param rawValue
- */
-case class Value(
-    name: String,
-    typeRef: TypeRef,
-    rawValue: String)
+final class ValueMemberDeclaration private[scalats] (
+    val owner: SingletonDeclaration,
+    val value: Value)
     extends Declaration {
 
-  override def reference: TypeRef = typeRef
+  @inline def name = value.name
+  @inline override def reference = value.reference
+
+  private val tupled = owner -> value
+
+  override def toString: String = s"ValueMemberDeclaration${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: ValueMemberDeclaration =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+}
+
+object ValueMemberDeclaration {
+
+  def apply(owner: SingletonDeclaration, value: Value): ValueMemberDeclaration =
+    new ValueMemberDeclaration(owner, value)
+
+  def unapply(decl: ValueMemberDeclaration): Option[Value] = Some(decl.value)
+}
+
+/**
+ * Declaration of the body/rhs for a [[Value]],
+ * either as a whole member or part of (e.g. inside [[ListValue]]).
+ *
+ * @see [[ValueMemberDeclaration]]
+ */
+final class ValueBodyDeclaration private[scalats] (
+    val member: ValueMemberDeclaration,
+    val value: Value)
+    extends Declaration {
+
+  @inline def name = value.name
+  @inline override def reference = value.reference
+  @inline def owner = member.owner
+
+  private val tupled = member -> value
+
+  override def toString: String = s"ValueBodyDeclaration${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: ValueBodyDeclaration =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+}
+
+object ValueBodyDeclaration {
+
+  def apply(
+      member: ValueMemberDeclaration,
+      value: Value
+    ): ValueBodyDeclaration =
+    new ValueBodyDeclaration(member, value)
+
+  def unapply(decl: ValueBodyDeclaration): Option[Value] = Some(decl.value)
 }
 
 /**
@@ -101,12 +206,46 @@ case class Value(
  * @param values the invariant values
  * @param superInterface the super interface (if any)
  */
-case class SingletonDeclaration(
-    name: String,
-    values: ListSet[Value],
-    superInterface: Option[InterfaceDeclaration])
+final class SingletonDeclaration private (
+    val name: String,
+    val values: ListSet[Value],
+    val superInterface: Option[InterfaceDeclaration])
     extends Declaration {
   override def reference: TypeRef = SingletonTypeRef(name, values)
+
+  private lazy val tupled = Tuple3(name, values.toList, superInterface)
+
+  override def toString: String = s"SingletonDeclaration${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: SingletonDeclaration =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+
+  private[scalats] def noSuperInterface: SingletonDeclaration =
+    superInterface.fold(this)(_ =>
+      new SingletonDeclaration(this.name, this.values, None)
+    )
+}
+
+object SingletonDeclaration {
+
+  def apply(
+      name: String,
+      values: ListSet[Value],
+      superInterface: Option[InterfaceDeclaration]
+    ): SingletonDeclaration =
+    new SingletonDeclaration(name, values, superInterface)
+
+  def unapply(
+      decl: SingletonDeclaration
+    ): Option[(String, ListSet[Value], Option[InterfaceDeclaration])] =
+    Some(Tuple3(decl.name, decl.values, decl.superInterface))
 }
 
 /**

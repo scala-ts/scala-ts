@@ -1,7 +1,7 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
+import io.github.scalats.{ scala => ScalaModel }
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript._
 
 import ScalaParserResults._
@@ -10,8 +10,6 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
   "Transpiler" title
 
   import TranspilerResults._
-
-  val defaultTranspiler: Transpiler = new Transpiler(Settings())
 
   "Transpiler" should {
     "transpile a case class with one primitive member" in {
@@ -137,7 +135,7 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
         result must contain(
           SingletonDeclaration(
             "ScalaRuntimeFixturesFamilyMember3",
-            ListSet(Value("foo", StringRef, "\"lorem\"")),
+            ListSet(LiteralValue("foo", StringRef, "\"lorem\"")),
             Some(unionIface)
           )
         )
@@ -147,6 +145,17 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
 }
 
 object TranspilerResults {
+  private val defaultt = new Transpiler(Settings())
+
+  def defaultTranspiler(
+      in: ListSet[ScalaModel.TypeDef]
+    ): List[Declaration] =
+    defaultt.apply(in).toList
+
+  def defaultTranspiler(
+      scalaTypes: ListSet[ScalaModel.TypeDef],
+      superInterface: Option[InterfaceDeclaration]
+    ): List[Declaration] = defaultt(scalaTypes, superInterface).toList
 
   val interface1 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass1",
@@ -175,8 +184,8 @@ object TranspilerResults {
   val interface5 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass5",
     ListSet(
-      Member("counters", MapType(StringRef, NumberRef)),
-      Member("name", NullableType(SimpleTypeRef("T")))
+      Member("name", NullableType(SimpleTypeRef("T"))),
+      Member("counters", MapType(StringRef, NumberRef))
     ),
     typeParams = List("T"),
     superInterface = Option.empty,
@@ -223,11 +232,11 @@ object TranspilerResults {
   val interface10 = InterfaceDeclaration(
     "ScalaRuntimeFixturesTestClass10",
     ListSet(
-      Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef))),
-      Member("tupleB", TupleRef(List(StringRef, NumberRef))),
-      Member("tupleA", TupleRef(List(StringRef, NumberRef))),
+      Member("name", StringRef),
       Member("tuple", TupleRef(List(NumberRef))),
-      Member("name", StringRef)
+      Member("tupleA", TupleRef(List(StringRef, NumberRef))),
+      Member("tupleB", TupleRef(List(StringRef, NumberRef))),
+      Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef)))
     ),
     typeParams = List.empty,
     superInterface = None,
@@ -243,9 +252,153 @@ object TranspilerResults {
   val singleton2 = SingletonDeclaration(
     "ScalaRuntimeFixturesTestObject2",
     ListSet(
-      Value("name", StringRef, "\"Foo\""),
-      Value("const", StringRef, "\"value\""),
-      Value("code", NumberRef, "1")
+      LiteralValue("name", StringRef, "\"Foo\""),
+      LiteralValue("code", NumberRef, "1"),
+      LiteralValue("const", StringRef, "\"value\""),
+      SelectValue("foo", StringRef, ThisTypeRef, "name"),
+      ListValue(
+        name = "list",
+        typeRef = ArrayRef(StringRef),
+        valueTypeRef = StringRef,
+        elements = List(
+          LiteralValue("list[0]", StringRef, "\"first\""),
+          SelectValue("list[1]", StringRef, ThisTypeRef, "name")
+        )
+      ),
+      SetValue(
+        name = "set",
+        typeRef = ArrayRef(NumberRef),
+        valueTypeRef = NumberRef,
+        elements = Set(
+          SelectValue("set[0]", NumberRef, ThisTypeRef, "code"),
+          LiteralValue("set[1]", NumberRef, "2")
+        )
+      ),
+      DictionaryValue(
+        name = "mapping",
+        typeRef = MapType(StringRef, StringRef),
+        valueTypeRef = StringRef,
+        entries = Map(
+          "foo" -> LiteralValue("mapping[foo]", StringRef, "\"bar\""),
+          "lorem" -> SelectValue(
+            "mapping[lorem]",
+            StringRef,
+            ThisTypeRef,
+            "name"
+          )
+        )
+      ),
+      DictionaryValue(
+        name = "dictOfList",
+        typeRef = MapType(StringRef, ArrayRef(StringRef)),
+        valueTypeRef = ArrayRef(StringRef),
+        entries = Map(
+          "excludes" -> ListValue(
+            name = "dictOfList[excludes]",
+            typeRef = ArrayRef(StringRef),
+            valueTypeRef = StringRef,
+            elements = List(
+              LiteralValue(
+                "dictOfList[excludes][0]",
+                StringRef,
+                "\"*.txt\""
+              ),
+              LiteralValue(
+                "dictOfList[excludes][1]",
+                StringRef,
+                "\".gitignore\""
+              )
+            )
+          ),
+          "includes" -> ListValue(
+            name = "dictOfList[includes]",
+            typeRef = ArrayRef(StringRef),
+            valueTypeRef = StringRef,
+            elements = List(
+              LiteralValue(
+                "dictOfList[includes][0]",
+                StringRef,
+                "\"images/**\""
+              ),
+              LiteralValue(
+                "dictOfList[includes][1]",
+                StringRef,
+                "\"*.jpg\""
+              ),
+              LiteralValue(
+                "dictOfList[includes][2]",
+                StringRef,
+                "\"*.png\""
+              )
+            )
+          )
+        )
+      ),
+      MergedListsValue(
+        name = "concatSeq",
+        valueTypeRef = StringRef,
+        children = List(
+          SelectValue(
+            name = "concatSeq[0]",
+            typeRef = ArrayRef(StringRef),
+            qualifier = ThisTypeRef,
+            term = "list"
+          ),
+          ListValue(
+            name = "concatSeq[1]",
+            typeRef = ArrayRef(StringRef),
+            valueTypeRef = StringRef,
+            elements = List(
+              LiteralValue("concatSeq[1][0]", StringRef, "\"foo\""),
+              LiteralValue("concatSeq[1][1]", StringRef, "\"bar\"")
+            )
+          ),
+          ListValue(
+            name = "concatSeq[2]",
+            typeRef = ArrayRef(StringRef),
+            valueTypeRef = StringRef,
+            elements =
+              List(LiteralValue("concatSeq[2][0]", StringRef, "\"lorem\""))
+          )
+        )
+      ),
+      MergedListsValue(
+        name = "concatList",
+        valueTypeRef = StringRef,
+        children = List(
+          ListValue(
+            name = "concatList[0]",
+            typeRef = ArrayRef(StringRef),
+            valueTypeRef = StringRef,
+            elements =
+              List(LiteralValue("concatList[0][0]", StringRef, "\"foo\""))
+          ),
+          SelectValue(
+            name = "concatList[1]",
+            typeRef = ArrayRef(StringRef),
+            qualifier = ThisTypeRef,
+            term = "list"
+          )
+        )
+      ),
+      MergedSetsValue(
+        name = "mergedSet",
+        valueTypeRef = NumberRef,
+        children = List(
+          SelectValue(
+            name = "mergedSet[0]",
+            typeRef = ArrayRef(NumberRef),
+            qualifier = ThisTypeRef,
+            term = "set"
+          ),
+          SetValue(
+            name = "mergedSet[1]",
+            typeRef = ArrayRef(NumberRef),
+            valueTypeRef = NumberRef,
+            elements = Set(LiteralValue("mergedSet[1][0]", NumberRef, "3"))
+          )
+        )
+      )
     ),
     superInterface = Some(
       InterfaceDeclaration(
@@ -270,11 +423,11 @@ object TranspilerResults {
       CustomTypeRef("ScalaRuntimeFixturesFamilyMember1", List.empty),
       SingletonTypeRef(
         "ScalaRuntimeFixturesFamilyMember2",
-        ListSet(Value("foo", StringRef, "\"bar\""))
+        ListSet(LiteralValue("foo", StringRef, "\"bar\""))
       ),
       SingletonTypeRef(
         "ScalaRuntimeFixturesFamilyMember3",
-        ListSet(Value("foo", StringRef, "\"lorem\""))
+        ListSet(LiteralValue("foo", StringRef, "\"lorem\""))
       )
     ),
     superInterface = Option.empty
@@ -290,7 +443,7 @@ object TranspilerResults {
 
   val unionMember2Singleton = SingletonDeclaration(
     "ScalaRuntimeFixturesFamilyMember2",
-    ListSet(Value("foo", StringRef, "\"bar\"")),
+    ListSet(LiteralValue("foo", StringRef, "\"bar\"")),
     Some(unionIface)
   )
 

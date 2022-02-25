@@ -1,8 +1,9 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
+import io.github.scalats.{ scala => ScalaModel }
 import io.github.scalats.typescript._
+
+import Internals.ListSet
 
 /**
  * Created by Milosz on 09.06.2016.
@@ -29,13 +30,7 @@ final class Transpiler(config: Settings) {
         ListSet[Declaration](EnumDeclaration(idToString(id), values))
 
       case ScalaModel.CaseObject(id, members) => {
-        val values = members.map { scalaMember =>
-          Value(
-            scalaMember.name,
-            transpileTypeRef(scalaMember.typeRef, false),
-            scalaMember.value
-          )
-        }
+        val values = members.map(transpileTypeInvariant)
 
         ListSet[Declaration](
           SingletonDeclaration(idToString(id), values, superInterface)
@@ -62,13 +57,7 @@ final class Transpiler(config: Settings) {
             case ScalaModel.CaseObject(pid, values) =>
               SingletonTypeRef(
                 name = idToString(pid),
-                values = values.map { v =>
-                  Value(
-                    name = v.name,
-                    typeRef = transpileTypeRef(v.typeRef, false),
-                    rawValue = v.value
-                  )
-                }
+                values = values.map(transpileTypeInvariant)
               )
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
@@ -81,6 +70,69 @@ final class Transpiler(config: Settings) {
         )
       }
     }
+
+  private def transpileTypeInvariant(
+      invariant: ScalaModel.TypeInvariant
+    ): Value = invariant match {
+    case lit: ScalaModel.LiteralInvariant =>
+      LiteralValue(
+        name = lit.name,
+        typeRef = transpileTypeRef(lit.typeRef, false),
+        rawValue = lit.value
+      )
+
+    case sel: ScalaModel.SelectInvariant =>
+      SelectValue(
+        name = sel.name,
+        typeRef = transpileTypeRef(sel.typeRef, false),
+        qualifier = transpileTypeRef(sel.qualifier, false),
+        term = sel.term
+      )
+
+    case list: ScalaModel.ListInvariant =>
+      ListValue(
+        name = list.name,
+        typeRef = transpileTypeRef(list.typeRef, false),
+        valueTypeRef = transpileTypeRef(list.valueTypeRef, false),
+        elements = list.values.map(transpileTypeInvariant)
+      )
+
+    case set: ScalaModel.SetInvariant =>
+      SetValue(
+        name = set.name,
+        typeRef = transpileTypeRef(set.typeRef, false),
+        valueTypeRef = transpileTypeRef(set.valueTypeRef, false),
+        elements = set.values.map(transpileTypeInvariant)
+      )
+
+    case dict: ScalaModel.DictionaryInvariant =>
+      DictionaryValue(
+        name = dict.name,
+        typeRef = transpileTypeRef(dict.typeRef, false),
+        valueTypeRef = transpileTypeRef(dict.valueTypeRef, false),
+        entries = dict.entries.map {
+          case (k, v) =>
+            k -> transpileTypeInvariant(v)
+        }
+      )
+
+    case ScalaModel.MergedListsInvariant(name, valueTpe, children) =>
+      MergedListsValue(
+        name = name,
+        valueTypeRef = transpileTypeRef(valueTpe, false),
+        children = children.map(transpileTypeInvariant)
+      )
+
+    case ScalaModel.MergedSetsInvariant(name, valueTpe, children) =>
+      MergedSetsValue(
+        name = name,
+        valueTypeRef = transpileTypeRef(valueTpe, false),
+        children = children.map(transpileTypeInvariant)
+      )
+
+    case _ =>
+      ??? // Should never happen as sealed class
+  }
 
   private def transpileValueClass(valueClass: ScalaModel.ValueClass) =
     TaggedDeclaration(
@@ -124,6 +176,9 @@ final class Transpiler(config: Settings) {
     case ScalaModel.StringRef | ScalaModel.UuidRef =>
       StringRef
 
+    case ScalaModel.ThisTypeRef =>
+      ThisTypeRef
+
     case ScalaModel.TaggedRef(id, tagged) =>
       TaggedRef(idToString(id), transpileTypeRef(tagged, false))
 
@@ -136,14 +191,11 @@ final class Transpiler(config: Settings) {
     case ScalaModel.TupleRef(typeArgs) =>
       TupleRef(typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
 
-    case ScalaModel.CaseClassRef(id, typeArgs) => {
-      val name = {
-        if (inInterfaceContext) idToString(id)
-        else idToString(id)
-      }
-
-      CustomTypeRef(name, typeArgs.map(transpileTypeRef(_, inInterfaceContext)))
-    }
+    case ScalaModel.CaseClassRef(id, typeArgs) =>
+      CustomTypeRef(
+        idToString(id),
+        typeArgs.map(transpileTypeRef(_, inInterfaceContext))
+      )
 
     case ScalaModel.DateRef =>
       DateRef

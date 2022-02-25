@@ -2,77 +2,58 @@ package io.github.scalats.core
 
 import scala.util.control.NonFatal
 
-import scala.collection.immutable.ListSet
-
 import scala.reflect.runtime.{ universe => runtimeUniverse }
 
-import ScalaModel._
+import io.github.scalats.core.Internals.ListSet
+import io.github.scalats.scala._
 
 final class ScalaParserSpec extends org.specs2.mutable.Specification {
   "Scala parser" title
 
   import ScalaParserResults._
   import ScalaRuntimeFixtures._
-  import runtimeUniverse.EmptyTree
+  import runtimeUniverse.{ Type, Tree, EmptyTree }
 
   private implicit def cl: ClassLoader = getClass.getClassLoader
 
-  val scalaParser = new ScalaParser[runtimeUniverse.type](
-    universe = runtimeUniverse,
-    compiled = Set.empty,
-    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
-  )
-
   "Parser" should {
     "handle case class with one primitive member" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass1Type -> TestClass1Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true
+      val res = parseTypes(
+        List(TestClass1Type -> TestClass1Tree)
       )
 
-      res.parsed must contain(caseClass1) and {
-        res.parsed must have size 1
+      res must contain(caseClass1) and {
+        res must have size 1
       }
     }
 
     "handle generic case class with one member" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass2Type -> TestClass2Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true
+      val res = parseTypes(
+        List(TestClass2Type -> TestClass2Tree)
       )
 
-      res.parsed must contain(caseClass2) and {
-        res.parsed must have size 1
+      res must contain(caseClass2) and {
+        res must have size 1
       }
     }
 
     "handle generic case class with one member list of type parameter" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass3Type -> TestClass3Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true
+      val res = parseTypes(
+        List(TestClass3Type -> TestClass3Tree)
       )
 
-      res.parsed must contain(caseClass3) and {
-        res.parsed must have size 1
+      res must contain(caseClass3) and {
+        res must have size 1
       }
     }
 
     "handle generic case class with one optional member" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass5Type -> TestClass5Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true
+      val res = parseTypes(
+        List(TestClass5Type -> TestClass5Tree)
       )
 
-      res.parsed must contain(caseClass5) and {
-        res.parsed must have size 1
+      res must contain(caseClass5) and {
+        res must have size 1
       }
     }
 
@@ -87,7 +68,7 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
       }
        */
 
-      val res = scalaParser.parseTypes(
+      val res = parseTypes(
         List(
           TestClass6Type -> TestClass6Tree,
           TestClass4Type -> TestClass4Tree, // skipped as examined from 6
@@ -99,179 +80,166 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
           fullName -> (TestClass3Type -> TestClass3Tree),
           TestClass5Type.typeSymbol. // 'age' in 6
           fullName -> (TestClass5Type -> TestClass5Tree)
-        ),
-        ListSet.empty,
-        _ => true
+        )
       )
 
-      import res.parsed
-
-      parsed must contain(caseClass1) and {
-        parsed must contain(caseClass2)
+      res must contain(caseClass1) and {
+        res must contain(caseClass2)
       } and {
-        parsed must contain(caseClass3)
+        res must contain(caseClass3)
       } and {
-        parsed must contain(caseClass4)
+        res must contain(caseClass4)
       } and {
-        parsed must contain(caseClass5)
+        res must contain(caseClass5)
       } and {
-        parsed must contain(caseClass6)
+        res must contain(caseClass6)
       } and {
-        parsed must have size 6
+        res must have size 6
       }
     }
 
     "handle either types" in {
-      val res = scalaParser.parseTypes(
+      val res = parseTypes(
         List(TestClass7Type -> TestClass7Tree),
         Map(
           TestClass1Type.typeSymbol. // 'name' in 7
           fullName -> (TestClass1Type -> TestClass1Tree),
           TestClass1BType.typeSymbol. // 'name' in 7
           fullName -> (TestClass1BType -> TestClass1BTree)
-        ),
-        ListSet.empty,
-        _ => true
+        )
       )
 
-      import res.parsed
-
-      parsed must contain(caseClass7) and {
-        parsed must contain(caseClass1)
+      res must contain(caseClass7) and {
+        res must contain(caseClass1)
       } and {
-        parsed must contain(caseClass1B)
+        res must contain(caseClass1B)
       } and {
-        parsed must have size 3
+        res must have size 3
       }
     }
 
     "handle ValueClass" >> {
       "declaration" in {
-        val res = scalaParser.parseTypes(
-          List(AnyValChildType -> AnyValChildTree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(AnyValChildType -> AnyValChildTree)
         )
 
-        res.parsed must_=== ListSet(tagged1)
+        res must_=== List(tagged1)
       }
 
       "as member" in {
-        val res = scalaParser.parseTypes(
-          List(TestClass8Type -> TestClass8Tree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(TestClass8Type -> TestClass8Tree)
         )
 
-        res.parsed must contain(caseClass8) and {
-          res.parsed must contain(tagged1)
+        res must contain(caseClass8) and {
+          res must contain(tagged1)
         } and {
-          res.parsed must have size 2
+          res must have size 2
         }
       }
     }
 
     "handle enumeration" >> {
       "type declaration" in {
-        val res = scalaParser.parseTypes(
-          List(TestEnumerationType -> TestEnumerationTree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(TestEnumerationType -> TestEnumerationTree)
         )
 
-        res.parsed must contain(testEnumeration) and {
-          res.parsed must have size 1
+        res must contain(testEnumeration) and {
+          res must have size 1
         }
       }
 
       "as member in class" in {
-        val res = scalaParser.parseTypes(
-          List(TestClass9Type -> TestClass9Tree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(TestClass9Type -> TestClass9Tree)
         )
 
-        res.parsed must contain(caseClass9) and {
-          res.parsed must contain(testEnumeration)
+        res must contain(caseClass9) and {
+          res must contain(testEnumeration)
         } and {
-          res.parsed must have size 2
+          res must have size 2
         }
       }
     }
 
     "handle tuple values" in {
-      val res = scalaParser.parseTypes(
-        List(TestClass10Type -> TestClass10Tree),
-        Map.empty,
-        ListSet.empty,
-        _ => true
+      val res = parseTypes(
+        List(TestClass10Type -> TestClass10Tree)
       )
 
-      res.parsed must contain(caseClass10) and {
-        res.parsed must have size 1
+      res must contain(caseClass10) and {
+        res must have size 1
       }
     }
 
     "handle object" >> {
       "from case object" in {
-        val res = scalaParser.parseTypes(
-          List(ScalaRuntimeFixtures.TestObject1Type -> EmptyTree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(ScalaRuntimeFixtures.TestObject1Type -> EmptyTree)
         )
 
-        res.parsed must contain(caseObject1) and {
-          res.parsed must have size 1
+        res must contain(caseObject1) and {
+          res must have size 1
         }
       }
 
       "skip when companion object" in {
-        val res = scalaParser.parseTypes(
-          List(TestClass1CompanionType -> TestClass1CompanionTree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(TestClass1CompanionType -> TestClass1CompanionTree)
         )
 
-        res.parsed must beEmpty
+        res must beEmpty
       }
 
       "from plain object with values" in {
-        val res = scalaParser.parseTypes(
-          List(TestObject2Type -> TestObject2Tree),
-          Map.empty,
-          ListSet.empty,
-          _ => true
+        val res = parseTypes(
+          List(TestObject2Type -> TestObject2Tree)
         )
 
-        res.parsed must contain(caseObject2) and {
-          res.parsed must have size 1
+        res must contain(caseObject2) and {
+          res must have size 1
         }
       }
     }
 
     "handle sealed trait as union" in {
-      val res = scalaParser.parseTypes(
+      val res = parseTypes(
         List(FamilyType -> FamilyTree),
         Map(
           FamilyMember1Type.typeSymbol.fullName -> (FamilyMember1Type -> FamilyMember1Tree),
           FamilyMember2Type.typeSymbol.fullName -> (FamilyMember2Type -> FamilyMember2Tree),
           FamilyMember3Type.typeSymbol.fullName -> (FamilyMember3Type -> FamilyMember3Tree)
-        ),
-        ListSet.empty,
-        _ => true
+        )
       )
 
-      res.parsed must contain(sealedFamily1) and {
-        res.parsed must have size 1
+      res must contain(sealedFamily1) and {
+        res must have size 1
       }
     }
   }
+
+  // ---
+
+  private val scalaParser = new ScalaParser[runtimeUniverse.type](
+    universe = runtimeUniverse,
+    compiled = Set.empty,
+    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
+  )
+
+  private def parseTypes(
+      types: List[(Type, Tree)],
+      symtab: Map[String, (Type, Tree)] = Map.empty
+    ): List[TypeDef] = scalaParser
+    .parseTypes(
+      types,
+      symtab,
+      ListSet.empty,
+      _ => true
+    )
+    .parsed
+    .toList
 }
 
 object ScalaRuntimeFixtures {
@@ -428,17 +396,45 @@ object ScalaRuntimeFixtures {
     val name = "Foo"
     def code = 1
     val const = new String("value")
+    def foo = name
+
+    val list = Seq("first", name)
+    def set: Set[Int] = Set(code, 2)
+    val mapping = Map("foo" -> "bar", "lorem" -> name)
+
+    def dictOfList = Map(
+      "excludes" -> Seq("*.txt", ".gitignore"),
+      "includes" -> Seq("images/**", "*.jpg", "*.png")
+    )
+
+    val concatSeq = list ++ Seq("foo", "bar") ++ Seq("lorem")
+    def concatList = List("foo") ++ list
+
+    val mergedSet = set ++ Set(3)
   }
 
   val TestObject2Type = typeOf[TestObject2.type]
 
-  // TODO: Seq,List,Set of literals
   lazy val TestObject2Tree: Tree = typecheck(q"""
     class Foo(val name: String)
 
     object TestObject2 extends Foo("Foo") {
       def code = 1
       val const = new String("value")
+      def foo = name
+
+      val list = Seq("first", name)
+      def set: Set[Int] = Set(code, 2)
+      val mapping = Map("foo" -> "bar", "lorem" -> name)
+
+      def dictOfList = Map(
+        "excludes" -> Seq("*.txt", ".gitignore"),
+        "includes" -> Seq("images/**", "*.jpg", "*.png"))
+
+      val concatSeq = list ++ Seq("foo", "bar") ++ Seq("lorem")
+      def concatList = List("foo") ++ list
+
+      val mergedSet = set ++ Set(3)
     }""").children.drop(1).head
 
   sealed trait Family {
@@ -548,8 +544,8 @@ object ScalaParserResults {
     identifier =
       QualifiedIdentifier("TestClass5", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember("counters", MapRef(StringRef, BigIntegerRef)),
-      TypeMember("name", OptionRef(TypeParamRef("T")))
+      TypeMember("name", OptionRef(TypeParamRef("T"))),
+      TypeMember("counters", MapRef(StringRef, BigIntegerRef))
     ),
     values = ListSet.empty,
     typeArgs = List("T")
@@ -559,26 +555,6 @@ object ScalaParserResults {
     identifier =
       QualifiedIdentifier("TestClass6", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember(
-        "age",
-        CaseClassRef(
-          QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
-          typeArgs = List(
-            CaseClassRef(
-              QualifiedIdentifier("TestClass2", List("ScalaRuntimeFixtures")),
-              typeArgs = List(
-                CaseClassRef(
-                  QualifiedIdentifier(
-                    "TestClass1",
-                    List("ScalaRuntimeFixtures")
-                  ),
-                  typeArgs = List.empty
-                )
-              )
-            )
-          )
-        )
-      ),
       TypeMember(
         "name",
         OptionRef(
@@ -594,6 +570,26 @@ object ScalaParserResults {
                     ),
                     typeArgs = List(StringRef)
                   )
+                )
+              )
+            )
+          )
+        )
+      ),
+      TypeMember(
+        "age",
+        CaseClassRef(
+          QualifiedIdentifier("TestClass3", List("ScalaRuntimeFixtures")),
+          typeArgs = List(
+            CaseClassRef(
+              QualifiedIdentifier("TestClass2", List("ScalaRuntimeFixtures")),
+              typeArgs = List(
+                CaseClassRef(
+                  QualifiedIdentifier(
+                    "TestClass1",
+                    List("ScalaRuntimeFixtures")
+                  ),
+                  typeArgs = List.empty
                 )
               )
             )
@@ -686,11 +682,11 @@ object ScalaParserResults {
     identifier =
       QualifiedIdentifier("TestClass10", List("ScalaRuntimeFixtures")),
     fields = ListSet(
-      TypeMember("tupleC", TupleRef(List(StringRef, StringRef, LongRef))),
-      TypeMember("tupleB", TupleRef(List(StringRef, LongRef))),
-      TypeMember("tupleA", TupleRef(List(StringRef, IntRef))),
+      TypeMember("name", StringRef),
       TypeMember("tuple", TupleRef(List(IntRef))),
-      TypeMember("name", StringRef)
+      TypeMember("tupleA", TupleRef(List(StringRef, IntRef))),
+      TypeMember("tupleB", TupleRef(List(StringRef, LongRef))),
+      TypeMember("tupleC", TupleRef(List(StringRef, StringRef, LongRef)))
     ),
     values = ListSet.empty,
     typeArgs = List.empty
@@ -704,18 +700,162 @@ object ScalaParserResults {
   val caseObject2 = CaseObject(
     QualifiedIdentifier("TestObject2", List("ScalaRuntimeFixtures")),
     ListSet(
-      TypeInvariant("name", StringRef, "\"Foo\""),
-      TypeInvariant("const", StringRef, "\"value\""),
-      TypeInvariant("code", IntRef, "1")
+      LiteralInvariant("name", StringRef, "\"Foo\""),
+      LiteralInvariant("code", IntRef, "1"),
+      LiteralInvariant("const", StringRef, "\"value\""),
+      SelectInvariant("foo", StringRef, ThisTypeRef, "name"),
+      ListInvariant(
+        name = "list",
+        typeRef = CollectionRef(StringRef),
+        valueTypeRef = StringRef,
+        values = List(
+          LiteralInvariant("list[0]", StringRef, "\"first\""),
+          SelectInvariant("list[1]", StringRef, ThisTypeRef, "name")
+        )
+      ),
+      SetInvariant(
+        name = "set",
+        typeRef = CollectionRef(IntRef),
+        valueTypeRef = IntRef,
+        values = Set(
+          SelectInvariant("set[0]", IntRef, ThisTypeRef, "code"),
+          LiteralInvariant("set[1]", IntRef, "2")
+        )
+      ),
+      DictionaryInvariant(
+        name = "mapping",
+        typeRef = MapRef(StringRef, StringRef),
+        valueTypeRef = StringRef,
+        entries = Map(
+          "foo" -> LiteralInvariant("mapping[foo]", StringRef, "\"bar\""),
+          "lorem" -> SelectInvariant(
+            "mapping[lorem]",
+            StringRef,
+            ThisTypeRef,
+            "name"
+          )
+        )
+      ),
+      DictionaryInvariant(
+        name = "dictOfList",
+        typeRef = MapRef(StringRef, CollectionRef(StringRef)),
+        valueTypeRef = CollectionRef(StringRef),
+        entries = Map(
+          "excludes" -> ListInvariant(
+            "dictOfList[excludes]",
+            CollectionRef(StringRef),
+            StringRef,
+            List(
+              LiteralInvariant(
+                "dictOfList[excludes][0]",
+                StringRef,
+                "\"*.txt\""
+              ),
+              LiteralInvariant(
+                "dictOfList[excludes][1]",
+                StringRef,
+                "\".gitignore\""
+              )
+            )
+          ),
+          "includes" -> ListInvariant(
+            "dictOfList[includes]",
+            CollectionRef(StringRef),
+            StringRef,
+            List(
+              LiteralInvariant(
+                "dictOfList[includes][0]",
+                StringRef,
+                "\"images/**\""
+              ),
+              LiteralInvariant(
+                "dictOfList[includes][1]",
+                StringRef,
+                "\"*.jpg\""
+              ),
+              LiteralInvariant(
+                "dictOfList[includes][2]",
+                StringRef,
+                "\"*.png\""
+              )
+            )
+          )
+        )
+      ),
+      MergedListsInvariant(
+        name = "concatSeq",
+        valueTypeRef = StringRef,
+        children = List(
+          SelectInvariant(
+            name = "concatSeq[0]",
+            typeRef = CollectionRef(StringRef),
+            qualifier = ThisTypeRef,
+            term = "list"
+          ),
+          ListInvariant(
+            name = "concatSeq[1]",
+            typeRef = CollectionRef(StringRef),
+            valueTypeRef = StringRef,
+            values = List(
+              LiteralInvariant("concatSeq[1][0]", StringRef, "\"foo\""),
+              LiteralInvariant("concatSeq[1][1]", StringRef, "\"bar\"")
+            )
+          ),
+          ListInvariant(
+            name = "concatSeq[2]",
+            typeRef = CollectionRef(StringRef),
+            valueTypeRef = StringRef,
+            values =
+              List(LiteralInvariant("concatSeq[2][0]", StringRef, "\"lorem\""))
+          )
+        )
+      ),
+      MergedListsInvariant(
+        name = "concatList",
+        valueTypeRef = StringRef,
+        children = List(
+          ListInvariant(
+            name = "concatList[0]",
+            typeRef = CollectionRef(StringRef),
+            valueTypeRef = StringRef,
+            values =
+              List(LiteralInvariant("concatList[0][0]", StringRef, "\"foo\""))
+          ),
+          SelectInvariant(
+            name = "concatList[1]",
+            typeRef = CollectionRef(StringRef),
+            qualifier = ThisTypeRef,
+            term = "list"
+          )
+        )
+      ),
+      MergedSetsInvariant(
+        name = "mergedSet",
+        valueTypeRef = IntRef,
+        children = List(
+          SelectInvariant(
+            name = "mergedSet[0]",
+            typeRef = CollectionRef(IntRef),
+            qualifier = ThisTypeRef,
+            term = "set"
+          ),
+          SetInvariant(
+            name = "mergedSet[1]",
+            typeRef = CollectionRef(IntRef),
+            valueTypeRef = IntRef,
+            values = Set(LiteralInvariant("mergedSet[1][0]", IntRef, "3"))
+          )
+        )
+      )
     )
   )
 
   val sealedFamily1 = {
     // Not 'bar', as not abstract
     val fooMember = TypeMember("foo", StringRef)
-    val fooBar = TypeInvariant("foo", StringRef, "\"bar\"")
-    val fooLorem = TypeInvariant("foo", StringRef, "\"lorem\"")
-    val code = TypeInvariant("code", IntRef, "1")
+    val fooBar = LiteralInvariant("foo", StringRef, "\"bar\"")
+    val fooLorem = LiteralInvariant("foo", StringRef, "\"lorem\"")
+    val code = LiteralInvariant("code", IntRef, "1")
 
     SealedUnion(
       QualifiedIdentifier("Family", List("ScalaRuntimeFixtures")),

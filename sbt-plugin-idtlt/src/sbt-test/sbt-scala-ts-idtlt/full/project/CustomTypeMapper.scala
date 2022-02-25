@@ -11,7 +11,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
   def apply(
     parent: TypeScriptTypeMapper.Resolved,
     settings: Settings,
-    ownerType: String,
+    ownerType: Declaration,
     member: TypeScriptField,
     tpe: TypeRef): Option[String] = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)

@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import io.github.scalats.typescript
 
-import typescript.TypeRef
+import typescript.{ Declaration, TypeRef }
 
 /**
  * The implementations must be class with a no-arg constructor.
@@ -18,7 +18,7 @@ trait TypeScriptTypeMapper
     extends Function5[
       TypeScriptTypeMapper.Resolved,
       Settings,
-      String,
+      Declaration,
       TypeScriptField,
       TypeRef,
       Option[String]
@@ -34,7 +34,7 @@ trait TypeScriptTypeMapper
   def apply(
       parent: TypeScriptTypeMapper.Resolved,
       settings: Settings,
-      ownerType: String,
+      ownerType: Declaration,
       member: TypeScriptField,
       tpe: TypeRef
     ): Option[String]
@@ -45,7 +45,7 @@ trait TypeScriptTypeMapper
       @inline def apply(
           parent: TypeScriptTypeMapper.Resolved,
           settings: Settings,
-          ownerType: String,
+          ownerType: Declaration,
           member: TypeScriptField,
           tpe: TypeRef
         ): Option[String] =
@@ -53,20 +53,23 @@ trait TypeScriptTypeMapper
           m(parent, settings, ownerType, member, tpe)
         )
     }
+
+  override def toString: String = getClass.getName
 }
 
 object TypeScriptTypeMapper {
   import com.github.ghik.silencer.silent
 
   /** `(settings, ownerType, member, type) => TypeScript type` */
-  type Resolved = Function4[Settings, String, TypeScriptField, TypeRef, String]
+  type Resolved =
+    Function4[Settings, Declaration, TypeScriptField, TypeRef, String]
 
   object Defaults extends TypeScriptTypeMapper {
 
     @silent @inline def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ) = Option.empty[String]
@@ -78,7 +81,7 @@ object TypeScriptTypeMapper {
     def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
@@ -97,7 +100,7 @@ object TypeScriptTypeMapper {
     def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
@@ -115,7 +118,7 @@ object TypeScriptTypeMapper {
     def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
@@ -134,7 +137,7 @@ object TypeScriptTypeMapper {
     def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
@@ -158,7 +161,7 @@ object TypeScriptTypeMapper {
     def apply(
         parent: TypeScriptTypeMapper.Resolved,
         settings: Settings,
-        ownerType: String,
+        ownerType: Declaration,
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
@@ -172,6 +175,7 @@ object TypeScriptTypeMapper {
 
   lazy val nullableAsOption = new NullableAsOption()
 
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   def chain(multi: Seq[TypeScriptTypeMapper]): Option[TypeScriptTypeMapper] = {
     @scala.annotation.tailrec
     def go(

@@ -42,6 +42,7 @@ trait TypeScriptFieldMapper
       propertyType: TypeRef
     ): TypeScriptField
 
+  override def toString: String = getClass.getName
 }
 
 object TypeScriptFieldMapper {

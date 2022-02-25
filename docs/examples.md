@@ -125,6 +125,7 @@ Then the Value class `EventType` is generated as a tagged/[branded](https://medi
 ```typescript
 export type EventType = string & { __tag: 'EventType' };
 
+// Constructor
 export function EventType(value: string): EventType {
   return value as EventType
 }
@@ -132,6 +133,14 @@ export function EventType(value: string): EventType {
 export function isEventType(v: any): v is EventType {
   return (typeof v) === 'string';
 }
+```
+
+Then such value can be initialized as bellow.
+
+```typescript
+const done: EventType = EventType('Done')
+
+isEventType(done) // true
 ```
 
 ## Example 5
@@ -328,10 +337,58 @@ export function isConstants(v: any): v is Constants {
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/simple/)
 
-Note that if `valueClassAsTagged` (see [Example 4a](#example-4a)) is applied, then `LowerGrade` is generated as below.
+### Example 9a
+
+If `valueClassAsTagged` (see [Example 4a](#example-4a)) is applied, then `LowerGrade` is generated as below.
 
 ```typescript
 public LowerGrade: Grade /* number */ = Grade(0);
 ```
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/)
+
+### Example 9b
+
+Data structures like `Seq`, `Set` and `Map` are supported, when values are supported.
+
+```scala
+package scalats.examples
+
+object ConstantsWithDataStructures {
+  def code = 1
+  val name = "foo"
+  val LowerGrade = new Grade(0)
+
+  val list = List(LowerGrade)
+  def set = Set("lorem", "ipsum")
+
+  val dict = Map(
+    "A" -> "value #1",
+    "B" -> name)
+}
+```
+
+*Generated TypeScript:* `list`, `set` and `dict` are generated as `ReadonlyArray`, `ReadonlySet` and `object`.
+
+> Note that the non-literal stable terms as `LowerGrade` in `list` are supported.
+
+```typescript
+import { Grade, isGrade } from './Grade';
+
+export class Constants {
+  public code: number = 1;
+
+  public name: string = "foo";
+
+  public LowerGrade: Grade = 0;
+
+  public list: ReadonlyArray<Grade> = [ this.LowerGrade ];
+
+  public set: ReadonlySet<string> = new Set("lorem", "ipsum");
+
+  public readonly dict = {
+    'A': "value #1",
+    'B': this.name
+  }
+}
+```

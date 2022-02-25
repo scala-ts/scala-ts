@@ -10,9 +10,9 @@ export interface TSTrainLine extends TSTransport {
 
 export function isTSTrainLine(v: any): v is TSTrainLine {
   return (
-    (Array.isArray(v['_serviceDays']) && v['_serviceDays'].every(elmt => elmt && isTSWeekDay(elmt))) &&
-    ((typeof v['_endStationId']) === 'string') &&
+    ((typeof v['_name']) === 'string') &&
     ((typeof v['_startStationId']) === 'string') &&
-    ((typeof v['_name']) === 'string')
+    ((typeof v['_endStationId']) === 'string') &&
+    (Array.isArray(v['_serviceDays']) && v['_serviceDays'].every(elmt => elmt && isTSWeekDay(elmt)))
   );
 }

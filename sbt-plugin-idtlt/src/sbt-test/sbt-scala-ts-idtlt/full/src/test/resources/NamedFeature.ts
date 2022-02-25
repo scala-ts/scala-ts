@@ -5,8 +5,8 @@ import * as nsFeature from './Feature';
 
 // Validator for InterfaceDeclaration NamedFeature
 export const idtltNamedFeature = idtlt.object({
-  feature: nsFeature.idtltFeature,
   name: idtlt.string,
+  feature: nsFeature.idtltFeature,
 });
 
 // Deriving TypeScript type from NamedFeature validator
@@ -26,7 +26,7 @@ export const discriminatedNamedFeature: (_: NamedFeature) => DiscriminatedNamedF
 
 export function isNamedFeature(v: any): v is NamedFeature {
   return (
-    (v['feature'] && nsFeature.isFeature(v['feature'])) &&
-    ((typeof v['name']) === 'string')
+    ((typeof v['name']) === 'string') &&
+    (v['feature'] && nsFeature.isFeature(v['feature']))
   );
 }

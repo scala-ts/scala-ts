@@ -13,4 +13,10 @@ case class Bar(
 
 object Constants {
   val DefaultName = Name("default")
+
+  val excluded = Seq("foo", "bar")
+
+  val filtered = excluded ++ Seq("filtered")
+
+  def list = List(DefaultName) ++ Seq(Name("test"))
 }

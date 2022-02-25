@@ -1,8 +1,8 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.typescript._
+
+import Internals.ListSet
 
 /**
  * Resolves the imports for TypeScript declarations.
@@ -59,6 +59,7 @@ object TypeScriptImportResolver {
 
   lazy val unionWithLiteralSingleton = new UnionWithLiteralSingleton
 
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   def chain(
       multi: Seq[TypeScriptImportResolver]
     ): Option[TypeScriptImportResolver] = {
@@ -75,29 +76,62 @@ object TypeScriptImportResolver {
     multi.headOption.map { first => go(multi.tail, first) }
   }
 
-  private[scalats] val defaultResolver: Resolved = (_: Declaration) match {
-    case InterfaceDeclaration(name, fields, _, superInterface, _) =>
-      fields
-        .flatMap(_.typeRef.requires)
-        .filterNot(_.name == name) ++ superInterface.map {
-        i: InterfaceDeclaration => i.reference
-      }
+  private[scalats] val defaultResolver: Resolved = {
+    def excludes(self: String): TypeRef => Boolean = {
+      case ThisTypeRef =>
+        true
 
-    case SingletonDeclaration(name, values, superInterface) =>
-      values
-        .flatMap(_.typeRef.requires)
-        .filterNot(_.name == name) ++ superInterface.map {
-        i: InterfaceDeclaration => i.reference
-      }
+      case t =>
+        t.name == self
+    }
 
-    case UnionDeclaration(name, fields, _, superInterface) =>
-      fields
-        .flatMap(_.typeRef.requires)
-        .filterNot(_.name == name) ++ superInterface.map {
-        i: InterfaceDeclaration => i.reference
-      }
+    (_: Declaration) match {
+      case InterfaceDeclaration(name, fields, _, superInterface, _) =>
+        fields
+          .flatMap(_.typeRef.requires)
+          .filterNot(excludes(name)) ++ superInterface.map {
+          i: InterfaceDeclaration => i.reference
+        }
 
-    case _ =>
-      ListSet.empty[TypeRef]
+      case s @ SingletonDeclaration(name, values, superInterface) =>
+        values.flatMap { v => defaultResolver(ValueMemberDeclaration(s, v)) }
+          .filterNot(excludes(name)) ++ superInterface.map {
+          i: InterfaceDeclaration => i.reference
+        }
+
+      case UnionDeclaration(name, fields, _, superInterface) =>
+        fields
+          .flatMap(_.typeRef.requires)
+          .filterNot(excludes(name)) ++ superInterface.map {
+          i: InterfaceDeclaration => i.reference
+        }
+
+      case vd @ ValueMemberDeclaration(ListValue(_, _, _, elements)) =>
+        elements.foldLeft[ListSet[TypeRef]](ListSet.empty) {
+          case (set, v) =>
+            set ++ defaultResolver(ValueMemberDeclaration(vd.owner, v))
+        }
+
+      case vd @ ValueMemberDeclaration(SetValue(_, _, _, elements)) =>
+        ListSet.empty ++ elements.flatMap { v =>
+          defaultResolver(ValueMemberDeclaration(vd.owner, v))
+        }
+
+      case vd @ ValueMemberDeclaration(DictionaryValue(_, _, _, entries)) =>
+        entries.foldLeft[ListSet[TypeRef]](ListSet.empty) {
+          case (set, (_, v)) =>
+            val ev = ValueMemberDeclaration(vd.owner, v)
+            set ++ defaultResolver(ev)
+        }
+
+      case ValueMemberDeclaration(SelectValue(_, ref, qual, _)) =>
+        qual.requires ++ ref.requires
+
+      case ValueMemberDeclaration(LiteralValue(_, ref, _)) =>
+        ref.requires
+
+      case _ =>
+        ListSet.empty
+    }
   }
 }

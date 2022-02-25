@@ -15,11 +15,11 @@ export interface TSBar {
 
 export function isTSBar(v: any): v is TSBar {
   return (
-    (v['_created'] && (v['_created'] instanceof Date)) &&
-    (v['_updated'] && (v['_updated'] instanceof Date)) &&
-    (Array.isArray(v['_transports']) && v['_transports'].every(elmt => elmt && isTSTransport(elmt))) &&
-    (!v['_amount'] || ((typeof v['_amount']) === 'number')) &&
+    (v['_name'] && isTSName(v['_name'])) &&
     ((typeof v['_age']) === 'number') &&
-    (v['_name'] && isTSName(v['_name']))
+    (!v['_amount'] || ((typeof v['_amount']) === 'number')) &&
+    (Array.isArray(v['_transports']) && v['_transports'].every(elmt => elmt && isTSTransport(elmt))) &&
+    (v['_updated'] && (v['_updated'] instanceof Date)) &&
+    (v['_created'] && (v['_created'] instanceof Date))
   );
 }

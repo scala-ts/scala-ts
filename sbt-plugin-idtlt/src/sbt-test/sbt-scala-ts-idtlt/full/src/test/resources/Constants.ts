@@ -4,8 +4,21 @@ import * as idtlt from 'idonttrustlikethat';
 import * as nsName from './Name';
 
 export class Constants {
-  public defaultName: nsName.Name = nsName.Name("default");
+  public code: number = 1;
+
   public UnknownName: nsName.Name = nsName.Name("unknown");
+
+  public defaultName: nsName.Name = nsName.Name("default");
+
+  public list: ReadonlyArray<number> = [ this.code, 2 ];
+
+  public readonly dict: { [key: string]: ReadonlyArray<nsName.Name> } = { 'specific': [ this.UnknownName, this.defaultName, nsName.Name("*") ], 'invalid': [ nsName.Name("failed") ] };
+
+  public excluded: ReadonlyArray<string> = [ "foo", "bar" ];
+
+  public filtered: ReadonlyArray<string> = [ ...this.excluded, ...[ "filtered" ]];
+
+  public names: ReadonlyArray<nsName.Name> = [ ...[ this.UnknownName, this.defaultName ], ...[ nsName.Name("test") ]];
 
   private static instance: Constants;
 
@@ -25,3 +38,7 @@ export const ConstantsInhabitant: Constants = Constants.getInstance();
 export function isConstants(v: any): v is Constants {
   return (v instanceof Constants) && (v === ConstantsInhabitant);
 }
+
+export const idtltConstants =
+  idtlt.unknown.and(_unknown => idtlt.Err(
+    'Cannot validator instance for singleton Constants'));

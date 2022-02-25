@@ -19,7 +19,7 @@ final class Settings(
     val fieldMapper: TypeScriptFieldMapper,
     val discriminator: Settings.Discriminator) {
 
-  @SuppressWarnings(Array("MaxParameters"))
+  @SuppressWarnings(Array("MaxParameters", "VariableShadowing"))
   private[scalats] def copy(
       emitCodecs: Settings.EmitCodecs = this.emitCodecs,
       optionToNullable: Boolean = this.optionToNullable,

@@ -32,4 +32,16 @@ object Constants {
   def code = 1
   val UnknownName = new Name("unknown")
   val defaultName = new Name("default")
+
+  val list = Seq(code, 2)
+
+  val dict = Map(
+    "specific" -> List(UnknownName, defaultName, new Name("*")),
+    "invalid" -> List(new Name("failed")))
+
+  val excluded = Seq("foo", "bar")
+
+  val filtered = excluded ++ Seq("filtered")
+
+  def names = List(UnknownName, defaultName) ++ Seq(new Name("test"))
 }

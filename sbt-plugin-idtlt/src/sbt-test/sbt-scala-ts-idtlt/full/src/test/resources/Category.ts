@@ -32,4 +32,3 @@ export function isCategory(v: any): v is Category {
     nsLorem.isLorem(v)
   );
 }
-

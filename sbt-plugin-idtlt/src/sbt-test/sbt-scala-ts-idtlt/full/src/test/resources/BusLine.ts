@@ -3,9 +3,9 @@ import * as idtlt from 'idonttrustlikethat';
 
 // Validator for InterfaceDeclaration BusLine
 export const idtltBusLine = idtlt.object({
-  stopIds: idtlt.array(idtlt.string),
-  name: idtlt.string,
   id: idtlt.number,
+  name: idtlt.string,
+  stopIds: idtlt.array(idtlt.string),
 });
 
 // Super-type declaration Transport is ignored
@@ -27,8 +27,8 @@ export const discriminatedBusLine: (_: BusLine) => DiscriminatedBusLine = (v: Bu
 
 export function isBusLine(v: any): v is BusLine {
   return (
-    (Array.isArray(v['stopIds']) && v['stopIds'].every(elmt => (typeof elmt) === 'string')) &&
+    ((typeof v['id']) === 'number') &&
     ((typeof v['name']) === 'string') &&
-    ((typeof v['id']) === 'number')
+    (Array.isArray(v['stopIds']) && v['stopIds'].every(elmt => (typeof elmt) === 'string'))
   );
 }
