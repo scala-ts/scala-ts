@@ -1,8 +1,8 @@
 package io.github.scalats.typescript
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.core.Internals
+
+import Internals.ListSet
 
 /** Reference to a builtin type or one declared elsewhere. */
 sealed trait TypeRef {
@@ -27,7 +27,7 @@ private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
   }
 
   def requires: ListSet[TypeRef] =
-    ListSet.empty ++ typeArgs.toList.flatMap { ta: TypeRef => ta.requires }
+    ListSet.empty ++ typeArgs.flatMap { ta: TypeRef => ta.requires }
 
 }
 
@@ -42,6 +42,7 @@ case class TaggedRef(
     name: String,
     tagged: TypeRef)
     extends TypeRef {
+
   override def requires: ListSet[TypeRef] = tagged.requires + this
 
   override lazy val toString = s"${name} /* ${tagged.toString} */"
@@ -136,6 +137,8 @@ case object DateRef extends SimpleTypeRef("Date")
 
 case object DateTimeRef extends SimpleTypeRef("DateTime")
 
+private[scalats] case object ThisTypeRef extends SimpleTypeRef("this")
+
 /**
  * Reference to a nullable type (e.g. an optional string).
  *
@@ -155,10 +158,10 @@ case class NullableType(innerType: TypeRef) extends TypeRef {
 case class UnionType(possibilities: ListSet[TypeRef]) extends TypeRef {
   @inline def requires = ListSet.empty[TypeRef]
 
-  lazy val name = Internals.list(possibilities.map(_.name)).mkString(" | ")
+  lazy val name = possibilities.map(_.name).mkString(" | ")
 
   override def toString: String =
-    Internals.list(possibilities).mkString(" | ")
+    possibilities.mkString(" | ")
 }
 
 /**

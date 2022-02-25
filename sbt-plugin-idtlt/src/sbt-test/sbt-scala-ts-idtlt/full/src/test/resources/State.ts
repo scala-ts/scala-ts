@@ -32,4 +32,3 @@ export function isState(v: any): v is State {
     nsAlaska.isAlaska(v)
   );
 }
-

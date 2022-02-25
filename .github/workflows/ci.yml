@@ -28,6 +28,9 @@ jobs:
       with:
         extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
+    - name: 'Compile'
+      run: 'sbt -J-Dscalafix.disable=true test:compile'
+
     - name: 'Check code quality' # TODO: Separate job
       run: |
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'

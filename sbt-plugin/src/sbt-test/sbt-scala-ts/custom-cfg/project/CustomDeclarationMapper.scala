@@ -34,7 +34,7 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
         fields.foreach { member =>
           val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
-          out.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)}${settings.typescriptLineSeparator}")
+          out.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, decl, tsField, member.typeRef)}${settings.typescriptLineSeparator}")
         }
 
         out.println(s"${settings.typescriptIndent}_additionalField?: string${settings.typescriptLineSeparator}")

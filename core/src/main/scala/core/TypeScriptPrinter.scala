@@ -2,9 +2,9 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.typescript.{ Declaration, TypeRef }
+
+import Internals.ListSet
 
 trait TypeScriptPrinter
     extends Function4[Settings, Declaration.Kind, String, ListSet[

@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
+import Internals.ListSet
 
 final class InternalsSpec extends org.specs2.mutable.Specification {
   "Internals" title
@@ -11,7 +11,7 @@ final class InternalsSpec extends org.specs2.mutable.Specification {
     "be iterable orderly" in {
       val res = Seq.newBuilder[String]
 
-      Internals.list(wordSet).foreach {
+      wordSet.toList.foreach {
         res += _
       }
 

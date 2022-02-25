@@ -3,7 +3,6 @@ package io.github.scalats.idtlt
 import java.io.PrintStream
 
 import io.github.scalats.core.{
-  Internals,
   Settings,
   TypeScriptDeclarationMapper,
   TypeScriptEmitter,
@@ -44,6 +43,14 @@ final class DeclarationMapper extends TypeScriptDeclarationMapper {
       settings
     )
 
+    def valueRightHand(owner: SingletonDeclaration, v: Value): Unit = {
+      val vd = ValueBodyDeclaration(ValueMemberDeclaration(owner, v), v)
+
+      apply(parent, settings, typeMapper, fieldMapper, vd, out).getOrElse(
+        parent(vd, out)
+      )
+    }
+
     def deriving = s"""// Deriving TypeScript type from ${tpeName} validator
 export type ${tpeName} = typeof idtlt${tpeName}.T${lineSep}
 """
@@ -59,24 +66,30 @@ ${indent}})
 // Deriving TypeScript type from idtltDiscriminated${tpeName} validator
 export type Discriminated${tpeName} = typeof idtltDiscriminated${tpeName}.T${lineSep}"""
 
-    def emit(): Unit = declaration match {
-      case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
-        out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
+    declaration match {
+      case iface @ InterfaceDeclaration(
+            _,
+            fields,
+            Nil,
+            superInterface,
+            false
+          ) =>
+        Some {
+          out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.object({""")
 
-        // TODO: list(fields).reverse
-        fields.foreach {
-          emitField(settings, fieldMapper, typeMapper, out, name, _)
-        }
+          fields.foreach {
+            emitField(settings, fieldMapper, typeMapper, out, iface, _)
+          }
 
-        out.println(s"})${lineSep}")
+          out.println(s"})${lineSep}")
 
-        superInterface.foreach { si =>
-          out.println(s"""
+          superInterface.foreach { si =>
+            out.println(s"""
 // Super-type declaration ${si.name} is ignored""")
-        }
+          }
 
-        out.print(s"""
+          out.print(s"""
 $deriving
 $discrimitedDecl
 
@@ -84,94 +97,109 @@ export const discriminated${tpeName}: (_: ${tpeName}) => Discriminated${tpeName}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (
-${interfaceTypeGuard(tpeName, fields)}
+${interfaceTypeGuard(tpeName, fields.toList)}
 ${indent})${lineSep}
 }""")
-      }
-
-      case i: InterfaceDeclaration => {
-        out.println(s"// Not supported: InterfaceDeclaration '${name}'")
-
-        if (i.typeParams.nonEmpty) {
-          out.println(s"// - type parameters: ${i.typeParams mkString ", "}")
         }
 
-        out.println(s"""
+      case i: InterfaceDeclaration =>
+        Some {
+          out.println(s"// Not supported: InterfaceDeclaration '${name}'")
+
+          if (i.typeParams.nonEmpty) {
+            out.println(s"// - type parameters: ${i.typeParams mkString ", "}")
+          }
+
+          out.println(s"""
 export function is${tpeName}(v: any): boolean {
 ${indent}return false${lineSep}
 }""")
 
-      }
-
-      case UnionDeclaration(_, fields, possibilities, None) => {
-        out.println(s"""// Validator for UnionDeclaration ${tpeName}
-export const idtlt${tpeName} = idtlt.union(""")
-
-        val ps = Internals.list(possibilities).sortBy(_.name)
-        val pst = ps.map(typeNaming)
-
-        out.print(pst.map { n =>
-          s"${indent}ns${n}.idtltDiscriminated${n}"
-        } mkString ",\n")
-
-        out.println(s")${lineSep}")
-
-        if (fields.nonEmpty) {
-          // TODO: Intersection?
-
-          out.println(s"""
-// Fields are ignored: ${fields.map(_.name) mkString ", "}""")
         }
 
-        out.println(s"""
+      case UnionDeclaration(_, fields, possibilities, None) =>
+        Some {
+          out.println(s"""// Validator for UnionDeclaration ${tpeName}
+export const idtlt${tpeName} = idtlt.union(""")
+
+          val ps = possibilities.toList.sortBy(_.name)
+          val pst = ps.map(typeNaming)
+
+          out.print(pst.map { n =>
+            s"${indent}ns${n}.idtltDiscriminated${n}"
+          } mkString ",\n")
+
+          out.println(s")${lineSep}")
+
+          if (fields.nonEmpty) {
+            // TODO: Intersection?
+
+            out.println(s"""
+// Fields are ignored: ${fields.map(_.name) mkString ", "}""")
+          }
+
+          out.print(s"""
 $deriving
 $discrimitedDecl
 
-export const idtlt${tpeName}KnownValues: Array<${tpeName}> = [""")
+export const idtlt${tpeName}KnownValues: Array<${tpeName}> = [
+${indent}""")
 
-        val knownValues: List[String] = ps.flatMap {
-          case SingletonTypeRef(nme, values) => {
-            if (values.headOption.nonEmpty) {
-              values.map(_.rawValue)
-            } else {
-              List(s"'${nme}'")
+          ps.flatMap {
+            case SingletonTypeRef(nme, values) => {
+              val sd = SingletonDeclaration(nme, values, None)
+
+              if (values.headOption.nonEmpty) {
+                values.map(v => () => valueRightHand(sd, v))
+              } else {
+                List(() => out.print(s"'${nme}'"))
+              }
             }
+
+            case _ => List.empty[() => Unit]
+          }.zipWithIndex.foreach {
+            case (print, i) =>
+              if (i > 0) {
+                out.print(", ")
+              }
+
+              print()
           }
 
-          case _ => List.empty[String]
-        }
-
-        out.println(s"""${indent}${knownValues mkString ", "}\n]${lineSep}
+          out.println(s"""\n]${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")
 
-        out.print(pst.map { n =>
-          s"${indent}${indent}ns${n}.is${n}(v)"
-        } mkString " ||\n")
+          out.print(pst.map { n =>
+            s"${indent}${indent}ns${n}.is${n}(v)"
+          } mkString " ||\n")
 
-        out.println(s"""
+          out.println(s"""
 ${indent})${lineSep}
-}
-""")
-      }
+}""")
+        }
 
       case _: UnionDeclaration =>
-        out.println(s"// Not supported: UnionDeclaration '${name}'")
+        Some {
+          out.println(s"// Not supported: UnionDeclaration '${name}'")
+        }
 
-      case TaggedDeclaration(id, field) => {
-        val member = TypeScriptField(field.name)
-        val tagged = typeMapper(settings, name, member, field.typeRef)
+      case decl @ TaggedDeclaration(id, field) =>
+        Some {
+          val member = TypeScriptField(field.name)
+          val tmapper = typeMapper(settings, decl, member, _: TypeRef)
+          val tagged = tmapper(field.typeRef)
 
-        val fieldTpe = TypeScriptEmitter.defaultTypeMapping(
-          settings,
-          member,
-          field.typeRef,
-          settings.typeNaming(settings, _),
-          tr = typeMapper(settings, name, member, _)
-        )
+          val fieldTpe = TypeScriptEmitter.defaultTypeMapping(
+            settings,
+            member,
+            field.typeRef,
+            settings.typeNaming(settings, _),
+            tr = tmapper
+          )
 
-        out.println(s"""// Validator for TaggedDeclaration ${tpeName}
+          out.println(s"""// Validator for TaggedDeclaration ${tpeName}
 export type ${tpeName} = ${fieldTpe} & { __tag: '${id}' }${lineSep}
 
 export function ${tpeName}(${field.name}: ${fieldTpe}): ${tpeName} {
@@ -183,114 +211,131 @@ export const idtlt${tpeName} = ${tagged}.tagged<${tpeName}>()${lineSep}
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
-      }
+        }
 
-      case EnumDeclaration(_, values) => {
-        out.println(s"""// Validator for EnumDeclaration ${tpeName}
+      case EnumDeclaration(_, values) =>
+        Some {
+          out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 
-        out.print(values.map { v =>
-          s"${indent}idtlt.literal('${v}')"
-        } mkString ",\n")
+          out.print(values.map { v =>
+            s"${indent}idtlt.literal('${v}')"
+          } mkString ",\n")
 
-        out.println(s""")
+          out.println(s""")
 
 $deriving
 $discrimitedDecl
 
 export const idtlt${tpeName}Values: Array<${tpeName}> = [""")
 
-        out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")
-        out.println(s"""\n]${lineSep}
+          out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")
+          out.println(s"""\n]${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent} return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
-      }
+        }
 
-      case SingletonDeclaration(_, values, Some(superInterface)) => {
-        // Singleton as inhabitant of the superInterface
+      case decl @ SingletonDeclaration(_, values, Some(superInterface)) =>
+        Some {
+          // Singleton as inhabitant of the superInterface
 
-        out.print(s"""// Validator for SingletonDeclaration ${tpeName}
+          out.print(s"""// Validator for SingletonDeclaration ${tpeName}
 export const idtlt${tpeName} = """)
 
-        values.headOption match {
-          case Some(Value(_, _, single)) => {
-            if (values.tail.isEmpty) {
-              out.println(s"idtlt.literal(${single})${lineSep}")
-            } else {
-              out.println("idtlt.object({")
+          values.headOption match {
+            case Some(LiteralValue(_, _, single)) => {
+              if (values.toList.drop(1).isEmpty) {
+                out.println(s"idtlt.literal(${single})${lineSep}")
+              } else {
+                out.println("idtlt.object({")
 
-              values.foreach {
-                case Value(nme, _, v) =>
-                  out.println(s"${indent}${nme}: idtlt.literal(${v}),")
+                values.foreach {
+                  case LiteralValue(nme, _, v) =>
+                    out.println(s"${indent}${nme}: idtlt.literal(${v}),")
+
+                  case v =>
+                    out.println(s"${indent}/* Unsupported '${v.getClass.getSimpleName}': ${v.name} */")
+                }
+
+                out.println(s"})${lineSep}")
               }
-
-              out.println(s"})${lineSep}")
             }
+
+            case _ =>
+              out.println(s"idtlt.literal('${name}')")
+
           }
 
-          case _ =>
-            out.println(s"idtlt.literal('${name}')")
-
-        }
-
-        out.print(s"""
+          out.print(s"""
 // Super-type declaration ${superInterface.name} is ignored""")
 
-        val constValue: String = values.headOption match {
-          case Some(Value(_, _, raw)) => {
-            if (values.size > 1) {
-              values.map { case Value(n, _, r) => s"${n}: $r" }
-                .mkString(s"{\n${indent}", s",\n${indent}", "\n}")
-            } else {
-              raw
-            }
-          }
-
-          case _ =>
-            s"'${name}'"
-        }
-
-        out.print(s"""
+          out.print(s"""
 export const idtltDiscriminated${tpeName} = idtlt${tpeName}${lineSep}
 
 $deriving
-export const ${tpeName}Inhabitant: ${tpeName} = $constValue${lineSep}
+export const ${tpeName}Inhabitant: ${tpeName} = """)
+
+          // See UnionDeclaration ps.flatMap
+          values.headOption match {
+            case Some(LiteralValue(_, _, raw)) => {
+              // See TypeMapper#IDTLT_TYPE_MAPPER_1
+              val constDecl = decl.noSuperInterface
+
+              if (values.size > 1) {
+                out.print(s"{\n${indent}")
+
+                values.zipWithIndex.foreach {
+                  case (v, i) =>
+                    if (i > 0) {
+                      out.print(s",\n${indent}")
+                    }
+
+                    out.print(s"${v.name}: ")
+                    valueRightHand(constDecl, v)
+                }
+
+                out.print("\n}")
+              } else {
+                out.print(raw)
+              }
+            }
+
+            case _ =>
+              out.print(s"'${name}'")
+          }
+
+          out.print(s"""${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
-      }
+        }
 
       case decl: SingletonDeclaration =>
-        parent(decl, out)
+        Some {
+          parent(decl, out)
 
-      case Value(nme, tagged @ TaggedRef(_, _), v) => {
-        val typeNaming = settings.typeNaming(settings, _: TypeRef)
-        val n = typeNaming(tagged)
+          out.print(s"""
+export const idtlt${tpeName} =
+  idtlt.unknown.and(_unknown => idtlt.Err(
+    'Cannot validator instance for singleton ${tpeName}'))${lineSep}
+""")
+        }
 
-        val tpeName = s"ns${n}.${n}"
+      case ValueBodyDeclaration(
+            LiteralValue(_, tagged @ TaggedRef(_, _), v)
+          ) =>
+        Some {
+          val n = typeNaming(tagged)
 
-        out.println(
-          s"${indent}public $nme: ${tpeName} = ${tpeName}($v)${lineSep}"
-        )
-      }
+          out.print(s"ns${n}.${n}($v)")
+        }
 
-      case decl: Value =>
-        TypeScriptDeclarationMapper
-          .valueClassAsTagged(
-            parent,
-            settings,
-            typeMapper,
-            fieldMapper,
-            decl,
-            out
-          )
-          .getOrElse({})
+      case _ =>
+        None
     }
-
-    Some(emit())
   }
 
   // ---
@@ -300,13 +345,13 @@ ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
       fieldMapper: TypeScriptFieldMapper,
       typeMapper: TypeScriptTypeMapper.Resolved,
       o: PrintStream,
-      name: String,
+      owner: Declaration,
       member: Member
     ): Unit = {
-    val tsField = fieldMapper(settings, name, member.name, member.typeRef)
+    val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
     o.println(
-      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},"
+      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
     )
   }
 }

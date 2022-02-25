@@ -1,9 +1,9 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
+import scala.collection.immutable.{ ListSet => LS }
 
 private[scalats] object Internals {
+  type ListSet[T] = LS[T]
 
-  /** With predictable order (for emitter). */
-  @inline def list[T](set: ListSet[T]): List[T] = set.toList
+  val ListSet = LS
 }

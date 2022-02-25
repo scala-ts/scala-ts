@@ -1,7 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript._
 
 final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
@@ -83,8 +82,8 @@ export function isScalaRuntimeFixturesTestClass3(v: any): v is ScalaRuntimeFixtu
 
 export function isScalaRuntimeFixturesTestClass5(v: any): v is ScalaRuntimeFixturesTestClass5 {
   return (
-    ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number'))) &&
-    (!v['name'] || ((typeof v['name']) === 'T'))
+    (!v['name'] || ((typeof v['name']) === 'T')) &&
+    ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number')))
   );
 }
 """)
@@ -136,8 +135,8 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
 
       "as member" in {
         emit(ListSet(interface8)) must beTypedEqualTo("""export interface ScalaRuntimeFixturesTestClass8 {
-  aliases: ReadonlyArray<ScalaRuntimeFixturesAnyValChild>;
   name: ScalaRuntimeFixturesAnyValChild;
+  aliases: ReadonlyArray<ScalaRuntimeFixturesAnyValChild>;
 }
 
 export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
@@ -179,8 +178,26 @@ export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixt
           // SCALATS1: No implements SupI
           emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
-  public const: string = "value";
+
   public code: number = 1;
+
+  public const: string = "value";
+
+  public foo: string = this.name;
+
+  public list: ReadonlyArray<string> = [ "first", this.name ];
+
+  public set: ReadonlySet<number> = new Set([ this.code, 2 ]);
+
+  public readonly mapping: { [key: string]: string } = { 'foo': "bar", 'lorem': this.name };
+
+  public readonly dictOfList: { [key: string]: ReadonlyArray<string> } = { 'excludes': [ "*.txt", ".gitignore" ], 'includes': [ "images/**", "*.jpg", "*.png" ] };
+
+  public concatSeq: ReadonlyArray<string> = [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]];
+
+  public concatList: ReadonlyArray<string> = [ ...[ "foo" ], ...this.list];
+
+  public mergedSet: ReadonlySet<number> = new Set([ ...this.set, ...new Set([ 3 ]) ]);
 
   private static instance: ScalaRuntimeFixturesTestObject2;
 
@@ -204,16 +221,28 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
         }
 
         "with value class as tagged type" in {
+          val taggedRef =
+            TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)
+
           val singleton2WithTagged = SingletonDeclaration(
             "ScalaRuntimeFixturesTestObject2",
             ListSet(
-              Value("name", StringRef, "\"Foo\""),
-              Value(
+              LiteralValue("name", StringRef, "\"Foo\""),
+              LiteralValue(
                 "const",
-                TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef),
+                taggedRef,
                 "\"value\""
               ),
-              Value("code", NumberRef, "1")
+              SelectValue("foo", taggedRef, ThisTypeRef, "const"),
+              LiteralValue("code", NumberRef, "1"),
+              ListValue(
+                name = "list",
+                typeRef = ArrayRef(taggedRef),
+                valueTypeRef = taggedRef,
+                elements = List(
+                  LiteralValue("list[0]", taggedRef, "\"first\"")
+                )
+              )
             ),
             superInterface = Some(
               InterfaceDeclaration(
@@ -231,8 +260,14 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
             declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
           ) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
+
   public const: ScalaRuntimeFixturesAnyValChild = ScalaRuntimeFixturesAnyValChild("value");
+
+  public foo: ScalaRuntimeFixturesAnyValChild = this.const;
+
   public code: number = 1;
+
+  public list: ReadonlyArray<ScalaRuntimeFixturesAnyValChild> = [ ScalaRuntimeFixturesAnyValChild("first") ];
 
   private static instance: ScalaRuntimeFixturesTestObject2;
 
@@ -285,7 +320,11 @@ export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFi
 
       "emit literal types" >> {
         val barVal =
-          Value(name = "bar", typeRef = StringRef, rawValue = "\"lorem\"")
+          LiteralValue(
+            name = "bar",
+            typeRef = StringRef,
+            rawValue = "\"lorem\""
+          )
 
         "using singleton name" in {
           val obj = SingletonDeclaration(
@@ -332,7 +371,7 @@ export function isFoo(v: any): v is Foo {
             name = "Foo",
             values = ListSet(
               barVal,
-              Value(name = "ipsum", typeRef = NumberRef, rawValue = "2")
+              LiteralValue(name = "ipsum", typeRef = NumberRef, rawValue = "2")
             ),
             superInterface = Option.empty
           )

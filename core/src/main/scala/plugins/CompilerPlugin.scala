@@ -7,8 +7,6 @@ import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
 
 import scala.util.matching.Regex
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.core.{
   Logger,
   ScalaParser,
@@ -17,6 +15,7 @@ import io.github.scalats.core.{
   TypeScriptImportResolver,
   TypeScriptTypeMapper
 }
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.tsconfig.ConfigFactory
 
 final class CompilerPlugin(val global: Global)
@@ -98,16 +97,19 @@ final class CompilerPlugin(val global: Global)
     Some("  -P:scalats:configuration=/path/to/config             Path to the plugin configuration as XML file\r\n  -P:scalats:debug             Enable plugin debug")
 
   private object Component extends PluginComponent {
+
+    @SuppressWarnings(Array("VariableShadowing"))
     val global: plugin.global.type = plugin.global
+
     val runsAfter = List("typer")
     val phaseName = plugin.name
 
     import global._
 
     def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
-      val config = plugin.config
+      val _config = plugin.config
 
-      import config.{ compilationRuleSet, typeRuleSet }
+      import _config.{ compilationRuleSet, typeRuleSet }
 
       @inline override def name = plugin.name
 
@@ -162,6 +164,7 @@ final class CompilerPlugin(val global: Global)
         }
       }
 
+      @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
       @annotation.tailrec
       private def matches(str: String, s: Set[Regex]): Boolean =
         s.headOption match {
@@ -185,11 +188,12 @@ final class CompilerPlugin(val global: Global)
         acceptsType: Symbol => Boolean
       ): Unit = {
 
+      @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
       @annotation.tailrec
       def traverse[Acc](
           trees: Seq[Tree],
           acc: Acc,
-          examined: List[Type] = List.empty
+          _examined: List[Type] = List.empty
         )(f: ((Type, Tree), Acc) => Acc
         ): Acc =
         trees.headOption match {
@@ -214,7 +218,7 @@ final class CompilerPlugin(val global: Global)
               val accepted = (ClassDefTag.unapply(tree).nonEmpty ||
                 ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
 
-              val add = !examined.contains(tpe) && accepted
+              val add = !_examined.contains(tpe) && accepted
 
               val newAcc = {
                 if (add) {
@@ -235,13 +239,13 @@ final class CompilerPlugin(val global: Global)
               }
 
               val newEx = {
-                if (add) tpe :: examined
-                else examined
+                if (add) tpe :: _examined
+                else _examined
               }
 
               traverse(newTrees, newAcc, newEx)(f)
             } else {
-              traverse(trees.tail, acc, examined)(f)
+              traverse(trees.tail, acc, _examined)(f)
             }
           }
 

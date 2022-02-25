@@ -55,6 +55,8 @@ trait TypeScriptDeclarationMapper
             m(parent, settings, typeMapper, fieldMapper, declaration, out)
           )
     }
+
+  override def toString: String = getClass.getName
 }
 
 object TypeScriptDeclarationMapper {
@@ -66,10 +68,9 @@ object TypeScriptDeclarationMapper {
     TypeRef,
     TaggedRef,
     UnionDeclaration,
-    Value
+    LiteralValue,
+    ValueBodyDeclaration
   }
-
-  import Internals.list
 
   type Resolved = Function2[Declaration, PrintStream, Unit]
 
@@ -108,18 +109,16 @@ object TypeScriptDeclarationMapper {
       }
 
       declaration match {
-        case Value(nme, tagged @ TaggedRef(_, _), v) => {
+        case ValueBodyDeclaration(
+              LiteralValue(_, tagged @ TaggedRef(_, _), v)
+            ) => {
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
           val tpeName = typeNaming(tagged)
 
-          Some {
-            out.println(
-              s"${indent}public $nme: ${tpeName} = ${tpeName}($v)${lineSep}"
-            )
-          }
+          Some(out.print(s"${tpeName}($v)"))
         }
 
-        case decl @ TaggedDeclaration(name, field) =>
+        case decl @ TaggedDeclaration(_, field) =>
           Some {
             val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
@@ -127,7 +126,7 @@ object TypeScriptDeclarationMapper {
 
             val valueType = typeMapper(
               settings,
-              name,
+              decl,
               TypeScriptField(field.name),
               field.typeRef
             )
@@ -188,7 +187,7 @@ ${indent}return ${simpleCheck}${lineSep}
 
           out.println(s"export enum ${tpeName} {")
 
-          list(values).zipWithIndex.foreach {
+          values.toList.zipWithIndex.foreach {
             case (value, idx) =>
               if (idx > 0) {
                 out.println(",")
@@ -244,10 +243,12 @@ ${indent}return (""")
       case decl @ SingletonDeclaration(name, values, _) =>
         Some {
           val constValue: String = values.headOption match {
-            case Some(Value(_, _, raw)) => {
+            case Some(LiteralValue(_, _, raw)) => {
               if (values.size > 1) {
-                values.map { case Value(n, _, r) => s"${n}: $r" }
-                  .mkString("{ ", ", ", " }")
+                values.map {
+                  case LiteralValue(n, _, r) => s"${n}: $r"
+                  case _                     => "/* TODO */"
+                }.mkString("{ ", ", ", " }")
               } else {
                 raw
               }
@@ -343,6 +344,7 @@ ${indent}${indent}""")
 
   lazy val unionAsSimpleUnion = new UnionAsSimpleUnion()
 
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   def chain(
       multi: Seq[TypeScriptDeclarationMapper]
     ): Option[TypeScriptDeclarationMapper] = {

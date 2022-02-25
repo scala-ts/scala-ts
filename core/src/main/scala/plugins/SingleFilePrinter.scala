@@ -2,8 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
-import scala.collection.immutable.ListSet
-
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.core.Settings
 import io.github.scalats.typescript.{ Declaration, TypeRef }
 

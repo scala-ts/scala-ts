@@ -32,4 +32,3 @@ export function isFeature(v: any): v is Feature {
     nsFooLure.isFooLure(v)
   );
 }
-

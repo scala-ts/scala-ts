@@ -3,9 +3,9 @@ import * as idtlt from 'idonttrustlikethat';
 
 // Validator for InterfaceDeclaration TrainLine
 export const idtltTrainLine = idtlt.object({
-  endStationId: idtlt.string,
-  startStationId: idtlt.string,
   name: idtlt.string,
+  startStationId: idtlt.string,
+  endStationId: idtlt.string,
 });
 
 // Super-type declaration Transport is ignored
@@ -27,8 +27,8 @@ export const discriminatedTrainLine: (_: TrainLine) => DiscriminatedTrainLine = 
 
 export function isTrainLine(v: any): v is TrainLine {
   return (
-    ((typeof v['endStationId']) === 'string') &&
+    ((typeof v['name']) === 'string') &&
     ((typeof v['startStationId']) === 'string') &&
-    ((typeof v['name']) === 'string')
+    ((typeof v['endStationId']) === 'string')
   );
 }

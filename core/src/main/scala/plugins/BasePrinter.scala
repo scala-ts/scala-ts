@@ -2,9 +2,8 @@ package io.github.scalats.plugins
 
 import java.io.PrintStream
 
-import scala.collection.immutable.ListSet
-
 import io.github.scalats.core.{ Settings, TypeScriptPrinter }
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript.TypeRef
 
 abstract class BasePrinter extends TypeScriptPrinter {

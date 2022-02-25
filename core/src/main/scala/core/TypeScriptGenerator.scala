@@ -1,9 +1,10 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.{ ListSet, Set }
+import scala.collection.immutable.Set
 
 import scala.reflect.api.Universe
-//import scala.reflect.runtime
+
+import Internals.ListSet
 
 /**
  * Created by Milosz on 11.06.2016.
@@ -15,39 +16,6 @@ import scala.reflect.api.Universe
  * @define typeMapperParam the function to mapper the transpiled types to TypeScript code (if the standard emitter is used)
  */
 object TypeScriptGenerator {
-
-  /* TODO: Remove of refactor with runtime ToolBox
-   * Generates TypeScript from specified runtime classes.
-   *
-   * @param settings $settingsParam
-   * @param classNames the names of Scala classes to be generated as TypeScript
-   * @param logger $loggerParam
-   * @param printer $printerParam
-   * @param declMapper $declMapperParam
-   * @param typeMapper $typeMapperParam
-  def generateFromClassNames(
-    settings: Settings,
-    classNames: List[String],
-    logger: Logger,
-    printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
-    declMapper: TypeScriptDeclarationMapper = TypeScriptDeclarationMapper.Defaults,
-    typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults,
-    classLoader: ClassLoader = getClass.getClassLoader //
-  ): ListSet[ScalaParser.TypeFullId] = {
-    import runtime.universe
-
-    implicit def cl: ClassLoader = classLoader
-
-    val mirror = universe.runtimeMirror(cl)
-    val types = classNames.map { className =>
-      mirror.staticClass(className).toType
-    }
-
-    generate(universe)(
-      settings, types, logger, declMapper,
-      typeMapper, printer, ListSet.empty)
-  }
-   */
 
   /**
    * Generates the TypeScript for the specified Scala `types`.

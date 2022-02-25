@@ -46,13 +46,15 @@ ${indent}})
       case tagged @ TaggedDeclaration(_, _) =>
         parent(tagged, out)
 
-      case InterfaceDeclaration(_, fields, Nil, superInterface, false) => {
+      case iface @ InterfaceDeclaration(
+        _, fields, Nil, superInterface, false) => {
+
         out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.object({""")
 
         // TODO: list(fields).reverse
         fields.foreach {
-          emitField(settings, fieldMapper, typeMapper, out, name, _)
+          emitField(settings, fieldMapper, typeMapper, out, iface, _)
         }
 
         out.println(s"})${lineSep}")
@@ -122,15 +124,18 @@ $deriving""")
 export const idtlt${tpeName} = """)
 
         values.headOption match {
-          case Some(Value(_, _, single)) => {
+          case Some(LiteralValue(_, _, single)) => {
             if (values.tail.isEmpty) {
               out.println(s"idtlt.literal(${single})${lineSep}")
             } else {
               out.println(s"idtlt.object({")
 
               values.foreach {
-                case Value(nme, _, v) =>
+                case LiteralValue(nme, _, v) =>
                   out.println(s"${indent}${nme}: idtlt.literal(${v}),")
+
+                case v =>
+                  out.println(s"/* Unsupported: $v */")
               }
 
               out.println(s"})${lineSep}")
@@ -153,7 +158,7 @@ export const idtltDiscriminated${tpeName} = idtlt${tpeName};
 $deriving""")
       }
 
-      case decl: Value =>
+      case decl =>
         parent(decl, out)
     }
 
@@ -167,11 +172,11 @@ $deriving""")
     fieldMapper: TypeScriptFieldMapper,
     typeMapper: TypeScriptTypeMapper.Resolved,
     o: PrintStream,
-    name: String,
+    owner: Declaration,
     member: Member
   ): Unit = {
-    val tsField = fieldMapper(settings, name, member.name, member.typeRef)
+    val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
-    o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, name, tsField, member.typeRef)},")
+    o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},")
   }
 }

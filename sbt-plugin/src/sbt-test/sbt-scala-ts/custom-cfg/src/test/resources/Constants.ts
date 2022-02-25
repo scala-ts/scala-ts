@@ -1,7 +1,13 @@
 import { TSName, isTSName } from './scalatsName';
 
 export class TSConstants {
-  public DefaultName: TSName = TSName("default");
+  public _DefaultName: TSName = TSName("default");
+
+  public _excluded: ReadonlyArray<string> = [ "foo", "bar" ];
+
+  public _filtered: ReadonlyArray<string> = [ ...this._excluded, ...[ "filtered" ]];
+
+  public _list: ReadonlyArray<TSName> = [ ...[ this._DefaultName ], ...[ TSName("test") ]];
 
   private static instance: TSConstants;
 

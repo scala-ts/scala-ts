@@ -12,9 +12,9 @@ export interface TrainLine extends Transport {
 
 export function isTrainLine(v: any): v is TrainLine {
   return (
-    (v['feature'] && isNamedFeature(v['feature'])) &&
-    ((typeof v['endStationId']) === 'string') &&
+    ((typeof v['name']) === 'string') &&
     ((typeof v['startStationId']) === 'string') &&
-    ((typeof v['name']) === 'string')
+    ((typeof v['endStationId']) === 'string') &&
+    (v['feature'] && isNamedFeature(v['feature']))
   );
 }

@@ -6,13 +6,13 @@ import * as nsTransport from './Transport';
 
 // Validator for InterfaceDeclaration Bar
 export const idtltBar = idtlt.object({
-  created: idtlt.isoDate,
-  updated: idtlt.isoDate,
-  transports: idtlt.array(nsTransport.idtltTransport),
-  amount: idtlt.number.optional(),
-  age: idtlt.number,
-  aliases: idtlt.array(nsName.idtltName),
   name: nsName.idtltName,
+  aliases: idtlt.array(nsName.idtltName),
+  age: idtlt.number,
+  amount: idtlt.number.optional(),
+  transports: idtlt.array(nsTransport.idtltTransport),
+  updated: idtlt.isoDate,
+  created: idtlt.isoDate,
 });
 
 // Deriving TypeScript type from Bar validator
@@ -32,12 +32,12 @@ export const discriminatedBar: (_: Bar) => DiscriminatedBar = (v: Bar) => ({ _ty
 
 export function isBar(v: any): v is Bar {
   return (
-    (v['created'] && (v['created'] instanceof Date)) &&
-    (v['updated'] && (v['updated'] instanceof Date)) &&
-    (Array.isArray(v['transports']) && v['transports'].every(elmt => elmt && nsTransport.isTransport(elmt))) &&
-    (!v['amount'] || ((typeof v['amount']) === 'number')) &&
-    ((typeof v['age']) === 'number') &&
+    (v['name'] && nsName.isName(v['name'])) &&
     (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsName.isName(elmt))) &&
-    (v['name'] && nsName.isName(v['name']))
+    ((typeof v['age']) === 'number') &&
+    (!v['amount'] || ((typeof v['amount']) === 'number')) &&
+    (Array.isArray(v['transports']) && v['transports'].every(elmt => elmt && nsTransport.isTransport(elmt))) &&
+    (v['updated'] && (v['updated'] instanceof Date)) &&
+    (v['created'] && (v['created'] instanceof Date))
   );
 }

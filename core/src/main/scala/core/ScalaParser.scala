@@ -2,9 +2,11 @@ package io.github.scalats.core
 
 import scala.util.control.NonFatal
 
-import scala.collection.immutable.ListSet
-
 import scala.reflect.api.Universe
+
+import io.github.scalats.scala.{ TypeRef => ScalaTypeRef, _ }
+
+import Internals.ListSet
 
 final class ScalaParser[Uni <: Universe](
     val universe: Uni,
@@ -16,6 +18,7 @@ final class ScalaParser[Uni <: Universe](
   import universe.{
     appliedType,
     ClassSymbolTag,
+    ApplyTag,
     LiteralTag,
     MethodSymbol,
     MethodSymbolTag,
@@ -34,7 +37,6 @@ final class ScalaParser[Uni <: Universe](
 
   private lazy val mirror = cu.defaultMirror(universe)
 
-  import ScalaModel.{ TypeRef => ScalaTypeRef, _ }
   import ScalaParser.{ Result, TypeFullId }
 
   private[scalats] def parseTypes(
@@ -121,6 +123,7 @@ final class ScalaParser[Uni <: Universe](
         }.toMap
 
         @annotation.tailrec
+        @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
         def walk(
             forest: Seq[Tree],
             syms: Map[String, (Type, Tree)]
@@ -269,9 +272,345 @@ final class ScalaParser[Uni <: Universe](
 
   private val skipCompanion = true // TODO: (low priority) Configurable
 
+  @inline private def isLiteralType(tpe: Type): Boolean =
+    isAnyValChild(tpe) || tpe <:< typeOf[String]
+
+  @annotation.tailrec
+  private def appliedOp(
+      op: String,
+      excludedSymbols: Seq[String],
+      application: List[Tree],
+      out: List[Tree]
+    ): List[Tree] = application match {
+    case tree :: tail =>
+      tree match {
+        case ApplyTag(o) if (o.symbol.name.toString == op) =>
+          appliedOp(op, excludedSymbols, o.children ::: tail, out)
+
+        case universe.TypeApplyTag(o) if (o.symbol.name.toString == op) =>
+          appliedOp(op, excludedSymbols, o.children ::: tail, out)
+
+        case universe.SelectTag(o) if (o.symbol.name.toString == op) =>
+          appliedOp(op, excludedSymbols, o.children ::: tail, out)
+
+        case universe.TypeTreeTag(_) =>
+          appliedOp(op, excludedSymbols, tail, out)
+
+        case _ if (excludedSymbols contains tree.symbol.fullName) =>
+          appliedOp(op, excludedSymbols, tail, out)
+
+        case _ =>
+          appliedOp(op, excludedSymbols, tail, tree :: out)
+      }
+
+    case _ =>
+      out.reverse
+
+  }
+
+  private def typeInvariant(
+      k: String,
+      owner: Tree,
+      rhs: Tree,
+      hint: Option[ScalaTypeRef]
+    ): Option[TypeInvariant] = rhs match {
+    case LiteralTag(v) => {
+      // Literal elements in list are not defined with own symbol
+      val signature = Option(owner.symbol).map(_.typeSignature)
+
+      val mt: Type =
+        signature.map {
+          case universe.NullaryMethodType(resultType) => // for `=> T`
+            resultType
+
+          case t =>
+            t
+        }.getOrElse(owner.tpe)
+
+      Some(
+        LiteralInvariant(
+          name = k,
+          typeRef = scalaTypeRef(mt.dealias, Set.empty),
+          value = v.toString
+        )
+      )
+    }
+
+    case ApplyTag(a) if (isLiteralType(a.tpe)) =>
+      // Value class
+      a.args match {
+        case LiteralTag(v) :: Nil =>
+          Some(
+            LiteralInvariant(
+              name = k,
+              typeRef = scalaTypeRef(a.tpe.dealias, Set.empty),
+              value = v.toString
+            )
+          )
+
+        case _ =>
+          None
+      }
+
+    case universe.SelectTag(s) if (s.isTerm && ({
+          val sym = s.symbol
+          val qual = s.qualifier.symbol
+
+          sym.isPublic &&
+          (sym.isTerm ||
+            (sym.isMethod &&
+              sym.asMethod.paramLists.isEmpty)) &&
+          qual.isPublic &&
+          (qual.isModule || qual.isModuleClass)
+        })) => {
+      // Stable reference; e;g. x = qual.y
+      val qualTpe = s.qualifier match {
+        case universe.ThisTag(_) =>
+          ThisTypeRef
+
+        case _ =>
+          scalaTypeRef(s.qualifier.tpe.dealias, Set.empty)
+      }
+
+      val tpeRef = scalaTypeRef(s.tpe.dealias, Set.empty) match {
+        case unknown @ UnknownTypeRef(_) =>
+          hint.getOrElse(unknown)
+
+        case tr =>
+          tr
+      }
+
+      Some(
+        SelectInvariant(
+          name = k,
+          typeRef = tpeRef,
+          qualifier = qualTpe,
+          term = s.name.toString
+        )
+      )
+    }
+
+    case ApplyTag(a)
+        if (a.tpe.dealias <:< MapType && a.tpe.typeArgs.size == 2) =>
+      a.tpe.typeArgs match {
+        case kt :: _ :: Nil if (isLiteralType(kt)) =>
+          // Dictionary
+
+          val entries: Map[String, TypeInvariant] =
+            a.args
+              .collect(
+                Function.unlift[
+                  Tree,
+                  (String, TypeInvariant)
+                ] {
+                  case ArrowedTuple(
+                        (
+                          LiteralTag(
+                            universe.Literal(universe.Constant(key: String))
+                          ),
+                          v
+                        )
+                      ) => {
+
+                    typeInvariant(s"${k}[${key}]", v, v, None).map(key -> _)
+                  }
+
+                  case _ =>
+                    None
+                }
+              )
+              .toMap
+
+          entries.headOption match {
+            case Some((_, first)) if (entries.size == a.args.size) =>
+              Some(
+                DictionaryInvariant(
+                  name = k,
+                  typeRef = MapRef(
+                    keyType = scalaTypeRef(kt, Set.empty),
+                    valueType = first.typeRef
+                  ),
+                  valueTypeRef = first.typeRef,
+                  entries = entries
+                )
+              )
+
+            case _ => {
+              logger.warning(
+                s"Skip dictionary with non literal entries: $k"
+              )
+
+              None
+            }
+          }
+
+        case _ =>
+          None
+      }
+
+    case ApplyTag(a)
+        if (a.tpe <:< SeqType && a.symbol.name.toString == "apply" && a.args.nonEmpty) => {
+      // Seq/List factory
+
+      val elements = a.args.zipWithIndex.collect(
+        Function.unlift[(Tree, Int), TypeInvariant] {
+          case (e, i) =>
+            typeInvariant(s"${k}[${i}]", e, e, None)
+        }
+      )
+
+      elements.headOption match {
+        case Some(first) if (elements.size == a.args.size) =>
+          Some(
+            ListInvariant(
+              name = k,
+              typeRef = CollectionRef(first.typeRef),
+              valueTypeRef = first.typeRef,
+              values = elements
+            )
+          )
+
+        case _ => {
+          logger.warning(s"Skip list with non-stable value: $k")
+
+          None
+        }
+      }
+    }
+
+    case ApplyTag(a)
+        if (a.tpe <:< SeqType && a.symbol.name.toString == f"$$plus$$plus" &&
+          a.children.size == 2) =>
+      scalaTypeRef(a.tpe, Set.empty) match {
+        case colTpe @ CollectionRef(valueTpe) => {
+          val excludes = a.children.tail
+            .map(_.symbol.fullName)
+            .filter(_ endsWith "canBuildFrom" /* Scala 2.13- */ )
+
+          val terms =
+            appliedOp(
+              f"$$plus$$plus",
+              excludes,
+              a.children,
+              List.empty
+            )
+
+          val elements = terms.zipWithIndex
+            .collect(
+              Function.unlift[(Tree, Int), TypeInvariant] {
+                case (e, i) =>
+                  typeInvariant(s"${k}[${i}]", e, e, hint = Some(colTpe))
+              }
+            )
+            .toSet
+
+          if (elements.size != terms.size || elements.size < 2) {
+            logger.warning(s"Skip merged list with non-stable value: $k")
+
+            None
+          } else {
+            Some(
+              MergedListsInvariant(
+                name = k,
+                valueTypeRef = valueTpe,
+                children = elements.toList
+              )
+            )
+          }
+        }
+
+        case _ =>
+          None
+      }
+
+    case ApplyTag(a)
+        if (a.tpe <:< SetType && a.symbol.name.toString == "apply"
+          && a.args.nonEmpty) => {
+      // Set factory
+
+      val elements = a.args.zipWithIndex
+        .collect(
+          Function.unlift[(Tree, Int), TypeInvariant] {
+            case (e, i) =>
+              typeInvariant(s"${k}[${i}]", e, e, None)
+          }
+        )
+        .toSet
+
+      elements.headOption match {
+        case Some(first) if (elements.size == a.args.size) =>
+          Some(
+            SetInvariant(
+              name = k,
+              typeRef = CollectionRef(first.typeRef),
+              valueTypeRef = first.typeRef,
+              values = elements
+            )
+          )
+
+        case _ => {
+          logger.warning(s"Skip list with non-stable value: $k")
+
+          None
+        }
+      }
+    }
+
+    case ApplyTag(a) if (a.tpe <:< SetType && a.children.size == 2) =>
+      scalaTypeRef(a.tpe, Set.empty) match {
+        case colTpe @ CollectionRef(valueTpe) => {
+          val terms =
+            appliedOp(
+              f"$$plus$$plus",
+              Seq.empty,
+              a.children,
+              List.empty
+            )
+
+          val elements = terms.zipWithIndex
+            .collect(
+              Function.unlift[(Tree, Int), TypeInvariant] {
+                case (e, i) =>
+                  typeInvariant(s"${k}[${i}]", e, e, hint = Some(colTpe))
+              }
+            )
+            .toSet
+
+          if (elements.size != terms.size || elements.size < 2) {
+            logger.warning(s"Skip merged set with non-stable value: $k")
+
+            None
+          } else {
+            Some(
+              MergedSetsInvariant(
+                name = k,
+                valueTypeRef = valueTpe,
+                children = elements.toList
+              )
+            )
+          }
+        }
+
+        case _ =>
+          None
+      }
+
+    case _ =>
+      None
+
+  }
+
+  private lazy val SetType = typeOf[Set[Any]].erasure
+
+  private lazy val SeqType = typeOf[Seq[Any]].erasure
+
+  private lazy val MapType = typeOf[Map[String, Any]].erasure
+
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   @annotation.tailrec
   private def typeInvariants(
-      declNames: Set[String],
+      owner: Type,
+      declNames: ListSet[String],
       forest: Seq[Tree],
       vs: List[TypeInvariant]
     ): ListSet[TypeInvariant] =
@@ -280,60 +619,33 @@ final class ScalaParser[Uni <: Universe](
         val k = tr.name.toString.trim
 
         if (declNames contains k) {
-          val mt: Type =
-            tr.symbol.typeSignature match {
-              case universe.NullaryMethodType(resultType) => // for `=> T`
-                resultType
-
-              case t =>
-                t
-            }
-
-          tr.rhs match {
-            case LiteralTag(v) =>
+          typeInvariant(k, tr, tr.rhs, None) match {
+            case Some(single) =>
               typeInvariants(
+                owner,
                 declNames,
                 tr.children ++: forest.tail,
-                TypeInvariant(
-                  name = k,
-                  typeRef = scalaTypeRef(mt.dealias, Set.empty),
-                  value = v.toString
-                ) :: vs
+                single :: vs
               )
 
-            case universe.ApplyTag(a)
-                if (isAnyValChild(a.tpe) || a.tpe <:< typeOf[
-                  String
-                ] /* for test */ ) =>
-              a.args match {
-                case LiteralTag(v) :: Nil =>
-                  typeInvariants(
-                    declNames,
-                    tr.children ++: forest.tail,
-                    TypeInvariant(
-                      name = k,
-                      typeRef = scalaTypeRef(a.tpe.dealias, Set.empty),
-                      value = v.toString
-                    ) :: vs
-                  )
-
-                case _ =>
-                  typeInvariants(declNames, tr.children ++: forest.tail, vs)
-              }
-
             case _ =>
-              typeInvariants(declNames, tr.children ++: forest.tail, vs)
+              typeInvariants(
+                owner,
+                declNames,
+                tr.children ++: forest.tail,
+                vs
+              )
           }
         } else {
-          typeInvariants(declNames, tr.children ++: forest.tail, vs)
+          typeInvariants(owner, declNames, tr.children ++: forest.tail, vs)
         }
       }
 
       case Some(tr) =>
-        typeInvariants(declNames, tr.children ++: forest.tail, vs)
+        typeInvariants(owner, declNames, tr.children ++: forest.tail, vs)
 
       case _ =>
-        ListSet.empty ++ vs // .reverse
+        ListSet.empty ++ vs.reverse
     }
 
   private def parseObject(
@@ -353,11 +665,13 @@ final class ScalaParser[Uni <: Universe](
     if (skipCompanion && classExists) {
       Result(examined + fullId(scalaType), Option.empty[TypeDef])
     } else {
-      lazy val declNames: Set[String] = scalaType.decls.collect {
-        case Field(MethodSymbolTag(m)) => m.name.toString
-      }.toSet
+      lazy val declNames: ListSet[String] =
+        ListSet.empty ++ scalaType.decls.toList.collect {
+          case Field(MethodSymbolTag(m)) => m.name.toString
+        }
 
       @annotation.tailrec
+      @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
       def findCtor(trees: Seq[Tree]): Option[Tree] =
         trees.headOption match {
           case Some(t) =>
@@ -378,13 +692,14 @@ final class ScalaParser[Uni <: Universe](
       }.toSet
 
       @annotation.tailrec
+      @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
       def invariants(
           trees: Seq[Tree],
-          decls: Set[String],
+          decls: ListSet[String],
           values: List[TypeInvariant]
-        ): (Set[String], ListSet[TypeInvariant]) =
+        ): (ListSet[String], ListSet[TypeInvariant]) =
         trees.headOption match {
-          case Some(universe.ApplyTag(m)) if (m.exists {
+          case Some(ApplyTag(m)) if (m.exists {
                 case universe.SuperTag(_) =>
                   true
 
@@ -401,7 +716,7 @@ final class ScalaParser[Uni <: Universe](
                 invariants(
                   trees.tail,
                   decls - nme,
-                  TypeInvariant(
+                  LiteralInvariant(
                     name = nme,
                     typeRef = scalaTypeRef(s.typeSignature, Set.empty),
                     value = a.toString
@@ -436,7 +751,7 @@ final class ScalaParser[Uni <: Universe](
         parsed = Some[TypeDef](
           CaseObject(
             identifier.copy(name = identifier.name stripSuffix ".type"),
-            values ++ typeInvariants(decls, Seq(tpe._2), List.empty)
+            values ++ typeInvariants(tpe._1, decls, Seq(tpe._2), List.empty)
           )
         )
       )
@@ -561,27 +876,34 @@ final class ScalaParser[Uni <: Universe](
     val typeParams = caseClassType.typeConstructor.dealias.typeParams
       .map(_.name.decodedName.toString)
 
-    lazy val declNames: Set[String] = caseClassType.decls.collect {
-      case Field(MethodSymbolTag(m)) => m.name.toString
-    }.toSet
+    val declNames: ListSet[String] =
+      ListSet.empty ++ caseClassType.decls.collect {
+        case Field(MethodSymbolTag(m)) => m.name.toString
+      }
 
-    val values = typeInvariants(declNames, Seq(tpe._2), List.empty)
+    val values = typeInvariants(tpe._1, declNames, Seq(tpe._2), List.empty)
 
     // Members
-    def members = caseClassType.members.collect {
+    val members = caseClassType.members.collect {
       case Field(MethodSymbolTag(m))
           if (m.isCaseAccessor && !values.exists(
             _.name == m.name.toString.trim
           )) =>
-        member(m, typeParams)
-    }.toList
+        m.name.toString.trim -> member(m, typeParams)
+    }.toMap
+
+    // Make sure the declaration order is respected
+    val orderedMembers: ListSet[TypeMember] =
+      ListSet.empty ++ declNames.collect(
+        Function.unlift(members.lift)
+      ) ++ (members -- declNames).values
 
     Result(
       examined = examined + fullId(caseClassType),
       parsed = Some[TypeDef](
         CaseClass(
           buildQualifiedIdentifier(caseClassType.typeSymbol),
-          ListSet.empty ++ members,
+          orderedMembers,
           ListSet.empty ++ values,
           typeParams
         )
@@ -599,6 +921,46 @@ final class ScalaParser[Uni <: Universe](
     )
 
   // ---
+
+  private object ArrowedTuple {
+
+    def unapply(tree: Tree): Option[(Tree, Tree)] = tree match {
+      case ApplyTag(entry)
+          if (entry.tpe.typeSymbol.fullName == "scala.Tuple2") =>
+        entry.children match {
+          case universe.TypeApplyTag(arrow) :: v :: Nil
+              if (arrow.args.size == 1) =>
+            arrow.children match {
+              case universe.SelectTag(a) :: _ :: Nil
+                  if (
+                    a.qualifier.tpe.typeSymbol.fullName == "scala.Predef.ArrowAssoc"
+                  ) =>
+                a.children match {
+                  case ApplyTag(ka) :: Nil =>
+                    ka.args match {
+                      case k :: Nil =>
+                        Some(k -> v)
+
+                      case _ =>
+                        None
+                    }
+
+                  case _ =>
+                    None
+                }
+
+              case _ =>
+                None
+            }
+
+          case _ =>
+            None
+        }
+
+      case _ =>
+        None
+    }
+  }
 
   private lazy val iterableSymbol: Symbol =
     mirror.staticClass("_root_.scala.collection.Iterable")
@@ -804,6 +1166,7 @@ final class ScalaParser[Uni <: Universe](
     // Workaround for SI-7046: https://issues.scala-lang.org/browse/SI-7046
     val tpeSym = tpe.typeSymbol.asClass
 
+    @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
     @annotation.tailrec
     def allSubclasses(path: Seq[Symbol], subclasses: Set[Type]): Set[Type] =
       path.headOption match {
@@ -865,7 +1228,7 @@ private[scalats] object ScalaParser {
 
   case class Result[M[_], Tpe](
       examined: ListSet[Tpe],
-      parsed: M[ScalaModel.TypeDef])
+      parsed: M[TypeDef])
 
   type TypeFullId = String
 }

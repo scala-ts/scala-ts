@@ -9,7 +9,7 @@ export interface NamedFeature {
 
 export function isNamedFeature(v: any): v is NamedFeature {
   return (
-    (v['feature'] && isFeature(v['feature'])) &&
-    ((typeof v['name']) === 'string')
+    ((typeof v['name']) === 'string') &&
+    (v['feature'] && isFeature(v['feature']))
   );
 }

@@ -34,4 +34,3 @@ export function isTransport(v: any): v is Transport {
     nsTrainLine.isTrainLine(v)
   );
 }
-

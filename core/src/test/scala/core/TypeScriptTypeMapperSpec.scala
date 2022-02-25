@@ -7,23 +7,36 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
 
   import TypeScriptTypeMapper._
 
-  lazy val unresolved: Function4[Settings, String, TypeScriptField, TypeRef, String] =
+  lazy val unresolved: Function4[Settings, Declaration, TypeScriptField, TypeRef, String] =
     (_, _, _, _) => "_tpe_"
 
   lazy val settings = Settings()
 
-  lazy val member = TypeScriptField("_")
+  val member = TypeScriptField("_")
+
+  val owner = InterfaceDeclaration(
+    name = "_",
+    fields = Internals.ListSet.empty,
+    typeParams = List.empty[String],
+    superInterface = None,
+    union = false
+  )
 
   "Mapper" should {
     "map array" >> {
       "as Array" in {
-        arrayAsGeneric(unresolved, settings, "_", member, ArrayRef(NumberRef))
+        arrayAsGeneric(unresolved, settings, owner, member, ArrayRef(NumberRef))
           .aka("TypeScript type") must beSome("Array<_tpe_>")
       }
 
       "as brackets" in {
-        arrayAsBrackets(unresolved, settings, "_", member, ArrayRef(NumberRef))
-          .aka("TypeScript type") must beSome("_tpe_[]")
+        arrayAsBrackets(
+          unresolved,
+          settings,
+          owner,
+          member,
+          ArrayRef(NumberRef)
+        ).aka("TypeScript type") must beSome("_tpe_[]")
       }
     }
 
@@ -31,20 +44,26 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
       nullableAsOption(
         unresolved,
         settings,
-        "_",
+        owner,
         member,
         NullableType(StringRef)
       ) must beTypedEqualTo(Some("Option<_tpe_>"))
     }
 
     "map number as string" in {
-      numberAsString(unresolved, settings, "_", member, NumberRef) must beSome(
+      numberAsString(
+        unresolved,
+        settings,
+        owner,
+        member,
+        NumberRef
+      ) must beSome(
         "string"
       )
     }
 
     "map date as string" in {
-      val mapper = dateAsString(unresolved, settings, "_", member, _: TypeRef)
+      val mapper = dateAsString(unresolved, settings, owner, member, _: TypeRef)
 
       mapper(DateRef) must beSome("string") and {
         mapper(DateTimeRef) must beSome("string")
@@ -54,7 +73,7 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
     "be chained" in {
       chain(Seq(numberAsString, dateAsString))
         .aka("chained") must beSome[TypeScriptTypeMapper].which { m =>
-        val mapper = m(unresolved, settings, "_", member, _: TypeRef)
+        val mapper = m(unresolved, settings, owner, member, _: TypeRef)
 
         mapper(NumberRef) must beSome("string") and {
           mapper(DateRef) must beSome("string")

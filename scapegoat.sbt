@@ -2,7 +2,10 @@ ThisBuild / scapegoatVersion := "1.4.12"
 
 ThisBuild / scapegoatReports := Seq("text") // xml in 2.13 require extra dep
 
-ThisBuild / scapegoatDisabledInspections := Seq("FinalModifierOnCaseClass")
+ThisBuild / scapegoatDisabledInspections := Seq(
+  "FinalModifierOnCaseClass",
+  "ListSize"
+)
 
 pomPostProcess := {
   object Processor {

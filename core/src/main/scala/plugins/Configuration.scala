@@ -43,9 +43,9 @@ final class Configuration(
   override def toString =
     s"""{ compilationRuleSet: $compilationRuleSet, typeRuleSet: ${typeRuleSet}, settings${tupled.toString}, printer: ${printer.getClass.getName}, additionalClasspath: [${additionalClasspath mkString ", "}] }"""
 
-  def withSettings(settings: Settings): Configuration =
+  def withSettings(_settings: Settings): Configuration =
     new Configuration(
-      settings,
+      _settings,
       this.compilationRuleSet,
       this.typeRuleSet,
       this.printer,

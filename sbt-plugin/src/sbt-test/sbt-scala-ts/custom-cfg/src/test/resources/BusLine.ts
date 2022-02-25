@@ -8,8 +8,8 @@ export interface TSBusLine extends TSTransport {
 
 export function isTSBusLine(v: any): v is TSBusLine {
   return (
-    (Array.isArray(v['_stopIds']) && v['_stopIds'].every(elmt => (typeof elmt) === 'string')) &&
+    ((typeof v['_id']) === 'number') &&
     ((typeof v['_name']) === 'string') &&
-    ((typeof v['_id']) === 'number')
+    (Array.isArray(v['_stopIds']) && v['_stopIds'].every(elmt => (typeof elmt) === 'string'))
   );
 }
