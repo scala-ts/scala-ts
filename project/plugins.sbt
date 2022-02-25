@@ -7,7 +7,7 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.6")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.1.1")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.2.0")
 
 addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.1")
 
