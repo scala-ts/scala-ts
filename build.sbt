@@ -24,7 +24,7 @@ lazy val core = project
   .in(file("core"))
   .settings(
     name := "scala-ts-core",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.7"),
+    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.8"),
     Compile / unmanagedJars += (shaded / assembly).value,
     Compile / unmanagedSourceDirectories += {
       val base = (Compile / sourceDirectory).value
