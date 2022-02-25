@@ -4,7 +4,7 @@ ThisBuild / scalafmtOnCompile := true
 inThisBuild({
   if (sys.props.get("scalafix.disable").isEmpty) {
     List(
-      //scalaVersion := "2.13.3",
+      // scalaVersion := "2.13.3",
       semanticdbEnabled := true,
       semanticdbVersion := scalafixSemanticdb.revision,
       scalafixDependencies ++= Seq(
