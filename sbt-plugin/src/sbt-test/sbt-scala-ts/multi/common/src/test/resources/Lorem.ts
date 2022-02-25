@@ -16,6 +16,8 @@ export class Lorem implements Category {
   }
 }
 
+export const LoremInhabitant: Lorem = Lorem.getInstance();
+
 export function isLorem(v: any): v is Lorem {
-  return (v instanceof Lorem) && (v === Lorem.getInstance());
+  return (v instanceof Lorem) && (v === LoremInhabitant);
 }

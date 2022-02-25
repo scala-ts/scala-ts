@@ -16,6 +16,8 @@ export class Bar implements Feature {
   }
 }
 
+export const BarInhabitant: Bar = Bar.getInstance();
+
 export function isBar(v: any): v is Bar {
-  return (v instanceof Bar) && (v === Bar.getInstance());
+  return (v instanceof Bar) && (v === BarInhabitant);
 }

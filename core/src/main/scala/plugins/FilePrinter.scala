@@ -18,7 +18,6 @@ final class FilePrinter(outDir: File) extends BasePrinter {
       name: String,
       requires: ListSet[TypeRef]
     ): PrintStream = {
-
     val f = tracker.getOrElseUpdate(
       name, {
         val n = new File(outDir, s"${name}.ts")

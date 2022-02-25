@@ -5,6 +5,7 @@ $ absent target/scala-ts/src_managed/CaseClassBar.ts
 $ absent target/scala-ts/src_managed/Transport.ts
 $ absent target/scala-ts/src_managed/BusLine.ts
 $ absent target/scala-ts/src_managed/TrainLine.ts
+$ absent target/scala-ts/src_managed/Constants.ts
 
 $ absent target/scala-ts/src_managed/Feature.ts
 $ absent target/scala-ts/src_managed/Foo.ts
@@ -28,6 +29,9 @@ $ must-mirror target/scala-ts/src_managed/Grade.ts src/test/resources/Grade.ts
 
 $ exists target/scala-ts/src_managed/CaseClassBar.ts
 $ must-mirror target/scala-ts/src_managed/CaseClassBar.ts src/test/resources/CaseClassBar.ts
+
+$ exists target/scala-ts/src_managed/Constants.ts
+$ must-mirror target/scala-ts/src_managed/Constants.ts src/test/resources/Constants.ts
 
 $ exists target/scala-ts/src_managed/Transport.ts
 $ must-mirror target/scala-ts/src_managed/Transport.ts src/test/resources/Transport.ts

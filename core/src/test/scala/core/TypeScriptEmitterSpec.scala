@@ -166,16 +166,20 @@ export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixtu
   }
 }
 
+export const ScalaRuntimeFixturesTestObject1Inhabitant: ScalaRuntimeFixturesTestObject1 = ScalaRuntimeFixturesTestObject1.getInstance();
+
 export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixturesTestObject1 {
-  return (v instanceof ScalaRuntimeFixturesTestObject1) && (v === ScalaRuntimeFixturesTestObject1.getInstance());
+  return (v instanceof ScalaRuntimeFixturesTestObject1) && (v === ScalaRuntimeFixturesTestObject1Inhabitant);
 }
 """)
       }
 
-      "emit class #2" in {
-        // SCALATS1: No implements SupI
-        emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
+      "emit class #2" >> {
+        "with value class as constant" in {
+          // SCALATS1: No implements SupI
+          emit(ListSet(singleton2)) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
+  public const: string = "value";
   public code: number = 1;
 
   private static instance: ScalaRuntimeFixturesTestObject2;
@@ -191,10 +195,65 @@ export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixt
   }
 }
 
+export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTestObject2 = ScalaRuntimeFixturesTestObject2.getInstance();
+
 export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixturesTestObject2 {
-  return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2.getInstance());
+  return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2Inhabitant);
 }
 """
+        }
+
+        "with value class as tagged type" in {
+          val singleton2WithTagged = SingletonDeclaration(
+            "ScalaRuntimeFixturesTestObject2",
+            ListSet(
+              Value("name", StringRef, "\"Foo\""),
+              Value(
+                "const",
+                TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef),
+                "\"value\""
+              ),
+              Value("code", NumberRef, "1")
+            ),
+            superInterface = Some(
+              InterfaceDeclaration(
+                "SupI",
+                ListSet.empty,
+                List.empty[String],
+                None,
+                false
+              )
+            )
+          )
+
+          emit(
+            ListSet(singleton2WithTagged),
+            declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+          ) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
+  public name: string = "Foo";
+  public const: ScalaRuntimeFixturesAnyValChild = ScalaRuntimeFixturesAnyValChild("value");
+  public code: number = 1;
+
+  private static instance: ScalaRuntimeFixturesTestObject2;
+
+  private constructor() {}
+
+  public static getInstance() {
+    if (!ScalaRuntimeFixturesTestObject2.instance) {
+      ScalaRuntimeFixturesTestObject2.instance = new ScalaRuntimeFixturesTestObject2();
+    }
+
+    return ScalaRuntimeFixturesTestObject2.instance;
+  }
+}
+
+export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTestObject2 = ScalaRuntimeFixturesTestObject2.getInstance();
+
+export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixturesTestObject2 {
+  return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2Inhabitant);
+}
+"""
+        }
       }
 
       "emit class #3" in {
@@ -216,8 +275,10 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
   }
 }
 
+export const ScalaRuntimeFixturesFamilyMember2Inhabitant: ScalaRuntimeFixturesFamilyMember2 = ScalaRuntimeFixturesFamilyMember2.getInstance();
+
 export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFixturesFamilyMember2 {
-  return (v instanceof ScalaRuntimeFixturesFamilyMember2) && (v === ScalaRuntimeFixturesFamilyMember2.getInstance());
+  return (v instanceof ScalaRuntimeFixturesFamilyMember2) && (v === ScalaRuntimeFixturesFamilyMember2Inhabitant);
 }
 """
       }
