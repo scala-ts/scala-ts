@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.7"
+scalaVersion := "2.13.8"
 
 crossScalaVersions := Seq("2.12.15", scalaVersion.value)
 
