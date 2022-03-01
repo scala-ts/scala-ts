@@ -6,6 +6,8 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
+[*Version 0.5.9*](https://github.com/scala-ts/scala-ts/compare/0.5.8...0.5.9) - Minor improvements, and better management of invariants (constants in singletons; see [examples](./examples.html#example-9)).
+
 [*Version 0.5.8*](https://github.com/scala-ts/scala-ts/compare/0.5.7...0.5.8) - Optionally emit Value classes as tagged types.
 
 [*Version 0.5.7*](https://github.com/scala-ts/scala-ts/compare/0.5.6...0.5.7) - Provides array of known values for union types; Generate type guards.
