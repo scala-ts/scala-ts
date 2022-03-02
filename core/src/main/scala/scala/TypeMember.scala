@@ -29,11 +29,18 @@ sealed class TypeInvariant protected (
     typeRef: TypeRef)
     extends TypeMember(name, typeRef)
 
+sealed trait SimpleInvariant { _: TypeInvariant => }
+
+object TypeInvariant {
+  private[scalats] type Simple = TypeInvariant with SimpleInvariant
+}
+
 final class LiteralInvariant(
     name: String,
     typeRef: TypeRef,
     val value: String)
-    extends TypeInvariant(name, typeRef) {
+    extends TypeInvariant(name, typeRef)
+    with SimpleInvariant {
 
   private lazy val tupled = Tuple3(name, typeRef, value)
 
@@ -64,7 +71,8 @@ final class SelectInvariant(
     typeRef: TypeRef,
     val qualifier: TypeRef,
     val term: String)
-    extends TypeInvariant(name, typeRef) {
+    extends TypeInvariant(name, typeRef)
+    with SimpleInvariant {
 
   private lazy val tupled = Tuple4(name, typeRef, qualifier, term)
 
@@ -241,11 +249,11 @@ object MergedSetsInvariant {
  */
 final class DictionaryInvariant(
     name: String,
-    typeRef: TypeRef,
+    val keyTypeRef: TypeRef,
     val valueTypeRef: TypeRef,
-    val entries: Map[String, TypeInvariant])
-    extends TypeInvariant(name, typeRef) {
-  private lazy val tupled = Tuple4(name, typeRef, valueTypeRef, entries)
+    val entries: Map[TypeInvariant.Simple, TypeInvariant])
+    extends TypeInvariant(name, MapRef(keyTypeRef, valueTypeRef)) {
+  private lazy val tupled = Tuple4(name, keyTypeRef, valueTypeRef, entries)
 
   override def toString = s"DictionaryInvariant${tupled.toString}"
 
@@ -264,9 +272,9 @@ object DictionaryInvariant {
 
   @inline def apply(
       name: String,
-      typeRef: TypeRef,
+      keyTypeRef: TypeRef,
       valueTypeRef: TypeRef,
-      entries: Map[String, TypeInvariant]
+      entries: Map[TypeInvariant.Simple, TypeInvariant]
     ): DictionaryInvariant =
-    new DictionaryInvariant(name, typeRef, valueTypeRef, entries)
+    new DictionaryInvariant(name, keyTypeRef, valueTypeRef, entries)
 }

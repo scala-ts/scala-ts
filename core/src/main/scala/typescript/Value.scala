@@ -11,7 +11,10 @@ sealed trait Value {
   def reference: TypeRef = typeRef
 }
 
+sealed trait SimpleValue { _: Value => }
+
 object Value {
+  type Simple = Value with SimpleValue
 
   def unapply(decl: Value): Option[String] = decl match {
     case v: Value => Some(v.name)
@@ -32,6 +35,7 @@ case class LiteralValue(
     typeRef: TypeRef,
     rawValue: String)
     extends Value
+    with SimpleValue
 
 /**
  * @param name the member name
@@ -43,6 +47,7 @@ case class SelectValue(
     qualifier: TypeRef,
     term: String)
     extends Value
+    with SimpleValue
 
 /**
  * A dictionary [[Value]].
@@ -53,11 +58,13 @@ case class SelectValue(
  */
 case class DictionaryValue(
     name: String,
-    typeRef: TypeRef,
+    keyTypeRef: TypeRef,
     valueTypeRef: TypeRef,
-    entries: Map[String, Value])
+    entries: Map[Value.Simple, Value])
     extends Value {
-  override def reference: TypeRef = valueTypeRef
+  def typeRef = MapType(keyTypeRef, valueTypeRef)
+
+  override def reference: TypeRef = TupleRef(List(keyTypeRef, valueTypeRef))
 }
 
 /**

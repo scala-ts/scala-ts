@@ -71,9 +71,9 @@ final class Transpiler(config: Settings) {
       }
     }
 
-  private def transpileTypeInvariant(
+  private def transpileSimpleInvariant(
       invariant: ScalaModel.TypeInvariant
-    ): Value = invariant match {
+    ): Value.Simple = invariant match {
     case lit: ScalaModel.LiteralInvariant =>
       LiteralValue(
         name = lit.name,
@@ -89,6 +89,13 @@ final class Transpiler(config: Settings) {
         term = sel.term
       )
 
+    case _ =>
+      ??? // TODO
+  }
+
+  private def transpileTypeInvariant(
+      invariant: ScalaModel.TypeInvariant
+    ): Value = invariant match {
     case list: ScalaModel.ListInvariant =>
       ListValue(
         name = list.name,
@@ -108,11 +115,11 @@ final class Transpiler(config: Settings) {
     case dict: ScalaModel.DictionaryInvariant =>
       DictionaryValue(
         name = dict.name,
-        typeRef = transpileTypeRef(dict.typeRef, false),
+        keyTypeRef = transpileTypeRef(dict.keyTypeRef, false),
         valueTypeRef = transpileTypeRef(dict.valueTypeRef, false),
         entries = dict.entries.map {
           case (k, v) =>
-            k -> transpileTypeInvariant(v)
+            transpileSimpleInvariant(k) -> transpileTypeInvariant(v)
         }
       )
 
@@ -131,7 +138,7 @@ final class Transpiler(config: Settings) {
       )
 
     case _ =>
-      ??? // Should never happen as sealed class
+      transpileSimpleInvariant(invariant)
   }
 
   private def transpileValueClass(valueClass: ScalaModel.ValueClass) =

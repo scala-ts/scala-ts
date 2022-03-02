@@ -94,22 +94,72 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
       }
     }
 
-    "transpile object" in {
-      val result = defaultTranspiler(
-        ListSet(caseObject2),
-        Some(
-          InterfaceDeclaration(
-            "SupI",
-            ListSet.empty,
-            List.empty[String],
-            Option.empty,
-            false
+    "transpile object" >> {
+      "with complex invariants" in {
+        val result = defaultTranspiler(
+          ListSet(caseObject2),
+          Some(
+            InterfaceDeclaration(
+              "SupI",
+              ListSet.empty,
+              List.empty[String],
+              Option.empty,
+              false
+            )
           )
         )
-      )
 
-      result must have size 1 and {
-        result must contain(singleton2)
+        result must have size 1 and {
+          result must contain(singleton2)
+        }
+      }
+
+      "with tagged invariants" in {
+        val taggedRef = ScalaModel.TaggedRef(
+          identifier = ScalaModel
+            .QualifiedIdentifier("AnyValChild", List("ScalaRuntimeFixtures")),
+          tagged = ScalaModel.StringRef
+        )
+
+        val obj = ScalaModel.CaseObject(
+          ScalaModel
+            .QualifiedIdentifier("TestObject3", List("ScalaRuntimeFixtures")),
+          ListSet(
+            ScalaModel.LiteralInvariant("name", taggedRef, "\"Foo\""),
+            ScalaModel.DictionaryInvariant(
+              name = "mapping",
+              keyTypeRef = taggedRef,
+              valueTypeRef = ScalaModel.StringRef,
+              entries = Map(
+                ScalaModel.LiteralInvariant(
+                  "mapping.0",
+                  taggedRef,
+                  "\"foo\""
+                ) -> ScalaModel.LiteralInvariant(
+                  "mapping[0]",
+                  ScalaModel.StringRef,
+                  "\"bar\""
+                ),
+                ScalaModel.SelectInvariant(
+                  "mapping.1",
+                  taggedRef,
+                  ScalaModel.ThisTypeRef,
+                  "name"
+                ) -> ScalaModel.LiteralInvariant(
+                  "mapping[1]",
+                  ScalaModel.StringRef,
+                  "\"lorem\""
+                )
+              )
+            )
+          )
+        )
+
+        val result = defaultTranspiler(ListSet(obj))
+
+        result must have size 1 and {
+          result must contain(singleton3)
+        }
       }
     }
 
@@ -276,12 +326,16 @@ object TranspilerResults {
       ),
       DictionaryValue(
         name = "mapping",
-        typeRef = MapType(StringRef, StringRef),
+        keyTypeRef = StringRef,
         valueTypeRef = StringRef,
         entries = Map(
-          "foo" -> LiteralValue("mapping[foo]", StringRef, "\"bar\""),
-          "lorem" -> SelectValue(
-            "mapping[lorem]",
+          LiteralValue("mapping.0", StringRef, "\"foo\"") -> LiteralValue(
+            "mapping[0]",
+            StringRef,
+            "\"bar\""
+          ),
+          LiteralValue("mapping.1", StringRef, "\"lorem\"") -> SelectValue(
+            "mapping[1]",
             StringRef,
             ThisTypeRef,
             "name"
@@ -290,43 +344,51 @@ object TranspilerResults {
       ),
       DictionaryValue(
         name = "dictOfList",
-        typeRef = MapType(StringRef, ArrayRef(StringRef)),
+        keyTypeRef = StringRef,
         valueTypeRef = ArrayRef(StringRef),
         entries = Map(
-          "excludes" -> ListValue(
-            name = "dictOfList[excludes]",
+          LiteralValue(
+            "dictOfList.0",
+            StringRef,
+            "\"excludes\""
+          ) -> ListValue(
+            name = "dictOfList[0]",
             typeRef = ArrayRef(StringRef),
             valueTypeRef = StringRef,
             elements = List(
               LiteralValue(
-                "dictOfList[excludes][0]",
+                "dictOfList[0][0]",
                 StringRef,
                 "\"*.txt\""
               ),
               LiteralValue(
-                "dictOfList[excludes][1]",
+                "dictOfList[0][1]",
                 StringRef,
                 "\".gitignore\""
               )
             )
           ),
-          "includes" -> ListValue(
-            name = "dictOfList[includes]",
+          LiteralValue(
+            "dictOfList.1",
+            StringRef,
+            "\"includes\""
+          ) -> ListValue(
+            name = "dictOfList[1]",
             typeRef = ArrayRef(StringRef),
             valueTypeRef = StringRef,
             elements = List(
               LiteralValue(
-                "dictOfList[includes][0]",
+                "dictOfList[1][0]",
                 StringRef,
                 "\"images/**\""
               ),
               LiteralValue(
-                "dictOfList[includes][1]",
+                "dictOfList[1][1]",
                 StringRef,
                 "\"*.jpg\""
               ),
               LiteralValue(
-                "dictOfList[includes][2]",
+                "dictOfList[1][2]",
                 StringRef,
                 "\"*.png\""
               )
@@ -410,6 +472,45 @@ object TranspilerResults {
       )
     )
   )
+
+  val singleton3 = {
+    val taggedTpe =
+      TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)
+
+    SingletonDeclaration(
+      "ScalaRuntimeFixturesTestObject3",
+      ListSet(
+        LiteralValue("name", taggedTpe, "\"Foo\""),
+        DictionaryValue(
+          name = "mapping",
+          keyTypeRef = taggedTpe,
+          valueTypeRef = StringRef,
+          entries = Map(
+            LiteralValue(
+              "mapping.0",
+              taggedTpe,
+              "\"foo\""
+            ) -> LiteralValue(
+              "mapping[0]",
+              StringRef,
+              "\"bar\""
+            ),
+            SelectValue(
+              "mapping.1",
+              taggedTpe,
+              ThisTypeRef,
+              "name"
+            ) -> LiteralValue(
+              "mapping[1]",
+              StringRef,
+              "\"lorem\""
+            )
+          )
+        )
+      ),
+      superInterface = None
+    )
+  }
 
   val enum1 = EnumDeclaration(
     "ScalaRuntimeFixturesTestEnumeration",

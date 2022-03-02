@@ -189,9 +189,9 @@ export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixt
 
   public set: ReadonlySet<number> = new Set([ this.code, 2 ]);
 
-  public readonly mapping: { [key: string]: string } = { 'foo': "bar", 'lorem': this.name };
+  public readonly mapping: { [key: string]: string } = { "foo": "bar", "lorem": this.name };
 
-  public readonly dictOfList: { [key: string]: ReadonlyArray<string> } = { 'excludes': [ "*.txt", ".gitignore" ], 'includes': [ "images/**", "*.jpg", "*.png" ] };
+  public readonly dictOfList: { [key: string]: ReadonlyArray<string> } = { "excludes": [ "*.txt", ".gitignore" ], "includes": [ "images/**", "*.jpg", "*.png" ] };
 
   public concatSeq: ReadonlyArray<string> = [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]];
 
@@ -218,6 +218,37 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
   return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2Inhabitant);
 }
 """
+        }
+
+        "with value clas as dictionary key type" in {
+          emit(
+            ListSet(singleton3),
+            declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+          ) must_=== """export class ScalaRuntimeFixturesTestObject3 {
+  public name: ScalaRuntimeFixturesAnyValChild = ScalaRuntimeFixturesAnyValChild("Foo");
+
+  public readonly mapping: { [key: ScalaRuntimeFixturesAnyValChild]: string } = (() => { const __buf837556430: { [key: ScalaRuntimeFixturesAnyValChild]: string } = {}; __buf837556430[ScalaRuntimeFixturesAnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
+
+  private static instance: ScalaRuntimeFixturesTestObject3;
+
+  private constructor() {}
+
+  public static getInstance() {
+    if (!ScalaRuntimeFixturesTestObject3.instance) {
+      ScalaRuntimeFixturesTestObject3.instance = new ScalaRuntimeFixturesTestObject3();
+    }
+
+    return ScalaRuntimeFixturesTestObject3.instance;
+  }
+}
+
+export const ScalaRuntimeFixturesTestObject3Inhabitant: ScalaRuntimeFixturesTestObject3 = ScalaRuntimeFixturesTestObject3.getInstance();
+
+export function isScalaRuntimeFixturesTestObject3(v: any): v is ScalaRuntimeFixturesTestObject3 {
+  return (v instanceof ScalaRuntimeFixturesTestObject3) && (v === ScalaRuntimeFixturesTestObject3Inhabitant);
+}
+"""
+
         }
 
         "with value class as tagged type" in {

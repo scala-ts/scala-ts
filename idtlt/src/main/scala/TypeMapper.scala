@@ -112,11 +112,10 @@ final class TypeMapper extends TypeScriptTypeMapper {
       }
 
       case ArrayRef(tpe) =>
-        s"ReadonlyArray<${valueType(tpe, typeNaming)}>"
+        s"ReadonlyArray<${tr(tpe)}>"
 
       case MapType(kt, vt) =>
-        // TODO: Parent ?
-        s"{ [key: ${typeNaming(kt)}]: ${tr(vt)} }"
+        s"{ [key: ${tr(kt)}]: ${tr(vt)} }"
 
       case _ =>
         typeNaming(vtpe)

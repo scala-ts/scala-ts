@@ -98,11 +98,19 @@ final class TypeScriptImportResolverSpec
               SelectValue("foo", StringRef, ThisTypeRef, "name"),
               DictionaryValue(
                 name = "mapping",
-                typeRef = MapType(StringRef, StringRef),
+                keyTypeRef = StringRef,
                 valueTypeRef = StringRef,
                 entries = Map(
-                  "foo" -> LiteralValue("mapping[foo]", StringRef, "\"bar\""),
-                  "lorem" -> SelectValue(
+                  LiteralValue(
+                    "mapping.foo",
+                    StringRef,
+                    "\"foo\""
+                  ) -> LiteralValue("mapping[foo]", StringRef, "\"bar\""),
+                  LiteralValue(
+                    "mapping.lorem",
+                    StringRef,
+                    "\"lorem\""
+                  ) -> SelectValue(
                     "mapping[lorem]",
                     StringRef,
                     testClass1,

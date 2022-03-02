@@ -263,8 +263,8 @@ export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTest
   foo: this.name,
   list: [ "first", this.name ],
   set: new Set([ this.code, 2 ]),
-  mapping: { 'foo': "bar", 'lorem': this.name },
-  dictOfList: { 'excludes': [ "*.txt", ".gitignore" ], 'includes': [ "images/**", "*.jpg", "*.png" ] },
+  mapping: { "foo": "bar", "lorem": this.name },
+  dictOfList: { "excludes": [ "*.txt", ".gitignore" ], "includes": [ "images/**", "*.jpg", "*.png" ] },
   concatSeq: [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]],
   concatList: [ ...[ "foo" ], ...this.list],
   mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ])
@@ -306,12 +306,20 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
               ),
               DictionaryValue(
                 name = "mapping",
-                typeRef = MapType(StringRef, StringRef),
+                keyTypeRef = StringRef,
                 valueTypeRef = StringRef,
                 entries = Map(
-                  "foo" -> LiteralValue("mapping[foo]", taggedRef, "\"bar\""),
-                  "lorem" -> SelectValue(
-                    "mapping[lorem]",
+                  LiteralValue(
+                    "mapping.0",
+                    StringRef,
+                    "\"foo\""
+                  ) -> LiteralValue("mapping[0]", taggedRef, "\"bar\""),
+                  LiteralValue(
+                    "mapping.1",
+                    StringRef,
+                    "\"lorem\""
+                  ) -> SelectValue(
+                    "mapping[1]",
                     taggedRef,
                     ThisTypeRef,
                     "name"
@@ -320,38 +328,46 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
               ),
               DictionaryValue(
                 name = "dictOfList",
-                typeRef = MapType(StringRef, ArrayRef(taggedRef)),
+                keyTypeRef = StringRef,
                 valueTypeRef = ArrayRef(taggedRef),
                 entries = Map(
-                  "excludes" -> ListValue(
-                    name = "dictOfList[excludes]",
+                  LiteralValue(
+                    "dictOfList.0",
+                    StringRef,
+                    "\"excludes\""
+                  ) -> ListValue(
+                    name = "dictOfList[0]",
                     typeRef = ArrayRef(taggedRef),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
-                        "dictOfList[excludes][0]",
+                        "dictOfList[0][0]",
                         taggedRef,
                         "\"*.txt\""
                       ),
                       LiteralValue(
-                        "dictOfList[excludes][1]",
+                        "dictOfList[0][1]",
                         taggedRef,
                         "\".gitignore\""
                       )
                     )
                   ),
-                  "includes" -> ListValue(
-                    name = "dictOfList[includes]",
+                  LiteralValue(
+                    "dictOfList.1",
+                    StringRef,
+                    "\"includes\""
+                  ) -> ListValue(
+                    name = "dictOfList[1]",
                     typeRef = ArrayRef(taggedRef),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
-                        "dictOfList[includes][0]",
+                        "dictOfList[1][0]",
                         taggedRef,
                         "\"images/**\""
                       ),
                       LiteralValue(
-                        "dictOfList[includes][1]",
+                        "dictOfList[1][1]",
                         taggedRef,
                         "\"*.jpg\""
                       ),
@@ -411,6 +427,18 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
                       Set(LiteralValue("mergedSet[1][0]", NumberRef, "3"))
                   )
                 )
+              ),
+              DictionaryValue(
+                name = "taggedDict",
+                keyTypeRef = taggedRef,
+                valueTypeRef = StringRef,
+                entries = Map(
+                  LiteralValue(
+                    "taggedDict.0",
+                    taggedRef,
+                    "\"foo\""
+                  ) -> LiteralValue("taggedDict[0]", taggedRef, "\"bar\"")
+                )
               )
             ),
             superInterface = None
@@ -435,13 +463,15 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
 
   public _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
 
-  public readonly _mapping: { [key: TSstring]: TSstring } = { 'foo': nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar"), 'lorem': this._name };
+  public readonly _mapping: { [key: TSstring]: TSstring } = { "foo": nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar"), "lorem": this._name };
 
-  public readonly _dictOfList: { [key: TSstring]: ReadonlyArray<nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild> } = { 'excludes': [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.txt"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild(".gitignore") ], 'includes': [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("images/**"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.jpg"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.png") ] };
+  public readonly _dictOfList: { [key: TSstring]: ReadonlyArray<nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild> } = { "excludes": [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.txt"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild(".gitignore") ], "includes": [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("images/**"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.jpg"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.png") ] };
 
   public _concatSeq: ReadonlyArray<nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild> = [ ...this._list, ...[ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("foo"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar") ], ...[ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("lorem") ]];
 
   public _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
+
+  public readonly _taggedDict: { [key: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild]: TSstring } = (() => { const __buf1519690942: { [key: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild]: TSstring } = {}; __buf1519690942[nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("foo")] = nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar"); return __buf1519690942 })();
 
   private static instance: TSSingleton;
 

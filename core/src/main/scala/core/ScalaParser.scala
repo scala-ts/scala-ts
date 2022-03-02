@@ -314,123 +314,45 @@ final class ScalaParser[Uni <: Universe](
       rhs: Tree,
       hint: Option[ScalaTypeRef]
     ): Option[TypeInvariant] = rhs match {
-    case LiteralTag(v) => {
-      // Literal elements in list are not defined with own symbol
-      val signature = Option(owner.symbol).map(_.typeSignature)
-
-      val mt: Type =
-        signature.map {
-          case universe.NullaryMethodType(resultType) => // for `=> T`
-            resultType
-
-          case t =>
-            t
-        }.getOrElse(owner.tpe)
-
-      Some(
-        LiteralInvariant(
-          name = k,
-          typeRef = scalaTypeRef(mt.dealias, Set.empty),
-          value = v.toString
-        )
-      )
-    }
-
-    case ApplyTag(a) if (isLiteralType(a.tpe)) =>
-      // Value class
-      a.args match {
-        case LiteralTag(v) :: Nil =>
-          Some(
-            LiteralInvariant(
-              name = k,
-              typeRef = scalaTypeRef(a.tpe.dealias, Set.empty),
-              value = v.toString
-            )
-          )
-
-        case _ =>
-          None
-      }
-
-    case universe.SelectTag(s) if (s.isTerm && ({
-          val sym = s.symbol
-          val qual = s.qualifier.symbol
-
-          sym.isPublic &&
-          (sym.isTerm ||
-            (sym.isMethod &&
-              sym.asMethod.paramLists.isEmpty)) &&
-          qual.isPublic &&
-          (qual.isModule || qual.isModuleClass)
-        })) => {
-      // Stable reference; e;g. x = qual.y
-      val qualTpe = s.qualifier match {
-        case universe.ThisTag(_) =>
-          ThisTypeRef
-
-        case _ =>
-          scalaTypeRef(s.qualifier.tpe.dealias, Set.empty)
-      }
-
-      val tpeRef = scalaTypeRef(s.tpe.dealias, Set.empty) match {
-        case unknown @ UnknownTypeRef(_) =>
-          hint.getOrElse(unknown)
-
-        case tr =>
-          tr
-      }
-
-      Some(
-        SelectInvariant(
-          name = k,
-          typeRef = tpeRef,
-          qualifier = qualTpe,
-          term = s.name.toString
-        )
-      )
-    }
-
     case ApplyTag(a)
         if (a.tpe.dealias <:< MapType && a.tpe.typeArgs.size == 2) =>
       a.tpe.typeArgs match {
-        case kt :: _ :: Nil if (isLiteralType(kt)) =>
+        case _ :: _ :: Nil =>
           // Dictionary
-
-          val entries: Map[String, TypeInvariant] =
-            a.args
+          val entries: Map[TypeInvariant.Simple, TypeInvariant] =
+            a.args.zipWithIndex
               .collect(
                 Function.unlift[
-                  Tree,
-                  (String, TypeInvariant)
+                  (Tree, Int),
+                  (TypeInvariant.Simple, TypeInvariant)
                 ] {
-                  case ArrowedTuple(
-                        (
-                          LiteralTag(
-                            universe.Literal(universe.Constant(key: String))
-                          ),
-                          v
-                        )
-                      ) => {
+                  case (ArrowedTuple((ky, v)), idx) => {
+                    for {
+                      key <- simpleTypeInvariant(
+                        s"${k}.${idx}",
+                        ky,
+                        ky,
+                        None
+                      )
 
-                    typeInvariant(s"${k}[${key}]", v, v, None).map(key -> _)
+                      vlu <- typeInvariant(s"${k}[${idx}]", v, v, None)
+                    } yield key -> vlu
                   }
 
-                  case _ =>
+                  case entry =>
+                    logger.warning(s"Unsupported dictionary entry: ${entry}")
                     None
                 }
               )
               .toMap
 
           entries.headOption match {
-            case Some((_, first)) if (entries.size == a.args.size) =>
+            case Some((fstk, fstv)) if (entries.size == a.args.size) =>
               Some(
                 DictionaryInvariant(
                   name = k,
-                  typeRef = MapRef(
-                    keyType = scalaTypeRef(kt, Set.empty),
-                    valueType = first.typeRef
-                  ),
-                  valueTypeRef = first.typeRef,
+                  keyTypeRef = fstk.typeRef,
+                  valueTypeRef = fstv.typeRef,
                   entries = entries
                 )
               )
@@ -596,8 +518,94 @@ final class ScalaParser[Uni <: Universe](
       }
 
     case _ =>
-      None
+      simpleTypeInvariant(k, owner, rhs, hint)
 
+  }
+
+  private def simpleTypeInvariant(
+      k: String,
+      owner: Tree,
+      rhs: Tree,
+      hint: Option[ScalaTypeRef]
+    ): Option[TypeInvariant.Simple] = rhs match {
+    case LiteralTag(v) => {
+      // Literal elements in list are not defined with own symbol
+      val signature = Option(owner.symbol).map(_.typeSignature)
+
+      val mt: Type =
+        signature.map {
+          case universe.NullaryMethodType(resultType) => // for `=> T`
+            resultType
+
+          case t =>
+            t
+        }.getOrElse(owner.tpe)
+
+      Some(
+        LiteralInvariant(
+          name = k,
+          typeRef = scalaTypeRef(mt.dealias, Set.empty),
+          value = v.toString
+        )
+      )
+    }
+
+    case ApplyTag(a) if (isLiteralType(a.tpe)) =>
+      // Value class
+      a.args match {
+        case LiteralTag(v) :: Nil =>
+          Some(
+            LiteralInvariant(
+              name = k,
+              typeRef = scalaTypeRef(a.tpe.dealias, Set.empty),
+              value = v.toString
+            )
+          )
+
+        case _ =>
+          None
+      }
+
+    case universe.SelectTag(s) if (s.isTerm && ({
+          val sym = s.symbol
+          val qual = s.qualifier.symbol
+
+          sym.isPublic &&
+          (sym.isTerm ||
+            (sym.isMethod &&
+              sym.asMethod.paramLists.isEmpty)) &&
+          qual.isPublic &&
+          (qual.isModule || qual.isModuleClass)
+        })) => {
+      // Stable reference; e;g. x = qual.y
+      val qualTpe = s.qualifier match {
+        case universe.ThisTag(_) =>
+          ThisTypeRef
+
+        case _ =>
+          scalaTypeRef(s.qualifier.tpe.dealias, Set.empty)
+      }
+
+      val tpeRef = scalaTypeRef(s.tpe.dealias, Set.empty) match {
+        case unknown @ UnknownTypeRef(_) =>
+          hint.getOrElse(unknown)
+
+        case tr =>
+          tr
+      }
+
+      Some(
+        SelectInvariant(
+          name = k,
+          typeRef = tpeRef,
+          qualifier = qualTpe,
+          term = s.name.toString
+        )
+      )
+    }
+
+    case _ =>
+      None
   }
 
   private lazy val SetType = typeOf[Set[Any]].erasure

@@ -9,6 +9,8 @@ export class TSConstants {
 
   public _list: ReadonlyArray<TSName> = [ ...[ this._DefaultName ], ...[ TSName("test") ]];
 
+  public _seqOfMap: ReadonlyArray<{ [key: TSName]: string }> = [ (() => { const __buf1628682018: { [key: TSName]: string } = {}; __buf1628682018[TSName("lorem")] = "lorem"; __buf1628682018[this._DefaultName] = "ipsum"; return __buf1628682018 })(), (() => { const __buf1628682049: { [key: TSName]: string } = {}; __buf1628682049[TSName("dolor")] = "value"; return __buf1628682049 })() ];
+
   private static instance: TSConstants;
 
   private constructor() {}
