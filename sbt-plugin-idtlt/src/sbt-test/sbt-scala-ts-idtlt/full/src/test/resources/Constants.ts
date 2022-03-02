@@ -12,7 +12,7 @@ export class Constants {
 
   public list: ReadonlyArray<number> = [ this.code, 2 ];
 
-  public readonly dict: { [key: string]: ReadonlyArray<nsName.Name> } = { 'specific': [ this.UnknownName, this.defaultName, nsName.Name("*") ], 'invalid': [ nsName.Name("failed") ] };
+  public readonly dict: { [key: string]: ReadonlyArray<nsName.Name> } = { "specific": [ this.UnknownName, this.defaultName, nsName.Name("*") ], "invalid": [ nsName.Name("failed") ] };
 
   public excluded: ReadonlyArray<string> = [ "foo", "bar" ];
 

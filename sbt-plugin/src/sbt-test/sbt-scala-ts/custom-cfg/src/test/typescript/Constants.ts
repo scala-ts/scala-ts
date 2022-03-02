@@ -13,5 +13,24 @@ describe('Constants', () => {
     expect(list.length).toEqual(2)
     expect(list.includes(defaultName)).toBe(true)
     expect(list.includes(TSName("test"))).toBe(true)
+
+    // Much more complex map
+    const seqOfMap: ReadonlyArray<{ [key: TSName]: string }> =
+      TSConstantsInhabitant._seqOfMap
+
+    expect(seqOfMap.length).toEqual(2)
+
+    const map1: { [key: TSName]: string } = seqOfMap[0]
+    const lorem: TSName = TSName("lorem")
+    const dolor = TSName("dolor")
+
+    expect(map1[lorem]).toEqual("lorem")
+    expect(map1[defaultName]).toEqual("ipsum")
+    expect(map1[dolor]).toEqual(undefined)
+
+    const map2: { [key: TSName]: string } = seqOfMap[1]
+
+    expect(map2[dolor]).toEqual("value")
+    expect(map2[defaultName]).toEqual(undefined)
   })
 })

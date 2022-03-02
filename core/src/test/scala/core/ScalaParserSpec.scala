@@ -201,7 +201,7 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
         res must contain(caseObject2) and {
           res must have size 1
         }
-      }
+      } tag "wip"
     }
 
     "handle sealed trait as union" in {
@@ -400,10 +400,10 @@ object ScalaRuntimeFixtures {
 
     val list = Seq("first", name)
     def set: Set[Int] = Set(code, 2)
-    val mapping = Map("foo" -> "bar", "lorem" -> name)
+    val mapping = Map("foo" -> "bar", (new String("lorem")) -> name)
 
     def dictOfList = Map(
-      "excludes" -> Seq("*.txt", ".gitignore"),
+      new String("excludes") -> Seq("*.txt", ".gitignore"),
       "includes" -> Seq("images/**", "*.jpg", "*.png")
     )
 
@@ -425,10 +425,10 @@ object ScalaRuntimeFixtures {
 
       val list = Seq("first", name)
       def set: Set[Int] = Set(code, 2)
-      val mapping = Map("foo" -> "bar", "lorem" -> name)
+      val mapping = Map("foo" -> "bar", (new String("lorem")) -> name)
 
       def dictOfList = Map(
-        "excludes" -> Seq("*.txt", ".gitignore"),
+        new String("excludes") -> Seq("*.txt", ".gitignore"),
         "includes" -> Seq("images/**", "*.jpg", "*.png"))
 
       val concatSeq = list ++ Seq("foo", "bar") ++ Seq("lorem")
@@ -724,12 +724,20 @@ object ScalaParserResults {
       ),
       DictionaryInvariant(
         name = "mapping",
-        typeRef = MapRef(StringRef, StringRef),
+        keyTypeRef = StringRef,
         valueTypeRef = StringRef,
         entries = Map(
-          "foo" -> LiteralInvariant("mapping[foo]", StringRef, "\"bar\""),
-          "lorem" -> SelectInvariant(
-            "mapping[lorem]",
+          LiteralInvariant(
+            "mapping.0",
+            StringRef,
+            "\"foo\""
+          ) -> LiteralInvariant("mapping[0]", StringRef, "\"bar\""),
+          LiteralInvariant(
+            "mapping.1",
+            StringRef,
+            "\"lorem\""
+          ) -> SelectInvariant(
+            "mapping[1]",
             StringRef,
             ThisTypeRef,
             "name"
@@ -738,43 +746,51 @@ object ScalaParserResults {
       ),
       DictionaryInvariant(
         name = "dictOfList",
-        typeRef = MapRef(StringRef, CollectionRef(StringRef)),
+        keyTypeRef = StringRef,
         valueTypeRef = CollectionRef(StringRef),
         entries = Map(
-          "excludes" -> ListInvariant(
-            "dictOfList[excludes]",
+          LiteralInvariant(
+            "dictOfList.0",
+            StringRef,
+            "\"excludes\""
+          ) -> ListInvariant(
+            "dictOfList[0]",
             CollectionRef(StringRef),
             StringRef,
             List(
               LiteralInvariant(
-                "dictOfList[excludes][0]",
+                "dictOfList[0][0]",
                 StringRef,
                 "\"*.txt\""
               ),
               LiteralInvariant(
-                "dictOfList[excludes][1]",
+                "dictOfList[0][1]",
                 StringRef,
                 "\".gitignore\""
               )
             )
           ),
-          "includes" -> ListInvariant(
-            "dictOfList[includes]",
+          LiteralInvariant(
+            "dictOfList.1",
+            StringRef,
+            "\"includes\""
+          ) -> ListInvariant(
+            "dictOfList[1]",
             CollectionRef(StringRef),
             StringRef,
             List(
               LiteralInvariant(
-                "dictOfList[includes][0]",
+                "dictOfList[1][0]",
                 StringRef,
                 "\"images/**\""
               ),
               LiteralInvariant(
-                "dictOfList[includes][1]",
+                "dictOfList[1][1]",
                 StringRef,
                 "\"*.jpg\""
               ),
               LiteralInvariant(
-                "dictOfList[includes][2]",
+                "dictOfList[1][2]",
                 StringRef,
                 "\"*.png\""
               )

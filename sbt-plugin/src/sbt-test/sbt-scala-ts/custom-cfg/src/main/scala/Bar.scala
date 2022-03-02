@@ -19,4 +19,11 @@ object Constants {
   val filtered = excluded ++ Seq("filtered")
 
   def list = List(DefaultName) ++ Seq(Name("test"))
+
+  val seqOfMap = Seq(
+    Map(
+      Name("lorem") -> "lorem",
+      DefaultName -> "ipsum"),
+    Map(
+      Name("dolor") -> "value"))
 }

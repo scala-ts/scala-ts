@@ -275,21 +275,46 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.print(" ])")
               }
 
-              case DictionaryValue(_, _, _, entries) => {
-                o.print("{ ")
+              case d @ DictionaryValue(nme, _, _, entries) => {
+                if (
+                  entries.forall {
+                    case (LiteralValue(_, StringRef, _), _) => true
+                    case _                                  => false
+                  }
+                ) {
+                  o.print("{ ")
 
-                entries.zipWithIndex.foreach {
-                  case ((key, v), i) =>
-                    if (i > 0) {
-                      o.print(", ")
-                    }
+                  // All keys are literal string
+                  entries.zipWithIndex.foreach {
+                    case ((key, v), i) =>
+                      if (i > 0) {
+                        o.print(", ")
+                      }
 
-                    o.print(s"'${key}': ")
+                      nestedEmit(ValueBodyDeclaration(vb.member, key))
+                      o.print(": ")
+                      nestedEmit(ValueBodyDeclaration(vb.member, v))
+                  }
 
-                    nestedEmit(ValueBodyDeclaration(vb.member, v))
+                  o.print(" }")
+                } else {
+                  val bufNme = s"__buf${scala.math.abs(nme.hashCode)}"
+
+                  o.print(
+                    s"(() => { const ${bufNme}: ${tpeMapper(d.typeRef)} = {}; "
+                  )
+
+                  entries.foreach {
+                    case (key, v) =>
+                      o.print(s"${bufNme}[")
+                      nestedEmit(ValueBodyDeclaration(vb.member, key))
+                      o.print("] = ")
+                      nestedEmit(ValueBodyDeclaration(vb.member, v))
+                      o.print("; ")
+                  }
+
+                  o.print(s"return ${bufNme} })()")
                 }
-
-                o.print(" }")
               }
             }
           }
@@ -364,9 +389,9 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.println(lineSeparator)
               }
 
-              case d @ DictionaryValue(_, tpe, _, _) => {
+              case d @ DictionaryValue(_, _, _, _) => {
                 o.print(
-                  s"${indent}public readonly ${nme}: ${tpeMapper(tpe)} = "
+                  s"${indent}public readonly ${nme}: ${tpeMapper(d.typeRef)} = "
                 )
 
                 emitValueBody(ValueBodyDeclaration(vd, d), o)
@@ -743,7 +768,7 @@ private[scalats] object TypeScriptEmitter {
       possibilities.map(tr).mkString("(", " | ", ")")
 
     case MapType(keyType, valueType) =>
-      s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }" // TODO: Unit test
+      s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }"
 
   }
 }
