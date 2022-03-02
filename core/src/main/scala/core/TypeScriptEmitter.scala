@@ -517,7 +517,7 @@ ${indent}return (""")
       )
       o.println()
       o.println(s"""export const ${tpeName}Values = ${vs
-        .mkString("[ ", ", ", " ]")}${lineSeparator}
+          .mkString("[ ", ", ", " ]")}${lineSeparator}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")

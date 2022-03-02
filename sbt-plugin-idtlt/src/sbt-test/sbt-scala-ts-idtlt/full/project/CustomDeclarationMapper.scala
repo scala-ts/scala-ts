@@ -12,13 +12,15 @@ import io.github.scalats.core.{
 import io.github.scalats.typescript._
 
 final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
+
   def apply(
-    parent: TypeScriptDeclarationMapper.Resolved,
-    settings: Settings,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    fieldMapper: TypeScriptFieldMapper,
-    declaration: Declaration,
-    out: PrintStream): Option[Unit] = {
+      parent: TypeScriptDeclarationMapper.Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream
+    ): Option[Unit] = {
     import settings.{
       typescriptLineSeparator => lineSep,
       typescriptIndent => indent
@@ -47,7 +49,12 @@ ${indent}})
         parent(tagged, out)
 
       case iface @ InterfaceDeclaration(
-        _, fields, Nil, superInterface, false) => {
+            _,
+            fields,
+            Nil,
+            superInterface,
+            false
+          ) => {
 
         out.println(s"""// Validator for InterfaceDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.object({""")
@@ -168,15 +175,17 @@ $deriving""")
   // ---
 
   private def emitField(
-    settings: Settings,
-    fieldMapper: TypeScriptFieldMapper,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    o: PrintStream,
-    owner: Declaration,
-    member: Member
-  ): Unit = {
+      settings: Settings,
+      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      o: PrintStream,
+      owner: Declaration,
+      member: Member
+    ): Unit = {
     val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
-    o.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},")
+    o.println(
+      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
+    )
   }
 }

@@ -10,8 +10,8 @@ case class TrainLine(
     name: String,
     startStationId: String,
     endStationId: String,
-    feature: NamedFeature
-) extends Transport
+    feature: NamedFeature)
+    extends Transport
 
 case class BusLine(
     id: Int,
