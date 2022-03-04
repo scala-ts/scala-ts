@@ -347,7 +347,7 @@ final class ScalaParser[Uni <: Universe](
               .toMap
 
           entries.headOption match {
-            case Some((fstk, fstv)) if (entries.size == a.args.size) =>
+            case Some((fstk, fstv)) =>
               Some(
                 DictionaryInvariant(
                   name = k,
@@ -358,9 +358,7 @@ final class ScalaParser[Uni <: Universe](
               )
 
             case _ => {
-              logger.warning(
-                s"Skip dictionary with non literal entries: $k"
-              )
+              logger.warning(s"Skip empty dictionary: $k")
 
               None
             }
