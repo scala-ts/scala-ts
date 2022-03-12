@@ -1,4 +1,4 @@
-FROM cchantep/sbt:jdk8u265-b01-alpine-slim-akka-node14-yarn12
+FROM cchantep/sbt:jdk8u292-b10-slim-akka-node16
 
 ARG BACKEND_URL
 ADD . /opt/webapp
@@ -11,7 +11,7 @@ yarn build && \
 cd .. && \
 cp -R frontend/dist http-api/src/main/resources/webroot && \
 sbt http-api/universal:stage && \
-adduser -D web && \
+useradd -M web && \
 chown -R web /opt/webapp
 
 USER web
