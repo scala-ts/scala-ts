@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "2.13.3"
+ThisBuild / scalaVersion := "2.13.7"
 
 ThisBuild / scalacOptions ++= Seq(
   "-encoding", "UTF-8",
@@ -16,21 +16,21 @@ ThisBuild / scalacOptions ++= Seq(
   "-g:vars"
 )
 
-scalacOptions in Test ~= {
+Test / scalacOptions ~= {
   _.filterNot(_ == "-Xfatal-warnings")
 }
 
-scalacOptions in (Compile, console) ~= {
+Compile / console / scalacOptions ~= {
   _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
 }
 
-scalacOptions in (Test, console) ~= {
+Test / console / scalacOptions ~= {
   _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
 }
 
 // Silencer
 ThisBuild / libraryDependencies ++= {
-  val silencerVersion = "1.7.0"
+  val silencerVersion = "1.7.8"
 
   Seq(
     compilerPlugin(("com.github.ghik" %% "silencer-plugin" % silencerVersion).

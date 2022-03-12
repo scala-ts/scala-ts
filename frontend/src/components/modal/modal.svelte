@@ -5,7 +5,6 @@
   export let state: ModalProps;
   export let hide: () => void;
 
-  let modal: HTMLElement;
   const extraBtn = state.extraBtn;
 </script>
 
@@ -13,8 +12,7 @@
   class="modal-backdrop"
   style="background-color:rgba(0, 0, 0, 0.75)"
   in:fade={{ duration: 120 }}
-  on:click={hide}
-  bind:this={modal}>
+  on:click={hide}>
   <div
     class="modal"
     tabindex="-1"

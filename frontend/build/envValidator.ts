@@ -1,6 +1,6 @@
 import { object, string, boolean, Ok, Err } from "idonttrustlikethat";
 
-const url = string.flatMap((str) => {
+const url = string.and((str) => {
   try {
     new URL(str);
     return Ok(str);
@@ -11,7 +11,7 @@ const url = string.flatMap((str) => {
 
 export const envValidator = object({
   isProd: boolean,
-  backendUrl: url.optional().default(""),
+  backendUrl: url.optional().default("http://localhost:9000"),
 });
 
 export type AppEnv = typeof envValidator.T;
