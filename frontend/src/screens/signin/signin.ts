@@ -1,11 +1,12 @@
 import { errorDebugString } from "idonttrustlikethat";
 import { writable, derived, get } from "svelte/store";
 import type { Credentials } from "@_generated/Credentials";
+import type { UserName } from "@_generated/UserName";
 import { idtltAuthenticatedUser } from "@_generated/AuthenticatedUser";
 import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
-export const userName = writable<string | undefined>(undefined);
+export const userName = writable<UserName | undefined>(undefined);
 
 export const password = writable<string | undefined>(undefined);
 

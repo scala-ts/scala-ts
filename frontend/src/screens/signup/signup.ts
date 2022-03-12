@@ -1,12 +1,13 @@
 import { writable, derived, get, Readable } from "svelte/store";
 import type { Account } from "@_generated/Account";
 import type { ContactName } from "@_generated/ContactName";
+import { UserName } from "@_generated/UserName";
 import type { ModalProps } from "@components/modal/modal";
 import { Error, isError } from "@utils/error";
 
 // Overall store
 const initialAccount: () => Account = () => ({
-  userName: "",
+  userName: UserName(""),
   password: "",
   usage: "Personal",
   favoriteFoods: [],
