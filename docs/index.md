@@ -8,6 +8,8 @@ layout: default
 
 > See [release notes](./release-notes.html)
 
+> See [demo](https://scala-ts-demo.herokuapp.com/) (with Akka HTTP & Svelte)
+
 ## Usage
 
 *Scala-TS* can be used as a [SBT plugin](#sbt-plugin) (recommended) or as a Scala [compiler plugin](#compiler-plugin), to handle generate TypeScript on Scala compilation.
