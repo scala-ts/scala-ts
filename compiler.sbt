@@ -1,7 +1,8 @@
-ThisBuild / scalaVersion := "2.13.7"
+ThisBuild / scalaVersion := "2.13.8"
 
 ThisBuild / scalacOptions ++= Seq(
-  "-encoding", "UTF-8",
+  "-encoding",
+  "UTF-8",
   "-unchecked",
   "-deprecation",
   "-feature",
@@ -33,9 +34,11 @@ ThisBuild / libraryDependencies ++= {
   val silencerVersion = "1.7.8"
 
   Seq(
-    compilerPlugin(("com.github.ghik" %% "silencer-plugin" % silencerVersion).
-      cross(CrossVersion.full)),
-    ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided).
-      cross(CrossVersion.full)
+    compilerPlugin(
+      ("com.github.ghik" %% "silencer-plugin" % silencerVersion)
+        .cross(CrossVersion.full)
+    ),
+    ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided)
+      .cross(CrossVersion.full)
   )
 }
