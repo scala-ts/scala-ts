@@ -1,17 +1,14 @@
 on:
   schedule:
     - cron: '*/10 * * * *' # TODO: '0 12 * * 0'
-name: Launch Scala Steward
+name: weekly
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
-    name: Launch Scala Steward
-    strategy:
-      matrix:
-        branch: ['master', 'demo/akka-http-svlete', 'demo/akka-idtlt']
+    name: 'Launch Scala Steward'
     steps:
-      - name: Launch Scala Steward
+      - name: 'Launch Scala Steward'
         uses: scala-steward-org/scala-steward-action@v2
         with:
           github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
-          branch: ${{ matrix.branch }}
+          branches: 'master,demo/akka-http-svlete,demo/akka-idtlt'
