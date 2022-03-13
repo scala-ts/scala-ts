@@ -16,4 +16,6 @@ val scalaTSVer = "0.5.10"
 
 addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % scalaTSVer)
 
-addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts-idtlt" % scalaTSVer changing())
+addSbtPlugin(
+  "io.github.scala-ts" % "sbt-scala-ts-idtlt" % scalaTSVer changing ()
+)
