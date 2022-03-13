@@ -41,7 +41,7 @@ lazy val core = project
         "org.scala-lang" % "scala-reflect" % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value,
         "org.slf4j" % "slf4j-api" % "1.7.36",
-        "ch.qos.logback" % "logback-classic" % "1.1.11" % Test,
+        "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
         "org.specs2" %% "specs2-core" % specsVer % Test,
         "org.specs2" %% "specs2-junit" % specsVer % Test
       )
