@@ -13,8 +13,8 @@ final class UserName(val name: String) extends AnyVal {
 }
 
 case class AuthenticatedUser(
-  name: UserName,
-  token: String)
+    name: UserName,
+    token: String)
 
 case class ContactName(
     firstName: String,
@@ -48,5 +48,5 @@ object Pizza extends Food {
 case class OtherFood(name: String) extends Food
 
 case class Credentials(
-  userName: UserName,
-  password: String)
+    userName: UserName,
+    password: String)
