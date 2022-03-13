@@ -37,7 +37,7 @@ lazy val `http-api` = (project in file("http-api"))
     libraryDependencies ++= {
       // Versions
       val akkaVer = "2.6.18"
-      val akkaHttpVersion = "10.2.3"
+      val akkaHttpVersion = "10.2.9"
 
       Seq(
         // Logging
