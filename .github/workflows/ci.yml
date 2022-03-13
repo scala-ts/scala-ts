@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: 'demo/akka-http-svlete'
+  pull_request:
+    branches: 'demo/akka-http-svlete'
+
+jobs:
+  build_n_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Checkout repository'
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: 'Set up JDK 1.8'
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: 'Coursier cache'
+      uses: coursier/cache-action@v5
+      with:
+        extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+
+    - name: 'Compile'
+      run: 'sbt -J-Dscalafix.disable=true compile'
+
+    - name: 'Check code quality' # TODO: Separate job
+      run: |
+        sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'
+
+    - name: 'Publish reports for core tests'
+      uses: EnricoMi/publish-unit-test-result-action@v1.7
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        files: target/test-reports/TEST-*.xml
+        check_name: 'Core tests'
+        comment_title: 'Core tests statistics'
+
+    - name: 'Set up Node'
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+
+    - name: 'Build TypeScript'
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+        echo "TODO: npm run test"
