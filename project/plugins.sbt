@@ -15,7 +15,7 @@ addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.34")
 
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.2")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.1.1")
 
 addSbtPlugin("cchantep" % "sbt-hl-compiler" % "0.8")
 
