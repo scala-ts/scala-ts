@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: master
   pull_request:
-    branches: [ 'master', 'demo/akka-http-svlete', 'demo/akka-idtlt' ]
+    branches: master
 
 jobs:
   # TODO: Publish snapshot on master
