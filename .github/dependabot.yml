@@ -1,18 +1,22 @@
 version: 2
 updates:
 - package-ecosystem: npm
+  target-branch: 'master'
   directory: "/sbt-plugin/src/node"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: idonttrustlikethat
-    versions:
-    - 2.0.2
-  - dependency-name: ts-jest
-    versions:
-    - 26.5.2
-  - dependency-name: typescript
-    versions:
-    - 4.1.4
-    - 4.2.2
+
+- package-ecosystem: npm
+  target-branch: 'demo/akka-idtlt'
+  directory: "/frontend"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+
+- package-ecosystem: npm
+  target-branch: 'demo/akka-http-svlete'
+  directory: "/frontend"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
