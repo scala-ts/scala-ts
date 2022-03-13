@@ -39,7 +39,7 @@ lazy val `http-api` = (project in file("http-api"))
     run / connectInput := true,
     libraryDependencies ++= {
       // Versions
-      val akkaVer = "2.6.9"
+      val akkaVer = "2.6.18"
       val akkaHttpVersion = "10.2.9"
 
       Seq(
@@ -52,7 +52,7 @@ lazy val `http-api` = (project in file("http-api"))
         "com.typesafe.akka" %% "akka-slf4j" % akkaVer,
         "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
         "ch.megard" %% "akka-http-cors" % "1.1.3",
-        "de.heikoseeberger" %% "akka-http-play-json" % "1.39.2",
+        "de.heikoseeberger" %% "akka-http-play-json" % "1.35.3",
         "com.typesafe.akka" %% "akka-stream-testkit" % akkaVer % Test
       )
     }
