@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron: '*/10 * * * *' # TODO: '0 12 * * 0'
+    - cron: '0 12 * * 0'
 name: weekly
 jobs:
   scala-steward:
