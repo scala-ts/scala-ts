@@ -10,7 +10,7 @@ inThisBuild(
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
     scalafixDependencies ++= Seq(
-      "com.github.liancheng" %% "organize-imports" % "0.4.2"
+      "com.github.liancheng" %% "organize-imports" % "0.4.4"
     )
   )
 )
@@ -36,19 +36,19 @@ lazy val `http-api` = (project in file("http-api"))
     run / connectInput := true,
     libraryDependencies ++= {
       // Versions
-      val akkaVer = "2.6.9"
+      val akkaVer = "2.6.18"
       val akkaHttpVersion = "10.2.3"
 
       Seq(
         // Logging
-        "ch.qos.logback" % "logback-classic" % "1.2.3",
+        "ch.qos.logback" % "logback-classic" % "1.2.11",
         // As in memory DB
-        "com.google.guava" % "guava" % "30.1-jre",
+        "com.google.guava" % "guava" % "30.1.1-jre",
         // Akka
         "com.typesafe.akka" %% "akka-stream" % akkaVer,
         "com.typesafe.akka" %% "akka-slf4j" % akkaVer,
         "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-        "ch.megard" %% "akka-http-cors" % "1.1.0",
+        "ch.megard" %% "akka-http-cors" % "1.1.3",
         "de.heikoseeberger" %% "akka-http-play-json" % "1.39.2",
         "com.typesafe.akka" %% "akka-stream-testkit" % akkaVer % Test
       )
