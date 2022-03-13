@@ -10,8 +10,8 @@ import akka.http.scaladsl.server.{
 import akka.http.scaladsl.server.directives.{ Credentials => Creds }
 
 import io.github.scalats.demo.model.{
-  AuthenticatedUser,
   Account,
+  AuthenticatedUser,
   Credentials,
   UserName
 }
