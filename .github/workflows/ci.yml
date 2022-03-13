@@ -33,15 +33,6 @@ jobs:
       run: |
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'
 
-    - name: 'Publish reports for core tests'
-      uses: EnricoMi/publish-unit-test-result-action@v1.7
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: target/test-reports/TEST-*.xml
-        check_name: 'Core tests'
-        comment_title: 'Core tests statistics'
-
     - name: 'Set up Node'
       uses: actions/setup-node@v1
       with:
