@@ -41,7 +41,7 @@ lazy val `http-api` = (project in file("http-api"))
 
       Seq(
         // Logging
-        "ch.qos.logback" % "logback-classic" % "1.2.3",
+        "ch.qos.logback" % "logback-classic" % "1.2.11",
         // As in memory DB
         "com.google.guava" % "guava" % "30.1-jre",
         // Akka
