@@ -27,14 +27,11 @@ jobs:
         extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Compile'
-      run: 'sbt -J-Dscalafix.disable=true test:compile'
+      run: 'sbt -J-Dscalafix.disable=true compile'
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'
-
-    - name: 'Run core tests'
-      run: sbt +testOnly
 
     - name: 'Publish reports for core tests'
       uses: EnricoMi/publish-unit-test-result-action@v1.7
@@ -48,20 +45,11 @@ jobs:
     - name: 'Set up Node'
       uses: actions/setup-node@v1
       with:
-        node-version: '12'
+        node-version: '16'
 
-    - name: 'Run TypeScript tests'
+    - name: 'Build TypeScript'
       run: |
         cd frontend
         npm ci
         npm run build
-        npm run test
-
-    - name: 'Publish reports for TypeScript tests'
-      uses: EnricoMi/publish-unit-test-result-action@v1.7
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: frontend/junit.xml
-        check_name: 'TypeScript tests'
-        comment_title: 'TypeScript tests statistics'
+        echo "TODO: npm run test"
