@@ -83,8 +83,12 @@ const options: RollupOptions = {
 
   plugins: [
     replace({
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "dev"),
-      appEnv: JSON.stringify(appEnv.value),
+      values: {
+        "process.env.NODE_ENV": JSON.stringify(production ? "production" : "dev"),
+        appEnv: JSON.stringify(appEnv.value),
+      },
+      delimiters: ['', ''],
+      preventAssignment: true
     }),
 
     resolve({ browser: true, extensions: [".js", ".ts", ".json", ".svelte"] }),
