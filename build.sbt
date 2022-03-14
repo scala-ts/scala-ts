@@ -20,7 +20,7 @@ lazy val common = (project in file("common"))
   .enablePlugins(TypeScriptIdtltPlugin)
   .settings(
     name := "scala-ts-demo-common",
-    sourceManaged in scalatsOnCompile := {
+    scalatsOnCompile / sourceManaged := {
       val dir = baseDirectory.value / ".." / "frontend" / "src" / "_generated"
       dir.mkdirs()
       dir
