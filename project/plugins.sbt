@@ -10,7 +10,7 @@ addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.1")
 
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.25")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")
 
 val scalaTSVer = "0.5.10"
 
