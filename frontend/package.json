@@ -42,7 +42,7 @@
     "madge": "^5.0.1",
     "mocha": "9.2.2",
     "@types/mocha": "9.1.0",
-    "prettier": "2.5.1",
+    "prettier": "2.6.1",
     "prettier-plugin-svelte": "2.6.0",
     "rimraf": "3.0.2",
     "rollup": "2.70.1",
