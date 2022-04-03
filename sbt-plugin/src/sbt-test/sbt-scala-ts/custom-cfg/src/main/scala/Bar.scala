@@ -3,13 +3,12 @@ package io.github.scalats.sbttest
 case class Name(value: String) extends AnyVal
 
 case class Bar(
-  name: Name,
-  age: Int,
-  amount: Option[BigInt],
-  transports: Seq[Transport],
-  updated: java.time.LocalDate,
-  created: java.time.LocalDate
-)
+    name: Name,
+    age: Int,
+    amount: Option[BigInt],
+    transports: Seq[Transport],
+    updated: java.time.LocalDate,
+    created: java.time.LocalDate)
 
 object Constants {
   val DefaultName = Name("default")
@@ -21,9 +20,7 @@ object Constants {
   def list = List(DefaultName) ++ Seq(Name("test"))
 
   val seqOfMap = Seq(
-    Map(
-      Name("lorem") -> "lorem",
-      DefaultName -> "ipsum"),
-    Map(
-      Name("dolor") -> "value"))
+    Map(Name("lorem") -> "lorem", DefaultName -> "ipsum"),
+    Map(Name("dolor") -> "value")
+  )
 }
