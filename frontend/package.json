@@ -51,7 +51,7 @@
     "rollup-plugin-esbuild": "3.0.4",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-svelte": "7.1.0",
-    "sass": "1.49.9",
+    "sass": "1.49.11",
     "sirv-cli": "2.0.2",
     "svelte": "3.46.4",
     "svelte-check": "2.4.5",
