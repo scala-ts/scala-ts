@@ -8,5 +8,5 @@ object WeekDay extends Enumeration {
 }
 
 case class Lorem(
-  val year: Int,
-  weekday: WeekDay.WeekDay)
+    val year: Int,
+    weekday: WeekDay.WeekDay)

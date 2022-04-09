@@ -1,11 +1,14 @@
-inThisBuild(Seq(
-  organization := "io.github.scala-ts",
-  version := "1.0-SNAPSHOT",
-  scalaVersion := "2.13.8"
-))
+inThisBuild(
+  Seq(
+    organization := "io.github.scala-ts",
+    version := "1.0-SNAPSHOT",
+    scalaVersion := "2.13.8"
+  )
+)
 
-val common = (project in file("common")).
-  enablePlugins(TypeScriptGeneratorPlugin). // Required as disabled by default
+val common = (project in file("common"))
+  .enablePlugins(TypeScriptGeneratorPlugin)
+  . // Required as disabled by default
   settings(
     // Distribute src/test/typescript as ts-test
     Compile / compile := {
@@ -19,8 +22,10 @@ val common = (project in file("common")).
     }
   )
 
-val api = (project in file("api")).dependsOn(common).
-  enablePlugins(TypeScriptGeneratorPlugin). // Required as disabled by default
+val api = (project in file("api"))
+  .dependsOn(common)
+  .enablePlugins(TypeScriptGeneratorPlugin)
+  . // Required as disabled by default
   settings(
     scalatsTypeExcludes := Set(".*\\.common\\..*"),
     // Distribute src/test/typescript as ts-test
@@ -35,11 +40,13 @@ val api = (project in file("api")).dependsOn(common).
     }
   )
 
-lazy val root = (project in file(".")).settings(
-  name := "sbt-plugin-test-multi",
-  publish := ({}),
-  publishTo := None
-).aggregate(common, api)
+lazy val root = (project in file("."))
+  .settings(
+    name := "sbt-plugin-test-multi",
+    publish := ({}),
+    publishTo := None
+  )
+  .aggregate(common, api)
 
 TaskKey[Unit]("preserveGeneratedTypescript") := {
   import sbt.io.IO

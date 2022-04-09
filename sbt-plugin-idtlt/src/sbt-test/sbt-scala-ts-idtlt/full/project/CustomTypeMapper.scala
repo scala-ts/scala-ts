@@ -8,17 +8,20 @@ import io.github.scalats.core.{
 import io.github.scalats.typescript._
 
 final class CustomTypeMapper extends TypeScriptTypeMapper {
+
   def apply(
-    parent: TypeScriptTypeMapper.Resolved,
-    settings: Settings,
-    ownerType: Declaration,
-    member: TypeScriptField,
-    tpe: TypeRef): Option[String] = {
+      parent: TypeScriptTypeMapper.Resolved,
+      settings: Settings,
+      ownerType: Declaration,
+      member: TypeScriptField,
+      tpe: TypeRef
+    ): Option[String] = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
     val tr: TypeRef => String = { ref =>
-      apply(parent, settings, ownerType, member, ref).
-        getOrElse(parent(settings, ownerType, member, ref))
+      apply(parent, settings, ownerType, member, ref).getOrElse(
+        parent(settings, ownerType, member, ref)
+      )
     }
 
     val tsType = tpe match {
@@ -54,7 +57,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
       case NullableType(innerType) =>
         // TODO: ?? member.flags contains TypeScriptField.omitable
         s"${tr(innerType)}.optional()"
-    // TODO: space-monad? string.nullable().map(Option)
+      // TODO: space-monad? string.nullable().map(Option)
 
       case UnionType(possibilities) =>
         s"idtlt.union(${possibilities.map(tr) mkString ", "})"
