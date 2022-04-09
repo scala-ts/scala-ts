@@ -27,20 +27,6 @@
   const hideModal = () => modalStore.set(undefined);
 </script>
 
-<style lang="scss">
-  :global(body) {
-    background-color: var(--bs-light);
-  }
-
-  h1 {
-    font-family: "Ubuntu";
-  }
-
-  .card-footer a {
-    text-decoration: none;
-  }
-</style>
-
 <div in:fade={{ duration: 120 }} class="container-fluid">
   {#if modal}
     <Modal state={modal} hide={hideModal} />
@@ -51,10 +37,12 @@
       class="modal-backdrop"
       id="pending-backdrop"
       style="background-color:rgba(0, 0, 0, 0.5)"
-      in:fade={{ duration: 120 }}>
+      in:fade={{ duration: 120 }}
+    >
       <div
         class="container-fluid text-center position-relative"
-        style="top:49%">
+        style="top:49%"
+      >
         <div class="spinner-border text-white align-middle" role="status" />
       </div>
     </div>
@@ -68,9 +56,10 @@
           <a
             class="btn btn-secondary btn-sm"
             href="#signout"
-            on:click|preventDefault={signOut}><i
-              class="bi bi-arrow-left-circle-fill" />
-            Sign out</a>
+            on:click|preventDefault={signOut}
+            ><i class="bi bi-arrow-left-circle-fill" />
+            Sign out</a
+          >
         </div>
 
         <div class="card-body">
@@ -113,16 +102,17 @@
         <div class="card-footer">
           <div class="d-flex justify-content-between mb-4">
             <div class="p-2">
-              <small><a
-                  href="https://scala-ts.github.io/scala-ts/"
-                  target="_blank">
+              <small
+                ><a href="https://scala-ts.github.io/scala-ts/" target="_blank">
                   Demo by
                   <img
                     src="/images/logo-32.png"
                     alt="Scala-TS"
                     width="32"
-                    height="32" />
-                </a></small>
+                    height="32"
+                  />
+                </a></small
+              >
             </div>
 
             <div class="p-2">
@@ -130,7 +120,9 @@
               <small>
                 <a
                   href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"
-                  target="_blank">See sources</a></small>
+                  target="_blank">See sources</a
+                ></small
+              >
             </div>
           </div>
         </div>
@@ -138,3 +130,17 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  :global(body) {
+    background-color: var(--bs-light);
+  }
+
+  h1 {
+    font-family: "Ubuntu";
+  }
+
+  .card-footer a {
+    text-decoration: none;
+  }
+</style>

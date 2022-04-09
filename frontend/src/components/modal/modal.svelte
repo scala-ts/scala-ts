@@ -12,13 +12,15 @@
   class="modal-backdrop"
   style="background-color:rgba(0, 0, 0, 0.75)"
   in:fade={{ duration: 120 }}
-  on:click={hide}>
+  on:click={hide}
+>
   <div
     class="modal"
     tabindex="-1"
     id={state.id}
     role="dialog"
-    style="display:block">
+    style="display:block"
+  >
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header text-light {state.headerClass}">
@@ -32,7 +34,8 @@
             type="button"
             class="btn {state.closeBtnClass}"
             data-dismiss="modal"
-            on:click|preventDefault={hide}>Close</button>
+            on:click|preventDefault={hide}>Close</button
+          >
 
           {#if extraBtn}
             <button
@@ -41,7 +44,8 @@
               on:click|preventDefault={() => {
                 hide();
                 extraBtn.onclick();
-              }}>{extraBtn.label}</button>
+              }}>{extraBtn.label}</button
+            >
           {/if}
         </div>
       </div>
