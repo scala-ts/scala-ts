@@ -28,8 +28,9 @@ scalatsOnCompile / sourceManaged := {
 scalatsPrinter := scalatsPrinterForClass[scalats.CustomPrinter]()
 
 scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
-  "import { Option } from 'space-monad'", 
-  "// could be useful to import common types")
+  "import { Option } from 'space-monad'",
+  "// could be useful to import common types"
+)
 
 // Custom declaration mapper (before type mapper)
 scalatsTypeScriptDeclarationMappers := Seq(

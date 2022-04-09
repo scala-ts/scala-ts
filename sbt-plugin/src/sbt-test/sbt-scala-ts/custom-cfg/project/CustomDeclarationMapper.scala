@@ -10,17 +10,22 @@ import io.github.scalats.core.{
 }
 
 import io.github.scalats.typescript.{
-  Declaration, InterfaceDeclaration, UnionDeclaration, TypeRef
+  Declaration,
+  InterfaceDeclaration,
+  UnionDeclaration,
+  TypeRef
 }
 
 final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
+
   def apply(
-    parent: TypeScriptDeclarationMapper.Resolved,
-    settings: Settings,
-    typeMapper: TypeScriptTypeMapper.Resolved,
-    fieldMapper: TypeScriptFieldMapper,
-    declaration: Declaration,
-    out: PrintStream): Option[Unit] = declaration match {
+      parent: TypeScriptDeclarationMapper.Resolved,
+      settings: Settings,
+      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: TypeScriptFieldMapper,
+      declaration: Declaration,
+      out: PrintStream
+    ): Option[Unit] = declaration match {
     case decl @ UnionDeclaration(name, fields, possibilities, superInterface) =>
       Some {
         val typeNaming = settings.typeNaming(settings, _: TypeRef)
@@ -34,7 +39,9 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
         fields.foreach { member =>
           val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
-          out.println(s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, decl, tsField, member.typeRef)}${settings.typescriptLineSeparator}")
+          out.println(
+            s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, decl, tsField, member.typeRef)}${settings.typescriptLineSeparator}"
+          )
         }
 
         out.println(s"${settings.typescriptIndent}_additionalField?: string${settings.typescriptLineSeparator}")
