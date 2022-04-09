@@ -108,10 +108,10 @@
   dependencies:
     slash "^3.0.0"
 
-"@rollup/plugin-commonjs@21.0.2":
-  version "21.0.2"
-  resolved "https://registry.npmjs.org/@rollup/plugin-commonjs/-/plugin-commonjs-21.0.2.tgz"
-  integrity sha512-d/OmjaLVO4j/aQX69bwpWPpbvI3TJkQuxoAk7BH8ew1PyoMBLTOuvJTjzG8oEoW7drIIqB0KCJtfFLu/2GClWg==
+"@rollup/plugin-commonjs@21.0.3":
+  version "21.0.3"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-commonjs/-/plugin-commonjs-21.0.3.tgz#287896c64926ef3d7f0013708dcdcc1223576ef0"
+  integrity sha512-ThGfwyvcLc6cfP/MWxA5ACF+LZCvsuhUq7V5134Az1oQWsiC7lNpLT4mJI86WQunK7BYmpUiHmMk2Op6OAHs0g==
   dependencies:
     "@rollup/pluginutils" "^3.1.0"
     commondir "^1.0.1"
@@ -1109,21 +1109,10 @@ glob-parent@^5.1.2, glob-parent@~5.1.2:
   dependencies:
     is-glob "^4.0.1"
 
-glob@7.2.0:
+glob@7.2.0, glob@^7.1.3, glob@^7.1.6:
   version "7.2.0"
   resolved "https://registry.npmjs.org/glob/-/glob-7.2.0.tgz"
   integrity sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==
-  dependencies:
-    fs.realpath "^1.0.0"
-    inflight "^1.0.4"
-    inherits "2"
-    minimatch "^3.0.4"
-    once "^1.3.0"
-    path-is-absolute "^1.0.0"
-
-glob@^7.1.3, glob@^7.1.6:
-  version "7.1.6"
-  resolved "https://registry.npmjs.org/glob/-/glob-7.1.6.tgz"
   dependencies:
     fs.realpath "^1.0.0"
     inflight "^1.0.4"
@@ -1268,12 +1257,6 @@ is-binary-path@~2.1.0:
   resolved "https://registry.npmjs.org/is-binary-path/-/is-binary-path-2.1.0.tgz"
   dependencies:
     binary-extensions "^2.0.0"
-
-is-core-module@^2.1.0:
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/is-core-module/-/is-core-module-2.2.0.tgz"
-  dependencies:
-    has "^1.0.3"
 
 is-core-module@^2.8.1:
   version "2.8.1"
@@ -1841,10 +1824,6 @@ path-key@^3.0.0, path-key@^3.1.0:
   version "3.1.1"
   resolved "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz"
 
-path-parse@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.npmjs.org/path-parse/-/path-parse-1.0.6.tgz"
-
 path-parse@^1.0.7:
   version "1.0.7"
   resolved "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz"
@@ -2036,14 +2015,7 @@ resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/resolve-from/-/resolve-from-4.0.0.tgz"
 
-resolve@^1.17.0, resolve@^1.19.0:
-  version "1.19.0"
-  resolved "https://registry.npmjs.org/resolve/-/resolve-1.19.0.tgz"
-  dependencies:
-    is-core-module "^2.1.0"
-    path-parse "^1.0.6"
-
-resolve@^1.21.0:
+resolve@^1.17.0, resolve@^1.19.0, resolve@^1.21.0:
   version "1.22.0"
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.22.0.tgz"
   integrity sha512-Hhtrw0nLeSrFQ7phPp4OOcVjLPIeMnRlr5mcnVuMe7M/7eBn98A3hmFRLoFo3DLZkivSYwhRUJTyPyWAk56WLw==
