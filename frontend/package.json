@@ -53,7 +53,7 @@
     "rollup-plugin-svelte": "7.1.0",
     "sass": "1.49.9",
     "sirv-cli": "2.0.2",
-    "svelte": "3.46.4",
+    "svelte": "3.47.0",
     "svelte-check": "2.5.0",
     "svelte-preprocess": "4.10.4",
     "svelte-preprocess-esbuild": "1.0.4",
