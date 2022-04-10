@@ -16,9 +16,9 @@
 
 <div id="app" class="container-fluid">
   <main>
-    {#if route.name === 'signin'}
+    {#if route.name === "signin"}
       <SignIn />
-    {:else if route.name === 'profile' && checkToken() && token}
+    {:else if route.name === "profile" && checkToken() && token}
       <Profile {token} />
     {:else}
       <SignUp />
