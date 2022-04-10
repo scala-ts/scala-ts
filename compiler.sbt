@@ -6,7 +6,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
   "-feature",
-  //"-language:higherKinds",
+  // "-language:higherKinds",
   "-Xfatal-warnings",
   "-Xlint",
   "-Ywarn-numeric-widen",
