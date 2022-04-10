@@ -25,19 +25,23 @@ private[demo] object Digest {
     new String(hex)
   }
 
-  /** Returns the MD5 hash for the given `string`,
-    * and turns it into a hexadecimal String representation.
+  /** Returns the MD5 hash for the given `string`, and turns it into a
+    * hexadecimal String representation.
     *
-    * @param string the string to be hashed
-    * @param encoding the string encoding/charset
+    * @param string
+    *   the string to be hashed
+    * @param encoding
+    *   the string encoding/charset
     */
   def md5Hex(string: String, encoding: String): String =
     hex2Str(md5(string, encoding))
 
   /** Returns the MD5 hash of the given `string`.
     *
-    * @param string the string to be hashed
-    * @param encoding the string encoding/charset
+    * @param string
+    *   the string to be hashed
+    * @param encoding
+    *   the string encoding/charset
     */
   def md5(string: String, encoding: String): Array[Byte] =
     md5(string.getBytes(encoding))
