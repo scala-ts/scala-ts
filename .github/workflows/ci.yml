@@ -7,8 +7,6 @@ on:
     branches: master
 
 jobs:
-  # TODO: Publish snapshot on master
-
   build_n_test:
     runs-on: ubuntu-latest
 
@@ -37,15 +35,7 @@ jobs:
 
     - name: 'Run core tests'
       run: sbt +core/testOnly
-
-    - name: 'Publish reports for core tests'
-      uses: EnricoMi/publish-unit-test-result-action@v1.7
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: core/target/test-reports/TEST-*.xml
-        check_name: 'Core tests'
-        comment_title: 'Core tests statistics'
+      # TODO: core/target/test-reports/TEST-*.xml
 
     - name: 'Run SBT plugin tests'
       run: |
@@ -72,15 +62,6 @@ jobs:
         test -d "$TD" || mkdir -p "$TD"
         cp junit.xml "$TD/junit.xml"
 
-    - name: 'Publish reports for TypeScript tests'
-      uses: EnricoMi/publish-unit-test-result-action@v1.7
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: sbt-plugin/target/junit.xml
-        check_name: 'TypeScript tests'
-        comment_title: 'TypeScript tests statistics'
-        
     - name: 'Publish snapshot (master)'
       if: ${{ github.ref == 'refs/heads/master' }}
       env:
