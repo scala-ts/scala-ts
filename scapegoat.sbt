@@ -1,4 +1,4 @@
-ThisBuild / scapegoatVersion := "1.4.12"
+ThisBuild / scapegoatVersion := "1.4.13"
 
 ThisBuild / scapegoatReports := Seq("text") // xml in 2.13 require extra dep
 
