@@ -22,9 +22,12 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedCategory validator
 export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;
 
-export const idtltCategoryKnownValues: Array<Category> = [
-  'Ipsum', 'Lorem'
-];
+export const Category = {
+  Ipsum: nsIpsum.IpsumInhabitant, 
+  Lorem: nsLorem.LoremInhabitant
+} as const;
+
+export const idtltCategoryKnownValues: ReadonlyArray<Category> = Object.values(Category) as ReadonlyArray<Category>;
 
 export function isCategory(v: any): v is Category {
   return (

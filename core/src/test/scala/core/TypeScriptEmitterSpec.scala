@@ -320,6 +320,31 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
 }
 """
         }
+
+        "with invariant enum member" in {
+          emit(ListSet(singleton4)) must_=== """export class Words {
+  public start: ReadonlyArray<Greeting> = [ Greeting.Hello, Greeting.Hi ];
+
+  private static instance: Words;
+
+  private constructor() {}
+
+  public static getInstance() {
+    if (!Words.instance) {
+      Words.instance = new Words();
+    }
+
+    return Words.instance;
+  }
+}
+
+export const WordsInhabitant: Words = Words.getInstance();
+
+export function isWords(v: any): v is Words {
+  return (v instanceof Words) && (v === WordsInhabitant);
+}
+"""
+        }
       }
 
       "emit class #3" in {
@@ -442,6 +467,11 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
           declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion
         ) must_=== """export type ScalaRuntimeFixturesFamily = ScalaRuntimeFixturesFamilyMember1 | ScalaRuntimeFixturesFamilyMember2 | ScalaRuntimeFixturesFamilyMember3;
 
+export const ScalaRuntimeFixturesFamily = {
+  "bar": nsScalaRuntimeFixturesFamilyMember2.ScalaRuntimeFixturesFamilyMember2Inhabitant, 
+  "lorem": nsScalaRuntimeFixturesFamilyMember3.ScalaRuntimeFixturesFamilyMember3Inhabitant
+} as const;
+
 export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
   return (
     isScalaRuntimeFixturesFamilyMember1(v) ||
@@ -456,16 +486,21 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
     "emit enumeration" >> {
       "as union" in {
         emit(ListSet(enum1)) must beTypedEqualTo(
-          """export type ScalaRuntimeFixturesTestEnumeration = 'A' | 'B' | 'C';
+          """const ScalaRuntimeFixturesTestEnumerationEntries = {
+  A: 'A',
+  B: 'B',
+  C: 'C',
+};
 
-export const ScalaRuntimeFixturesTestEnumerationValues = [ 'A', 'B', 'C' ];
+export type ScalaRuntimeFixturesTestEnumeration = keyof (typeof ScalaRuntimeFixturesTestEnumerationEntries);
+
+export const ScalaRuntimeFixturesTestEnumeration = {
+  ...ScalaRuntimeFixturesTestEnumerationEntries,
+  values: Object.keys(ScalaRuntimeFixturesTestEnumerationEntries)
+} as const;
 
 export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntimeFixturesTestEnumeration {
-  return (
-    v == 'A' ||
-    v == 'B' ||
-    v == 'C'
-  );
+  return ScalaRuntimeFixturesTestEnumeration.values.includes(v);
 }
 """
         )

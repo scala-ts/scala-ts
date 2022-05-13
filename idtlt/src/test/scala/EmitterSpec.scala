@@ -710,9 +710,12 @@ export const idtltDiscriminatedScalaRuntimeFixturesFamily = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedScalaRuntimeFixturesFamily validator
 export type DiscriminatedScalaRuntimeFixturesFamily = typeof idtltDiscriminatedScalaRuntimeFixturesFamily.T;
 
-export const idtltScalaRuntimeFixturesFamilyKnownValues: Array<ScalaRuntimeFixturesFamily> = [
-  "bar", "lorem"
-];
+export const ScalaRuntimeFixturesFamily = {
+  "bar": nsScalaRuntimeFixturesFamilyMember2.ScalaRuntimeFixturesFamilyMember2Inhabitant, 
+  "lorem": nsScalaRuntimeFixturesFamilyMember3.ScalaRuntimeFixturesFamilyMember3Inhabitant
+} as const;
+
+export const idtltScalaRuntimeFixturesFamilyKnownValues: ReadonlyArray<ScalaRuntimeFixturesFamily> = Object.values(ScalaRuntimeFixturesFamily) as ReadonlyArray<ScalaRuntimeFixturesFamily>;
 
 export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
   return (

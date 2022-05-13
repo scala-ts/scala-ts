@@ -28,9 +28,14 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedGreeting validator
 export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;
 
-export const idtltGreetingKnownValues: Array<Greeting> = [
-  'Bye', 'GoodBye', 'Hello', 'Hi'
-];
+export const Greeting = {
+  Bye: nsBye.ByeInhabitant, 
+  GoodBye: nsGoodBye.GoodByeInhabitant, 
+  Hello: nsHello.HelloInhabitant, 
+  Hi: nsHi.HiInhabitant
+} as const;
+
+export const idtltGreetingKnownValues: ReadonlyArray<Greeting> = Object.values(Greeting) as ReadonlyArray<Greeting>;
 
 export function isGreeting(v: any): v is Greeting {
   return (

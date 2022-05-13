@@ -22,9 +22,12 @@ export const idtltDiscriminatedState = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedState validator
 export type DiscriminatedState = typeof idtltDiscriminatedState.T;
 
-export const idtltStateKnownValues: Array<State> = [
-  "AL", "AK"
-];
+export const State = {
+  "AL": nsAlabama.AlabamaInhabitant, 
+  "AK": nsAlaska.AlaskaInhabitant
+} as const;
+
+export const idtltStateKnownValues: ReadonlyArray<State> = Object.values(State) as ReadonlyArray<State>;
 
 export function isState(v: any): v is State {
   return (

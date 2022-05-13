@@ -44,7 +44,7 @@ object TypeScriptIdtltPlugin extends AutoPlugin {
         classOf[DeclarationMapper]
       ),
       scalacOptions in Compile ++= Seq(
-        "-P:scalats:sys.scala-ts.printer.import-pattern=* as ns%1$s"
+        "-P:scalats:sys.scala-ts.printer.import-pattern=* as ns%1$s from '%2$s'"
       ),
       scalatsTypeScriptImportResolvers ++= Seq(
         scalatsUnionWithLiteralSingletonImportResolvers

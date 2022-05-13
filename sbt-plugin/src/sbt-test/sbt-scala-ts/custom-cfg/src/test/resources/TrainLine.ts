@@ -1,4 +1,6 @@
+import * as nsTSTransport from './scalatsTransport';
 import { TSTransport, isTSTransport } from './scalatsTransport';
+import * as nsTSWeekDay from './scalatsWeekDay';
 import { TSWeekDay, isTSWeekDay } from './scalatsWeekDay';
 
 export interface TSTrainLine extends TSTransport {

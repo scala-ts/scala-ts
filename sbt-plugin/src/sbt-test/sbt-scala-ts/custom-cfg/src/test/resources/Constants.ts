@@ -1,3 +1,4 @@
+import * as nsTSName from './scalatsName';
 import { TSName, isTSName } from './scalatsName';
 
 export class TSConstants {

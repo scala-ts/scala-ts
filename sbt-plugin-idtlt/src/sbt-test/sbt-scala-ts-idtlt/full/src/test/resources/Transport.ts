@@ -24,9 +24,11 @@ export const idtltDiscriminatedTransport = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedTransport validator
 export type DiscriminatedTransport = typeof idtltDiscriminatedTransport.T;
 
-export const idtltTransportKnownValues: Array<Transport> = [
-  
-];
+export const Transport = {
+
+} as const;
+
+export const idtltTransportKnownValues: ReadonlyArray<Transport> = Object.values(Transport) as ReadonlyArray<Transport>;
 
 export function isTransport(v: any): v is Transport {
   return (
