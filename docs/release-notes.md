@@ -6,6 +6,8 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
+[*Version 0.5.11*](https://github.com/scala-ts/scala-ts/compare/0.5.10..0.5.11) - Improve invariant parsing.
+
 [*Version 0.5.10*](https://github.com/scala-ts/scala-ts/compare/0.5.9..0.5.10) - Better handling of `Map` as invariants, supporting Value class as keys.
 
 [*Version 0.5.9*](https://github.com/scala-ts/scala-ts/compare/0.5.8...0.5.9) - Minor improvements, and better management of invariants (constants in singletons; see [examples](./examples.html#example-9)).
