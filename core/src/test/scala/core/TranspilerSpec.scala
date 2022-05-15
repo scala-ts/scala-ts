@@ -161,6 +161,42 @@ final class TranspilerSpec extends org.specs2.mutable.Specification {
           result must contain(singleton3)
         }
       }
+
+      "with enum invariants" in {
+        import ScalaModel._
+
+        val greetingTypeRef =
+          UnknownTypeRef(QualifiedIdentifier("Greeting", Nil))
+
+        val helloTypeRef = UnknownTypeRef(QualifiedIdentifier("Hello", Nil))
+        val hiTypeRef = UnknownTypeRef(QualifiedIdentifier("Hi", Nil))
+
+        val obj = CaseObject(
+          identifier = QualifiedIdentifier("Words", Nil),
+          values = ListSet(
+            ListInvariant(
+              name = "start",
+              typeRef = CollectionRef(greetingTypeRef),
+              valueTypeRef = greetingTypeRef,
+              values = List(
+                SelectInvariant(
+                  "start[0]",
+                  helloTypeRef,
+                  greetingTypeRef,
+                  "Hello"
+                ),
+                SelectInvariant("start[1]", hiTypeRef, greetingTypeRef, "Hi")
+              )
+            )
+          )
+        )
+
+        val result = defaultTranspiler(ListSet(obj))
+
+        result must have size 1 and {
+          result must contain(singleton4)
+        }
+      }
     }
 
     "transpile sealed trait as union" in {
@@ -505,6 +541,33 @@ object TranspilerResults {
               StringRef,
               "\"lorem\""
             )
+          )
+        )
+      ),
+      superInterface = None
+    )
+  }
+
+  val singleton4: SingletonDeclaration = {
+    val greetingTypeRef = CustomTypeRef("Greeting", Nil)
+    val helloTypeRef = CustomTypeRef("Hello", Nil)
+    val hiTypeRef = CustomTypeRef("Hi", Nil)
+
+    SingletonDeclaration(
+      name = "Words",
+      values = ListSet(
+        ListValue(
+          name = "start",
+          typeRef = ArrayRef(greetingTypeRef),
+          valueTypeRef = greetingTypeRef,
+          elements = List(
+            SelectValue(
+              "start[0]",
+              helloTypeRef,
+              greetingTypeRef,
+              "Hello"
+            ),
+            SelectValue("start[1]", hiTypeRef, greetingTypeRef, "Hi")
           )
         )
       ),

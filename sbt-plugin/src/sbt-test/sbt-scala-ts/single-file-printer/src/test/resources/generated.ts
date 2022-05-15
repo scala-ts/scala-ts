@@ -11,20 +11,25 @@ export function isBar(v: any): v is Bar {
   );
 }
 
-export type WeekDay = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+const WeekDayEntries = {
+  Mon: 'Mon',
+  Tue: 'Tue',
+  Wed: 'Wed',
+  Thu: 'Thu',
+  Fri: 'Fri',
+  Sat: 'Sat',
+  Sun: 'Sun',
+};
 
-export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ];
+export type WeekDay = keyof (typeof WeekDayEntries);
+
+export const WeekDay = {
+  ...WeekDayEntries,
+  values: Object.keys(WeekDayEntries)
+} as const;
 
 export function isWeekDay(v: any): v is WeekDay {
-  return (
-    v == 'Mon' ||
-    v == 'Tue' ||
-    v == 'Wed' ||
-    v == 'Thu' ||
-    v == 'Fri' ||
-    v == 'Sat' ||
-    v == 'Sun'
-  );
+  return WeekDay.values.includes(v);
 }
 
 export interface Lorem {

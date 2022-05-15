@@ -1,3 +1,4 @@
+import * as nsTSTransport from './scalatsTransport';
 import { TSTransport, isTSTransport } from './scalatsTransport';
 
 export interface TSBusLine extends TSTransport {

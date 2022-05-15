@@ -18,12 +18,14 @@ abstract class BasePrinter extends TypeScriptPrinter {
       out.println(scala.io.Source.fromURL(url).mkString)
     }
 
-  private lazy val formatImport: String => String =
+  private lazy val preformatImport: (String, String) => String =
     sys.props.get("scala-ts.printer.import-pattern") match {
       case Some(pattern) =>
-        pattern.format(_: String)
+        pattern.format(_: String, _: String)
 
-      case _ => { tpeName: String => s"{ ${tpeName}, is${tpeName} }" }
+      case _ => { (tpeName: String, importPath: String) =>
+        s"* as ns${tpeName} from '${importPath}';\r\nimport { ${tpeName}, is${tpeName} } from '${importPath}'"
+      }
     }
 
   /**
@@ -44,9 +46,10 @@ abstract class BasePrinter extends TypeScriptPrinter {
 
     requires.toList.sortBy(_.name).foreach { tpe =>
       val tpeName = typeNaming(tpe)
+      val preformatted = preformatImport(tpeName, importPath(tpe))
 
       out.println(
-        s"import ${formatImport(tpeName)} from '${importPath(tpe)}'${sep}"
+        s"import ${preformatted}${sep}"
       )
     }
 

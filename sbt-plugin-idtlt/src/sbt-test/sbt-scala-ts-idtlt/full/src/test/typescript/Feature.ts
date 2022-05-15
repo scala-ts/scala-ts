@@ -4,7 +4,7 @@ import * as nsFooLure from '../FooLure'
 
 describe('Feature', () => {
   it('should expose the known literal values', () => {
-    const knownValues: Array<nsFeature.Feature> = nsFeature.idtltFeatureKnownValues
+    const knownValues: ReadonlyArray<nsFeature.Feature> = nsFeature.idtltFeatureKnownValues
 
     expect(knownValues).toEqual([ 'BarNum', 'FooLure' ])
   })

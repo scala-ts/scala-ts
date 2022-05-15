@@ -22,9 +22,12 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedFeature validator
 export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;
 
-export const idtltFeatureKnownValues: Array<Feature> = [
-  'BarNum', 'FooLure'
-];
+export const Feature = {
+  BarNum: nsBarNum.BarNumInhabitant, 
+  FooLure: nsFooLure.FooLureInhabitant
+} as const;
+
+export const idtltFeatureKnownValues: ReadonlyArray<Feature> = Object.values(Feature) as ReadonlyArray<Feature>;
 
 export function isFeature(v: any): v is Feature {
   return (

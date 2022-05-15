@@ -75,8 +75,17 @@ describe('State', () => {
   })
 
   it('should expose the known literal values', () => {
-    const knownValues: Array<nsState.State> = nsState.idtltStateKnownValues
+    const knownValues: ReadonlyArray<nsState.State> =
+      nsState.idtltStateKnownValues
 
     expect(knownValues).toEqual([ 'AL', 'AK' ])
+
+    const al: nsAlabama.Alabama = nsState.State.AL
+
+    expect(al).toEqual('AL')
+
+    const ak: nsAlaska.Alaska = nsState.State.AK
+
+    expect(ak).toEqual('AK')
   })
 })

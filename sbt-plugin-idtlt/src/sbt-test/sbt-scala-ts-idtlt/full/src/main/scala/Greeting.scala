@@ -10,3 +10,7 @@ object Greeting {
 
   case class Whatever(word: String) extends Greeting
 }
+
+object Words {
+  val start = List[Greeting](Greeting.Hello, Greeting.Hi)
+}

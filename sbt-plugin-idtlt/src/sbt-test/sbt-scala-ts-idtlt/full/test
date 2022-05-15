@@ -15,6 +15,7 @@ $ absent target/scala-ts/src_managed/Alabama.ts
 $ absent target/scala-ts/src_managed/Alaska.ts
 
 $ absent target/scala-ts/src_managed/Greeting.ts
+$ absent target/scala-ts/src_managed/Words.ts
 $ absent target/scala-ts/src_managed/Bye.ts
 $ absent target/scala-ts/src_managed/GoodBye.ts
 $ absent target/scala-ts/src_managed/Hello.ts
@@ -74,6 +75,9 @@ $ must-mirror target/scala-ts/src_managed/Alaska.ts src/test/resources/Alaska.ts
 
 $ exists target/scala-ts/src_managed/Greeting.ts
 $ must-mirror target/scala-ts/src_managed/Greeting.ts src/test/resources/Greeting.ts
+
+$ exists target/scala-ts/src_managed/Words.ts
+$ must-mirror target/scala-ts/src_managed/Words.ts src/test/resources/Words.ts
 
 $ exists target/scala-ts/src_managed/Bye.ts
 $ must-mirror target/scala-ts/src_managed/Bye.ts src/test/resources/Bye.ts

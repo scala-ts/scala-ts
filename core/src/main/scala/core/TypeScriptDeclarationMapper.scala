@@ -64,6 +64,7 @@ object TypeScriptDeclarationMapper {
     EnumDeclaration,
     InterfaceDeclaration,
     SingletonDeclaration,
+    SingletonTypeRef,
     TaggedDeclaration,
     TypeRef,
     TaggedRef,
@@ -308,16 +309,52 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
 
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
           val tpeName = typeNaming(decl.reference)
-          val ps = possibilities.map(typeNaming).toSeq.sorted
+          val ps = possibilities.toList.sortBy(_.name)
+          val pst = ps.map(typeNaming)
 
-          out.print(s"""export type ${tpeName} = ${ps mkString " | "}${lineSep}
+          out.print(s"""export type ${tpeName} = ${pst mkString " | "}${lineSep}
+
+export const ${tpeName} = {
+""")
+
+          ps.flatMap {
+            case pt @ SingletonTypeRef(nme, values) => {
+              val ptpeName = typeNaming(pt)
+              val inhabitant = s"ns${ptpeName}.${ptpeName}Inhabitant"
+
+              if (values.headOption.nonEmpty) {
+                values.collect { case LiteralValue(_, _, v) => v }.map(v => {
+                  () => out.print(s"${indent}${v.toString}: ${inhabitant}")
+                })
+              } else {
+                List(() => {
+                  out.print(s"${indent}${nme}: ${inhabitant}")
+                })
+              }
+            }
+
+            case _ =>
+              List.empty[() => Unit]
+          }.zipWithIndex.foreach {
+            case (print, i) =>
+              if (i > 0) {
+                out.println(", ")
+              }
+
+              print()
+          }
+
+          //
+
+          out.print(s"""
+} as const${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (
 ${indent}${indent}""")
 
           out.println(
-            ps.map { p => s"is${p}(v)" }.mkString(s" ||\n${indent}${indent}")
+            pst.map { p => s"is${p}(v)" }.mkString(s" ||\n${indent}${indent}")
           )
 
           out.println(s"""${indent})${lineSep}

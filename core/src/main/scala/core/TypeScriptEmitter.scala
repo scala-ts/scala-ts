@@ -535,22 +535,28 @@ ${indent}return (""")
       }
 
       val tpeName = typeNaming(decl.reference)
-      val vs = values.toList.map(v => s"'${v}'")
 
-      o.println(
-        s"""export type ${tpeName} = ${vs mkString " | "}${lineSeparator}"""
-      )
+      // Entries
+      o.println(s"const ${tpeName}Entries = {")
+
+      values.foreach { v => o.println(s"  ${v}: '${v}',") }
+
+      o.println(s"}${lineSeparator}")
       o.println()
-      o.println(s"""export const ${tpeName}Values = ${vs
-          .mkString("[ ", ", ", " ]")}${lineSeparator}
 
-export function is${tpeName}(v: any): v is ${tpeName} {
-${indent}return (""")
+      // Type
+      o.println(s"export type ${tpeName} = keyof (typeof ${tpeName}Entries)${lineSeparator}")
+      o.println()
 
-      o.print(values.map { v =>
-        s"${indent}${indent}v == '${v}'"
-      } mkString " ||\n")
-      o.println(s"""\n${indent})${lineSeparator}
+      // Companion
+      o.println(s"""export const ${tpeName} = {
+${indent}...${tpeName}Entries,
+${indent}values: Object.keys(${tpeName}Entries)
+} as const${lineSeparator}""")
+      o.println()
+
+      o.println(s"""export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return ${tpeName}.values.includes(v)${lineSeparator}
 }""")
     }
 

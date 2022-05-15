@@ -142,31 +142,43 @@ export const idtlt${tpeName} = idtlt.union(""")
 $deriving
 $discrimitedDecl
 
-export const idtlt${tpeName}KnownValues: Array<${tpeName}> = [
-${indent}""")
+export const ${tpeName} = {
+""")
 
           ps.flatMap {
-            case SingletonTypeRef(nme, values) => {
+            case pt @ SingletonTypeRef(nme, values) => {
               val sd = SingletonDeclaration(nme, values, None)
+              val ptpeName = typeNaming(pt)
+              val inhabitant = s"ns${ptpeName}.${ptpeName}Inhabitant"
 
               if (values.headOption.nonEmpty) {
-                values.map(v => () => valueRightHand(sd, v))
+                values.map(v => { () =>
+                  out.print(s"${indent}")
+                  valueRightHand(sd, v)
+                  out.print(s": ${inhabitant}")
+                })
               } else {
-                List(() => out.print(s"'${nme}'"))
+                List(() => {
+                  out.print(s"${indent}${nme}: ${inhabitant}")
+                })
               }
             }
 
-            case _ => List.empty[() => Unit]
+            case _ =>
+              List.empty[() => Unit]
           }.zipWithIndex.foreach {
             case (print, i) =>
               if (i > 0) {
-                out.print(", ")
+                out.println(", ")
               }
 
               print()
           }
 
-          out.println(s"""\n]${lineSep}
+          out.println(s"""
+} as const${lineSep}
+
+export const idtlt${tpeName}KnownValues: ReadonlyArray<${tpeName}> = Object.values(${tpeName}) as ReadonlyArray<${tpeName}>${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")

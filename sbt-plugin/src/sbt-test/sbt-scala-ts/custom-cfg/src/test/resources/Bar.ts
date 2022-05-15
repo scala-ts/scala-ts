@@ -1,7 +1,9 @@
 import { Option } from 'space-monad'
 // could be useful to import common types
 
+import * as nsTSName from './scalatsName';
 import { TSName, isTSName } from './scalatsName';
+import * as nsTSTransport from './scalatsTransport';
 import { TSTransport, isTSTransport } from './scalatsTransport';
 
 export interface TSBar {

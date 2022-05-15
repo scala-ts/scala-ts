@@ -372,29 +372,36 @@ final class ScalaParser[Uni <: Universe](
         if (a.tpe <:< SeqType && a.symbol.name.toString == "apply" && a.args.nonEmpty) => {
       // Seq/List factory
 
-      val elements = a.args.zipWithIndex.collect(
-        Function.unlift[(Tree, Int), TypeInvariant] {
-          case (e, i) =>
-            typeInvariant(s"${k}[${i}]", e, e, None)
-        }
-      )
-
-      elements.headOption match {
-        case Some(first) if (elements.size == a.args.size) =>
-          Some(
-            ListInvariant(
-              name = k,
-              typeRef = CollectionRef(first.typeRef),
-              valueTypeRef = first.typeRef,
-              values = elements
-            )
+      scalaTypeRef(a.tpe, Set.empty) match {
+        case colTpe @ CollectionRef(valueTpe) => {
+          val elements = a.args.zipWithIndex.collect(
+            Function.unlift[(Tree, Int), TypeInvariant] {
+              case (e, i) =>
+                typeInvariant(s"${k}[${i}]", e, e, None)
+            }
           )
 
-        case _ => {
-          logger.warning(s"Skip list with non-stable value: $k")
+          elements.headOption match {
+            case Some(_) if (elements.size == a.args.size) =>
+              Some(
+                ListInvariant(
+                  name = k,
+                  typeRef = colTpe,
+                  valueTypeRef = valueTpe,
+                  values = elements
+                )
+              )
 
-          None
+            case _ => {
+              logger.warning(s"Skip list with non-stable value: $k")
+
+              None
+            }
+          }
         }
+
+        case _ =>
+          None
       }
     }
 
@@ -447,32 +454,38 @@ final class ScalaParser[Uni <: Universe](
         if (a.tpe <:< SetType && a.symbol.name.toString == "apply"
           && a.args.nonEmpty) => {
       // Set factory
-
-      val elements = a.args.zipWithIndex
-        .collect(
-          Function.unlift[(Tree, Int), TypeInvariant] {
-            case (e, i) =>
-              typeInvariant(s"${k}[${i}]", e, e, None)
-          }
-        )
-        .toSet
-
-      elements.headOption match {
-        case Some(first) if (elements.size == a.args.size) =>
-          Some(
-            SetInvariant(
-              name = k,
-              typeRef = CollectionRef(first.typeRef),
-              valueTypeRef = first.typeRef,
-              values = elements
+      scalaTypeRef(a.tpe, Set.empty) match {
+        case colTpe @ CollectionRef(valueTpe) => {
+          val elements = a.args.zipWithIndex
+            .collect(
+              Function.unlift[(Tree, Int), TypeInvariant] {
+                case (e, i) =>
+                  typeInvariant(s"${k}[${i}]", e, e, None)
+              }
             )
-          )
+            .toSet
 
-        case _ => {
-          logger.warning(s"Skip list with non-stable value: $k")
+          elements.headOption match {
+            case Some(_) if (elements.size == a.args.size) =>
+              Some(
+                SetInvariant(
+                  name = k,
+                  typeRef = colTpe,
+                  valueTypeRef = valueTpe,
+                  values = elements
+                )
+              )
 
-          None
+            case _ => {
+              logger.warning(s"Skip list with non-stable value: $k")
+
+              None
+            }
+          }
         }
+
+        case _ =>
+          None
       }
     }
 

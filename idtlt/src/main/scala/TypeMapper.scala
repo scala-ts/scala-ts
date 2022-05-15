@@ -105,6 +105,12 @@ final class TypeMapper extends TypeScriptTypeMapper {
         s"ns${n}.${n}"
       }
 
+      case custom @ CustomTypeRef(_, Nil) => {
+        val n = typeNaming(custom)
+
+        s"ns${n}.${n}"
+      }
+
       case custom @ CustomTypeRef(_, args) => {
         val n = typeNaming(custom)
 
