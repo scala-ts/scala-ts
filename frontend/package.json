@@ -54,7 +54,7 @@
     "sass": "1.51.0",
     "sirv-cli": "2.0.2",
     "svelte": "3.48.0",
-    "svelte-check": "2.7.0",
+    "svelte-check": "2.7.1",
     "svelte-preprocess": "4.10.6",
     "svelte-preprocess-esbuild": "1.0.4",
     "ts-node": "10.7.0",
