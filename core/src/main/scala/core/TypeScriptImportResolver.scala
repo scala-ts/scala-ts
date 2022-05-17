@@ -85,6 +85,31 @@ object TypeScriptImportResolver {
         t.name == self
     }
 
+    @annotation.tailrec
+    def qualifiers(in: List[Value], out: ListSet[TypeRef]): ListSet[TypeRef] =
+      in.headOption match {
+        case Some(DictionaryValue(_, _, _, entries)) =>
+          qualifiers(
+            entries.keySet.toList ::: entries.values.toList ::: in.tail,
+            out
+          )
+
+        case Some(ListValue(_, _, _, elements)) =>
+          qualifiers(elements ::: in.tail, out)
+
+        case Some(SetValue(_, _, _, elements)) =>
+          qualifiers(elements.toList ::: in.tail, out)
+
+        case Some(SelectValue(_, _, qual, _)) =>
+          qualifiers(in.tail, out ++ qual.requires)
+
+        case Some(_) =>
+          qualifiers(in.tail, out)
+
+        case _ =>
+          out
+      }
+
     (_: Declaration) match {
       case InterfaceDeclaration(name, fields, _, superInterface, _) =>
         fields
@@ -106,23 +131,13 @@ object TypeScriptImportResolver {
           i: InterfaceDeclaration => i.reference
         }
 
-      case vd @ ValueMemberDeclaration(ListValue(_, _, _, elements)) =>
-        elements.foldLeft[ListSet[TypeRef]](ListSet.empty) {
-          case (set, v) =>
-            set ++ defaultResolver(ValueMemberDeclaration(vd.owner, v))
-        }
+      case vd @ ValueMemberDeclaration(
+            v @ (ListValue(_, _, _, _) | SetValue(_, _, _, _))
+          ) =>
+        qualifiers(List(v), ListSet.empty) ++ vd.reference.requires
 
-      case vd @ ValueMemberDeclaration(SetValue(_, _, _, elements)) =>
-        ListSet.empty ++ elements.flatMap { v =>
-          defaultResolver(ValueMemberDeclaration(vd.owner, v))
-        }
-
-      case vd @ ValueMemberDeclaration(DictionaryValue(_, _, _, entries)) =>
-        entries.foldLeft[ListSet[TypeRef]](ListSet.empty) {
-          case (set, (_, v)) =>
-            val ev = ValueMemberDeclaration(vd.owner, v)
-            set ++ defaultResolver(ev)
-        }
+      case vd @ ValueMemberDeclaration(v @ DictionaryValue(_, _, _, _)) =>
+        qualifiers(List(v), ListSet.empty) ++ vd.reference.requires
 
       case ValueMemberDeclaration(SelectValue(_, ref, qual, _)) =>
         qual.requires ++ ref.requires

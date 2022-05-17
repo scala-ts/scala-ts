@@ -140,6 +140,41 @@ final class TypeScriptImportResolverSpec
             CustomTypeRef("SupI", List.empty)
           )
         }
+
+        "with invariants" in {
+          val singleton: SingletonDeclaration = {
+            val qual = CustomTypeRef("Foo", Nil)
+            val greetingTypeRef = CustomTypeRef("Greeting", Nil)
+            val helloTypeRef = CustomTypeRef("Hello", Nil)
+            val hiTypeRef = CustomTypeRef("Hi", Nil)
+
+            SingletonDeclaration(
+              name = "Words",
+              values = ListSet(
+                ListValue(
+                  name = "start",
+                  typeRef = ArrayRef(greetingTypeRef),
+                  valueTypeRef = greetingTypeRef,
+                  elements = List(
+                    SelectValue(
+                      "start[0]",
+                      helloTypeRef,
+                      qual,
+                      "Hello"
+                    ),
+                    SelectValue("start[1]", hiTypeRef, qual, "Hi")
+                  )
+                )
+              ),
+              superInterface = None
+            )
+          }
+
+          defaultResolver(singleton) must_=== ListSet(
+            CustomTypeRef("Greeting", Nil),
+            CustomTypeRef("Foo", Nil)
+          )
+        }
       }
     }
 
