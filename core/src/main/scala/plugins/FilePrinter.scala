@@ -28,9 +28,16 @@ final class FilePrinter(outDir: File) extends BasePrinter {
       }
     )
 
+    import conf.{ typescriptLineSeparator => lineSep }
+
     val stream = new PrintStream(new FileOutputStream(f, true))
 
     printPrelude(stream)
+
+    stream.println(s"""declare var exports: any${lineSep}
+
+export const ns${name} = exports${lineSep}
+""")
 
     printImports(conf, requires, stream) { tpe => s"./${tpe.name}" }
 

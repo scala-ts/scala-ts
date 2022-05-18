@@ -20,7 +20,8 @@ object TypeScriptIdtltPlugin extends AutoPlugin {
     ) ++ Seq(
       // Prelude required by the declaration mapper
       scalatsPrinterPrelude := {
-        val imports = "import * as idtlt from 'idonttrustlikethat';"
+        val imports = """import * as idtlt from 'idonttrustlikethat';
+export const _externalDependencyModules = [idtlt];"""
 
         scalatsPrinterPrelude.value.map {
           case Left(prelude) =>

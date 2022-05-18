@@ -55,7 +55,18 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
 
     "output to the default file" in withTemp("scala.ts") { file =>
       file.getName must_=== "scala.ts" and {
-        fromFile(file).mkString must_=== "FOO\n\nBAR\n"
+        fromFile(
+          file
+        ).mkString.replace("\r", "") must_=== """declare var exports: any;
+
+export const nsfoo = exports;
+
+FOO
+
+export const nsbar = exports;
+
+BAR
+"""
       }
     }
 
@@ -63,7 +74,18 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
       withProp("scala-ts.single-filename", "single.ts") {
         withTemp("single.ts") { file =>
           file.getName must_=== "single.ts" and {
-            fromFile(file).mkString must_=== "FOO\n\nBAR\n"
+            fromFile(
+              file
+            ).mkString.replace("\r", "") must_=== """declare var exports: any;
+
+export const nsfoo = exports;
+
+FOO
+
+export const nsbar = exports;
+
+BAR
+"""
           }
         }
       }
@@ -81,7 +103,19 @@ final class FilePrinterSpec extends org.specs2.mutable.Specification {
             file.getName must_=== "scala.ts" and {
               fromFile(
                 file
-              ).mkString must_=== "// Prelude\n// ...\n\nFOO\n\nBAR\n"
+              ).mkString.replace("\r", "") must_=== """// Prelude
+// ...
+
+declare var exports: any;
+
+export const nsfoo = exports;
+
+FOO
+
+export const nsbar = exports;
+
+BAR
+"""
             }
           }
         }

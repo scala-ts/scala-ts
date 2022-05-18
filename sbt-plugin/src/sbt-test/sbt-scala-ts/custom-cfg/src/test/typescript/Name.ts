@@ -1,4 +1,4 @@
-import { TSName, isTSName } from '../scalatsName'
+import { TSName } from '../scalatsName'
 
 describe('Name', () => {
   it('should be created from string', () => {

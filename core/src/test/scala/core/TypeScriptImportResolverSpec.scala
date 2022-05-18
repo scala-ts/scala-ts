@@ -171,8 +171,8 @@ final class TypeScriptImportResolverSpec
           }
 
           defaultResolver(singleton) must_=== ListSet(
-            CustomTypeRef("Greeting", Nil),
-            CustomTypeRef("Foo", Nil)
+            CustomTypeRef("Foo", Nil),
+            CustomTypeRef("Greeting", Nil)
           )
         }
       }

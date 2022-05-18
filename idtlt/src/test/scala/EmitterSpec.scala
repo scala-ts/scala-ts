@@ -89,7 +89,7 @@ export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixtu
 // - type parameters: T
 
 export function isScalaRuntimeFixturesTestClass2(v: any): boolean {
-  return false;
+  return v && false;
 }
 """
       )
@@ -101,7 +101,7 @@ export function isScalaRuntimeFixturesTestClass2(v: any): boolean {
 // - type parameters: T
 
 export function isScalaRuntimeFixturesTestClass3(v: any): boolean {
-  return false;
+  return v && false;
 }
 """
       )
@@ -113,7 +113,7 @@ export function isScalaRuntimeFixturesTestClass3(v: any): boolean {
 // - type parameters: T
 
 export function isScalaRuntimeFixturesTestClass5(v: any): boolean {
-  return false;
+  return v && false;
 }
 """
       )
@@ -126,7 +126,7 @@ export function isScalaRuntimeFixturesTestClass5(v: any): boolean {
 // - type parameters: T
 
 export function isScalaRuntimeFixturesTestClass7(v: any): boolean {
-  return false;
+  return v && false;
 }
 """
       )

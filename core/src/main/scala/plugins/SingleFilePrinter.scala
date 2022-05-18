@@ -38,13 +38,20 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
       }
     }
 
+    import conf.{ typescriptLineSeparator => lineSep }
+
     val stream = new PrintStream(new FileOutputStream(f, append))
 
     if (!append) {
       printPrelude(stream)
+
+      stream.println(s"declare var exports: any${lineSep}\r\n")
     } else {
       stream.println()
     }
+
+    // self module ref for compatibility
+    stream.println(s"export const ns${name} = exports${lineSep}\r\n")
 
     stream
   }
