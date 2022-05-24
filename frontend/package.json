@@ -38,7 +38,7 @@
     "esbuild": "0.8.30",
     "expect": "28.1.0",
     "husky": "^8.0.1",
-    "lint-staged": "^12.4.1",
+    "lint-staged": "^12.4.2",
     "madge": "^5.0.1",
     "mocha": "10.0.0",
     "@types/mocha": "9.1.1",
