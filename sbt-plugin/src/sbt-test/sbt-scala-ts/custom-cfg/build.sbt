@@ -29,6 +29,7 @@ scalatsPrinter := scalatsPrinterForClass[scalats.CustomPrinter]()
 
 scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
   "import { Option } from 'space-monad'",
+  "export const _notUsed = [Option]",
   "// could be useful to import common types"
 )
 

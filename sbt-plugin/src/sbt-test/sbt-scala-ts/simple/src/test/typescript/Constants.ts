@@ -41,10 +41,14 @@ describe('Constants', () => {
     expect(ConstantsInhabitant.listOfDict instanceof Array).toBe(true)
     expect(ConstantsInhabitant.listOfDict.length).toEqual(2)
 
-    const first: { [key: string]: string } = ConstantsInhabitant.listOfDict[0]
+    const first: { [key: string]: string } | undefined =
+      ConstantsInhabitant.listOfDict[0]
+
     expect(first).toEqual({ 'title': "Foo", 'description': "..." })
 
-    const second: { [key: string]: string } = ConstantsInhabitant.listOfDict[1]
+    const second: { [key: string]: string } | undefined =
+      ConstantsInhabitant.listOfDict[1]
+
     expect(second).toEqual({ 'title': "Bar", 'description': "..." })
 
     expect(ConstantsInhabitant.listOfDict[2]).toEqual(undefined)

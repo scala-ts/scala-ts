@@ -49,7 +49,7 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
         out.println(s"""}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
-  return true // dummy
+  return !!v // dummy
 }""")
       }
 

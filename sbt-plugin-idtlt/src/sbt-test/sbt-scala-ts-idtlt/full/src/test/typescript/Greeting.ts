@@ -1,4 +1,4 @@
-import * as idtlt from 'idonttrustlikethat'
+import type { Validator } from 'idonttrustlikethat';
 
 import * as nsBye from '../Bye'
 import * as nsHello from '../Hello'
@@ -31,7 +31,7 @@ function testGreeting<T extends nsGreeting.Greeting>(
   a: nsGreeting.Greeting,
   b: nsGreeting.Greeting,
   expected: T,
-  validator: idtlt.Validator<T>,
+  validator: Validator<T>,
   guard: (_v: any) => _v is T,
 ) {
   expect(a).toEqual(b)

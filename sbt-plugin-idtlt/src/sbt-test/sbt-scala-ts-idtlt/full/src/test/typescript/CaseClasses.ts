@@ -1,5 +1,3 @@
-import * as idtlt from 'idonttrustlikethat'
-
 import * as nsBar from '../Bar'
 import * as nsFoo from '../Foo'
 import * as nsName from '../Name'

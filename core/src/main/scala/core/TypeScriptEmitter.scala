@@ -56,7 +56,10 @@ final class TypeScriptEmitter(
     _: String,
     _: String,
     _: Iterable[Member],
-    t => s"is${typeNaming(t)}",
+    { t =>
+      val nme = typeNaming(t)
+      s"ns${nme}.is${nme}"
+    },
     settings
   )
 
