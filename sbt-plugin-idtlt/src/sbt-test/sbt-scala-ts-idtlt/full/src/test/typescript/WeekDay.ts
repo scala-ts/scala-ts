@@ -1,5 +1,3 @@
-import * as idtlt from 'idonttrustlikethat'
-
 import * as nsWeekDay from '../WeekDay'
 
 const mon: nsWeekDay.WeekDay = 'Mon'

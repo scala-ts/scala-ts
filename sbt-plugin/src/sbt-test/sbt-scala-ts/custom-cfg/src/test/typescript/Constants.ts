@@ -20,7 +20,12 @@ describe('Constants', () => {
 
     expect(seqOfMap.length).toEqual(2)
 
-    const map1: { [key: TSName]: string } = seqOfMap[0]
+    const map1: { [key: TSName]: string } | undefined = seqOfMap[0]
+
+    if (!map1) {
+      fail('Missing map1')
+    }
+
     const lorem: TSName = TSName("lorem")
     const dolor = TSName("dolor")
 
@@ -28,7 +33,11 @@ describe('Constants', () => {
     expect(map1[defaultName]).toEqual("ipsum")
     expect(map1[dolor]).toEqual(undefined)
 
-    const map2: { [key: TSName]: string } = seqOfMap[1]
+    const map2: { [key: TSName]: string } | undefined = seqOfMap[1]
+
+    if (!map2) {
+      fail('Missing map2')
+    }
 
     expect(map2[dolor]).toEqual("value")
     expect(map2[defaultName]).toEqual(undefined)

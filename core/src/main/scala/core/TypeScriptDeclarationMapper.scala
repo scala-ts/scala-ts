@@ -116,7 +116,7 @@ object TypeScriptDeclarationMapper {
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
           val tpeName = typeNaming(tagged)
 
-          Some(out.print(s"${tpeName}($v)"))
+          Some(out.print(s"ns${tpeName}.${tpeName}($v)"))
         }
 
         case decl @ TaggedDeclaration(_, field) =>
@@ -145,7 +145,10 @@ export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
             val simpleCheck = TypeScriptEmitter.valueCheck(
               "v",
               field.typeRef,
-              t => s"is${typeNaming(t)}"
+              { t =>
+                val nme = typeNaming(t)
+                s"ns${nme}.is${nme}"
+              }
             )
 
             out.println(s"""
@@ -354,7 +357,8 @@ ${indent}return (
 ${indent}${indent}""")
 
           out.println(
-            pst.map { p => s"is${p}(v)" }.mkString(s" ||\n${indent}${indent}")
+            pst.map { p => s"ns${p}.is${p}(v)" }
+              .mkString(s" ||\n${indent}${indent}")
           )
 
           out.println(s"""${indent})${lineSep}

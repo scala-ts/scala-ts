@@ -112,7 +112,7 @@ ${indent})${lineSep}
 
           out.println(s"""
 export function is${tpeName}(v: any): boolean {
-${indent}return false${lineSep}
+${indent}return v && false${lineSep}
 }""")
 
         }

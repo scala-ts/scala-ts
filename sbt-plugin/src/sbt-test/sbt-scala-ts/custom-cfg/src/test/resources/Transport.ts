@@ -5,5 +5,5 @@ export interface TSTransport {
 }
 
 export function isTSTransport(v: any): v is TSTransport {
-  return true // dummy
+  return !!v // dummy
 }

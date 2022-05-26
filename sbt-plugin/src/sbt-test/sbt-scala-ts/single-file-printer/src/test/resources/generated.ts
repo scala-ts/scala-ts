@@ -1,6 +1,10 @@
 // TypeScript added at beginning of every generated file
 // ...
 
+declare var exports: any;
+
+export const nsBar = exports;
+
 export interface Bar {
   url: string;
 }
@@ -10,6 +14,8 @@ export function isBar(v: any): v is Bar {
     ((typeof v['url']) === 'string')
   );
 }
+
+export const nsWeekDay = exports;
 
 const WeekDayEntries = {
   Mon: 'Mon',
@@ -32,6 +38,8 @@ export function isWeekDay(v: any): v is WeekDay {
   return WeekDay.values.includes(v);
 }
 
+export const nsLorem = exports;
+
 export interface Lorem {
   year: number;
   weekday: WeekDay;
@@ -40,9 +48,11 @@ export interface Lorem {
 export function isLorem(v: any): v is Lorem {
   return (
     ((typeof v['year']) === 'number') &&
-    (v['weekday'] && isWeekDay(v['weekday']))
+    (v['weekday'] && nsWeekDay.isWeekDay(v['weekday']))
   );
 }
+
+export const nsFoo = exports;
 
 export interface Foo {
   name: string;
@@ -53,7 +63,7 @@ export interface Foo {
 export function isFoo(v: any): v is Foo {
   return (
     ((typeof v['name']) === 'string') &&
-    (!v['bar'] || (v['bar'] && isBar(v['bar']))) &&
+    (!v['bar'] || (v['bar'] && nsBar.isBar(v['bar']))) &&
     (Array.isArray(v['score']) && v['score'].every(elmt => (typeof elmt) === 'number'))
   );
 }
