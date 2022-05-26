@@ -1,7 +1,12 @@
 import * as nsTSTransport from './scalatsTransport';
-import { TSTransport, isTSTransport } from './scalatsTransport';
+import type { TSTransport } from './scalatsTransport';
 import * as nsTSWeekDay from './scalatsWeekDay';
-import { TSWeekDay, isTSWeekDay } from './scalatsWeekDay';
+import type { TSWeekDay } from './scalatsWeekDay';
+
+export const dependencyModules = [
+  nsTSTransport,
+  nsTSWeekDay,
+];
 
 export interface TSTrainLine extends TSTransport {
   _name: string;
@@ -15,6 +20,6 @@ export function isTSTrainLine(v: any): v is TSTrainLine {
     ((typeof v['_name']) === 'string') &&
     ((typeof v['_startStationId']) === 'string') &&
     ((typeof v['_endStationId']) === 'string') &&
-    (Array.isArray(v['_serviceDays']) && v['_serviceDays'].every(elmt => elmt && isTSWeekDay(elmt)))
+    (Array.isArray(v['_serviceDays']) && v['_serviceDays'].every(elmt => elmt && nsTSWeekDay.isTSWeekDay(elmt)))
   );
 }

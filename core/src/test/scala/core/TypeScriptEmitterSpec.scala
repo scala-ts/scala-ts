@@ -97,7 +97,7 @@ export function isScalaRuntimeFixturesTestClass5(v: any): v is ScalaRuntimeFixtu
 
 export function isScalaRuntimeFixturesTestClass7(v: any): v is ScalaRuntimeFixturesTestClass7 {
   return (
-    ((v['name'] && isScalaRuntimeFixturesTestClass1(v['name'])) || (v['name'] && isScalaRuntimeFixturesTestClass1B(v['name'])))
+    ((v['name'] && nsScalaRuntimeFixturesTestClass1.isScalaRuntimeFixturesTestClass1(v['name'])) || (v['name'] && nsScalaRuntimeFixturesTestClass1B.isScalaRuntimeFixturesTestClass1B(v['name'])))
   );
 }
 """)
@@ -141,8 +141,8 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
 
 export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
   return (
-    (v['name'] && isScalaRuntimeFixturesAnyValChild(v['name'])) &&
-    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && isScalaRuntimeFixturesAnyValChild(elmt)))
+    (v['name'] && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(v['name'])) &&
+    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(elmt)))
   );
 }
 """)
@@ -225,9 +225,9 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
             ListSet(singleton3),
             declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
           ) must_=== """export class ScalaRuntimeFixturesTestObject3 {
-  public name: ScalaRuntimeFixturesAnyValChild = ScalaRuntimeFixturesAnyValChild("Foo");
+  public name: ScalaRuntimeFixturesAnyValChild = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("Foo");
 
-  public readonly mapping: { [key: ScalaRuntimeFixturesAnyValChild]: string } = (() => { const __buf837556430: { [key: ScalaRuntimeFixturesAnyValChild]: string } = {}; __buf837556430[ScalaRuntimeFixturesAnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
+  public readonly mapping: { [key: ScalaRuntimeFixturesAnyValChild]: string } = (() => { const __buf837556430: { [key: ScalaRuntimeFixturesAnyValChild]: string } = {}; __buf837556430[nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
 
   private static instance: ScalaRuntimeFixturesTestObject3;
 
@@ -292,13 +292,13 @@ export function isScalaRuntimeFixturesTestObject3(v: any): v is ScalaRuntimeFixt
           ) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
 
-  public const: ScalaRuntimeFixturesAnyValChild = ScalaRuntimeFixturesAnyValChild("value");
+  public const: ScalaRuntimeFixturesAnyValChild = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("value");
 
   public foo: ScalaRuntimeFixturesAnyValChild = this.const;
 
   public code: number = 1;
 
-  public list: ReadonlyArray<ScalaRuntimeFixturesAnyValChild> = [ ScalaRuntimeFixturesAnyValChild("first") ];
+  public list: ReadonlyArray<ScalaRuntimeFixturesAnyValChild> = [ nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("first") ];
 
   private static instance: ScalaRuntimeFixturesTestObject2;
 
@@ -474,9 +474,9 @@ export const ScalaRuntimeFixturesFamily = {
 
 export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
   return (
-    isScalaRuntimeFixturesFamilyMember1(v) ||
-    isScalaRuntimeFixturesFamilyMember2(v) ||
-    isScalaRuntimeFixturesFamilyMember3(v)
+    nsScalaRuntimeFixturesFamilyMember1.isScalaRuntimeFixturesFamilyMember1(v) ||
+    nsScalaRuntimeFixturesFamilyMember2.isScalaRuntimeFixturesFamilyMember2(v) ||
+    nsScalaRuntimeFixturesFamilyMember3.isScalaRuntimeFixturesFamilyMember3(v)
   );
 }
 """

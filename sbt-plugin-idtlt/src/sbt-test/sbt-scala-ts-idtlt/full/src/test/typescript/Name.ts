@@ -1,5 +1,3 @@
-import * as idtlt from 'idonttrustlikethat'
-
 import * as nsName from '../Name'
 
 describe('Name', () => {

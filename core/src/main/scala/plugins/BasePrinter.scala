@@ -24,7 +24,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
         pattern.format(_: String, _: String)
 
       case _ => { (tpeName: String, importPath: String) =>
-        s"* as ns${tpeName} from '${importPath}';\r\nimport { ${tpeName}, is${tpeName} } from '${importPath}'"
+        s"* as ns${tpeName} from '${importPath}';\nimport type { ${tpeName} } from '${importPath}'"
       }
     }
 
@@ -43,18 +43,27 @@ abstract class BasePrinter extends TypeScriptPrinter {
     import settings.{ typescriptLineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
+    val requiredTypes = requires.toList.sortBy(_.name)
 
-    requires.toList.sortBy(_.name).foreach { tpe =>
+    requiredTypes.foreach { tpe =>
       val tpeName = typeNaming(tpe)
       val preformatted = preformatImport(tpeName, importPath(tpe))
 
-      out.println(
-        s"import ${preformatted}${sep}"
-      )
+      out.println(s"import ${preformatted}${sep}")
     }
 
-    if (requires.nonEmpty) {
-      out.println()
+    // ---
+
+    if (requiredTypes.nonEmpty) {
+      out.println("""
+export const dependencyModules = [""")
+
+      requiredTypes.foreach { tpe =>
+        out.println(s"${settings.typescriptIndent}ns${typeNaming(tpe)},")
+      }
+
+      out.println(s"""]${sep}
+""")
     }
   }
 }

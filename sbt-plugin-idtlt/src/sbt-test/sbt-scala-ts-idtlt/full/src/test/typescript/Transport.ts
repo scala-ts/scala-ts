@@ -1,5 +1,3 @@
-import * as idtlt from 'idonttrustlikethat'
-
 import * as nsTransport from '../Transport'
 import * as nsTrainLine from '../TrainLine'
 import * as nsBusLine from '../BusLine'

@@ -1,4 +1,4 @@
-import * as idtlt from 'idonttrustlikethat'
+import type { Validator } from 'idonttrustlikethat'
 
 import * as nsAlabama from '../Alabama'
 import * as nsAlaska from '../Alaska'
@@ -17,7 +17,7 @@ function testState<T extends nsState.State>(
   a: nsState.State,
   b: nsState.State,
   expected: T,
-  validator: idtlt.Validator<T>,
+  validator: Validator<T>,
   guard: (_v: any) => _v is T
 ) {
   expect(a).toEqual(b)

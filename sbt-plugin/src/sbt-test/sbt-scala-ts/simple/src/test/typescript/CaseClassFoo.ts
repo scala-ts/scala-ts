@@ -1,5 +1,4 @@
 import type { CaseClassFoo } from '../CaseClassFoo';
-import type { CaseClassBar } from '../CaseClassBar';
 
 const time1: number = Date.now()
 const localDate1: Date = new Date()
@@ -33,12 +32,6 @@ const localDateTime2: Date = new Date()
 const offsetDateTime2: Date = new Date()
 const zonedDateTime2: Date = new Date()
 const ts2: Date = new Date()
-
-const bar1: CaseClassBar = {
-  firstName: 'First2',
-  lastName: 'Last2',
-  grade: 1
-}
 
 const foo2: CaseClassFoo = {
   id: 'Foo#2',

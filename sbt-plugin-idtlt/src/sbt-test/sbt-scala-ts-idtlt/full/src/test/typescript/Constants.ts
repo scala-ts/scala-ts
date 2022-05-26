@@ -29,14 +29,18 @@ describe('Constants', () => {
     // Dictionary
     const dict: { [key: string]: ReadonlyArray<nsName.Name> } = ConstantsInhabitant.dict
 
-    const specific: ReadonlyArray<nsName.Name> = dict['specific']
+    const specific: ReadonlyArray<nsName.Name> | undefined = dict['specific']
+
+    if (!specific) {
+      fail('Missing specific')
+    }
     
     expect(specific.includes(ConstantsInhabitant.UnknownName)).toBe(true)
     expect(specific.includes(ConstantsInhabitant.defaultName)).toBe(true)
     expect(specific.includes(nsName.Name("*"))).toBe(true)
     expect(specific.length).toEqual(3)
 
-    const invalid: ReadonlyArray<nsName.Name> = dict['invalid']
+    const invalid: ReadonlyArray<nsName.Name> | undefined = dict['invalid']
     expect(invalid).toEqual([ nsName.Name("failed") ])
   })
 
