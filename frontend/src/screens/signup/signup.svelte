@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { UsageValues } from "@shared/Usage";
+  import { Usage } from "@shared/Usage";
 
   import {
     availableFoods,
@@ -162,7 +162,7 @@
             class="form-select"
             id="usage"
             bind:value={$accountStore.usage}>
-            {#each UsageValues as usage}
+            {#each Usage.values as usage}
               <option value={usage}>{usage}</option>
             {/each}
           </select>
