@@ -18,7 +18,7 @@ import html from '@rollup/plugin-html'
 import livereload from 'rollup-plugin-livereload'
 
 import { scss } from 'svelte-preprocess'
-import { typescript as esbuildSvelteScript } from 'svelte-preprocess-esbuild'
+import preprocess from 'svelte-preprocess'
 
 import { config } from "dotenv";
 import { envValidator } from "./envValidator";
@@ -98,7 +98,7 @@ const options: RollupOptions = {
     svelte({
       exclude: "node_modules/**/*",
       preprocess: [
-        esbuildSvelteScript({ target: esbuildTarget }),
+        preprocess({}),
         scss({
           renderSync: true,
           includePaths: ["./src/theme"],
@@ -106,7 +106,8 @@ const options: RollupOptions = {
         }),
       ],
       compilerOptions: {
-        // This is a better default. You can disable it on a per component basis when it makes sense.
+        // This is a better default.
+        // You can disable it on a per component basis when it makes sense.
         immutable: true,
       },
     }),
