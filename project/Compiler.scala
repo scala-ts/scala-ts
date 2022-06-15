@@ -62,7 +62,7 @@ object Compiler extends AutoPlugin {
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     libraryDependencies ++= {
       if (scalaBinaryVersion.value != "3") {
-        val silencerVersion = "1.7.8"
+        val silencerVersion = "1.7.9"
 
         Seq(
           compilerPlugin(
