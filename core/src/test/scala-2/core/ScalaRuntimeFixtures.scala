@@ -194,7 +194,7 @@ object ScalaRuntimeFixtures {
   lazy val TestObject1Tree: Tree = typecheck(q"case object TestObject1")
 
   object TestObject2 {
-    val name = "Foo"
+    val name = "Foo \"bar\""
     def code = 1
     val const = new String("value")
     def foo = name
@@ -219,7 +219,7 @@ object ScalaRuntimeFixtures {
   lazy val TestObject2Tree: Tree = typecheck(q"""
     class Foo(val name: String)
 
-    object TestObject2 extends Foo("Foo") {
+    object TestObject2 extends Foo("Foo \"bar\"") {
       def code = 1
       val const = new String("value")
       def foo = name

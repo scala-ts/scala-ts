@@ -186,7 +186,7 @@ export function is${ns}TestObject1(v: any): v is ${ns}TestObject1 {
         "with value class as constant" in {
           // SCALATS1: No implements SupI
           emit(ListSet(singleton2)) must_=== s"""export class ${ns}TestObject2 implements SupI {
-  public name: string = "Foo";
+  public name: string = "Foo \\"bar\\"";
 
   public code: number = 1;
 

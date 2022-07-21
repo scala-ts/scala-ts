@@ -339,7 +339,7 @@ object TranspilerResults {
   val singleton2 = SingletonDeclaration(
     s"${ns}TestObject2",
     ListSet(
-      LiteralValue("name", StringRef, "\"Foo\""),
+      LiteralValue("name", StringRef, "\"Foo \\\"bar\\\"\""),
       LiteralValue("code", NumberRef, "1"),
       LiteralValue("const", StringRef, "\"value\""),
       SelectValue("foo", StringRef, ThisTypeRef, "name"),

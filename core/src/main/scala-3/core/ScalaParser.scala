@@ -54,7 +54,7 @@ final class ScalaParser(
       acceptsType: Symbol => Boolean,
       parsed: ListSet[ScalaModel.TypeDef]
     ): Result[ListSet, TypeFullId] = types match {
-    case ((scalaType, _) :: tail) if (!acceptsType(scalaType.typeSymbol)) => {
+    case ((scalaType, _) :: tail) if !acceptsType(scalaType.typeSymbol) => {
       logger.debug(s"Type is excluded: ${scalaType.typeSymbol.fullName}")
 
       parse(tail, symtab, examined, acceptsType, parsed)
@@ -68,25 +68,30 @@ final class ScalaParser(
         !compiled.contains(sym.source.file.canonicalPath))
 
       if (notDefined) {
-        logger.info(s"Postpone parsing of ${scalaType} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
+        logger.debug(s"Postpone parsing of ${scalaType.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
       }
 
+      inline def skip = parse(
+        tail,
+        symtab,
+        /*res.*/ examined,
+        acceptsType,
+        parsed /* ++ res.parsed*/
+      )
+
       if (
-        examined.contains(fullId(scalaType)) ||
         scalaType.typeSymbol.isTypeParam ||
         notDefined
       ) {
+        logger.debug(s"Skip not fully defined type: ${sym.fullName}")
+
+        skip
+      } else if (examined contains fullId(scalaType)) {
         // Skip already examined type (or a type parameter)
         // val res = parseType(scalaType, examined)
-        logger.debug(s"Type is skipped (already examined of not fully defined): ${scalaType.typeSymbol.fullName}")
+        logger.debug(s"Skip already examined type: ${sym.fullName}")
 
-        parse(
-          tail,
-          symtab,
-          /*res.*/ examined,
-          acceptsType,
-          parsed /* ++ res.parsed*/
-        )
+        skip
       } else {
         val typeArgs: List[Types.Type] = scalaType match {
           case Types.AppliedType(_, args) =>
@@ -305,10 +310,25 @@ final class ScalaParser(
 
   }
 
+  private lazy val plainPrinter =
+    new dotty.tools.dotc.printing.PlainPrinter(ctx)
+
+  private lazy val printerCtx: Context = {
+    import dotty.tools.dotc.config._
+
+    val freshCtx = ctx.fresh
+
+    freshCtx.setSettings(
+      freshCtx.settings.color.update("never")(using freshCtx)
+    )
+
+    freshCtx
+  }
+
   inline private def constantValue(v: Constants.Constant): String =
     v.tag match {
       case Constants.StringTag =>
-        s"\"${v.value}\""
+        v.show(using printerCtx)
 
       case _ =>
         v.value.toString
@@ -330,13 +350,20 @@ final class ScalaParser(
 
       }.getOrElse(owner.tpe)
 
-      Some(
-        ScalaModel.LiteralInvariant(
-          name = k,
-          typeRef = scalaTypeRef(mt.dealias, Set.empty),
-          value = constantValue(v)
+      def productMember = owner.symbol.allOverriddenSymbols
+        .exists(_.owner.fullName.toString startsWith "scala.Product")
+
+      if (k.startsWith("product") && productMember) {
+        None
+      } else {
+        Some(
+          ScalaModel.LiteralInvariant(
+            name = k,
+            typeRef = scalaTypeRef(mt.dealias, Set.empty),
+            value = constantValue(v)
+          )
         )
-      )
+      }
     }
 
     case Apply(_, (l @ Literal(_)) :: Nil) =>
@@ -414,18 +441,19 @@ final class ScalaParser(
   private lazy val MapType: Type =
     Symbols.requiredClass("scala.collection.immutable.Map").typeRef
 
-  private def matchesGeneric(generic: Type, applied: Type): Boolean =
-    applied match {
-      case t @ Types.AppliedType(_, args) =>
-        if (t <:< generic.appliedTo(args)) {
-          true
-        } else {
-          false
-        }
+  private lazy val ProductType: Type =
+    Symbols.requiredClass("scala.Product").typeRef
+
+  private object WithTypeArgs {
+
+    def unapply(tree: Tree): Option[(Tree, List[Type])] = tree.tpe match {
+      case Types.AppliedType(_, args) =>
+        Some(tree -> args)
 
       case _ =>
-        false
+        None
     }
+  }
 
   private lazy val plusplus = Names.termName("++")
 
@@ -436,8 +464,10 @@ final class ScalaParser(
       hint: Option[ScalaTypeRef]
     ): Option[TypeInvariant] = rhs match {
 
-    case app @ Apply(_, Typed(SeqLiteral(args, _), _) :: Nil)
-        if (matchesGeneric(MapType, app.tpe)) => {
+    case WithTypeArgs(
+          app @ Apply(_, Typed(SeqLiteral(args, _), _) :: Nil),
+          tpeArgs @ (ktpe :: vtpe :: Nil)
+        ) if (app.tpe <:< MapType.appliedTo(tpeArgs)) => {
       // Dictionary
       val entries: Map[TypeInvariant.Simple, TypeInvariant] =
         args.zipWithIndex
@@ -466,31 +496,26 @@ final class ScalaParser(
           )
           .toMap
 
-      entries.headOption match {
-        case Some((fstk, fstv)) =>
-          Some(
-            DictionaryInvariant(
-              name = k,
-              keyTypeRef = fstk.typeRef,
-              valueTypeRef = fstv.typeRef,
-              entries = entries
-            )
+      if (entries.nonEmpty) {
+        Some(
+          DictionaryInvariant(
+            name = k,
+            keyTypeRef = scalaTypeRef(ktpe, Set.empty),
+            valueTypeRef = scalaTypeRef(vtpe, Set.empty),
+            entries = entries
           )
+        )
+      } else {
+        logger.warning(s"Skip empty dictionary: $k")
 
-        case _ => {
-          logger.warning(s"Skip empty dictionary: $k")
-
-          None
-        }
+        None
       }
     }
 
-    case app @ Apply(a, Typed(SeqLiteral(args, _), _) :: Nil) if ({
-          matchesGeneric(
-            SeqType,
-            app.tpe
-          ) && a.symbol.name.toString == "apply" && args.nonEmpty
-        }) => {
+    case WithTypeArgs(
+          app @ Apply(a, Typed(SeqLiteral(args, _), _) :: Nil),
+          vtpe :: Nil
+        ) if (app.tpe <:< SeqType.appliedTo(vtpe)) => {
       // Seq/List factory
 
       val elements = args.zipWithIndex.collect(
@@ -499,30 +524,30 @@ final class ScalaParser(
         }
       )
 
-      elements.headOption match {
-        case Some(first) if (elements.size == args.size) =>
-          Some(
-            ScalaModel.ListInvariant(
-              name = k,
-              typeRef = ScalaModel.CollectionRef(first.typeRef),
-              valueTypeRef = first.typeRef,
-              values = elements
-            )
+      if (elements.nonEmpty && elements.size == args.size) {
+        val elmTpe = scalaTypeRef(vtpe, Set.empty)
+
+        Some(
+          ScalaModel.ListInvariant(
+            name = k,
+            typeRef = ScalaModel.CollectionRef(elmTpe),
+            valueTypeRef = elmTpe,
+            values = elements
           )
+        )
+      } else {
+        logger.warning(s"Skip list with non-stable value: $k")
 
-        case _ => {
-          logger.warning(s"Skip list with non-stable value: $k")
-
-          None
-        }
+        None
       }
     }
 
-    case x @ Apply(a, args)
-        if (matchesGeneric(SeqType, x.tpe) && a.symbol.name.toString == "++") =>
-      scalaTypeRef(x.tpe, Set.empty) match {
+    case WithTypeArgs(app @ Apply(a, args), vtpe :: Nil)
+        if (app.tpe <:< SeqType.appliedTo(vtpe) &&
+          a.symbol.name.toString == "++") =>
+      scalaTypeRef(app.tpe, Set.empty) match {
         case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
-          val terms = appliedOp(plusplus, List.empty, List(x), List.empty)
+          val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
             .collect(
@@ -552,11 +577,12 @@ final class ScalaParser(
           None
       }
 
-    case app @ Apply(a, Typed(SeqLiteral(args, _), _) :: Nil) if ({
-          matchesGeneric(
-            SetType,
-            app.tpe
-          ) && a.symbol.name.toString == "apply" && args.nonEmpty
+    case WithTypeArgs(
+          app @ Apply(a, Typed(SeqLiteral(args, _), _) :: Nil),
+          vtpe :: Nil
+        ) if ({
+          app.tpe <:< SetType.appliedTo(vtpe) &&
+          a.symbol.name.toString == "apply" && args.nonEmpty
         }) => {
       // Set factory
 
@@ -569,30 +595,30 @@ final class ScalaParser(
         )
         .toSet
 
-      elements.headOption match {
-        case Some(first) if (elements.size == args.size) =>
-          Some(
-            ScalaModel.SetInvariant(
-              name = k,
-              typeRef = ScalaModel.CollectionRef(first.typeRef),
-              valueTypeRef = first.typeRef,
-              values = elements
-            )
+      if (elements.nonEmpty && elements.size == args.size) {
+        val elmTpe = scalaTypeRef(vtpe, Set.empty)
+
+        Some(
+          ScalaModel.SetInvariant(
+            name = k,
+            typeRef = ScalaModel.CollectionRef(elmTpe),
+            valueTypeRef = elmTpe,
+            values = elements
           )
+        )
+      } else {
+        logger.warning(s"Skip list with non-stable value: $k")
 
-        case _ => {
-          logger.warning(s"Skip list with non-stable value: $k")
-
-          None
-        }
+        None
       }
     }
 
-    case x @ Apply(a, _)
-        if (matchesGeneric(SetType, x.tpe) && a.symbol.name.toString == "++") =>
-      scalaTypeRef(x.tpe, Set.empty) match {
+    case WithTypeArgs(app @ Apply(a, _), vtpe :: Nil)
+        if (app.tpe <:< SetType.appliedTo(vtpe) &&
+          a.symbol.name.toString == "++") =>
+      scalaTypeRef(app.tpe, Set.empty) match {
         case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
-          val terms = appliedOp(plusplus, List.empty, List(x), List.empty)
+          val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
             .collect(
@@ -900,24 +926,40 @@ final class ScalaParser(
       case ps @ (_ :: _) => {
         val possibilities = ps.flatMap { pt => symtab.get(fullId(pt)) }
 
-        val res = parse(
-          possibilities,
-          symtab,
-          examined,
-          acceptsType,
-          ListSet.empty[ScalaModel.TypeDef]
-        )
+        if (possibilities.size != ps.size) {
+          val pos = tree.symbol.sourcePos
 
-        Result(
-          examined = res.examined + fullId(tpe),
-          parsed = Some[ScalaModel.TypeDef](
-            ScalaModel.SealedUnion(
-              buildQualifiedIdentifier(tpe.typeSymbol),
-              ListSet.empty ++ members,
-              res.parsed
+          logger.debug(s"Postpone parsing of sealed union ${tpe.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) has subclasses are not yet fully defined")
+
+          Result(
+            examined = examined,
+            parsed = Option.empty[ScalaModel.TypeDef]
+          )
+        } else {
+          val res = parse(
+            possibilities,
+            symtab,
+            examined + fullId(tpe), {
+              val psSyms = possibilities.map(_._1.typeSymbol)
+
+              { (tpeSym: Symbol) =>
+                psSyms.contains(tpeSym) && acceptsType(tpeSym)
+              }
+            },
+            ListSet.empty[ScalaModel.TypeDef]
+          )
+
+          Result(
+            examined = res.examined,
+            parsed = Some[ScalaModel.TypeDef](
+              ScalaModel.SealedUnion(
+                identifier = buildQualifiedIdentifier(tpe.typeSymbol),
+                fields = ListSet.empty ++ members,
+                possibilities = res.parsed
+              )
             )
           )
-        )
+        }
       }
 
       case _ =>
@@ -1318,8 +1360,9 @@ final class ScalaParser(
       symbol: Symbol
     ): ScalaModel.QualifiedIdentifier =
     ScalaModel.QualifiedIdentifier(
-      name = symbol.name.toString,
-      enclosingClassNames = ownerChain(symbol).map(_.name.toString)
+      name = symbol.name.toString.stripSuffix(f"$$"),
+      enclosingClassNames =
+        ownerChain(symbol).map(_.name.toString stripSuffix f"$$")
     )
 
   private def directKnownSubclasses(tpe: Type): List[Type] = {

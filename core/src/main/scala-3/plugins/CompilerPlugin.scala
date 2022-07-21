@@ -234,7 +234,7 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
     def traverse[Acc](
         trees: Seq[Tree],
         acc: Acc,
-        examined: List[Type] = List.empty
+        handled: List[Type] = List.empty
       )(f: ((Type, Tree), Acc) => Acc
       ): Acc =
       trees.headOption match {
@@ -259,7 +259,7 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
             val newTrees: Seq[Tree] = b.result() ++: trees.tail
 
             val accepted = (isTypeDef || tree.isType) && acceptsType(sym)
-            val add = !examined.contains(tpe) && accepted
+            val add = !handled.contains(tpe) && accepted
 
             val newAcc = {
               if (add) {
@@ -282,13 +282,13 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
             }
 
             val newEx = {
-              if (add) tpe :: examined
-              else examined
+              if (add) tpe :: handled
+              else handled
             }
 
             traverse(newTrees, newAcc, newEx)(f)
           } else {
-            traverse(trees.tail, acc, examined)(f)
+            traverse(trees.tail, acc, handled)(f)
           }
         }
 
@@ -329,7 +329,6 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
       .chain(config.typeScriptImportResolvers)
       .getOrElse(TypeScriptImportResolver.Defaults)
 
-    // TODO: Either share compiled or separate SingleFilePrinter?
     compiled.synchronized {
       // Include the current compilation unit as it's known
       compiled += ctx.source.file.canonicalPath

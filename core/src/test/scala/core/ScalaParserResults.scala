@@ -1,7 +1,6 @@
 package io.github.scalats.core
 
-import scala.collection.immutable.ListSet
-
+import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.scala._
 
 final class ScalaParserResults(
@@ -202,7 +201,7 @@ final class ScalaParserResults(
   val caseObject2 = CaseObject(
     QualifiedIdentifier("TestObject2", ns),
     ListSet(
-      LiteralInvariant("name", StringRef, "\"Foo\""),
+      LiteralInvariant("name", StringRef, "\"Foo \\\"bar\\\"\""),
       LiteralInvariant("code", IntRef, "1"),
       LiteralInvariant("const", StringRef, "\"value\""),
       SelectInvariant("foo", StringRef, ThisTypeRef, "name"),

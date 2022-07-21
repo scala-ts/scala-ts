@@ -102,7 +102,7 @@ final class ScalaParserSpec extends org.specs2.mutable.Specification {
     }
 
     "handle ValueClass" >> {
-      "declaration" in {
+      "declaration" in eventually {
         val res = parseTypes(
           List(AnyValChildType -> AnyValChildTree)
         )

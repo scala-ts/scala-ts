@@ -242,7 +242,7 @@ export const idtlt${ns}TestObject1 =
             ListSet(singleton2)
           ) must_=== s"""// Validator for SingletonDeclaration ${ns}TestObject2
 export const idtlt${ns}TestObject2 = idtlt.object({
-  name: idtlt.literal("Foo"),
+  name: idtlt.literal("Foo \\"bar\\""),
   code: idtlt.literal(1),
   const: idtlt.literal("value"),
   /* Unsupported 'SelectValue': foo */
@@ -262,7 +262,7 @@ export const idtltDiscriminated${ns}TestObject2 = idtlt${ns}TestObject2;
 export type ${ns}TestObject2 = typeof idtlt${ns}TestObject2.T;
 
 export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = {
-  name: "Foo",
+  name: "Foo \\"bar\\"",
   code: 1,
   const: "value",
   foo: this.name,

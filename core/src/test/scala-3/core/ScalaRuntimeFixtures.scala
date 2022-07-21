@@ -181,7 +181,7 @@ case class TestClass10(
 
 case object TestObject1
 
-object TestObject2 extends Foo("Foo") {
+object TestObject2 extends Foo("Foo \"bar\"") {
   def code = 1
   val const = new String("value")
   def foo = name
@@ -265,57 +265,33 @@ object FamilyMember3 extends Family {
 
   lazy val TestClass1CompanionType = TestClass1CompanionTree.tpe
 
-  // case class TestClass1B(foo: String)
-
   val TestClass1BTree: Tree = testClass1BTree
 
   lazy val TestClass1BType = TestClass1BTree.tpe
-
-  // case class TestClass2[T](name: T)
 
   val TestClass2Tree: Tree = testClass2Tree
 
   lazy val TestClass2Type = TestClass2Tree.tpe
 
-  // case class TestClass3[T](name: List[T])
-
   val TestClass3Tree: Tree = testClass3Tree
 
   lazy val TestClass3Type = TestClass3Tree.tpe
-
-  // case class TestClass4[T](name: TestClass3[T])
 
   val TestClass4Tree: Tree = testClass4Tree
 
   lazy val TestClass4Type = TestClass4Tree.tpe
 
-  /*
-  case class TestClass5[T](
-      name: Option[T],
-      counters: Map[String, java.math.BigInteger])
-   */
-
   val TestClass5Tree: Tree = testClass5Tree
 
   lazy val TestClass5Type = TestClass5Tree.tpe
-
-  /*
-  case class TestClass6[T](
-      name: Option[TestClass5[List[Option[TestClass4[String]]]]],
-      age: TestClass3[TestClass2[TestClass1]])
-   */
 
   val TestClass6Tree: Tree = testClass6Tree
 
   lazy val TestClass6Type = TestClass6Tree.tpe
 
-  // case class TestClass7[T](name: Either[TestClass1, TestClass1B])
-
   val TestClass7Tree: Tree = testClass7Tree
 
   lazy val TestClass7Type = TestClass7Tree.tpe
-
-  // case class AnyValChild(value: String) extends AnyVal
 
   val AnyValChildTree: Tree = anyValChildTree
 
@@ -324,12 +300,6 @@ object FamilyMember3 extends Family {
   val AnyValChildType: Types.Type =
     Symbols.requiredClassRef(classOf[AnyValChild].getName)
 
-  /*
-  case class TestClass8(
-      name: AnyValChild,
-      aliases: Seq[AnyValChild])
-   */
-
   val TestClass8Tree: Tree = testClass8Tree
 
   // lazy val TestClass8Type = TestClass8Tree.tpe
@@ -337,30 +307,13 @@ object FamilyMember3 extends Family {
   val TestClass8Type: Types.Type =
     Symbols.requiredClassRef(classOf[TestClass8].getName)
 
-  /*
-  object TestEnumeration extends scala.Enumeration {
-    val A, B, C = Value
-  }
-   */
-
   val TestEnumerationTree: Tree = testEnumerationTree
 
   lazy val TestEnumerationType = TestEnumerationTree.tpe
 
-  // case class TestClass9(name: TestEnumeration.Value)
-
   val TestClass9Tree: Tree = testClass9Tree
 
   val TestClass9Type = TestClass9Tree.tpe
-
-  /*
-  case class TestClass10(
-      name: String,
-      tuple: Tuple1[Int],
-      tupleA: (String, Int),
-      tupleB: Tuple2[String, Long],
-      tupleC: Tuple3[String, String, Long])
-   */
 
   val TestClass10Tree: Tree = testClass10Tree
 
@@ -372,56 +325,21 @@ object FamilyMember3 extends Family {
 
   lazy val TestObject1Type = TestObject1Tree.tpe
 
-  /*
-  object TestObject2 {
-    val name = "Foo"
-    def code = 1
-  }
-   */
-
   val TestObject2Tree: Tree = testObject2Tree
 
   val TestObject2Type = TestObject2Tree.tpe
-
-  /*
-  sealed trait Family {
-    def foo: String
-    val bar = "lorem"
-    def ipsum = 0.1D
-  }
-   */
 
   val FamilyTree: Tree = familyTree
 
   lazy val FamilyType = FamilyTree.tpe
 
-  /*
-  case class FamilyMember1(foo: String) extends Family {
-    val code = 1
-  }
-   */
-
   val FamilyMember1Tree: Tree = familyMember1Tree
 
   lazy val FamilyMember1Type = FamilyMember1Tree.tpe
 
-  /*
-  case object FamilyMember2 extends Family {
-    // Members are unsupported for object,
-    // and so the TS singleton won't implements the common interface
-    val foo = "bar"
-  }
-   */
-
   val FamilyMember2Tree: Tree = familyMember2Tree
 
   lazy val FamilyMember2Type = FamilyMember2Tree.tpe
-
-  /*
-  object FamilyMember3 extends Family {
-    def foo = "lorem"
-  }
-   */
 
   val FamilyMember3Tree: Tree = familyMember3Tree
 
