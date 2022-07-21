@@ -5,6 +5,8 @@ import java.time.{ Duration => JDuration }
 import scala.util.Try
 import scala.util.control.NonFatal
 
+import scala.concurrent.ExecutionContext
+
 import scala.concurrent.duration._
 
 import org.slf4j.LoggerFactory
@@ -24,9 +26,9 @@ final class AppContext(
     val startupTimeout: Duration,
     val httpPort: Int,
     val httpIf: String) {
-  implicit val system = ActorSystem(name)
-  implicit val executor = system.dispatcher
-  implicit val materializer = Materializer(system)
+  implicit val system: ActorSystem = ActorSystem(name)
+  implicit val executor: ExecutionContext = system.dispatcher
+  implicit val materializer: Materializer = Materializer(system)
 
   val logger = LoggerFactory.getLogger(name)
 
