@@ -8,7 +8,7 @@ import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript.{ CustomTypeRef, Declaration, TypeRef }
 
 final class FilePrinterSpec extends org.specs2.mutable.Specification {
-  "File printer" title
+  "File printer".title
 
   sequential
 

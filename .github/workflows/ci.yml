@@ -70,4 +70,4 @@ jobs:
         PUBLISH_REPO_NAME: "Sonatype Nexus Repository Manager"
         PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
         PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
-      run: sbt ';error ;+core/publish ;^sbt-plugin/publish'
+      run: sbt ';error ;+core/publish ;idtlt/publish ;^sbt-plugin/publish ;^sbt-plugin-idtlt/publish'

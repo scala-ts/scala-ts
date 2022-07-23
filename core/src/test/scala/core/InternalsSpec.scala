@@ -3,7 +3,7 @@ package io.github.scalats.core
 import Internals.ListSet
 
 final class InternalsSpec extends org.specs2.mutable.Specification {
-  "Internals" title
+  "Internals".title
 
   def wordSet = ListSet("zoo", "alpha", "charlie", "beta")
 

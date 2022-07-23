@@ -3,7 +3,7 @@ package io.github.scalats.core
 import io.github.scalats.typescript._
 
 final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
-  "TypeScript type mapper" title
+  "TypeScript type mapper".title
 
   import TypeScriptTypeMapper._
 

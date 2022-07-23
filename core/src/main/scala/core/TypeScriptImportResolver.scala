@@ -86,6 +86,7 @@ object TypeScriptImportResolver {
     }
 
     @annotation.tailrec
+    @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
     def qualifiers(in: List[Value], out: ListSet[TypeRef]): ListSet[TypeRef] =
       in.headOption match {
         case Some(DictionaryValue(_, _, _, entries)) =>
@@ -115,20 +116,20 @@ object TypeScriptImportResolver {
         fields
           .flatMap(_.typeRef.requires)
           .filterNot(excludes(name)) ++ superInterface.map {
-          i: InterfaceDeclaration => i.reference
+          (_: InterfaceDeclaration).reference
         }
 
       case s @ SingletonDeclaration(name, values, superInterface) =>
         values.flatMap { v => defaultResolver(ValueMemberDeclaration(s, v)) }
           .filterNot(excludes(name)) ++ superInterface.map {
-          i: InterfaceDeclaration => i.reference
+          (_: InterfaceDeclaration).reference
         }
 
       case UnionDeclaration(name, fields, _, superInterface) =>
         fields
           .flatMap(_.typeRef.requires)
           .filterNot(excludes(name)) ++ superInterface.map {
-          i: InterfaceDeclaration => i.reference
+          (_: InterfaceDeclaration).reference
         }
 
       case vd @ ValueMemberDeclaration(

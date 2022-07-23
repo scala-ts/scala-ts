@@ -29,7 +29,7 @@ sealed class TypeInvariant protected (
     typeRef: TypeRef)
     extends TypeMember(name, typeRef)
 
-sealed trait SimpleInvariant { _: TypeInvariant => }
+sealed trait SimpleInvariant { _self: TypeInvariant => }
 
 object TypeInvariant {
   private[scalats] type Simple = TypeInvariant with SimpleInvariant

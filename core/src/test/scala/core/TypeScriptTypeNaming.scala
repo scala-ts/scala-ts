@@ -3,7 +3,7 @@ package io.github.scalats.core
 import io.github.scalats.typescript._
 
 final class TypeScriptTypeNamingSpec extends org.specs2.mutable.Specification {
-  "TypeScript type naming" title
+  "TypeScript type naming".title
 
   val settings = Settings()
 

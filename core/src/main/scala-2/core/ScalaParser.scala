@@ -58,7 +58,7 @@ final class ScalaParser[Uni <: Universe](
       parsed: ListSet[TypeDef]
     ): Result[ListSet, TypeFullId] = types match {
     case ((scalaType, _) :: tail) if (!acceptsType(scalaType.typeSymbol)) => {
-      logger.debug(s"Type ${scalaType} is excluded")
+      logger.debug(s"Type is excluded: ${scalaType}")
 
       parse(tail, symtab, examined, acceptsType, parsed)
     }
@@ -69,16 +69,11 @@ final class ScalaParser[Uni <: Universe](
         !compiled.contains(pos.source.file.canonicalPath))
 
       if (notDefined) {
-        logger.info(s"Postpone parsing of ${scalaType} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
+        logger.debug(s"Postpone parsing of ${scalaType} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
       }
 
-      if (
-        examined.contains(fullId(scalaType)) ||
-        scalaType.typeSymbol.isParameter ||
-        notDefined
-      ) {
-        // Skip already examined type (or a type parameter)
-        // val res = parseType(scalaType, examined)
+      if (scalaType.typeSymbol.isParameter || notDefined) {
+        logger.debug(s"Skip not fully defined type: ${scalaType}")
 
         parse(
           tail,
@@ -87,7 +82,18 @@ final class ScalaParser[Uni <: Universe](
           acceptsType,
           parsed /* ++ res.parsed*/
         )
+      } else if (examined contains fullId(scalaType)) {
+        // Skip already examined type (or a type parameter)
+        // val res = parseType(scalaType, examined)
+        logger.debug(s"Skip already examined type: ${scalaType}")
 
+        parse(
+          tail,
+          symtab,
+          /*res.*/ examined,
+          acceptsType,
+          parsed /* ++ res.parsed*/
+        )
       } else {
         val typeArgs = scalaType match {
           case TypeRefTag(t) =>
@@ -233,8 +239,13 @@ final class ScalaParser[Uni <: Universe](
               case Some(enumerationObject) =>
                 parseEnumeration(enumerationObject.typeSignature, examined)
 
-              case _ =>
+              case _ => {
+                logger.debug(
+                  s"Fails to resolve enumeration object: ${scalaType}"
+                )
+
                 Result(examined, Option.empty[TypeDef])
+              }
             }
           } else {
             Result(examined + fullId(scalaType), Option.empty[TypeDef])
@@ -308,6 +319,7 @@ final class ScalaParser[Uni <: Universe](
 
   }
 
+  @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   private def typeInvariant(
       k: String,
       owner: Tree,
@@ -682,6 +694,8 @@ final class ScalaParser[Uni <: Universe](
       }
 
     if (skipCompanion && classExists) {
+      logger.debug(s"Skip companion object: ${scalaType.typeSymbol.fullName}")
+
       Result(examined + fullId(scalaType), Option.empty[TypeDef])
     } else {
       lazy val declNames: ListSet[String] =
@@ -797,24 +811,40 @@ final class ScalaParser[Uni <: Universe](
       case ps @ (_ :: _) => {
         val possibilities = ps.flatMap { pt => symtab.get(fullId(pt)) }
 
-        val res = parse(
-          possibilities,
-          symtab,
-          examined,
-          acceptsType,
-          ListSet.empty[TypeDef]
-        )
+        if (possibilities.size != ps.size) {
+          val pos = tpe.typeSymbol.pos
 
-        Result(
-          examined = res.examined + fullId(tpe),
-          parsed = Some[TypeDef](
-            SealedUnion(
-              buildQualifiedIdentifier(tpe.typeSymbol),
-              ListSet.empty ++ members,
-              res.parsed
+          logger.debug(s"Postpone parsing of sealed union ${tpe.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) has subclasses are not yet fully defined")
+
+          Result(
+            examined = examined,
+            parsed = Option.empty[TypeDef]
+          )
+        } else {
+          val res = parse(
+            possibilities,
+            symtab,
+            examined + fullId(tpe), {
+              val psSyms = possibilities.map(_._1.typeSymbol)
+
+              { (tpeSym: Symbol) =>
+                psSyms.contains(tpeSym) && acceptsType(tpeSym)
+              }
+            },
+            ListSet.empty[TypeDef]
+          )
+
+          Result(
+            examined = res.examined + fullId(tpe),
+            parsed = Some[TypeDef](
+              SealedUnion(
+                buildQualifiedIdentifier(tpe.typeSymbol),
+                ListSet.empty ++ members,
+                res.parsed
+              )
             )
           )
-        )
+        }
       }
 
       case _ =>
@@ -1214,7 +1244,8 @@ final class ScalaParser[Uni <: Universe](
         case Some(_) =>
           allSubclasses(path.tail, subclasses)
 
-        case _ => subclasses
+        case _ =>
+          subclasses
       }
 
     if (tpeSym.isSealed && tpeSym.isAbstract) {

@@ -7,7 +7,7 @@ import io.github.scalats.typescript.NumberRef
 import org.specs2.specification.core.Fragments
 
 final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
-  "Field mapper" title
+  "Field mapper".title
 
   lazy val settings = Settings()
 

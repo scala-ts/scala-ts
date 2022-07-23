@@ -13,9 +13,10 @@ import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript._
 
 final class EmitterSpec extends org.specs2.mutable.Specification {
-  "TypeScript emitter" title
+  "TypeScript emitter".title
 
   import TranspilerResults._
+  import TestCompat.{ ns, valueClassNs }
 
   "Emitter" should {
     "emit empty interface" in {
@@ -55,27 +56,27 @@ export function isEmpty(v: any): v is Empty {
 
     "emit interface for a class with one primitive member" in {
       emit(ListSet(interface1)) must beTypedEqualTo(
-        """// Validator for InterfaceDeclaration ScalaRuntimeFixturesTestClass1
-export const idtltScalaRuntimeFixturesTestClass1 = idtlt.object({
+        s"""// Validator for InterfaceDeclaration ${ns}TestClass1
+export const idtlt${ns}TestClass1 = idtlt.object({
   name: idtlt.string,
 });
 
-// Deriving TypeScript type from ScalaRuntimeFixturesTestClass1 validator
-export type ScalaRuntimeFixturesTestClass1 = typeof idtltScalaRuntimeFixturesTestClass1.T;
+// Deriving TypeScript type from ${ns}TestClass1 validator
+export type ${ns}TestClass1 = typeof idtlt${ns}TestClass1.T;
 
-export const idtltDiscriminatedScalaRuntimeFixturesTestClass1 = idtlt.intersection(
-  idtltScalaRuntimeFixturesTestClass1,
+export const idtltDiscriminated${ns}TestClass1 = idtlt.intersection(
+  idtlt${ns}TestClass1,
   idtlt.object({
-    _type: idtlt.literal('ScalaRuntimeFixturesTestClass1')
+    _type: idtlt.literal('${ns}TestClass1')
   })
 );
 
-// Deriving TypeScript type from idtltDiscriminatedScalaRuntimeFixturesTestClass1 validator
-export type DiscriminatedScalaRuntimeFixturesTestClass1 = typeof idtltDiscriminatedScalaRuntimeFixturesTestClass1.T;
+// Deriving TypeScript type from idtltDiscriminated${ns}TestClass1 validator
+export type Discriminated${ns}TestClass1 = typeof idtltDiscriminated${ns}TestClass1.T;
 
-export const discriminatedScalaRuntimeFixturesTestClass1: (_: ScalaRuntimeFixturesTestClass1) => DiscriminatedScalaRuntimeFixturesTestClass1 = (v: ScalaRuntimeFixturesTestClass1) => ({ _type: 'ScalaRuntimeFixturesTestClass1', ...v });
+export const discriminated${ns}TestClass1: (_: ${ns}TestClass1) => Discriminated${ns}TestClass1 = (v: ${ns}TestClass1) => ({ _type: '${ns}TestClass1', ...v });
 
-export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixturesTestClass1 {
+export function is${ns}TestClass1(v: any): v is ${ns}TestClass1 {
   return (
     ((typeof v['name']) === 'string')
   );
@@ -85,10 +86,10 @@ export function isScalaRuntimeFixturesTestClass1(v: any): v is ScalaRuntimeFixtu
 
     "emit interface for a class with generic member" in {
       emit(ListSet(interface2)) must beTypedEqualTo(
-        """// Not supported: InterfaceDeclaration 'ScalaRuntimeFixturesTestClass2'
+        s"""// Not supported: InterfaceDeclaration '${ns}TestClass2'
 // - type parameters: T
 
-export function isScalaRuntimeFixturesTestClass2(v: any): boolean {
+export function is${ns}TestClass2(v: any): boolean {
   return v && false;
 }
 """
@@ -97,10 +98,10 @@ export function isScalaRuntimeFixturesTestClass2(v: any): boolean {
 
     "emit interface for a class with generic array" in {
       emit(ListSet(interface3)) must beTypedEqualTo(
-        """// Not supported: InterfaceDeclaration 'ScalaRuntimeFixturesTestClass3'
+        s"""// Not supported: InterfaceDeclaration '${ns}TestClass3'
 // - type parameters: T
 
-export function isScalaRuntimeFixturesTestClass3(v: any): boolean {
+export function is${ns}TestClass3(v: any): boolean {
   return v && false;
 }
 """
@@ -109,10 +110,10 @@ export function isScalaRuntimeFixturesTestClass3(v: any): boolean {
 
     "emit interface for a generic case class with a optional member" in {
       emit(ListSet(interface5)) must beTypedEqualTo(
-        """// Not supported: InterfaceDeclaration 'ScalaRuntimeFixturesTestClass5'
+        s"""// Not supported: InterfaceDeclaration '${ns}TestClass5'
 // - type parameters: T
 
-export function isScalaRuntimeFixturesTestClass5(v: any): boolean {
+export function is${ns}TestClass5(v: any): boolean {
   return v && false;
 }
 """
@@ -122,10 +123,10 @@ export function isScalaRuntimeFixturesTestClass5(v: any): boolean {
     "emit interface for a generic case class with disjunction" in {
       // TODO: Add example to documentation
       emit(ListSet(interface7)) must beTypedEqualTo(
-        """// Not supported: InterfaceDeclaration 'ScalaRuntimeFixturesTestClass7'
+        s"""// Not supported: InterfaceDeclaration '${ns}TestClass7'
 // - type parameters: T
 
-export function isScalaRuntimeFixturesTestClass7(v: any): boolean {
+export function is${ns}TestClass7(v: any): boolean {
   return v && false;
 }
 """
@@ -135,17 +136,17 @@ export function isScalaRuntimeFixturesTestClass7(v: any): boolean {
     "emit tagged type" >> {
       "as type alias" in {
         emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
-          """// Validator for TaggedDeclaration ScalaRuntimeFixturesAnyValChild
-export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
+          s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
+export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixturesAnyValChild {
-  return value as ScalaRuntimeFixturesAnyValChild;
+export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
+  return value as ${valueClassNs}AnyValChild;
 }
 
-export const idtltScalaRuntimeFixturesAnyValChild = idtlt.string.tagged<ScalaRuntimeFixturesAnyValChild>();
+export const idtlt${valueClassNs}AnyValChild = idtlt.string.tagged<${valueClassNs}AnyValChild>();
 
-export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
-  return idtltScalaRuntimeFixturesAnyValChild.validate(v).ok;
+export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyValChild {
+  return idtlt${valueClassNs}AnyValChild.validate(v).ok;
 }
 """
         )
@@ -153,79 +154,83 @@ export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixt
 
       "as tagged type" in {
         emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
-          """// Validator for TaggedDeclaration ScalaRuntimeFixturesAnyValChild
-export type ScalaRuntimeFixturesAnyValChild = string & { __tag: 'ScalaRuntimeFixturesAnyValChild' };
+          s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
+export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ScalaRuntimeFixturesAnyValChild(value: string): ScalaRuntimeFixturesAnyValChild {
-  return value as ScalaRuntimeFixturesAnyValChild;
+export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
+  return value as ${valueClassNs}AnyValChild;
 }
 
-export const idtltScalaRuntimeFixturesAnyValChild = idtlt.string.tagged<ScalaRuntimeFixturesAnyValChild>();
+export const idtlt${valueClassNs}AnyValChild = idtlt.string.tagged<${valueClassNs}AnyValChild>();
 
-export function isScalaRuntimeFixturesAnyValChild(v: any): v is ScalaRuntimeFixturesAnyValChild {
-  return idtltScalaRuntimeFixturesAnyValChild.validate(v).ok;
+export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyValChild {
+  return idtlt${valueClassNs}AnyValChild.validate(v).ok;
 }
 """
         )
       }
 
       "as member" in {
-        emit(ListSet(interface8)) must beTypedEqualTo("""// Validator for InterfaceDeclaration ScalaRuntimeFixturesTestClass8
-export const idtltScalaRuntimeFixturesTestClass8 = idtlt.object({
-  name: nsScalaRuntimeFixturesAnyValChild.idtltScalaRuntimeFixturesAnyValChild,
-  aliases: idtlt.array(nsScalaRuntimeFixturesAnyValChild.idtltScalaRuntimeFixturesAnyValChild),
+        emit(ListSet(interface8)) must beTypedEqualTo(
+          s"""// Validator for InterfaceDeclaration ${valueClassNs}TestClass8
+export const idtlt${valueClassNs}TestClass8 = idtlt.object({
+  name: ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild,
+  aliases: idtlt.array(ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild),
 });
 
-// Deriving TypeScript type from ScalaRuntimeFixturesTestClass8 validator
-export type ScalaRuntimeFixturesTestClass8 = typeof idtltScalaRuntimeFixturesTestClass8.T;
+// Deriving TypeScript type from ${valueClassNs}TestClass8 validator
+export type ${valueClassNs}TestClass8 = typeof idtlt${valueClassNs}TestClass8.T;
 
-export const idtltDiscriminatedScalaRuntimeFixturesTestClass8 = idtlt.intersection(
-  idtltScalaRuntimeFixturesTestClass8,
+export const idtltDiscriminated${valueClassNs}TestClass8 = idtlt.intersection(
+  idtlt${valueClassNs}TestClass8,
   idtlt.object({
-    _type: idtlt.literal('ScalaRuntimeFixturesTestClass8')
+    _type: idtlt.literal('${valueClassNs}TestClass8')
   })
 );
 
-// Deriving TypeScript type from idtltDiscriminatedScalaRuntimeFixturesTestClass8 validator
-export type DiscriminatedScalaRuntimeFixturesTestClass8 = typeof idtltDiscriminatedScalaRuntimeFixturesTestClass8.T;
+// Deriving TypeScript type from idtltDiscriminated${valueClassNs}TestClass8 validator
+export type Discriminated${valueClassNs}TestClass8 = typeof idtltDiscriminated${valueClassNs}TestClass8.T;
 
-export const discriminatedScalaRuntimeFixturesTestClass8: (_: ScalaRuntimeFixturesTestClass8) => DiscriminatedScalaRuntimeFixturesTestClass8 = (v: ScalaRuntimeFixturesTestClass8) => ({ _type: 'ScalaRuntimeFixturesTestClass8', ...v });
+export const discriminated${valueClassNs}TestClass8: (_: ${valueClassNs}TestClass8) => Discriminated${valueClassNs}TestClass8 = (v: ${valueClassNs}TestClass8) => ({ _type: '${valueClassNs}TestClass8', ...v });
 
-export function isScalaRuntimeFixturesTestClass8(v: any): v is ScalaRuntimeFixturesTestClass8 {
+export function is${valueClassNs}TestClass8(v: any): v is ${valueClassNs}TestClass8 {
   return (
-    (v['name'] && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(v['name'])) &&
-    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsScalaRuntimeFixturesAnyValChild.isScalaRuntimeFixturesAnyValChild(elmt)))
+    (v['name'] && ns${valueClassNs}AnyValChild.is${valueClassNs}AnyValChild(v['name'])) &&
+    (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && ns${valueClassNs}AnyValChild.is${valueClassNs}AnyValChild(elmt)))
   );
-}""")
+}"""
+        )
       }
     }
 
     "for singleton" >> {
       "emit class #1" in {
-        emit(ListSet(singleton1)) must beTypedEqualTo("""export class ScalaRuntimeFixturesTestObject1 {
-  private static instance: ScalaRuntimeFixturesTestObject1;
+        emit(ListSet(singleton1)) must beTypedEqualTo(
+          s"""export class ${ns}TestObject1 {
+  private static instance: ${ns}TestObject1;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesTestObject1.instance) {
-      ScalaRuntimeFixturesTestObject1.instance = new ScalaRuntimeFixturesTestObject1();
+    if (!${ns}TestObject1.instance) {
+      ${ns}TestObject1.instance = new ${ns}TestObject1();
     }
 
-    return ScalaRuntimeFixturesTestObject1.instance;
+    return ${ns}TestObject1.instance;
   }
 }
 
-export const ScalaRuntimeFixturesTestObject1Inhabitant: ScalaRuntimeFixturesTestObject1 = ScalaRuntimeFixturesTestObject1.getInstance();
+export const ${ns}TestObject1Inhabitant: ${ns}TestObject1 = ${ns}TestObject1.getInstance();
 
-export function isScalaRuntimeFixturesTestObject1(v: any): v is ScalaRuntimeFixturesTestObject1 {
-  return (v instanceof ScalaRuntimeFixturesTestObject1) && (v === ScalaRuntimeFixturesTestObject1Inhabitant);
+export function is${ns}TestObject1(v: any): v is ${ns}TestObject1 {
+  return (v instanceof ${ns}TestObject1) && (v === ${ns}TestObject1Inhabitant);
 }
 
-export const idtltScalaRuntimeFixturesTestObject1 =
+export const idtlt${ns}TestObject1 =
   idtlt.unknown.and(_unknown => idtlt.Err(
-    'Cannot validator instance for singleton ScalaRuntimeFixturesTestObject1'));
-""")
+    'Cannot validator instance for singleton ${ns}TestObject1'));
+"""
+        )
       }
 
       "emit class #2" >> {
@@ -235,9 +240,9 @@ export const idtltScalaRuntimeFixturesTestObject1 =
           // SCALATS1: No implements SupI
           emit(
             ListSet(singleton2)
-          ) must_=== """// Validator for SingletonDeclaration ScalaRuntimeFixturesTestObject2
-export const idtltScalaRuntimeFixturesTestObject2 = idtlt.object({
-  name: idtlt.literal("Foo"),
+          ) must_=== s"""// Validator for SingletonDeclaration ${ns}TestObject2
+export const idtlt${ns}TestObject2 = idtlt.object({
+  name: idtlt.literal("Foo \\"bar\\""),
   code: idtlt.literal(1),
   const: idtlt.literal("value"),
   /* Unsupported 'SelectValue': foo */
@@ -251,13 +256,13 @@ export const idtltScalaRuntimeFixturesTestObject2 = idtlt.object({
 });
 
 // Super-type declaration SupI is ignored
-export const idtltDiscriminatedScalaRuntimeFixturesTestObject2 = idtltScalaRuntimeFixturesTestObject2;
+export const idtltDiscriminated${ns}TestObject2 = idtlt${ns}TestObject2;
 
-// Deriving TypeScript type from ScalaRuntimeFixturesTestObject2 validator
-export type ScalaRuntimeFixturesTestObject2 = typeof idtltScalaRuntimeFixturesTestObject2.T;
+// Deriving TypeScript type from ${ns}TestObject2 validator
+export type ${ns}TestObject2 = typeof idtlt${ns}TestObject2.T;
 
-export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTestObject2 = {
-  name: "Foo",
+export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = {
+  name: "Foo \\"bar\\"",
   code: 1,
   const: "value",
   foo: this.name,
@@ -270,13 +275,13 @@ export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTest
   mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ])
 };
 
-export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixturesTestObject2 {
-  return idtltScalaRuntimeFixturesTestObject2.validate(v).ok;
+export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
+  return idtlt${ns}TestObject2.validate(v).ok;
 }"""
         }
 
         val taggedRef =
-          TaggedRef("ScalaRuntimeFixturesAnyValChild", StringRef)
+          TaggedRef(s"${valueClassNs}AnyValChild", StringRef)
 
         "with complex values" in {
           val singleton = SingletonDeclaration(
@@ -450,28 +455,28 @@ export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixt
               typeNaming = CustomTypeNaming,
               fieldMapper = CustomFieldMapper
             )
-          ) must_=== """export class TSSingleton {
-  public _name: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild = nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("Foo");
+          ) must_=== s"""export class TSSingleton {
+  public _name: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("Foo");
 
   public _code: TSnumber = 1;
 
   public _const: TSstring = "value";
 
-  public _foo: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild = this._name;
+  public _foo: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = this._name;
 
-  public _list: ReadonlyArray<TSstring> = [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("first"), this._name ];
+  public _list: ReadonlyArray<TSstring> = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
 
   public _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
 
-  public readonly _mapping: { [key: TSstring]: TSstring } = { "foo": nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar"), "lorem": this._name };
+  public readonly _mapping: { [key: TSstring]: TSstring } = { "foo": nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"), "lorem": this._name };
 
-  public readonly _dictOfList: { [key: TSstring]: ReadonlyArray<nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild> } = { "excludes": [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.txt"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild(".gitignore") ], "includes": [ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("images/**"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.jpg"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("*.png") ] };
+  public readonly _dictOfList: { [key: TSstring]: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> } = { "excludes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ], "includes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ] };
 
-  public _concatSeq: ReadonlyArray<nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild> = [ ...this._list, ...[ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("foo"), nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar") ], ...[ nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("lorem") ]];
+  public _concatSeq: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> = [ ...this._list, ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar") ], ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("lorem") ]];
 
   public _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
 
-  public readonly _taggedDict: { [key: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild]: TSstring } = (() => { const __buf1519690942: { [key: nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild]: TSstring } = {}; __buf1519690942[nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("foo")] = nsTSScalaRuntimeFixturesAnyValChild.TSScalaRuntimeFixturesAnyValChild("bar"); return __buf1519690942 })();
+  public readonly _taggedDict: { [key: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild]: TSstring } = (() => { const __buf1519690942: { [key: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild]: TSstring } = {}; __buf1519690942[nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo")] = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"); return __buf1519690942 })();
 
   private static instance: TSSingleton;
 
@@ -500,7 +505,7 @@ export const idtltTSSingleton =
 
         "with value class as tagged type" in {
           val singleton2WithTagged = SingletonDeclaration(
-            "ScalaRuntimeFixturesTestObject2",
+            s"${valueClassNs}TestObject2",
             ListSet(
               LiteralValue("name", StringRef, "\"Foo\""),
               LiteralValue(
@@ -516,37 +521,37 @@ export const idtltTSSingleton =
 
           emit(
             ListSet(singleton2WithTagged)
-          ) must_=== """export class ScalaRuntimeFixturesTestObject2 {
+          ) must_=== s"""export class ${valueClassNs}TestObject2 {
   public name: string = "Foo";
 
-  public const: nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("value");
+  public const: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("value");
 
-  public foo: nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild = this.const;
+  public foo: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = this.const;
 
   public code: number = 1;
 
-  private static instance: ScalaRuntimeFixturesTestObject2;
+  private static instance: ${valueClassNs}TestObject2;
 
   private constructor() {}
 
   public static getInstance() {
-    if (!ScalaRuntimeFixturesTestObject2.instance) {
-      ScalaRuntimeFixturesTestObject2.instance = new ScalaRuntimeFixturesTestObject2();
+    if (!${valueClassNs}TestObject2.instance) {
+      ${valueClassNs}TestObject2.instance = new ${valueClassNs}TestObject2();
     }
 
-    return ScalaRuntimeFixturesTestObject2.instance;
+    return ${valueClassNs}TestObject2.instance;
   }
 }
 
-export const ScalaRuntimeFixturesTestObject2Inhabitant: ScalaRuntimeFixturesTestObject2 = ScalaRuntimeFixturesTestObject2.getInstance();
+export const ${valueClassNs}TestObject2Inhabitant: ${valueClassNs}TestObject2 = ${valueClassNs}TestObject2.getInstance();
 
-export function isScalaRuntimeFixturesTestObject2(v: any): v is ScalaRuntimeFixturesTestObject2 {
-  return (v instanceof ScalaRuntimeFixturesTestObject2) && (v === ScalaRuntimeFixturesTestObject2Inhabitant);
+export function is${valueClassNs}TestObject2(v: any): v is ${valueClassNs}TestObject2 {
+  return (v instanceof ${valueClassNs}TestObject2) && (v === ${valueClassNs}TestObject2Inhabitant);
 }
 
-export const idtltScalaRuntimeFixturesTestObject2 =
+export const idtlt${valueClassNs}TestObject2 =
   idtlt.unknown.and(_unknown => idtlt.Err(
-    'Cannot validator instance for singleton ScalaRuntimeFixturesTestObject2'));
+    'Cannot validator instance for singleton ${valueClassNs}TestObject2'));
 """
         }
       }
@@ -554,19 +559,19 @@ export const idtltScalaRuntimeFixturesTestObject2 =
       "emit class #3" in {
         emit(
           ListSet(unionMember2Singleton)
-        ) must_=== """// Validator for SingletonDeclaration ScalaRuntimeFixturesFamilyMember2
-export const idtltScalaRuntimeFixturesFamilyMember2 = idtlt.literal("bar");
+        ) must_=== s"""// Validator for SingletonDeclaration ${ns}FamilyMember2
+export const idtlt${ns}FamilyMember2 = idtlt.literal("bar");
 
-// Super-type declaration ScalaRuntimeFixturesFamily is ignored
-export const idtltDiscriminatedScalaRuntimeFixturesFamilyMember2 = idtltScalaRuntimeFixturesFamilyMember2;
+// Super-type declaration ${ns}Family is ignored
+export const idtltDiscriminated${ns}FamilyMember2 = idtlt${ns}FamilyMember2;
 
-// Deriving TypeScript type from ScalaRuntimeFixturesFamilyMember2 validator
-export type ScalaRuntimeFixturesFamilyMember2 = typeof idtltScalaRuntimeFixturesFamilyMember2.T;
+// Deriving TypeScript type from ${ns}FamilyMember2 validator
+export type ${ns}FamilyMember2 = typeof idtlt${ns}FamilyMember2.T;
 
-export const ScalaRuntimeFixturesFamilyMember2Inhabitant: ScalaRuntimeFixturesFamilyMember2 = "bar";
+export const ${ns}FamilyMember2Inhabitant: ${ns}FamilyMember2 = "bar";
 
-export function isScalaRuntimeFixturesFamilyMember2(v: any): v is ScalaRuntimeFixturesFamilyMember2 {
-  return idtltScalaRuntimeFixturesFamilyMember2.validate(v).ok;
+export function is${ns}FamilyMember2(v: any): v is ${ns}FamilyMember2 {
+  return idtlt${ns}FamilyMember2.validate(v).ok;
 }"""
       }
 
@@ -689,39 +694,41 @@ export const idtltFoo =
     }
 
     "emit union" in {
-      emit(ListSet(union1)) must_=== """// Validator for UnionDeclaration ScalaRuntimeFixturesFamily
-export const idtltScalaRuntimeFixturesFamily = idtlt.union(
-  nsScalaRuntimeFixturesFamilyMember1.idtltDiscriminatedScalaRuntimeFixturesFamilyMember1,
-  nsScalaRuntimeFixturesFamilyMember2.idtltDiscriminatedScalaRuntimeFixturesFamilyMember2,
-  nsScalaRuntimeFixturesFamilyMember3.idtltDiscriminatedScalaRuntimeFixturesFamilyMember3);
+      emit(
+        ListSet(union1)
+      ) must_=== s"""// Validator for UnionDeclaration ${ns}Family
+export const idtlt${ns}Family = idtlt.union(
+  ns${ns}FamilyMember1.idtltDiscriminated${ns}FamilyMember1,
+  ns${ns}FamilyMember2.idtltDiscriminated${ns}FamilyMember2,
+  ns${ns}FamilyMember3.idtltDiscriminated${ns}FamilyMember3);
 
 // Fields are ignored: foo
 
-// Deriving TypeScript type from ScalaRuntimeFixturesFamily validator
-export type ScalaRuntimeFixturesFamily = typeof idtltScalaRuntimeFixturesFamily.T;
+// Deriving TypeScript type from ${ns}Family validator
+export type ${ns}Family = typeof idtlt${ns}Family.T;
 
-export const idtltDiscriminatedScalaRuntimeFixturesFamily = idtlt.intersection(
-  idtltScalaRuntimeFixturesFamily,
+export const idtltDiscriminated${ns}Family = idtlt.intersection(
+  idtlt${ns}Family,
   idtlt.object({
-    _type: idtlt.literal('ScalaRuntimeFixturesFamily')
+    _type: idtlt.literal('${ns}Family')
   })
 );
 
-// Deriving TypeScript type from idtltDiscriminatedScalaRuntimeFixturesFamily validator
-export type DiscriminatedScalaRuntimeFixturesFamily = typeof idtltDiscriminatedScalaRuntimeFixturesFamily.T;
+// Deriving TypeScript type from idtltDiscriminated${ns}Family validator
+export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
 
-export const ScalaRuntimeFixturesFamily = {
-  "bar": nsScalaRuntimeFixturesFamilyMember2.ScalaRuntimeFixturesFamilyMember2Inhabitant, 
-  "lorem": nsScalaRuntimeFixturesFamilyMember3.ScalaRuntimeFixturesFamilyMember3Inhabitant
+export const ${ns}Family = {
+  "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
 } as const;
 
-export const idtltScalaRuntimeFixturesFamilyKnownValues: ReadonlyArray<ScalaRuntimeFixturesFamily> = Object.values(ScalaRuntimeFixturesFamily) as ReadonlyArray<ScalaRuntimeFixturesFamily>;
+export const idtlt${ns}FamilyKnownValues: ReadonlyArray<${ns}Family> = Object.values(${ns}Family) as ReadonlyArray<${ns}Family>;
 
-export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesFamily {
+export function is${ns}Family(v: any): v is ${ns}Family {
   return (
-    nsScalaRuntimeFixturesFamilyMember1.isScalaRuntimeFixturesFamilyMember1(v) ||
-    nsScalaRuntimeFixturesFamilyMember2.isScalaRuntimeFixturesFamilyMember2(v) ||
-    nsScalaRuntimeFixturesFamilyMember3.isScalaRuntimeFixturesFamilyMember3(v)
+    ns${ns}FamilyMember1.is${ns}FamilyMember1(v) ||
+    ns${ns}FamilyMember2.is${ns}FamilyMember2(v) ||
+    ns${ns}FamilyMember3.is${ns}FamilyMember3(v)
   );
 }
 """
@@ -729,33 +736,33 @@ export function isScalaRuntimeFixturesFamily(v: any): v is ScalaRuntimeFixturesF
 
     "emit enumeration as union" in {
       emit(ListSet(enum1)) must beTypedEqualTo(
-        """// Validator for EnumDeclaration ScalaRuntimeFixturesTestEnumeration
-export const idtltScalaRuntimeFixturesTestEnumeration = idtlt.union(
+        s"""// Validator for EnumDeclaration ${ns}TestEnumeration
+export const idtlt${ns}TestEnumeration = idtlt.union(
   idtlt.literal('A'),
   idtlt.literal('B'),
   idtlt.literal('C'))
 
-// Deriving TypeScript type from ScalaRuntimeFixturesTestEnumeration validator
-export type ScalaRuntimeFixturesTestEnumeration = typeof idtltScalaRuntimeFixturesTestEnumeration.T;
+// Deriving TypeScript type from ${ns}TestEnumeration validator
+export type ${ns}TestEnumeration = typeof idtlt${ns}TestEnumeration.T;
 
-export const idtltDiscriminatedScalaRuntimeFixturesTestEnumeration = idtlt.intersection(
-  idtltScalaRuntimeFixturesTestEnumeration,
+export const idtltDiscriminated${ns}TestEnumeration = idtlt.intersection(
+  idtlt${ns}TestEnumeration,
   idtlt.object({
-    _type: idtlt.literal('ScalaRuntimeFixturesTestEnumeration')
+    _type: idtlt.literal('${ns}TestEnumeration')
   })
 );
 
-// Deriving TypeScript type from idtltDiscriminatedScalaRuntimeFixturesTestEnumeration validator
-export type DiscriminatedScalaRuntimeFixturesTestEnumeration = typeof idtltDiscriminatedScalaRuntimeFixturesTestEnumeration.T;
+// Deriving TypeScript type from idtltDiscriminated${ns}TestEnumeration validator
+export type Discriminated${ns}TestEnumeration = typeof idtltDiscriminated${ns}TestEnumeration.T;
 
-export const idtltScalaRuntimeFixturesTestEnumerationValues: Array<ScalaRuntimeFixturesTestEnumeration> = [
+export const idtlt${ns}TestEnumerationValues: Array<${ns}TestEnumeration> = [
   'A',
   'B',
   'C'
 ];
 
-export function isScalaRuntimeFixturesTestEnumeration(v: any): v is ScalaRuntimeFixturesTestEnumeration {
-   return idtltScalaRuntimeFixturesTestEnumeration.validate(v).ok;
+export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
+   return idtlt${ns}TestEnumeration.validate(v).ok;
 }
 """
       )

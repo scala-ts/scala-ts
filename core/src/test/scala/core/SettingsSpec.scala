@@ -5,7 +5,7 @@ import scala.collection.immutable.Set
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class SettingsSpec extends org.specs2.mutable.Specification {
-  "Settings" title
+  "Settings".title
 
   import ConfigRenderOptions.concise
 
