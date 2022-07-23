@@ -1,4 +1,5 @@
 <plugin>
+  <!-- Scala 2 -->
   <name>scalats</name>
   <classname>io.github.scalats.plugins.CompilerPlugin</classname>
 </plugin>

@@ -13,27 +13,25 @@ object Compiler extends AutoPlugin {
     scalacOptions ++= Seq(
       "-encoding",
       "UTF-8",
-      "-target:jvm-1.8",
       "-unchecked",
       "-deprecation",
       "-feature",
-      "-Xlint",
-      "-g:vars",
       "-Xfatal-warnings"
     ),
     scalacOptions ++= {
-      val ver = scalaBinaryVersion.value
-
-      if (ver == "2.11") {
+      if (scalaBinaryVersion.value == "3") {
+        Seq.empty
+      } else {
         Seq(
-          "-Xmax-classfile-name",
-          "128",
-          "-Yopt:_",
-          "-Ydead-code",
-          "-Yclosure-elim",
-          "-Yconst-opt"
-        )
-      } else if (ver == "2.12") {
+          "-target:jvm-1.8",
+          "-Xlint",
+          "-g:vars")
+      }
+    },
+    scalacOptions ++= {
+      val sv = scalaBinaryVersion.value
+
+      if (sv == "2.12") {
         Seq(
           "-Xmax-classfile-name",
           "128",
@@ -45,7 +43,16 @@ object Compiler extends AutoPlugin {
           "-Ywarn-unused-import",
           "-Ywarn-macros:after"
         )
-      } else {
+      } else if (sv == "2.11") {
+        Seq(
+          "-Xmax-classfile-name",
+          "128",
+          "-Yopt:_",
+          "-Ydead-code",
+          "-Yclosure-elim",
+          "-Yconst-opt"
+        )
+      } else if (sv == "2.13") {
         Seq(
           "-explaintypes",
           "-Werror",
@@ -56,6 +63,8 @@ object Compiler extends AutoPlugin {
           "-Wmacros:after",
           "-Wunused"
         )
+      } else {
+        Seq("-Wunused:all", "-language:implicitConversions")
       }
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },

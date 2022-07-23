@@ -11,16 +11,12 @@ sealed trait Value {
   def reference: TypeRef = typeRef
 }
 
-sealed trait SimpleValue { _: Value => }
+sealed trait SimpleValue { _self: Value => }
 
 object Value {
   type Simple = Value with SimpleValue
 
-  def unapply(decl: Value): Option[String] = decl match {
-    case v: Value => Some(v.name)
-
-    case _ => None
-  }
+  def unapply(decl: Value): Option[String] = Option(decl.name)
 }
 
 /**

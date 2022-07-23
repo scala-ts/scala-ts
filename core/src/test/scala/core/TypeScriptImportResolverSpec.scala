@@ -7,7 +7,7 @@ import org.specs2.specification.core.Fragments
 
 final class TypeScriptImportResolverSpec
     extends org.specs2.mutable.Specification {
-  "TypeScript import resolver" title
+  "TypeScript import resolver".title
 
   "Required types of type declaration" should {
     import TranspilerResults._

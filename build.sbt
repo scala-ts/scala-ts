@@ -20,37 +20,67 @@ lazy val shaded = project
     publishTo := None
   )
 
+val fullCrossScalaVersions = Def.setting {
+  Seq(
+    "2.11.12",
+    scalaVersion.value,
+    "2.13.8",
+    "3.1.3"
+  )
+}
+
+val libraryDependenciesWithScapegoat = Def.setting {
+  val v = scalaBinaryVersion.value
+
+  libraryDependencies.value.map { dep =>
+    if (v == "3" && dep.name == "scalac-scapegoat-plugin") {
+      dep.cross(CrossVersion.for3Use2_13With("", ".7"))
+    } else {
+      dep
+    }
+  }
+}
+
 lazy val core = project
   .in(file("core"))
   .settings(
     name := "scala-ts-core",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.8"),
+    crossScalaVersions := fullCrossScalaVersions.value,
     Compile / unmanagedJars += (shaded / assembly).value,
     Compile / unmanagedSourceDirectories += {
       val base = (Compile / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n >= 12 => base / "scala-2.12+"
-        case _                       => base / "scala-2.12-"
+        case Some((2, n)) if n < 12 => base / "scala-2.12-"
+        case _                       => base / "scala-2.12+"
+      }
+    },
+    libraryDependencies := libraryDependenciesWithScapegoat.value,
+    libraryDependencies ++= {
+      if (scalaBinaryVersion.value == "3") {
+        Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)
+      } else {
+        Seq(
+          "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+          "org.scala-lang" % "scala-compiler" % scalaVersion.value)
       }
     },
     libraryDependencies ++= {
       val specsVer = "4.10.6"
 
       Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-        "org.scala-lang" % "scala-compiler" % scalaVersion.value,
         "org.slf4j" % "slf4j-api" % "1.7.36",
-        "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
-        "org.specs2" %% "specs2-core" % specsVer % Test,
-        "org.specs2" %% "specs2-junit" % specsVer % Test
-      )
+        "ch.qos.logback" % "logback-classic" % "1.2.11") ++ Seq(
+        "core", "junit").map(n =>
+        ("org.specs2" %% s"specs2-${n}" % specsVer).
+          cross(CrossVersion.for3Use2_13) % Test)
     },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
         _.data.getName startsWith "scala-ts-shaded"
       }
     },
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
@@ -124,8 +154,10 @@ lazy val idtlt = project
   .in(file("idtlt"))
   .settings(
     name := "scala-ts-idtlt",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.8"),
+    crossScalaVersions := fullCrossScalaVersions.value,
+    libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
