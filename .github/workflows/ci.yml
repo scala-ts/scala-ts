@@ -39,7 +39,7 @@ jobs:
 
     - name: 'Run SBT plugin tests'
       run: |
-        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.15 ;^scripted'
+        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.16 ;^scripted'
 
     - name: 'Set up Node'
       uses: actions/setup-node@v1
