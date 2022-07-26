@@ -4,7 +4,7 @@ import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.scala._
 
 final class ScalaParserResults(
-    ns: List[String],
+    val ns: List[String],
     val valueClassNs: List[String]) {
 
   val caseClass1 = CaseClass(

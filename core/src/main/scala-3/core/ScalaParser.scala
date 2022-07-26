@@ -178,10 +178,14 @@ final class ScalaParser(
         case _
             if (isModule &&
               scalaType.baseClasses.contains(enumerationTypeSym)) =>
+          // TODO: Or Is provided Scala3 scala.deriving.Mirror.SumOf
           parseEnumeration(scalaType, examined)
 
         case _ if isModule =>
           parseObject(tpe, examined)
+
+        case p: Types.TypeProxy if (tpeSym is Flags.Opaque) =>
+          opaqueTypeAlias(p, tpeSym, examined)
 
         case _ if (tpeSym.isClass) => {
           val classSym = tpeSym.asClass
@@ -193,9 +197,25 @@ final class ScalaParser(
             classSym.is(Flags.Sealed) &&
             scalaType.typeParams.isEmpty
           ) {
+            /* TODO: Union type
+    @annotation.tailrec
+    def parse(in: List[TypeRepr], out: List[TypeRepr]): List[TypeRepr] =
+      in.headOption match {
+        case Some(OrType(a, b)) =>
+          parse(a :: b :: in.tail, out)
+
+        case Some(o) if isClass(o) =>
+          parse(in.tail, o :: out)
+
+        case Some(_) =>
+          List.empty
+
+        case _ =>
+          out.reverse
+      }
+             */
             parseSealedUnion(scalaType, tpe._2, symtab, examined, acceptsType)
           } else if (isAnyValChild(scalaType)) {
-            // TODO: Opaque type?
             parseValueClass(tpe, examined)
           } else if (isCaseClass(scalaType)) {
             parseCaseClass(tpe, examined)
@@ -998,6 +1018,23 @@ final class ScalaParser(
       )
     )
   }
+
+  private def opaqueTypeAlias(
+      tpe: Types.TypeProxy,
+      tpeSym: Symbol,
+      examined: ListSet[TypeFullId]
+    ): Result[Option, TypeFullId] = Result(
+    examined = examined + fullId(tpe),
+    parsed = Some[ScalaModel.TypeDef](
+      ScalaModel.ValueClass(
+        buildQualifiedIdentifier(tpeSym),
+        new ScalaModel.TypeMember(
+          "",
+          scalaTypeRef(tpe.translucentSuperType, Set.empty)
+        )
+      )
+    )
+  )
 
   private def parseValueClass(
       tpe: (Type, Tree),

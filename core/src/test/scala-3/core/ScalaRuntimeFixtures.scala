@@ -24,6 +24,11 @@ object ScalaRuntimeFixtures {
     valueClassNs = List.empty
   )
 
+  val logOpaqueAlias = ScalaModel.ValueClass(
+    ScalaModel.QualifiedIdentifier("Log", results.ns :+ "Aliases"),
+    ScalaModel.TypeMember("", ScalaModel.DoubleRef)
+  )
+
   private val initialState: State = {
     import java.io.File.pathSeparator
 
@@ -114,8 +119,6 @@ object ScalaRuntimeFixtures {
 
   // ---
 
-  // TODO: Remove; case class TestClass1(name: String)
-
   val (
     testClass1Tree,
     testClass1CompanionTree,
@@ -136,7 +139,8 @@ object ScalaRuntimeFixtures {
     familyTree,
     familyMember1Tree,
     familyMember2Tree,
-    familyMember3Tree
+    familyMember3Tree,
+    logOpaqueAliasTree
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -219,11 +223,24 @@ object FamilyMember2 extends Family {
 object FamilyMember3 extends Family {
   def foo = "lorem"
 }
+
+object Aliases {
+  opaque type Log = Double
+}
 """)(using state) match {
     case Right(valDef) =>
       valDef.unforced match {
         case Trees.Block(
-              testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _,
+              testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _ :: Trees
+                .TypeDef(
+                  _,
+                  Trees.Template(
+                    _,
+                    _,
+                    _,
+                    (logOpaqueAliasTree @ Trees.TypeDef(_, _)) :: Nil
+                  )
+                ) :: _,
               _
             ) =>
           (
@@ -246,7 +263,8 @@ object FamilyMember3 extends Family {
             familyTree.asInstanceOf[Tree],
             familyMember1Tree.asInstanceOf[Tree],
             familyMember2Tree.asInstanceOf[Tree],
-            familyMember3Tree.asInstanceOf[Tree]
+            familyMember3Tree.asInstanceOf[Tree],
+            logOpaqueAliasTree.asInstanceOf[Tree]
           )
 
         case invalid =>
@@ -344,4 +362,8 @@ object FamilyMember3 extends Family {
   val FamilyMember3Tree: Tree = familyMember3Tree
 
   val FamilyMember3Type = FamilyMember3Tree.tpe
+
+  val LogOpaqueAliasTree: Tree = logOpaqueAliasTree
+
+  lazy val LogOpaqueAliasType = LogOpaqueAliasTree.tpe
 }
