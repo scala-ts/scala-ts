@@ -93,6 +93,16 @@ case class TextMessage(
     text: String)
 ```
 
+In Scala 3, [Opaque Types](https://docs.scala-lang.org/scala3/book/types-opaque-types.html) is supported in a similar way.
+
+```scala
+package scala3ts.examples
+
+object Event {
+  opaque type EventType = String
+}
+```
+
 *Generated TypeScript:* Note that the Value class `EventType` is exported as the inner type (there `string` for `val name: String`).
 
 ```typescript

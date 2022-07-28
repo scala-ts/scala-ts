@@ -555,7 +555,7 @@ final class ScalaParser[Uni <: Universe](
       // Literal elements in list are not defined with own symbol
       val signature = Option(owner.symbol).map(_.typeSignature)
 
-      val mt: Type =
+      def mt: Type =
         signature.map {
           case universe.NullaryMethodType(resultType) => // for `=> T`
             resultType
@@ -567,7 +567,7 @@ final class ScalaParser[Uni <: Universe](
       Some(
         LiteralInvariant(
           name = k,
-          typeRef = scalaTypeRef(mt.dealias, Set.empty),
+          typeRef = hint getOrElse scalaTypeRef(mt.dealias, Set.empty),
           value = v.toString
         )
       )

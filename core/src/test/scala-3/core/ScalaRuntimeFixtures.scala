@@ -29,6 +29,77 @@ object ScalaRuntimeFixtures {
     ScalaModel.TypeMember("", ScalaModel.DoubleRef)
   )
 
+  val unionType1 = ScalaModel.SealedUnion(
+    ScalaModel.QualifiedIdentifier(
+      "FamilyUnion",
+      List(f"$$wrapper", "expr", "Aliases")
+    ),
+    ListSet.empty,
+    ListSet(
+      ScalaModel.CaseClass(
+        ScalaModel
+          .QualifiedIdentifier("FamilyMember1", List(f"$$wrapper", "expr")),
+        ListSet(ScalaModel.TypeMember("foo", ScalaModel.StringRef)),
+        ListSet(ScalaModel.LiteralInvariant("code", ScalaModel.IntRef, "1")),
+        List.empty
+      ),
+      ScalaModel.CaseObject(
+        ScalaModel
+          .QualifiedIdentifier("FamilyMember2", List(f"$$wrapper", "expr")),
+        ListSet(
+          ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"bar\"")
+        )
+      ),
+      ScalaModel.CaseObject(
+        ScalaModel
+          .QualifiedIdentifier("FamilyMember3", List(f"$$wrapper", "expr")),
+        ListSet(
+          ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"lorem\"")
+        )
+      )
+    )
+  )
+
+  val lorem = ScalaModel.CaseClass(
+    ScalaModel.QualifiedIdentifier("Lorem", results.ns),
+    ListSet(
+      ScalaModel.TypeMember("name", ScalaModel.StringRef),
+      ScalaModel.TypeMember(
+        "ipsum",
+        ScalaModel.UnionRef(
+          ListSet(
+            ScalaModel.StringRef,
+            ScalaModel.UnknownTypeRef(
+              ScalaModel.QualifiedIdentifier("Family", results.ns)
+            )
+          )
+        )
+      ),
+      ScalaModel.TypeMember(
+        "dolor",
+        ScalaModel.UnionRef(ListSet(ScalaModel.IntRef, ScalaModel.DoubleRef))
+      )
+    ),
+    ListSet.empty,
+    List.empty
+  )
+
+  val ipsum = ScalaModel.CaseObject(
+    ScalaModel.QualifiedIdentifier("Ipsum", results.ns),
+    ListSet(
+      ScalaModel.LiteralInvariant(
+        "const",
+        ScalaModel.UnionRef(ListSet(ScalaModel.StringRef, ScalaModel.IntRef)),
+        "\"strVal\""
+      ),
+      ScalaModel.LiteralInvariant(
+        "defaultScore",
+        ScalaModel.UnionRef(ListSet(ScalaModel.IntRef, ScalaModel.DoubleRef)),
+        "2"
+      )
+    )
+  )
+
   private val initialState: State = {
     import java.io.File.pathSeparator
 
@@ -140,7 +211,10 @@ object ScalaRuntimeFixtures {
     familyMember1Tree,
     familyMember2Tree,
     familyMember3Tree,
-    logOpaqueAliasTree
+    logOpaqueAliasTree,
+    familyUnionTree,
+    loremTree,
+    ipsumTree
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -226,6 +300,18 @@ object FamilyMember3 extends Family {
 
 object Aliases {
   opaque type Log = Double
+  type FamilyUnion = FamilyMember1 | FamilyMember2.type | FamilyMember3.type
+  type Score = Int | Double
+}
+
+case class Lorem(
+  name: String,
+  ipsum: String | Family,
+  dolor: Aliases.Score)
+
+object Ipsum {
+  val const: String | Int = "strVal"
+  val defaultScore: Aliases.Score = 2
 }
 """)(using state) match {
     case Right(valDef) =>
@@ -238,9 +324,10 @@ object Aliases {
                     _,
                     _,
                     _,
-                    (logOpaqueAliasTree @ Trees.TypeDef(_, _)) :: Nil
+                    (logOpaqueAliasTree @ Trees
+                      .TypeDef(_, _)) :: familyUnionTree :: _
                   )
-                ) :: _,
+                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _,
               _
             ) =>
           (
@@ -264,7 +351,10 @@ object Aliases {
             familyMember1Tree.asInstanceOf[Tree],
             familyMember2Tree.asInstanceOf[Tree],
             familyMember3Tree.asInstanceOf[Tree],
-            logOpaqueAliasTree.asInstanceOf[Tree]
+            logOpaqueAliasTree.asInstanceOf[Tree],
+            familyUnionTree.asInstanceOf[Tree],
+            loremTree.asInstanceOf[Tree],
+            ipsumTree.asInstanceOf[Tree]
           )
 
         case invalid =>
@@ -366,4 +456,16 @@ object Aliases {
   val LogOpaqueAliasTree: Tree = logOpaqueAliasTree
 
   lazy val LogOpaqueAliasType = LogOpaqueAliasTree.tpe
+
+  val FamilyUnionTree: Tree = familyUnionTree
+
+  lazy val FamilyUnionType = familyUnionTree.tpe
+
+  val LoremTree: Tree = loremTree
+
+  lazy val LoremType = loremTree.tpe
+
+  val IpsumTree: Tree = ipsumTree
+
+  lazy val IpsumType = ipsumTree.tpe
 }
