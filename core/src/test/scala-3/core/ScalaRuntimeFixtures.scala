@@ -4,7 +4,7 @@ import scala.collection.immutable.ListSet
 
 import scala.util.control.NonFatal
 
-import dotty.tools.dotc.core.{ Contexts, Symbols, Types }
+import dotty.tools.dotc.core.{ Contexts, Symbols, Types, Flags }
 
 import dotty.tools.dotc.ast.Trees
 import dotty.tools.dotc.ast.tpd.Tree
@@ -32,27 +32,24 @@ object ScalaRuntimeFixtures {
   val unionType1 = ScalaModel.SealedUnion(
     ScalaModel.QualifiedIdentifier(
       "FamilyUnion",
-      List(f"$$wrapper", "expr", "Aliases")
+      results.ns :+ "Aliases"
     ),
     ListSet.empty,
     ListSet(
       ScalaModel.CaseClass(
-        ScalaModel
-          .QualifiedIdentifier("FamilyMember1", List(f"$$wrapper", "expr")),
+        ScalaModel.QualifiedIdentifier("FamilyMember1", results.ns),
         ListSet(ScalaModel.TypeMember("foo", ScalaModel.StringRef)),
         ListSet(ScalaModel.LiteralInvariant("code", ScalaModel.IntRef, "1")),
         List.empty
       ),
       ScalaModel.CaseObject(
-        ScalaModel
-          .QualifiedIdentifier("FamilyMember2", List(f"$$wrapper", "expr")),
+        ScalaModel.QualifiedIdentifier("FamilyMember2", results.ns),
         ListSet(
           ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"bar\"")
         )
       ),
       ScalaModel.CaseObject(
-        ScalaModel
-          .QualifiedIdentifier("FamilyMember3", List(f"$$wrapper", "expr")),
+        ScalaModel.QualifiedIdentifier("FamilyMember3", results.ns),
         ListSet(
           ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"lorem\"")
         )
@@ -98,6 +95,50 @@ object ScalaRuntimeFixtures {
         "2"
       )
     )
+  )
+
+  private val colorId = ScalaModel.QualifiedIdentifier("Color", results.ns)
+  private val colorRef = ScalaModel.EnumerationRef(colorId)
+
+  val color = ScalaModel.EnumerationDef(
+    identifier = colorId,
+    possibilities = ListSet("Red", "Green", "Blue"),
+    values = ListSet(
+      ScalaModel.ListInvariant(
+        "purple",
+        ScalaModel.CollectionRef(colorRef),
+        colorRef,
+        List(
+          ScalaModel.SelectInvariant(
+            "purple[0]",
+            colorRef,
+            ScalaModel.UnknownTypeRef(colorId),
+            "Red"
+          ),
+          ScalaModel.SelectInvariant(
+            "purple[1]",
+            colorRef,
+            ScalaModel.UnknownTypeRef(colorId),
+            "Blue"
+          )
+        )
+      )
+    )
+  )
+
+  val style = ScalaModel.CaseClass(
+    ScalaModel.QualifiedIdentifier("Style", results.ns),
+    ListSet(
+      ScalaModel.TypeMember("name", ScalaModel.StringRef),
+      ScalaModel.TypeMember(
+        "color",
+        ScalaModel.EnumerationRef(
+          ScalaModel.QualifiedIdentifier("Color", results.ns)
+        )
+      )
+    ),
+    ListSet.empty,
+    List.empty
   )
 
   private val initialState: State = {
@@ -214,7 +255,9 @@ object ScalaRuntimeFixtures {
     logOpaqueAliasTree,
     familyUnionTree,
     loremTree,
-    ipsumTree
+    ipsumTree,
+    colorTree,
+    styleTree
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -313,6 +356,16 @@ object Ipsum {
   val const: String | Int = "strVal"
   val defaultScore: Aliases.Score = 2
 }
+
+enum Color {
+  case Red, Green, Blue
+}
+
+object Color {
+  val purple = Seq(Color.Red, Color.Blue)
+}
+
+case class Style(name: String, color: Color)
 """)(using state) match {
     case Right(valDef) =>
       valDef.unforced match {
@@ -327,7 +380,7 @@ object Ipsum {
                     (logOpaqueAliasTree @ Trees
                       .TypeDef(_, _)) :: familyUnionTree :: _
                   )
-                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _,
+                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _,
               _
             ) =>
           (
@@ -354,7 +407,9 @@ object Ipsum {
             logOpaqueAliasTree.asInstanceOf[Tree],
             familyUnionTree.asInstanceOf[Tree],
             loremTree.asInstanceOf[Tree],
-            ipsumTree.asInstanceOf[Tree]
+            ipsumTree.asInstanceOf[Tree],
+            colorTree.asInstanceOf[Tree],
+            styleTree.asInstanceOf[Tree]
           )
 
         case invalid =>
@@ -468,4 +523,12 @@ object Ipsum {
   val IpsumTree: Tree = ipsumTree
 
   lazy val IpsumType = ipsumTree.tpe
+
+  val ColorTree: Tree = colorTree
+
+  lazy val ColorType = colorTree.tpe
+
+  val StyleTree: Tree = styleTree
+
+  lazy val StyleType = styleTree.tpe
 }

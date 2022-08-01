@@ -225,12 +225,12 @@ ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
         }
 
-      case EnumDeclaration(_, values) =>
+      case decl @ EnumDeclaration(_, possibilities, values) =>
         Some {
           out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 
-          out.print(values.map { v =>
+          out.print(possibilities.map { v =>
             s"${indent}idtlt.literal('${v}')"
           } mkString ",\n")
 
@@ -241,12 +241,34 @@ $discrimitedDecl
 
 export const idtlt${tpeName}Values: Array<${tpeName}> = [""")
 
-          out.print(values.map { v => s"${indent}'${v}'" } mkString ",\n")
+          out.print(possibilities.map { v =>
+            s"${indent}'${v}'"
+          } mkString ",\n")
           out.println(s"""\n]${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent} return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
+
+          if (values.nonEmpty) {
+            val sd = SingletonDeclaration(decl.name, values, None)
+
+            out.println(s"""
+class ${tpeName}Extra {""")
+
+            values.toList.zipWithIndex.foreach {
+              case (v, i) =>
+                if (i > 0) {
+                  out.println()
+                }
+
+                parent(ValueMemberDeclaration(sd, v), out)
+            }
+
+            out.println(s"""}
+
+export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
+          }
         }
 
       case decl @ SingletonDeclaration(_, values, Some(superInterface)) =>

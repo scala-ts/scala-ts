@@ -3,11 +3,15 @@ package io.github.scalats.core
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.typescript._
 
-final class TypeScriptEmitterSpec extends org.specs2.mutable.Specification {
+final class TypeScriptEmitterSpec
+    extends org.specs2.mutable.Specification
+    with TypeScriptExtraEmitterSpec {
+
   "TypeScript emitter".title
 
   import TranspilerResults._
   import TranspilerCompat.{ ns, valueClassNs }
+  import TypeScriptEmitterSpec.emit
 
   "Emitter" should {
     "emit empty interface" in {
@@ -542,8 +546,9 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
       }
     }
   }
+}
 
-  // ---
+private[core] object TypeScriptEmitterSpec {
 
   def emit(
       decls: ListSet[Declaration],

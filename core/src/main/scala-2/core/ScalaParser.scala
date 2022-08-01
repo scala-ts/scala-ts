@@ -875,8 +875,13 @@ final class ScalaParser[Uni <: Universe](
       examined = (examined +
         fullId(enumerationValueSym.typeSignature) +
         fullId(enumerationType)),
-      parsed =
-        Some[TypeDef](EnumerationDef(identifier, ListSet(values.toSeq: _*)))
+      parsed = Some[TypeDef](
+        EnumerationDef(
+          identifier,
+          possibilities = ListSet(values.toSeq: _*),
+          values = ListSet.empty // TODO: Invariants
+        )
+      )
     )
   }
 

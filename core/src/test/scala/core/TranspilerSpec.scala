@@ -7,7 +7,10 @@ import io.github.scalats.typescript._
 import ScalaRuntimeFixtures.results._
 import TranspilerCompat.{ ns, valueClassNs }
 
-final class TranspilerSpec extends org.specs2.mutable.Specification {
+final class TranspilerSpec
+    extends org.specs2.mutable.Specification
+    with TranspilerExtraSpec {
+
   "Transpiler".title
 
   import TranspilerResults._
@@ -577,8 +580,9 @@ object TranspilerResults {
   }
 
   val enum1 = EnumDeclaration(
-    s"${ns}TestEnumeration",
-    ListSet("A", "B", "C")
+    name = s"${ns}TestEnumeration",
+    possibilities = ListSet("A", "B", "C"),
+    values = ListSet.empty
   )
 
   val union1 = UnionDeclaration(

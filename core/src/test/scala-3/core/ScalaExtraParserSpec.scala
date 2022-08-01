@@ -36,5 +36,25 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
         parseTypes(List(IpsumType -> IpsumTree)) must_=== List(ipsum)
       }
     }
+
+    "handle enum type" >> {
+      val colorTpe = ColorType -> ColorTree
+
+      "declaration" in {
+        import scala.collection.immutable.ListSet
+        import io.github.scalats.{ scala => ScalaModel }
+
+        parseTypes(List(colorTpe)) must_=== List(color)
+      }
+
+      "as case class field" in {
+        parseTypes(
+          List(StyleType -> StyleTree),
+          Map(
+            fullName(ColorType.typeSymbol) -> colorTpe
+          )
+        ) must_=== List(style)
+      }
+    }
   }
 }

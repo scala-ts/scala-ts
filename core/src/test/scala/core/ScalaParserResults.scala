@@ -176,8 +176,9 @@ final class ScalaParserResults(
   )
 
   val testEnumeration = EnumerationDef(
-    QualifiedIdentifier("TestEnumeration", ns),
-    ListSet("A", "B", "C")
+    identifier = QualifiedIdentifier("TestEnumeration", ns),
+    possibilities = ListSet("A", "B", "C"),
+    values = ListSet.empty
   )
 
   val caseClass10 = CaseClass(

@@ -35,5 +35,6 @@ case class SealedUnion(
 
 case class EnumerationDef(
     identifier: QualifiedIdentifier,
-    values: ListSet[String])
+    possibilities: ListSet[String],
+    values: ListSet[TypeInvariant])
     extends TypeDef

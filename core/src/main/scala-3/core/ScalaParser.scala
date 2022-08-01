@@ -11,8 +11,12 @@ import dotty.tools.dotc.core.{ Constants, Names, Denotations, Definitions }
 import dotty.tools.dotc.core.Symbols, Symbols.Symbol
 import dotty.tools.dotc.core.Types, Types.{ Type, MethodType }
 import dotty.tools.dotc.core.Flags
+
 import dotty.tools.dotc.util.NoSourcePosition
-import dotty.tools.dotc.ast.tpd
+
+import dotty.tools.dotc.ast.{ Trees, tpd }
+
+import dotty.tools.dotc.ast.untpd.ImportSelector
 
 import io.github.scalats.{ scala => ScalaModel }
 
@@ -175,10 +179,12 @@ final class ScalaParser(
       val isModule = tpeSym.is(Flags.ModuleClass) // || tpeSym.is(Flags.Module)
 
       scalaType.dealias match {
+        case _ if (isModule && tpeSym.linkedClass.is(Flags.Enum)) =>
+          parseEnum3(tpe, examined)
+
         case _
             if (isModule &&
               scalaType.baseClasses.contains(enumerationTypeSym)) =>
-          // TODO: Or Is provided Scala3 scala.deriving.Mirror.SumOf
           parseEnumeration(scalaType, examined)
 
         case _ if isModule =>
@@ -1050,7 +1056,80 @@ final class ScalaParser(
     }
   }
 
-  // TODO: Support new Scala3 enum
+  private def parseEnum3(
+      tpe: (Type, Tree),
+      examined: ListSet[TypeFullId]
+    ): Result[Option, TypeFullId] = {
+    import tpe.{ _1 => scalaType }
+
+    val enumTpeName = scalaType.typeSymbol.linkedClass.fullName
+    val declNames = ListSet.newBuilder[String]
+    val forest = Seq.newBuilder[Tree]
+
+    val possibilities: List[String] = tpe._2 match {
+      case TypeDef(_, tpl @ Template(_, _, _, _)) =>
+        tpl.body.collect(Function.unlift[Tree, String] {
+          case tr: ValOrDefDef =>
+            if (
+              tr.symbol.is(Flags.Case) &&
+              tr.tpt.tpe.typeSymbol.fullName == enumTpeName
+            ) {
+              tr.rhs match {
+                case Apply(
+                      _,
+                      List(
+                        Literal(Constants.Constant(_)),
+                        Literal(nme @ Constants.Constant(_))
+                      )
+                    ) if (nme.tag == Constants.StringTag) =>
+                  Some(nme.value.toString)
+
+                case _ =>
+                  Option.empty[String]
+              }
+            } else {
+              if (!tr.name.startsWith(f"$$")) {
+                declNames += tr.name.toString
+                forest += tr
+              }
+
+              Option.empty[String]
+            }
+
+          case _ =>
+            Option.empty[String]
+        })
+
+      case _ =>
+        List.empty[String]
+    }
+
+    if (possibilities.isEmpty) {
+      Result(
+        examined = examined + fullId(tpe._1),
+        parsed = Option.empty[ScalaModel.TypeDef]
+      )
+    } else {
+      val invariants = typeInvariants(
+        scalaType,
+        declNames.result(),
+        forest.result(),
+        List.empty
+      )
+
+      Result(
+        examined = (examined + fullId(scalaType)),
+        parsed = Some[ScalaModel.TypeDef](
+          ScalaModel.EnumerationDef(
+            identifier = buildQualifiedIdentifier(scalaType.typeSymbol),
+            possibilities = ListSet(possibilities: _*),
+            values = invariants
+          )
+        )
+      )
+    }
+  }
+
   private def parseEnumeration(
       enumerationType: Type,
       examined: ListSet[TypeFullId]
@@ -1074,7 +1153,11 @@ final class ScalaParser(
         fullId(enumerationValueSym.info) +
         fullId(enumerationType)),
       parsed = Some[ScalaModel.TypeDef](
-        ScalaModel.EnumerationDef(identifier, ListSet(values.toSeq: _*))
+        ScalaModel.EnumerationDef(
+          identifier,
+          possibilities = ListSet(values.toSeq: _*),
+          values = ListSet.empty // TODO
+        )
       )
     )
   }
@@ -1158,7 +1241,7 @@ final class ScalaParser(
       case Field(m)
           if (!values.exists(
             _.name == m.name.toString.trim
-          )) => // m.is(Flags.Method) && m.is(Flags.Case) &&
+          )) =>
         m.name.toString.trim -> member(m, typeParams)
     }.toMap
 
@@ -1264,6 +1347,9 @@ final class ScalaParser(
               case _ =>
                 unknown
             }
+
+          case _ if (typeSymbol is Flags.Enum) =>
+            ScalaModel.EnumerationRef(buildQualifiedIdentifier(typeSymbol))
 
           case _ if isEnumerationValue(scalaType) => {
             val id = scalaType match {

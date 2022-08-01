@@ -26,8 +26,13 @@ final class Transpiler(config: Settings) {
       case valueClass: ScalaModel.ValueClass =>
         ListSet[Declaration](transpileValueClass(valueClass))
 
-      case ScalaModel.EnumerationDef(id, values) =>
-        ListSet[Declaration](EnumDeclaration(idToString(id), values))
+      case ScalaModel.EnumerationDef(id, possibilities, vs) => {
+        val values = vs.map(transpileTypeInvariant)
+
+        ListSet[Declaration](
+          EnumDeclaration(idToString(id), possibilities, values)
+        )
+      }
 
       case ScalaModel.CaseObject(id, members) => {
         val values = members.map(transpileTypeInvariant)

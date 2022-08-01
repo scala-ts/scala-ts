@@ -112,7 +112,7 @@ $deriving""")
         out.println(s"// Not supported: UnionDeclaration '${name}'")
 
       // TODO: $discrimitedObj
-      case EnumDeclaration(_, values) => {
+      case EnumDeclaration(_, values, _) => {
         out.println(s"""// Validator for EnumDeclaration ${tpeName}
 export const idtlt${tpeName} = idtlt.union(""")
 

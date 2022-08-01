@@ -75,8 +75,6 @@ object TypeScriptDeclarationMapper {
 
   type Resolved = Function2[Declaration, PrintStream, Unit]
 
-  // import com.github.ghik.silencer.silent
-
   object Defaults extends TypeScriptDeclarationMapper {
 
     def apply(
@@ -170,6 +168,7 @@ ${indent}return ${simpleCheck}${lineSep}
    * (rather than union type as default).
    */
   final class EnumerationAsEnum extends TypeScriptDeclarationMapper {
+    import io.github.scalats.typescript.ValueMemberDeclaration
 
     def apply(
         parent: Resolved,
@@ -179,7 +178,7 @@ ${indent}return ${simpleCheck}${lineSep}
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = declaration match {
-      case decl @ EnumDeclaration(_, values) =>
+      case decl @ EnumDeclaration(_, possibilities, values) =>
         Some {
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
           import settings.{
@@ -191,7 +190,7 @@ ${indent}return ${simpleCheck}${lineSep}
 
           out.println(s"export enum ${tpeName} {")
 
-          values.toList.zipWithIndex.foreach {
+          possibilities.toList.zipWithIndex.foreach {
             case (value, idx) =>
               if (idx > 0) {
                 out.println(",")
@@ -205,7 +204,7 @@ ${indent}return ${simpleCheck}${lineSep}
 
 export const ${tpeName}Values: Array<${tpeName}> = [""")
 
-          out.print(values.map { v =>
+          out.print(possibilities.map { v =>
             s"${indent}${tpeName}.${v}"
           } mkString ",\n")
           out.println(s"""\n]${lineSep}
@@ -213,11 +212,31 @@ export const ${tpeName}Values: Array<${tpeName}> = [""")
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")
 
-          out.print(values.map { v =>
+          out.print(possibilities.map { v =>
             s"${indent}${indent}v == '${v}'"
           } mkString " ||\n")
           out.println(s"""\n${indent})${lineSep}
 }""")
+
+          if (values.nonEmpty) {
+            val sd = SingletonDeclaration(decl.name, values, None)
+
+            out.println(s"""
+class ${tpeName}Extra {""")
+
+            values.toList.zipWithIndex.foreach {
+              case (v, i) =>
+                if (i > 0) {
+                  out.println()
+                }
+
+                parent(ValueMemberDeclaration(sd, v), out)
+            }
+
+            out.println(s"""}
+
+export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
+          }
         }
 
       case _ =>
