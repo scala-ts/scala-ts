@@ -40,7 +40,7 @@ Test / console / scalacOptions ~= {
 }
 
 // Silencer
-libraryDependencies ++= {
+ThisBuild / libraryDependencies ++= {
   if (scalaBinaryVersion.value == "3") {
     Seq.empty
   } else {
