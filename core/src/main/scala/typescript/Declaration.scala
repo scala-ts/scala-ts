@@ -251,11 +251,13 @@ object SingletonDeclaration {
 /**
  * A declaration for an enumerated type.
  *
- * @param values the allowed values
+ * @param possibilities the allowed values
+ * @param values some extra invariant values
  */
 case class EnumDeclaration(
     name: String,
-    values: ListSet[String])
+    possibilities: ListSet[String],
+    values: ListSet[Value])
     extends Declaration
 
 case class UnionDeclaration(

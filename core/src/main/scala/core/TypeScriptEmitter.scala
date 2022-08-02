@@ -532,35 +532,60 @@ ${indent}return (""")
 
   private val emitEnumDeclaration: EnumDeclaration => Unit = {
     val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
-      val values: ListSet[String] = decl match {
-        case EnumDeclaration(_, values) => values
-        case _                          => ListSet.empty
-      }
+      decl match {
+        case decl: ValueMemberDeclaration =>
+          emitValueMember(decl, o)
 
-      val tpeName = typeNaming(decl.reference)
+        case EnumDeclaration(_, possibilities, values) => {
+          val tpeName = typeNaming(decl.reference)
 
-      // Entries
-      o.println(s"const ${tpeName}Entries = {")
+          // Entries
+          o.println(s"const ${tpeName}Entries = {")
 
-      values.foreach { v => o.println(s"  ${v}: '${v}',") }
+          possibilities.foreach { v => o.println(s"  ${v}: '${v}',") }
 
-      o.println(s"}${lineSeparator}")
-      o.println()
+          o.println(s"}${lineSeparator}")
+          o.println()
 
-      // Type
-      o.println(s"export type ${tpeName} = keyof (typeof ${tpeName}Entries)${lineSeparator}")
-      o.println()
+          // Type
+          o.println(s"export type ${tpeName} = keyof (typeof ${tpeName}Entries)${lineSeparator}")
+          o.println()
 
-      // Companion
-      o.println(s"""export const ${tpeName} = {
+          // Companion
+          o.println(s"""export const ${tpeName} = {
 ${indent}...${tpeName}Entries,
 ${indent}values: Object.keys(${tpeName}Entries)
-} as const${lineSeparator}""")
-      o.println()
+} as const${lineSeparator}
+""")
 
-      o.println(s"""export function is${tpeName}(v: any): v is ${tpeName} {
+          if (values.nonEmpty) {
+            val sd = SingletonDeclaration(decl.name, values, None)
+
+            o.println(s"class ${tpeName}Extra {")
+
+            values.toList.zipWithIndex.foreach {
+              case (v, i) =>
+                if (i > 0) {
+                  o.println()
+                }
+
+                emitValueMember(ValueMemberDeclaration(sd, v), o)
+            }
+
+            o.println(s"""}
+
+export ${tpeName}Invariants = new ${tpeName}Extra()${lineSeparator}
+""")
+          }
+
+          o.println(s"""export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
 }""")
+        }
+
+        case _ =>
+          o.print(s"/* Unsupported on Enum: $decl */")
+      }
     }
 
     { decl =>

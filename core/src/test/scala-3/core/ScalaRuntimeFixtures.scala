@@ -4,7 +4,7 @@ import scala.collection.immutable.ListSet
 
 import scala.util.control.NonFatal
 
-import dotty.tools.dotc.core.{ Contexts, Symbols, Types }
+import dotty.tools.dotc.core.{ Contexts, Symbols, Types, Flags }
 
 import dotty.tools.dotc.ast.Trees
 import dotty.tools.dotc.ast.tpd.Tree
@@ -22,6 +22,123 @@ object ScalaRuntimeFixtures {
   lazy val results = new ScalaParserResults(
     ns = List(f"$$wrapper", "expr"),
     valueClassNs = List.empty
+  )
+
+  val logOpaqueAlias = ScalaModel.ValueClass(
+    ScalaModel.QualifiedIdentifier("Log", results.ns :+ "Aliases"),
+    ScalaModel.TypeMember("", ScalaModel.DoubleRef)
+  )
+
+  val unionType1 = ScalaModel.SealedUnion(
+    ScalaModel.QualifiedIdentifier(
+      "FamilyUnion",
+      results.ns :+ "Aliases"
+    ),
+    ListSet.empty,
+    ListSet(
+      ScalaModel.CaseClass(
+        ScalaModel.QualifiedIdentifier("FamilyMember1", results.ns),
+        ListSet(ScalaModel.TypeMember("foo", ScalaModel.StringRef)),
+        ListSet(ScalaModel.LiteralInvariant("code", ScalaModel.IntRef, "1")),
+        List.empty
+      ),
+      ScalaModel.CaseObject(
+        ScalaModel.QualifiedIdentifier("FamilyMember2", results.ns),
+        ListSet(
+          ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"bar\"")
+        )
+      ),
+      ScalaModel.CaseObject(
+        ScalaModel.QualifiedIdentifier("FamilyMember3", results.ns),
+        ListSet(
+          ScalaModel.LiteralInvariant("foo", ScalaModel.StringRef, "\"lorem\"")
+        )
+      )
+    )
+  )
+
+  val lorem = ScalaModel.CaseClass(
+    ScalaModel.QualifiedIdentifier("Lorem", results.ns),
+    ListSet(
+      ScalaModel.TypeMember("name", ScalaModel.StringRef),
+      ScalaModel.TypeMember(
+        "ipsum",
+        ScalaModel.UnionRef(
+          ListSet(
+            ScalaModel.StringRef,
+            ScalaModel.UnknownTypeRef(
+              ScalaModel.QualifiedIdentifier("Family", results.ns)
+            )
+          )
+        )
+      ),
+      ScalaModel.TypeMember(
+        "dolor",
+        ScalaModel.UnionRef(ListSet(ScalaModel.IntRef, ScalaModel.DoubleRef))
+      )
+    ),
+    ListSet.empty,
+    List.empty
+  )
+
+  val ipsum = ScalaModel.CaseObject(
+    ScalaModel.QualifiedIdentifier("Ipsum", results.ns),
+    ListSet(
+      ScalaModel.LiteralInvariant(
+        "const",
+        ScalaModel.UnionRef(ListSet(ScalaModel.StringRef, ScalaModel.IntRef)),
+        "\"strVal\""
+      ),
+      ScalaModel.LiteralInvariant(
+        "defaultScore",
+        ScalaModel.UnionRef(ListSet(ScalaModel.IntRef, ScalaModel.DoubleRef)),
+        "2"
+      )
+    )
+  )
+
+  private val colorId = ScalaModel.QualifiedIdentifier("Color", results.ns)
+  private val colorRef = ScalaModel.EnumerationRef(colorId)
+
+  val color = ScalaModel.EnumerationDef(
+    identifier = colorId,
+    possibilities = ListSet("Red", "Green", "Blue"),
+    values = ListSet(
+      ScalaModel.ListInvariant(
+        "purple",
+        ScalaModel.CollectionRef(colorRef),
+        colorRef,
+        List(
+          ScalaModel.SelectInvariant(
+            "purple[0]",
+            colorRef,
+            ScalaModel.UnknownTypeRef(colorId),
+            "Red"
+          ),
+          ScalaModel.SelectInvariant(
+            "purple[1]",
+            colorRef,
+            ScalaModel.UnknownTypeRef(colorId),
+            "Blue"
+          )
+        )
+      )
+    )
+  )
+
+  val style = ScalaModel.CaseClass(
+    ScalaModel.QualifiedIdentifier("Style", results.ns),
+    ListSet(
+      ScalaModel.TypeMember("name", ScalaModel.StringRef),
+      ScalaModel.TypeMember(
+        "color",
+        ScalaModel.EnumerationRef(
+          ScalaModel.QualifiedIdentifier("Color", results.ns)
+        )
+      )
+    ),
+    ListSet.empty,
+    List.empty
   )
 
   private val initialState: State = {
@@ -114,8 +231,6 @@ object ScalaRuntimeFixtures {
 
   // ---
 
-  // TODO: Remove; case class TestClass1(name: String)
-
   val (
     testClass1Tree,
     testClass1CompanionTree,
@@ -136,7 +251,13 @@ object ScalaRuntimeFixtures {
     familyTree,
     familyMember1Tree,
     familyMember2Tree,
-    familyMember3Tree
+    familyMember3Tree,
+    logOpaqueAliasTree,
+    familyUnionTree,
+    loremTree,
+    ipsumTree,
+    colorTree,
+    styleTree
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -219,11 +340,47 @@ object FamilyMember2 extends Family {
 object FamilyMember3 extends Family {
   def foo = "lorem"
 }
+
+object Aliases {
+  opaque type Log = Double
+  type FamilyUnion = FamilyMember1 | FamilyMember2.type | FamilyMember3.type
+  type Score = Int | Double
+}
+
+case class Lorem(
+  name: String,
+  ipsum: String | Family,
+  dolor: Aliases.Score)
+
+object Ipsum {
+  val const: String | Int = "strVal"
+  val defaultScore: Aliases.Score = 2
+}
+
+enum Color {
+  case Red, Green, Blue
+}
+
+object Color {
+  val purple = Seq(Color.Red, Color.Blue)
+}
+
+case class Style(name: String, color: Color)
 """)(using state) match {
     case Right(valDef) =>
       valDef.unforced match {
         case Trees.Block(
-              testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _,
+              testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _ :: Trees
+                .TypeDef(
+                  _,
+                  Trees.Template(
+                    _,
+                    _,
+                    _,
+                    (logOpaqueAliasTree @ Trees
+                      .TypeDef(_, _)) :: familyUnionTree :: _
+                  )
+                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _,
               _
             ) =>
           (
@@ -246,7 +403,13 @@ object FamilyMember3 extends Family {
             familyTree.asInstanceOf[Tree],
             familyMember1Tree.asInstanceOf[Tree],
             familyMember2Tree.asInstanceOf[Tree],
-            familyMember3Tree.asInstanceOf[Tree]
+            familyMember3Tree.asInstanceOf[Tree],
+            logOpaqueAliasTree.asInstanceOf[Tree],
+            familyUnionTree.asInstanceOf[Tree],
+            loremTree.asInstanceOf[Tree],
+            ipsumTree.asInstanceOf[Tree],
+            colorTree.asInstanceOf[Tree],
+            styleTree.asInstanceOf[Tree]
           )
 
         case invalid =>
@@ -344,4 +507,28 @@ object FamilyMember3 extends Family {
   val FamilyMember3Tree: Tree = familyMember3Tree
 
   val FamilyMember3Type = FamilyMember3Tree.tpe
+
+  val LogOpaqueAliasTree: Tree = logOpaqueAliasTree
+
+  lazy val LogOpaqueAliasType = LogOpaqueAliasTree.tpe
+
+  val FamilyUnionTree: Tree = familyUnionTree
+
+  lazy val FamilyUnionType = familyUnionTree.tpe
+
+  val LoremTree: Tree = loremTree
+
+  lazy val LoremType = loremTree.tpe
+
+  val IpsumTree: Tree = ipsumTree
+
+  lazy val IpsumType = ipsumTree.tpe
+
+  val ColorTree: Tree = colorTree
+
+  lazy val ColorType = colorTree.tpe
+
+  val StyleTree: Tree = styleTree
+
+  lazy val StyleType = styleTree.tpe
 }

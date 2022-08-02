@@ -1,6 +1,9 @@
 package io.github.scalats.core
 
-final class ScalaParserSpec extends org.specs2.mutable.Specification {
+final class ScalaParserSpec
+    extends org.specs2.mutable.Specification
+    with ScalaExtraParserSpec {
+
   "Scala parser".title
 
   import ScalaRuntimeFixtures._, results._

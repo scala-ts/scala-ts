@@ -4,7 +4,7 @@ import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.scala._
 
 final class ScalaParserResults(
-    ns: List[String],
+    val ns: List[String],
     val valueClassNs: List[String]) {
 
   val caseClass1 = CaseClass(
@@ -176,8 +176,9 @@ final class ScalaParserResults(
   )
 
   val testEnumeration = EnumerationDef(
-    QualifiedIdentifier("TestEnumeration", ns),
-    ListSet("A", "B", "C")
+    identifier = QualifiedIdentifier("TestEnumeration", ns),
+    possibilities = ListSet("A", "B", "C"),
+    values = ListSet.empty
   )
 
   val caseClass10 = CaseClass(
