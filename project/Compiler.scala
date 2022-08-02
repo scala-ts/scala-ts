@@ -2,6 +2,8 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
+import cchantep.HighlightExtractorPlugin.autoImport.{ highlightActivation, HLEnabledBySysProp }
+
 object Compiler extends AutoPlugin {
   override def trigger = allRequirements
   override def requires = JvmPlugin
@@ -69,6 +71,7 @@ object Compiler extends AutoPlugin {
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
+    highlightActivation := HLEnabledBySysProp("highlight"),
     libraryDependencies ++= {
       if (scalaBinaryVersion.value != "3") {
         val silencerVersion = "1.7.9"

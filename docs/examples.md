@@ -93,16 +93,6 @@ case class TextMessage(
     text: String)
 ```
 
-In Scala 3, [Opaque Types](https://docs.scala-lang.org/scala3/book/types-opaque-types.html) is supported in a similar way.
-
-```scala
-package scala3ts.examples
-
-object Event {
-  opaque type EventType = String
-}
-```
-
 *Generated TypeScript:* Note that the Value class `EventType` is exported as the inner type (there `string` for `val name: String`).
 
 ```typescript
@@ -121,6 +111,16 @@ export interface Message {
 ```
 
 > `Locale` type is provided a transpiler as `string`.
+
+In Scala 3, [Opaque Types](https://docs.scala-lang.org/scala3/book/types-opaque-types.html) are supported in a similar way.
+
+```dotty
+package scala3ts.examples
+
+object Event {
+  opaque type EventType = String
+}
+```
 
 ### Example 4a
 
@@ -199,6 +199,13 @@ export interface Transport {
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/simple/)
 
+In Scala 3, [Union Types](https://docs.scala-lang.org/scala3/book/types-union.html) can be used.
+
+```dotty
+object Transport:
+  type Line = TrainLine | BusLine
+```
+
 ## Example 6
 
 Sealed trait/family as [TypeScript union type](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html).
@@ -273,6 +280,21 @@ export const WeekDayValues = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
 ```
 
 > See on [GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/single-file-printer/)
+
+In Scala 3, [Enum Types](https://docs.scala-lang.org/scala3/book/types-adts-gadts.html#enumerations) are supported.
+
+```dotty
+package scalats.examples
+
+enum WeekDay:
+  case Mon
+  case Tue
+  case Wed
+  case Thu
+  case Fri
+  case Sat
+  case Sun
+```
 
 ## Example 8
 
