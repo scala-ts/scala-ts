@@ -58,9 +58,7 @@ private[demo] object Codecs {
 
   implicit val contentTypeRangeWrites: OWrites[ContentTypeRange] = {
     implicit val charsetRange: Writes[HttpCharsetRange] =
-      Writes[HttpCharsetRange] { range =>
-        Json.toJson(range.qValue)
-      }
+      Writes[HttpCharsetRange] { range => Json.toJson(range.qValue) }
 
     implicit val mediaRange: Writes[MediaRange] = Writes[MediaRange] { range =>
       Json.toJson(range.value)
@@ -69,7 +67,8 @@ private[demo] object Codecs {
     OWrites[ContentTypeRange] { range =>
       Json.obj(
         "mediaRange" -> range.mediaRange,
-        "charsetRange" -> range.charsetRange)
+        "charsetRange" -> range.charsetRange
+      )
     }
   }
 }

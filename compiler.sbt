@@ -23,7 +23,8 @@ scalacOptions ++= {
       "-Ywarn-value-discard",
       "-Wmacros:after",
       "-Wunused",
-      "-g:vars")
+      "-g:vars"
+    )
   }
 }
 
