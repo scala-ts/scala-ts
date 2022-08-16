@@ -2,7 +2,10 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
-import cchantep.HighlightExtractorPlugin.autoImport.{ highlightActivation, HLEnabledBySysProp }
+import cchantep.HighlightExtractorPlugin.autoImport.{
+  highlightActivation,
+  HLEnabledBySysProp
+}
 
 object Compiler extends AutoPlugin {
   override def trigger = allRequirements
@@ -24,10 +27,7 @@ object Compiler extends AutoPlugin {
       if (scalaBinaryVersion.value == "3") {
         Seq.empty
       } else {
-        Seq(
-          "-target:jvm-1.8",
-          "-Xlint",
-          "-g:vars")
+        Seq("-target:jvm-1.8", "-Xlint", "-g:vars")
       }
     },
     scalacOptions ++= {

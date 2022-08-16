@@ -52,7 +52,7 @@ lazy val core = project
 
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if n < 12 => base / "scala-2.12-"
-        case _                       => base / "scala-2.12+"
+        case _                      => base / "scala-2.12+"
       }
     },
     libraryDependencies := libraryDependenciesWithScapegoat.value,
@@ -62,7 +62,8 @@ lazy val core = project
       } else {
         Seq(
           "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-          "org.scala-lang" % "scala-compiler" % scalaVersion.value)
+          "org.scala-lang" % "scala-compiler" % scalaVersion.value
+        )
       }
     },
     libraryDependencies ++= {
@@ -70,10 +71,11 @@ lazy val core = project
 
       Seq(
         "org.slf4j" % "slf4j-api" % "1.7.36",
-        "ch.qos.logback" % "logback-classic" % "1.2.11") ++ Seq(
-        "core", "junit").map(n =>
-        ("org.specs2" %% s"specs2-${n}" % specsVer).
-          cross(CrossVersion.for3Use2_13) % Test)
+        "ch.qos.logback" % "logback-classic" % "1.2.11"
+      ) ++ Seq("core", "junit").map(n =>
+        ("org.specs2" %% s"specs2-${n}" % specsVer)
+          .cross(CrossVersion.for3Use2_13) % Test
+      )
     },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
