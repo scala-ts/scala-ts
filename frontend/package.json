@@ -32,7 +32,7 @@
     "@rollup/plugin-replace": "4.0.0",
     "@types/estree": "1.0.0",
     "@types/expect": "24.3.0",
-    "@types/node": "18.7.9",
+    "@types/node": "18.7.11",
     "concurrently": "7.3.0",
     "cross-env": "7.0.3",
     "dotenv": "16.0.1",
