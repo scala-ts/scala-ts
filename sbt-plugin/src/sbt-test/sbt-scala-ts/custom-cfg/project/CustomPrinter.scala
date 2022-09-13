@@ -34,6 +34,10 @@ final class CustomPrinter(outDir: File) extends BasePrinter {
 
     printImports(conf, requires, out) { tpe => s"./scalats${tpe.name}" }
 
+    if (requires.nonEmpty) {
+      out.println()
+    }
+
     out
   }
 }

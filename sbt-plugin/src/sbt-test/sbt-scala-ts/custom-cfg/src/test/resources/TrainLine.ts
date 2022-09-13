@@ -3,11 +3,6 @@ import type { TSTransport } from './scalatsTransport';
 import * as nsTSWeekDay from './scalatsWeekDay';
 import type { TSWeekDay } from './scalatsWeekDay';
 
-export const dependencyModules = [
-  nsTSTransport,
-  nsTSWeekDay,
-];
-
 export interface TSTrainLine extends TSTransport {
   _name: string;
   _startStationId: string;

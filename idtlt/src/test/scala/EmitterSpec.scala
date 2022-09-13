@@ -288,7 +288,7 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
             "Singleton",
             ListSet(
               LiteralValue("name", taggedRef, "\"Foo\""),
-              LiteralValue("code", NumberRef, "1"),
+              LiteralValue("code", NumberRef.int, "1"),
               LiteralValue("const", StringRef, "\"value\""),
               SelectValue("foo", taggedRef, ThisTypeRef, "name"),
               ListValue(
@@ -302,11 +302,11 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef),
-                valueTypeRef = NumberRef,
+                typeRef = ArrayRef(NumberRef.int),
+                valueTypeRef = NumberRef.int,
                 elements = Set(
-                  SelectValue("set[0]", NumberRef, ThisTypeRef, "code"),
-                  LiteralValue("set[1]", NumberRef, "2")
+                  SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
+                  LiteralValue("set[1]", NumberRef.int, "2")
                 )
               ),
               DictionaryValue(
@@ -416,20 +416,20 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
               ),
               MergedSetsValue(
                 name = "mergedSet",
-                valueTypeRef = NumberRef,
+                valueTypeRef = NumberRef.int,
                 children = List(
                   SelectValue(
                     name = "mergedSet[0]",
-                    typeRef = ArrayRef(NumberRef),
+                    typeRef = ArrayRef(NumberRef.int),
                     qualifier = ThisTypeRef,
                     term = "set"
                   ),
                   SetValue(
                     name = "mergedSet[1]",
-                    typeRef = ArrayRef(NumberRef),
-                    valueTypeRef = NumberRef,
+                    typeRef = ArrayRef(NumberRef.int),
+                    valueTypeRef = NumberRef.int,
                     elements =
-                      Set(LiteralValue("mergedSet[1][0]", NumberRef, "3"))
+                      Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))
                   )
                 )
               ),
@@ -514,7 +514,7 @@ export const idtltTSSingleton =
                 "\"value\""
               ),
               SelectValue("foo", taggedRef, ThisTypeRef, "const"),
-              LiteralValue("code", NumberRef, "1")
+              LiteralValue("code", NumberRef.int, "1")
             ),
             superInterface = None
           )
@@ -656,7 +656,11 @@ export const idtltFoo =
             name = "Foo",
             values = ListSet(
               barVal,
-              LiteralValue(name = "ipsum", typeRef = NumberRef, rawValue = "2")
+              LiteralValue(
+                name = "ipsum",
+                typeRef = NumberRef.int,
+                rawValue = "2"
+              )
             ),
             superInterface = Option.empty
           )

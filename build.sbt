@@ -231,9 +231,88 @@ object Manifest {
   )
   .dependsOn(idtlt)
 
+lazy val python = project
+  .in(file("python"))
+  .settings(
+    name := "scala-ts-python",
+    crossScalaVersions := fullCrossScalaVersions.value,
+    libraryDependencies := libraryDependenciesWithScapegoat.value,
+    Compile / unmanagedJars += (shaded / assembly).value,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
+    pomPostProcess := XmlUtil.transformPomDependencies { dep =>
+      (dep \ "groupId").headOption.map(_.text) match {
+        case Some(
+              "com.sksamuel.scapegoat" | // plugin there (compile time only)
+              "com.github.ghik" // plugin there (compile time only)
+            ) =>
+          None
+
+        case Some("io.github.scala-ts") =>
+          Some(dep).filter { _ =>
+            (dep \ "artifactId").headOption
+              .exists(_ startsWith "scala-ts-shaded")
+          }
+
+        case _ =>
+          Some(dep)
+      }
+    }
+  )
+  .dependsOn(core % "compile->compile;test->test")
+
+lazy val `sbt-plugin-python` = project
+  .in(file("sbt-plugin-python"))
+  .enablePlugins(SbtPlugin)
+  .settings(
+    name := "sbt-scala-ts-python",
+    crossScalaVersions := Seq(scalaVersion.value),
+    pluginCrossBuild / sbtVersion := (`sbt-plugin` / pluginCrossBuild / sbtVersion).value,
+    sbtPlugin := true,
+    scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
+    Compile / compile := (Compile / compile)
+      .dependsOn(`sbt-plugin` / Compile / compile)
+      .value,
+    Compile / unmanagedJars ++= {
+      val jarName = (shaded / assembly / assemblyJarName).value
+
+      Seq(
+        (`sbt-plugin` / Compile / packageBin).value,
+        (shaded / target).value / jarName
+      )
+    },
+    scripted := scripted
+      .dependsOn(core / publishLocal)
+      .dependsOn(python / publishLocal)
+      .dependsOn(`sbt-plugin` / publishLocal)
+      .evaluated,
+    Compile / sourceGenerators += Def.task {
+      val groupId = organization.value
+      val coreArtifactId = (core / name).value
+      val ver = version.value
+      val dir = (Compile / sourceManaged).value
+      val outdir = dir / "org" / "scalats" / "sbt" / "python"
+      val f = outdir / "Manifest.scala"
+
+      outdir.mkdirs()
+
+      Seq(IO.writer[File](f, "", IO.defaultCharset, false) { w =>
+        w.append(s"""package io.github.scalats.sbt.python
+
+object Manifest {
+  val groupId = "$groupId"
+  val coreArtifactId = "$coreArtifactId"
+  val version = "$ver"
+}""")
+
+        f
+      })
+    }.taskValue
+  )
+  .dependsOn(python)
+
 lazy val root = (project in file("."))
   .settings(
     publish := ({}),
     publishTo := None
   )
-  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`)
+  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`, python, `sbt-plugin-python`)

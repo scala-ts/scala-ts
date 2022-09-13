@@ -2,6 +2,7 @@ package io.github.scalats.core
 
 import io.github.scalats.typescript.TypeRef
 
+// TODO: Rename
 trait TypeScriptTypeNaming extends Function2[Settings, TypeRef, String] {
 
   /** Returns the TypeScript type name for the given declaration. */

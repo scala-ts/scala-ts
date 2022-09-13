@@ -1,10 +1,6 @@
 import * as nsTSName from './scalatsName';
 import type { TSName } from './scalatsName';
 
-export const dependencyModules = [
-  nsTSName,
-];
-
 export class TSConstants {
   public _DefaultName: TSName = nsTSName.TSName("default");
 

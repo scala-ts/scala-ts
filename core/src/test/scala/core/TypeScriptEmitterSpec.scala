@@ -278,7 +278,7 @@ export function is${valueClassNs}TestObject3(v: any): v is ${valueClassNs}TestOb
                 "\"value\""
               ),
               SelectValue("foo", taggedRef, ThisTypeRef, "const"),
-              LiteralValue("code", NumberRef, "1"),
+              LiteralValue("code", NumberRef.int, "1"),
               ListValue(
                 name = "list",
                 typeRef = ArrayRef(taggedRef),
@@ -440,7 +440,11 @@ export function isFoo(v: any): v is Foo {
             name = "Foo",
             values = ListSet(
               barVal,
-              LiteralValue(name = "ipsum", typeRef = NumberRef, rawValue = "2")
+              LiteralValue(
+                name = "ipsum",
+                typeRef = NumberRef.int,
+                rawValue = "2"
+              )
             ),
             superInterface = Option.empty
           )

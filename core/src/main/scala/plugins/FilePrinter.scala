@@ -41,6 +41,21 @@ export const ns${name} = exports${lineSep}
 
     printImports(conf, requires, stream) { tpe => s"./${tpe.name}" }
 
+    if (requires.nonEmpty) {
+      val typeNaming = conf.typeNaming(conf, _: TypeRef)
+      val requiredTypes = requires.toList.sortBy(_.name)
+
+      stream.println("""
+export const dependencyModules = [""")
+
+      requiredTypes.foreach { tpe =>
+        stream.println(s"${conf.typescriptIndent}ns${typeNaming(tpe)},")
+      }
+
+      stream.println(s"""]${lineSep}
+""")
+    }
+
     stream
   }
 }

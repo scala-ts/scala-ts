@@ -32,6 +32,7 @@ import _root_.io.github.scalats.tsconfig.{
   ConfigRenderOptions
 }
 
+// TODO: Rename with deprecation (trait) + update doc
 object TypeScriptGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
   override def trigger = noTrigger
@@ -66,16 +67,19 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsPrinterPrelude =
       settingKey[Option[PrinterPrelude]]("Prelude for printer supporting it (e.g. `scalatsFilePrinter` or `scalatsSingleFilePrinter`); Either an in-memory string (see `scalatsPrinterInMemoryPrelude`), or a source URL (see `scalatsPrinterUrlPrelude`)")
 
+    // TODO: Rename
     val scalatsTypeScriptImportResolvers =
       settingKey[Seq[Class[_ <: TypeScriptImportResolver]]](
         "Class implementing 'TypeScriptImportResolver' to customize the mapping (default: None)"
       )
 
+    // TODO: Rename
     val scalatsTypeScriptDeclarationMappers =
       settingKey[Seq[Class[_ <: TypeScriptDeclarationMapper]]](
         "Class implementing 'TypeScriptDeclarationMapper' to customize the mapping (default: None)"
       )
 
+    // TODO: Rename
     val scalatsTypeScriptTypeMappers =
       settingKey[Seq[Class[_ <: TypeScriptTypeMapper]]](
         "Class implementing 'TypeScriptTypeMapper' to customize the mapping (default: None)"
@@ -84,19 +88,23 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     val scalatsPrependEnclosingClassNames =
       settingKey[Boolean]("Whether to prepend enclosing class/object names")
 
+    // TODO: Rename
     val scalatsTypescriptIndent = settingKey[String](
       "Characters used as TypeScript indentation (default: 2 spaces)"
     )
 
+    // TODO: Rename
     val scalatsTypescriptLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')"
     )
 
+    // TODO: Rename
     val scalatsTypeScriptTypeNaming =
       settingKey[Class[_ <: TypeScriptTypeNaming]](
         "Conversions for the field names (default: Identity)"
       )
 
+    // TODO: Rename
     val scalatsTypeScriptFieldMapper =
       settingKey[Class[_ <: TypeScriptFieldMapper]](
         "Conversions for the field names (default: Identity)"

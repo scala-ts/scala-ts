@@ -7,11 +7,6 @@ import type { TSName } from './scalatsName';
 import * as nsTSTransport from './scalatsTransport';
 import type { TSTransport } from './scalatsTransport';
 
-export const dependencyModules = [
-  nsTSName,
-  nsTSTransport,
-];
-
 export interface TSBar {
   _name: TSName;
   _age: number;

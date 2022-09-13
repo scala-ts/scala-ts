@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import scala.collection.immutable.Set
 
-final class TypeScriptField(
+final class TypeScriptField( // TODO: Rename
     val name: String,
     val flags: Set[TypeScriptField.Flag]) {
 

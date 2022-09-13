@@ -19,7 +19,7 @@ final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
     ) {
       case (name, encoded) =>
         s"be ok for '${name}'" in {
-          Identity(settings, "Foo", name, NumberRef).aka(
+          Identity(settings, "Foo", name, NumberRef.int).aka(
             "field"
           ) must_=== TypeScriptField(encoded, Set.empty)
         }
@@ -34,7 +34,7 @@ final class TypeScriptFieldMapperSpec extends org.specs2.mutable.Specification {
     ) {
       case (name, encoded) =>
         s"be ok for '${name}'" in {
-          SnakeCase(settings, "Bar", name, NumberRef).aka(
+          SnakeCase(settings, "Bar", name, NumberRef.int).aka(
             "field"
           ) must_=== TypeScriptField(encoded, Set.empty)
         }

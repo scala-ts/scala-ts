@@ -10,7 +10,7 @@ import io.github.scalats.typescript.Declaration
  * See:
  * - [[TypeScriptDeclarationMapper.EnumerationAsEnum]]
  */
-trait TypeScriptDeclarationMapper
+trait TypeScriptDeclarationMapper // TODO: Rename
     extends Function6[
       TypeScriptDeclarationMapper.Resolved,
       Settings,

@@ -11,7 +11,7 @@ import Internals.ListSet
  *
  * The implementations must be class with a no-arg constructor.
  */
-trait TypeScriptImportResolver
+trait TypeScriptImportResolver // TODO: Rename
     extends (Declaration => Option[ListSet[TypeRef]]) { self =>
 
   /**

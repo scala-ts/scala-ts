@@ -178,9 +178,20 @@ final class Transpiler(config: Settings) {
       scalaTypeRef: ScalaModel.TypeRef,
       inInterfaceContext: Boolean
     ): TypeRef = scalaTypeRef match {
-    case ScalaModel.BigDecimalRef | ScalaModel.BigIntegerRef |
-        ScalaModel.DoubleRef | ScalaModel.IntRef | ScalaModel.LongRef =>
-      NumberRef
+    case ScalaModel.BigDecimalRef =>
+      NumberRef.bigDecimal
+
+    case ScalaModel.BigIntegerRef =>
+      NumberRef.bigInt
+
+    case ScalaModel.DoubleRef =>
+      NumberRef.double
+
+    case ScalaModel.IntRef =>
+      NumberRef.int
+
+    case ScalaModel.LongRef =>
+      NumberRef.long
 
     case ScalaModel.BooleanRef =>
       BooleanRef

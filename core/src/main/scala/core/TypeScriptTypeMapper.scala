@@ -14,7 +14,7 @@ import typescript.{ Declaration, TypeRef }
  * - [[TypeScriptTypeMapper.NumberAsString]]
  * - [[TypeScriptTypeMapper.NullableAsOption]]
  */
-trait TypeScriptTypeMapper
+trait TypeScriptTypeMapper // TODO: Rename
     extends Function5[
       TypeScriptTypeMapper.Resolved,
       Settings,
@@ -122,7 +122,7 @@ object TypeScriptTypeMapper {
         member: TypeScriptField,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case typescript.NumberRef =>
+      case _: typescript.NumberRef =>
         Some("string")
 
       case _ =>

@@ -10,7 +10,7 @@ import Internals.ListSet
 /**
  * @param out the function to select a `PrintStream` from type name
  */
-final class TypeScriptEmitter(
+final class TypeScriptEmitter( // TODO: Rename
     val settings: Settings,
     out: TypeScriptEmitter.Printer,
     importResolver: TypeScriptEmitter.ImportResolver,
@@ -757,7 +757,7 @@ private[scalats] object TypeScriptEmitter {
       typeNaming: TypeRef => String,
       tr: TypeRef => String
     ): String = typeRef match {
-    case NumberRef => "number"
+    case _: NumberRef => "number"
 
     case BooleanRef => "boolean"
 

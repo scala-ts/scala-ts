@@ -25,8 +25,13 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
   "Mapper" should {
     "map array" >> {
       "as Array" in {
-        arrayAsGeneric(unresolved, settings, owner, member, ArrayRef(NumberRef))
-          .aka("TypeScript type") must beSome("Array<_tpe_>")
+        arrayAsGeneric(
+          unresolved,
+          settings,
+          owner,
+          member,
+          ArrayRef(NumberRef.int)
+        ).aka("TypeScript type") must beSome("Array<_tpe_>")
       }
 
       "as brackets" in {
@@ -35,7 +40,7 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
           settings,
           owner,
           member,
-          ArrayRef(NumberRef)
+          ArrayRef(NumberRef.int)
         ).aka("TypeScript type") must beSome("_tpe_[]")
       }
     }
@@ -56,7 +61,7 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
         settings,
         owner,
         member,
-        NumberRef
+        NumberRef.int
       ) must beSome(
         "string"
       )
@@ -75,7 +80,7 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
         .aka("chained") must beSome[TypeScriptTypeMapper].which { m =>
         val mapper = m(unresolved, settings, owner, member, _: TypeRef)
 
-        mapper(NumberRef) must beSome("string") and {
+        mapper(NumberRef.int) must beSome("string") and {
           mapper(DateRef) must beSome("string")
         } and {
           mapper(DateTimeRef) must beSome("string")

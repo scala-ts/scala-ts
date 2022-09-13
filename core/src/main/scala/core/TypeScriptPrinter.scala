@@ -6,7 +6,7 @@ import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 import Internals.ListSet
 
-trait TypeScriptPrinter
+trait TypeScriptPrinter // TODO: Rename
     extends Function4[Settings, Declaration.Kind, String, ListSet[
       TypeRef
     ], PrintStream] {

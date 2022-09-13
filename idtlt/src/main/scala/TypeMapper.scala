@@ -33,7 +33,7 @@ final class TypeMapper extends TypeScriptTypeMapper {
         case StringRef =>
           "idtlt.string"
 
-        case NumberRef =>
+        case _: NumberRef =>
           "idtlt.number"
 
         case BooleanRef =>

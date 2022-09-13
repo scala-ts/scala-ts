@@ -24,7 +24,7 @@ import io.github.scalats.typescript.{ NullableType, TypeRef }
  * }
  * }}}
  */
-trait TypeScriptFieldMapper
+trait TypeScriptFieldMapper // TODO: Rename
     extends Function4[Settings, String, String, TypeRef, TypeScriptField] {
 
   /**

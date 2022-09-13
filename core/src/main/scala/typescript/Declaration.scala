@@ -1,4 +1,5 @@
 package io.github.scalats.typescript
+// TODO: Rename package
 
 import io.github.scalats.core.Internals.ListSet
 

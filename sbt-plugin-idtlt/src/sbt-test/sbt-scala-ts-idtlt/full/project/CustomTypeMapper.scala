@@ -28,7 +28,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
       case StringRef =>
         "idtlt.string"
 
-      case NumberRef =>
+      case _: NumberRef =>
         "idtlt.number"
 
       case BooleanRef =>

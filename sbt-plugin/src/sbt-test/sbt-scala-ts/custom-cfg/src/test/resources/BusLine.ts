@@ -1,10 +1,6 @@
 import * as nsTSTransport from './scalatsTransport';
 import type { TSTransport } from './scalatsTransport';
 
-export const dependencyModules = [
-  nsTSTransport,
-];
-
 export interface TSBusLine extends TSTransport {
   _id: number;
   _name: string;

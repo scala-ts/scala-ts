@@ -1,4 +1,5 @@
 package io.github.scalats.typescript
+// TODO: Rename package
 
 import io.github.scalats.core.Internals
 
@@ -127,7 +128,31 @@ object SimpleTypeRef {
   def unapply(ref: SimpleTypeRef): Option[String] = Option(ref.name)
 }
 
-case object NumberRef extends SimpleTypeRef("number")
+sealed class NumberRef private[scalats] (
+    val subtype: NumberRef.Subtype)
+    extends SimpleTypeRef("number")
+
+object NumberRef {
+  val int = new NumberRef(Int)
+
+  val long = new NumberRef(Long)
+
+  val double = new NumberRef(Double)
+
+  val bigInt = new NumberRef(BigInt)
+
+  val bigDecimal = new NumberRef(BigDecimal)
+
+  // ---
+
+  sealed trait Subtype
+  case object BigInt extends Subtype
+  case object BigDecimal extends Subtype
+
+  case object Int extends Subtype
+  case object Long extends Subtype
+  case object Double extends Subtype
+}
 
 case object StringRef extends SimpleTypeRef("string")
 

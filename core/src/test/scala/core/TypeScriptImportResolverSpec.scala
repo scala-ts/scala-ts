@@ -16,7 +16,11 @@ final class TypeScriptImportResolverSpec
       import TypeScriptImportResolver.defaultResolver
 
       "be resolved for union type" in {
-        defaultResolver(union1) must_=== ListSet.empty[TypeRef]
+        defaultResolver(union1) must_=== ListSet.empty[TypeRef] and {
+          defaultResolver(unionMember2Singleton) must_=== ListSet[TypeRef](
+            union1.reference
+          )
+        }
       }
 
       "be resolved as an empty set for interface" >> {
@@ -70,16 +74,16 @@ final class TypeScriptImportResolverSpec
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef), // TODO: SetRef
-                valueTypeRef = NumberRef,
+                typeRef = ArrayRef(NumberRef.int), // TODO: SetRef
+                valueTypeRef = NumberRef.int,
                 elements = Set(
                   SelectValue(
                     "set[0]",
-                    NumberRef,
+                    NumberRef.int,
                     testClass2,
                     "code"
                   ),
-                  LiteralValue("set[1]", NumberRef, "2")
+                  LiteralValue("set[1]", NumberRef.int, "2")
                 )
               ),
               ListValue(
@@ -119,7 +123,7 @@ final class TypeScriptImportResolverSpec
                 )
               ),
               LiteralValue("const", StringRef, "\"value\""),
-              LiteralValue("code", NumberRef, "1")
+              LiteralValue("code", NumberRef.int, "1")
             ),
             superInterface = Some(
               InterfaceDeclaration(
@@ -184,6 +188,10 @@ final class TypeScriptImportResolverSpec
       "be resolved for union type" in {
         resolve(union1) must beSome[ListSet[TypeRef]].which {
           _ must_=== ListSet.empty[TypeRef] ++ union1.possibilities
+        } and {
+          resolve(unionMember2Singleton) must beSome[ListSet[TypeRef]].which {
+            _ must beEmpty
+          }
         }
       }
     }
