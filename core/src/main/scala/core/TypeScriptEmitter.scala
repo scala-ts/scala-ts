@@ -768,6 +768,9 @@ private[scalats] object TypeScriptEmitter {
     case ArrayRef(innerType) =>
       s"ReadonlyArray<${tr(innerType)}>"
 
+    case SetRef(innerType) =>
+      s"ReadonlySet<${tr(innerType)}>"
+
     case TupleRef(params) =>
       params.map(tr).mkString("[", ", ", "]")
 

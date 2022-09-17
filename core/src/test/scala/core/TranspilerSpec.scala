@@ -180,7 +180,7 @@ final class TranspilerSpec
           values = ListSet(
             ListInvariant(
               name = "start",
-              typeRef = CollectionRef(greetingTypeRef),
+              typeRef = ListRef(greetingTypeRef),
               valueTypeRef = greetingTypeRef,
               values = List(
                 SelectInvariant(
@@ -357,7 +357,7 @@ object TranspilerResults {
       ),
       SetValue(
         name = "set",
-        typeRef = ArrayRef(NumberRef.int),
+        typeRef = SetRef(NumberRef.int),
         valueTypeRef = NumberRef.int,
         elements = Set(
           SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
@@ -489,13 +489,13 @@ object TranspilerResults {
         children = List(
           SelectValue(
             name = "mergedSet[0]",
-            typeRef = ArrayRef(NumberRef.int),
+            typeRef = SetRef(NumberRef.int),
             qualifier = ThisTypeRef,
             term = "set"
           ),
           SetValue(
             name = "mergedSet[1]",
-            typeRef = ArrayRef(NumberRef.int),
+            typeRef = SetRef(NumberRef.int),
             valueTypeRef = NumberRef.int,
             elements = Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))
           )

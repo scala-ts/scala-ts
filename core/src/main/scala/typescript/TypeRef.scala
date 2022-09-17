@@ -94,6 +94,19 @@ case class ArrayRef(innerType: TypeRef) extends TypeRef {
 }
 
 /**
+ * Reference to an type of `Set` (e.g. `Set<string>`).
+ *
+ * @param innerType the element type (e.g. `string` for `Set<string>`)
+ */
+case class SetRef(innerType: TypeRef) extends TypeRef {
+  @inline def requires = innerType.requires
+
+  lazy val name = "Set"
+
+  override def toString = s"Set<${innerType.toString}>"
+}
+
+/**
  * Reference to a type of tuple (e.g. `[string, int]`).
  *
  * @param typeArgs the types for the tuple elements

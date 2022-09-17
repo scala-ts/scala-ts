@@ -141,7 +141,7 @@ final class MergedListsInvariant(
     name: String,
     val valueTypeRef: TypeRef,
     val children: List[TypeInvariant])
-    extends TypeInvariant(name, CollectionRef(valueTypeRef)) {
+    extends TypeInvariant(name, ListRef(valueTypeRef)) {
 
   private lazy val tupled = Tuple3(name, valueTypeRef, children)
 
@@ -213,7 +213,7 @@ final class MergedSetsInvariant(
     name: String,
     val valueTypeRef: TypeRef,
     val children: List[TypeInvariant])
-    extends TypeInvariant(name, CollectionRef(valueTypeRef)) {
+    extends TypeInvariant(name, SetRef(valueTypeRef)) {
 
   private lazy val tupled = Tuple3(name, valueTypeRef, children)
 

@@ -45,6 +45,9 @@ final class TypeMapper extends TypeScriptTypeMapper {
         case ArrayRef(innerType) =>
           s"idtlt.array(${tr(innerType)})"
 
+        case SetRef(innerType) => // TODO: set.or(arrayAsSet)
+          s"idtlt.array(${tr(innerType)})"
+
         case TupleRef(params) =>
           params.map(tr).mkString("idtlt.tuple(", ", ", ")")
 

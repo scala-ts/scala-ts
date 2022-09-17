@@ -385,7 +385,7 @@ final class ScalaParser[Uni <: Universe](
       // Seq/List factory
 
       scalaTypeRef(a.tpe, Set.empty) match {
-        case colTpe @ CollectionRef(valueTpe) => {
+        case colTpe @ ListRef(valueTpe) => {
           val elements = a.args.zipWithIndex.collect(
             Function.unlift[(Tree, Int), TypeInvariant] {
               case (e, i) =>
@@ -421,7 +421,7 @@ final class ScalaParser[Uni <: Universe](
         if (a.tpe <:< SeqType && a.symbol.name.toString == f"$$plus$$plus" &&
           a.children.size == 2) =>
       scalaTypeRef(a.tpe, Set.empty) match {
-        case colTpe @ CollectionRef(valueTpe) => {
+        case colTpe @ ListRef(valueTpe) => {
           val excludes = a.children.tail
             .map(_.symbol.fullName)
             .filter(_ endsWith "canBuildFrom" /* Scala 2.13- */ )
@@ -467,7 +467,7 @@ final class ScalaParser[Uni <: Universe](
           && a.args.nonEmpty) => {
       // Set factory
       scalaTypeRef(a.tpe, Set.empty) match {
-        case colTpe @ CollectionRef(valueTpe) => {
+        case colTpe @ SetRef(valueTpe) => {
           val elements = a.args.zipWithIndex
             .collect(
               Function.unlift[(Tree, Int), TypeInvariant] {
@@ -503,7 +503,7 @@ final class ScalaParser[Uni <: Universe](
 
     case ApplyTag(a) if (a.tpe <:< SetType && a.children.size == 2) =>
       scalaTypeRef(a.tpe, Set.empty) match {
-        case colTpe @ CollectionRef(valueTpe) => {
+        case colTpe @ SetRef(valueTpe) => {
           val terms =
             appliedOp(
               f"$$plus$$plus",
@@ -1016,6 +1016,9 @@ final class ScalaParser[Uni <: Universe](
     }
   }
 
+  private lazy val setSymbol: Symbol =
+    mirror.staticClass("_root_.scala.collection.Set")
+
   private lazy val iterableSymbol: Symbol =
     mirror.staticClass("_root_.scala.collection.Iterable")
 
@@ -1109,8 +1112,12 @@ final class ScalaParser[Uni <: Universe](
               OptionRef(scalaTypeRef(innerType, typeParams))
 
             case innerType :: _
+                if (scalaType <:< appliedType(setSymbol, innerType)) =>
+              SetRef(scalaTypeRef(innerType, typeParams))
+
+            case innerType :: _
                 if (scalaType <:< appliedType(iterableSymbol, innerType)) =>
-              CollectionRef(scalaTypeRef(innerType, typeParams))
+              ListRef(scalaTypeRef(innerType, typeParams))
 
             case innerType :: _
                 if (scalaType <:< appliedType(tuple1Symbol, innerType)) =>

@@ -205,7 +205,10 @@ final class Transpiler(config: Settings) {
     case ScalaModel.TaggedRef(id, tagged) =>
       TaggedRef(idToString(id), transpileTypeRef(tagged, false))
 
-    case ScalaModel.CollectionRef(innerType) =>
+    case ScalaModel.SetRef(innerType) =>
+      SetRef(transpileTypeRef(innerType, inInterfaceContext))
+
+    case ScalaModel.ListRef(innerType) =>
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>

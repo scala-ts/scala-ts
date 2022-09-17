@@ -542,7 +542,7 @@ final class ScalaParser(
         Some(
           ScalaModel.ListInvariant(
             name = k,
-            typeRef = ScalaModel.CollectionRef(elmTpe),
+            typeRef = ScalaModel.ListRef(elmTpe),
             valueTypeRef = elmTpe,
             values = elements
           )
@@ -558,7 +558,7 @@ final class ScalaParser(
         if (app.tpe <:< SeqType.appliedTo(vtpe) &&
           a.symbol.name.toString == "++") =>
       scalaTypeRef(app.tpe, Set.empty) match {
-        case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
+        case colTpe @ ScalaModel.ListRef(valueTpe) => {
           val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
@@ -613,7 +613,7 @@ final class ScalaParser(
         Some(
           ScalaModel.SetInvariant(
             name = k,
-            typeRef = ScalaModel.CollectionRef(elmTpe),
+            typeRef = ScalaModel.ListRef(elmTpe),
             valueTypeRef = elmTpe,
             values = elements
           )
@@ -629,7 +629,7 @@ final class ScalaParser(
         if (app.tpe <:< SetType.appliedTo(vtpe) &&
           a.symbol.name.toString == "++") =>
       scalaTypeRef(app.tpe, Set.empty) match {
-        case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
+        case colTpe @ ScalaModel.SetRef(valueTpe) => {
           val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
@@ -1437,9 +1437,15 @@ final class ScalaParser(
 
             case innerType :: _
                 if (
+                  scalaType <:< SetType.appliedTo(innerType)
+                ) =>
+              ScalaModel.SetRef(scalaTypeRef(innerType, typeParams))
+
+            case innerType :: _
+                if (
                   scalaType <:< IterableType.appliedTo(innerType)
                 ) =>
-              ScalaModel.CollectionRef(scalaTypeRef(innerType, typeParams))
+              ScalaModel.ListRef(scalaTypeRef(innerType, typeParams))
 
             case innerType :: _
                 if (scalaType <:< Tuple1Type.appliedTo(innerType)) =>
