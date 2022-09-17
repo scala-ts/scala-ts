@@ -172,11 +172,18 @@ class ${ns}TestObject1InvariantsFactory:
     return 4.56
 
 
-${ns}TestObject1Invariants = {
-  'name': ${ns}TestObject1InvariantsFactory.name(),
-  'i': ${ns}TestObject1InvariantsFactory.i(),
-  'd': ${ns}TestObject1InvariantsFactory.d(),
-}
+@dataclass
+class I${ns}TestObject1Invariants:
+  name: str
+  i: int
+  d: float
+
+
+${ns}TestObject1Invariants = I${ns}TestObject1Invariants(
+  name=${ns}TestObject1InvariantsFactory.name(),
+  i=${ns}TestObject1InvariantsFactory.i(),
+  d=${ns}TestObject1InvariantsFactory.d(),
+)
 """
           )
         }
@@ -226,7 +233,7 @@ class ${ns}TestObject2InvariantsFactory:
     return ["first", self.name()]
 
   @classmethod
-  def set(self) -> typing.List[int]:
+  def set(self) -> typing.Set[int]:
     return {self.code(), 2}
 
   @classmethod
@@ -250,19 +257,34 @@ class ${ns}TestObject2InvariantsFactory:
     return self.set().union({3})
 
 
-${ns}TestObject2Invariants = {
-  'name': ${ns}TestObject2InvariantsFactory.name(),
-  'code': ${ns}TestObject2InvariantsFactory.code(),
-  'const': ${ns}TestObject2InvariantsFactory.const(),
-  'foo': ${ns}TestObject2InvariantsFactory.foo(),
-  'list': ${ns}TestObject2InvariantsFactory.list(),
-  'set': ${ns}TestObject2InvariantsFactory.set(),
-  'mapping': ${ns}TestObject2InvariantsFactory.mapping(),
-  'dictOfList': ${ns}TestObject2InvariantsFactory.dictOfList(),
-  'concatSeq': ${ns}TestObject2InvariantsFactory.concatSeq(),
-  'concatList': ${ns}TestObject2InvariantsFactory.concatList(),
-  'mergedSet': ${ns}TestObject2InvariantsFactory.mergedSet(),
-}
+@dataclass
+class I${ns}TestObject2Invariants:
+  name: str
+  code: int
+  const: str
+  foo: str
+  list: typing.List[str]
+  set: typing.Set[int]
+  mapping: typing.Dict[str, str]
+  dictOfList: typing.Dict[str, typing.List[str]]
+  concatSeq: typing.List[str]
+  concatList: typing.List[str]
+  mergedSet: typing.List[int]
+
+
+${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
+  name=${ns}TestObject2InvariantsFactory.name(),
+  code=${ns}TestObject2InvariantsFactory.code(),
+  const=${ns}TestObject2InvariantsFactory.const(),
+  foo=${ns}TestObject2InvariantsFactory.foo(),
+  list=${ns}TestObject2InvariantsFactory.list(),
+  set=${ns}TestObject2InvariantsFactory.set(),
+  mapping=${ns}TestObject2InvariantsFactory.mapping(),
+  dictOfList=${ns}TestObject2InvariantsFactory.dictOfList(),
+  concatSeq=${ns}TestObject2InvariantsFactory.concatSeq(),
+  concatList=${ns}TestObject2InvariantsFactory.concatList(),
+  mergedSet=${ns}TestObject2InvariantsFactory.mergedSet(),
+)
 """
         }
 
@@ -488,19 +510,34 @@ class TSSingletonInvariantsFactory:
     return {TS${valueClassNs}AnyValChild("foo"): TS${valueClassNs}AnyValChild("bar")}
 
 
-TSSingletonInvariants = {
-  '_name': TSSingletonInvariantsFactory._name(),
-  '_code': TSSingletonInvariantsFactory._code(),
-  '_const': TSSingletonInvariantsFactory._const(),
-  '_foo': TSSingletonInvariantsFactory._foo(),
-  '_list': TSSingletonInvariantsFactory._list(),
-  '_set': TSSingletonInvariantsFactory._set(),
-  '_mapping': TSSingletonInvariantsFactory._mapping(),
-  '_dictOfList': TSSingletonInvariantsFactory._dictOfList(),
-  '_concatSeq': TSSingletonInvariantsFactory._concatSeq(),
-  '_mergedSet': TSSingletonInvariantsFactory._mergedSet(),
-  '_taggedDict': TSSingletonInvariantsFactory._taggedDict(),
-}
+@dataclass
+class ITSSingletonInvariants:
+  _name: TSScalaRuntimeFixturesAnyValChild
+  _code: int
+  _const: str
+  _foo: TSScalaRuntimeFixturesAnyValChild
+  _list: typing.List[str]
+  _set: typing.List[int]
+  _mapping: typing.Dict[str, str]
+  _dictOfList: typing.Dict[str, typing.List[TSScalaRuntimeFixturesAnyValChild]]
+  _concatSeq: typing.List[TSScalaRuntimeFixturesAnyValChild]
+  _mergedSet: typing.List[int]
+  _taggedDict: typing.Dict[TSScalaRuntimeFixturesAnyValChild, str]
+
+
+TSSingletonInvariants = ITSSingletonInvariants(
+  _name=TSSingletonInvariantsFactory._name(),
+  _code=TSSingletonInvariantsFactory._code(),
+  _const=TSSingletonInvariantsFactory._const(),
+  _foo=TSSingletonInvariantsFactory._foo(),
+  _list=TSSingletonInvariantsFactory._list(),
+  _set=TSSingletonInvariantsFactory._set(),
+  _mapping=TSSingletonInvariantsFactory._mapping(),
+  _dictOfList=TSSingletonInvariantsFactory._dictOfList(),
+  _concatSeq=TSSingletonInvariantsFactory._concatSeq(),
+  _mergedSet=TSSingletonInvariantsFactory._mergedSet(),
+  _taggedDict=TSSingletonInvariantsFactory._taggedDict(),
+)
 """
         }
 
@@ -541,12 +578,20 @@ class ${valueClassNs}TestObject2InvariantsFactory:
     return 1
 
 
-${valueClassNs}TestObject2Invariants = {
-  'name': ${valueClassNs}TestObject2InvariantsFactory.name(),
-  'const': ${valueClassNs}TestObject2InvariantsFactory.const(),
-  'foo': ${valueClassNs}TestObject2InvariantsFactory.foo(),
-  'code': ${valueClassNs}TestObject2InvariantsFactory.code(),
-}
+@dataclass
+class I${valueClassNs}TestObject2Invariants:
+  name: str
+  const: ${valueClassNs}AnyValChild
+  foo: ${valueClassNs}AnyValChild
+  code: int
+
+
+${valueClassNs}TestObject2Invariants = I${valueClassNs}TestObject2Invariants(
+  name=${valueClassNs}TestObject2InvariantsFactory.name(),
+  const=${valueClassNs}TestObject2InvariantsFactory.const(),
+  foo=${valueClassNs}TestObject2InvariantsFactory.foo(),
+  code=${valueClassNs}TestObject2InvariantsFactory.code(),
+)
 """
         }
       }
@@ -565,9 +610,14 @@ class ${ns}FamilyMember2InvariantsFactory:
     return "bar"
 
 
-${ns}FamilyMember2Invariants = {
-  'foo': ${ns}FamilyMember2InvariantsFactory.foo(),
-}
+@dataclass
+class I${ns}FamilyMember2Invariants:
+  foo: str
+
+
+${ns}FamilyMember2Invariants = I${ns}FamilyMember2Invariants(
+  foo=${ns}FamilyMember2InvariantsFactory.foo(),
+)
 """
       }
 
@@ -604,9 +654,14 @@ class FooInvariantsFactory:
     return "lorem"
 
 
-FooInvariants = {
-  'bar': FooInvariantsFactory.bar(),
-}
+@dataclass
+class IFooInvariants:
+  bar: str
+
+
+FooInvariants = IFooInvariants(
+  bar=FooInvariantsFactory.bar(),
+)
 """
         }
 
@@ -635,10 +690,16 @@ class FooInvariantsFactory:
     return 2
 
 
-FooInvariants = {
-  'bar': FooInvariantsFactory.bar(),
-  'ipsum': FooInvariantsFactory.ipsum(),
-}
+@dataclass
+class IFooInvariants:
+  bar: str
+  ipsum: int
+
+
+FooInvariants = IFooInvariants(
+  bar=FooInvariantsFactory.bar(),
+  ipsum=FooInvariantsFactory.ipsum(),
+)
 """
         }
       }

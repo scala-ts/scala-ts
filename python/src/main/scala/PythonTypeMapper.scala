@@ -57,6 +57,9 @@ final class PythonTypeMapper extends TypeScriptTypeMapper {
       case ArrayRef(innerType) =>
         s"typing.List[${tr(innerType)}]"
 
+      case SetRef(innerType) =>
+        s"typing.Set[${tr(innerType)}]"
+
       case TupleRef(params) =>
         params.map(tr).mkString("typing.Tuple[", ", ", "]")
 

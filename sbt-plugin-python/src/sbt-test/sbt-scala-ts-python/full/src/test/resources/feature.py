@@ -3,9 +3,21 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import barnum  # BarNum
-import foolure  # FooLure
+import barnum  # noqa: F401
+from barnum import BarNum
+import foolure  # noqa: F401
+from foolure import FooLure
 
 
 # Declare union Feature
-Feature = typing.Union[barnum.BarNum, foolure.FooLure]
+Feature = typing.Union[BarNum, FooLure]
+
+
+class FeatureCompanion:
+    @classmethod
+    def BarNum(self) -> Feature:
+        return barnum.BarNumInhabitant
+
+    @classmethod
+    def FooLure(self) -> Feature:
+        return foolure.FooLureInhabitant

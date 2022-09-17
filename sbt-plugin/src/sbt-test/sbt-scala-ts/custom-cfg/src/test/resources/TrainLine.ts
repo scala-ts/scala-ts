@@ -7,7 +7,7 @@ export interface TSTrainLine extends TSTransport {
   _name: string;
   _startStationId: string;
   _endStationId: string;
-  _serviceDays: ReadonlyArray<TSWeekDay>;
+  _serviceDays: ReadonlySet<TSWeekDay>;
 }
 
 export function isTSTrainLine(v: any): v is TSTrainLine {
@@ -15,6 +15,6 @@ export function isTSTrainLine(v: any): v is TSTrainLine {
     ((typeof v['_name']) === 'string') &&
     ((typeof v['_startStationId']) === 'string') &&
     ((typeof v['_endStationId']) === 'string') &&
-    (Array.isArray(v['_serviceDays']) && v['_serviceDays'].every(elmt => elmt && nsTSWeekDay.isTSWeekDay(elmt)))
+    ((v['_serviceDays'] instanceof Set) && Array.from(v['_serviceDays']).every(elmt => elmt && nsTSWeekDay.isTSWeekDay(elmt)))
   );
 }

@@ -4,17 +4,19 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import name  # Name
-import transport  # Transport
+import name  # noqa: F401
+from name import Name
+import transport  # noqa: F401
+from transport import Transport
 
 
 # Declare interface Bar
 @dataclass
 class Bar:
-    name: name.Name
-    aliases: typing.List[name.Name]
+    name: Name
+    aliases: typing.List[Name]
     age: int
     amount: typing.Optional[complex]
-    transports: typing.List[transport.Transport]
+    transports: typing.List[Transport]
     updated: datetime.datetime
     created: datetime.datetime

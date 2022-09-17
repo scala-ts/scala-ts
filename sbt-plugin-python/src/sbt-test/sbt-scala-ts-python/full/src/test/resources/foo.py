@@ -4,7 +4,8 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import transport  # Transport
+import transport  # noqa: F401
+from transport import Transport
 
 
 # Declare interface Foo
@@ -12,6 +13,6 @@ import transport  # Transport
 class Foo:
     id: int
     namesp: typing.Tuple[int, str]
-    row: typing.Tuple[str, transport.Transport, datetime.datetime]
+    row: typing.Tuple[str, Transport, datetime.datetime]
     score: typing.Union[int, str]
     rates: typing.Dict[str, float]

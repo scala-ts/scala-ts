@@ -4,10 +4,8 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import greeting  # Greeting
-
 
 # Declare interface Whatever
 @dataclass
-class Whatever(greeting.Greeting):
+class Whatever:
     word: str

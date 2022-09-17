@@ -3,9 +3,21 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import alabama  # Alabama
-import alaska  # Alaska
+import alabama  # noqa: F401
+from alabama import Alabama
+import alaska  # noqa: F401
+from alaska import Alaska
 
 
 # Declare union State
-State = typing.Union[alabama.Alabama, alaska.Alaska]
+State = typing.Union[Alabama, Alaska]
+
+
+class StateCompanion:
+    @classmethod
+    def Alabama(self) -> State:
+        return alabama.AlabamaInhabitant
+
+    @classmethod
+    def Alaska(self) -> State:
+        return alaska.AlaskaInhabitant

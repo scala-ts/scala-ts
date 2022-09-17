@@ -3,12 +3,35 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import bye  # Bye
-import goodbye  # GoodBye
-import hello  # Hello
-import hi  # Hi
-import whatever  # Whatever
+import bye  # noqa: F401
+from bye import Bye
+import goodbye  # noqa: F401
+from goodbye import GoodBye
+import hello  # noqa: F401
+from hello import Hello
+import hi  # noqa: F401
+from hi import Hi
+import whatever  # noqa: F401
+from whatever import Whatever
 
 
 # Declare union Greeting
-Greeting = typing.Union[typing.Union[typing.Union[typing.Union[bye.Bye, goodbye.GoodBye], hello.Hello], hi.Hi], whatever.Whatever]
+Greeting = typing.Union[Bye, GoodBye, Hello, Hi, Whatever]
+
+
+class GreetingCompanion:
+    @classmethod
+    def Bye(self) -> Greeting:
+        return bye.ByeInhabitant
+
+    @classmethod
+    def GoodBye(self) -> Greeting:
+        return goodbye.GoodByeInhabitant
+
+    @classmethod
+    def Hello(self) -> Greeting:
+        return hello.HelloInhabitant
+
+    @classmethod
+    def Hi(self) -> Greeting:
+        return hi.HiInhabitant

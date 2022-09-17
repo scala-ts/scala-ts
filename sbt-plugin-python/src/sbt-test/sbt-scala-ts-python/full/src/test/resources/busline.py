@@ -4,12 +4,10 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import transport  # Transport
-
 
 # Declare interface BusLine
 @dataclass
-class BusLine(transport.Transport):
+class BusLine:
     id: int
     name: str
     stopIds: typing.List[str]

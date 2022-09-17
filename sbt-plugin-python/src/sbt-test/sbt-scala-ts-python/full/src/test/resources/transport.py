@@ -3,11 +3,13 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import busline  # BusLine
-import trainline  # TrainLine
+import busline  # noqa: F401
+from busline import BusLine
+import trainline  # noqa: F401
+from trainline import TrainLine
 
 
 # Declare union Transport
-Transport = typing.Union[busline.BusLine, trainline.TrainLine]
+Transport = typing.Union[BusLine, TrainLine]
 
 # Fields are ignored: name

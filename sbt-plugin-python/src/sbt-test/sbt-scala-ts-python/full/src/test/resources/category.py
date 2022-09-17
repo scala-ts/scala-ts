@@ -3,9 +3,21 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import ipsum  # Ipsum
-import lorem  # Lorem
+import ipsum  # noqa: F401
+from ipsum import Ipsum
+import lorem  # noqa: F401
+from lorem import Lorem
 
 
 # Declare union Category
-Category = typing.Union[ipsum.Ipsum, lorem.Lorem]
+Category = typing.Union[Ipsum, Lorem]
+
+
+class CategoryCompanion:
+    @classmethod
+    def Ipsum(self) -> Category:
+        return ipsum.IpsumInhabitant
+
+    @classmethod
+    def Lorem(self) -> Category:
+        return lorem.LoremInhabitant

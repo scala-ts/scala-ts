@@ -4,12 +4,10 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import transport  # Transport
-
 
 # Declare interface TrainLine
 @dataclass
-class TrainLine(transport.Transport):
+class TrainLine:
     name: str
     startStationId: str
     endStationId: str

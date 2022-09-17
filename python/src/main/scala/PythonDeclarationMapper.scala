@@ -239,19 +239,28 @@ ${indent}${indent}return """)
               }
             }
 
-            out.println()
-            out.println()
+            out.println(s"""
 
-            out.println(s"${tpeName}Invariants = {")
+@dataclass
+class I${tpeName}Invariants:""")
+
+            vs.foreach {
+              case (v, n) =>
+                out.println(s"${indent}${n}: ${tmapper(v.typeRef)}")
+            }
+
+            out.println(s"""
+
+${tpeName}Invariants = I${tpeName}Invariants(""")
 
             vs.foreach {
               case (_, vn) =>
                 out.println(
-                  s"${indent}'${vn}': ${tpeName}InvariantsFactory.${vn}(),"
+                  s"${indent}${vn}=${tpeName}InvariantsFactory.${vn}(),"
                 )
             }
 
-            out.println('}')
+            out.println(')')
           } else if (superInterface.nonEmpty) {
             out.println(s"${tpeName} = typing.Literal['${tpeName}']")
             out.println(s"${tpeName}Inhabitant: ${tpeName} = '${tpeName}'")
@@ -277,12 +286,18 @@ ${indent}${indent}return """)
               }
 
               val qualTpeNme = {
-                if (union) {
-                  val n = tmapper(qual)
+                val n = tmapper(qual)
 
+                if (union) {
                   s"${n.toLowerCase}.${n}Companion"
                 } else {
-                  tmapper(qual)
+                  qual match {
+                    case _: SingletonTypeRef =>
+                      s"${n.toLowerCase}.${n}InvariantsFactory"
+
+                    case _ =>
+                      n
+                  }
                 }
               }
 

@@ -4,10 +4,11 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import classwithtypeargs  # ClassWithTypeArgs
+import classwithtypeargs  # noqa: F401
+from classwithtypeargs import ClassWithTypeArgs
 
 
 # Declare interface ClassWithGenericField
 @dataclass
 class ClassWithGenericField:
-    notSupportedClassAsTypeArgs: classwithtypeargs.ClassWithTypeArgs[float]
+    notSupportedClassAsTypeArgs: ClassWithTypeArgs[float]
