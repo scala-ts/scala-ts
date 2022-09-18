@@ -4,7 +4,7 @@ import java.net.URL
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.core.{ Logger, Settings, TypeScriptFieldMapper }
+import io.github.scalats.core.{ FieldMapper, Logger, Settings }
 import io.github.scalats.tsconfig.{ ConfigFactory, ConfigRenderOptions }
 
 final class ConfigurationSpec extends org.specs2.mutable.Specification {
@@ -70,7 +70,7 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
         settings = Settings(
           typescriptIndent = "  ",
           prependEnclosingClassNames = false,
-          fieldMapper = TypeScriptFieldMapper.SnakeCase
+          fieldMapper = FieldMapper.SnakeCase
         )
       )
 

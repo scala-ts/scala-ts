@@ -2,30 +2,29 @@ package io.github.scalats.core
 
 import scala.collection.immutable.Set
 
-import io.github.scalats.typescript.{ NullableType, TypeRef }
+import io.github.scalats.ast.{ NullableType, TypeRef }
 
 /**
  * Functional type to customize the field naming and access.
  *
  * {{{
  * import scala.collection.immutable.Set
- * import io.github.scalats.typescript.TypeRef
+ * import io.github.scalats.ast.TypeRef
  * import io.github.scalats.core.{
- *   Settings, TypeScriptField, TypeScriptFieldMapper
+ *   Settings, Field, FieldMapper
  * }
  *
- * class CustomTypeScriptFieldMapper extends TypeScriptFieldMapper {
+ * class CustomFieldMapper extends FieldMapper {
  *   def apply(
  *     settings: Settings,
  *     ownerType: String,
  *     propertyName: String,
  *     propertyType: TypeRef) =
- *     TypeScriptField("_" + propertyName, Set.empty)
+ *     Field("_" + propertyName, Set.empty)
  * }
  * }}}
  */
-trait TypeScriptFieldMapper // TODO: Rename
-    extends Function4[Settings, String, String, TypeRef, TypeScriptField] {
+trait FieldMapper extends Function4[Settings, String, String, TypeRef, Field] {
 
   /**
    * Returns the TypeScript field/signature for the given field name
@@ -40,36 +39,36 @@ trait TypeScriptFieldMapper // TODO: Rename
       ownerType: String,
       propertyName: String,
       propertyType: TypeRef
-    ): TypeScriptField
+    ): Field
 
   override def toString: String = getClass.getName
 }
 
-object TypeScriptFieldMapper {
+object FieldMapper {
 
   /** Identity naming */
-  object Identity extends TypeScriptFieldMapper {
+  object Identity extends FieldMapper {
 
     def apply(
         settings: Settings,
         ownerType: String,
         propertyName: String,
         propertyType: TypeRef
-      ) = TypeScriptField(propertyName, flags(settings, propertyType))
+      ) = Field(propertyName, flags(settings, propertyType))
   }
 
   /**
    * For each class property, use the snake case equivalent
    * to name its column (e.g. fooBar -> foo_bar).
    */
-  object SnakeCase extends TypeScriptFieldMapper {
+  object SnakeCase extends FieldMapper {
 
     def apply(
         settings: Settings,
         ownerType: String,
         propertyName: String,
         propertyType: TypeRef
-      ): TypeScriptField = {
+      ): Field = {
       val length = propertyName.length
       val result = new StringBuilder(length * 2)
       var resultLength = 0
@@ -101,17 +100,17 @@ object TypeScriptFieldMapper {
       }
 
       // builds the final string
-      TypeScriptField(result.toString(), flags(settings, propertyType))
+      Field(result.toString(), flags(settings, propertyType))
     }
   }
 
   /** Returns the default flags according the type and settings. */
-  def flags(settings: Settings, tpe: TypeRef): Set[TypeScriptField.Flag] =
+  def flags(settings: Settings, tpe: TypeRef): Set[Field.Flag] =
     tpe match {
       case NullableType(_) if !settings.optionToNullable =>
-        Set(TypeScriptField.omitable)
+        Set(Field.omitable)
 
       case _ =>
-        Set.empty[TypeScriptField.Flag]
+        Set.empty[Field.Flag]
     }
 }

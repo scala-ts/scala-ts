@@ -2,7 +2,7 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
 import Internals.ListSet
 
@@ -10,12 +10,12 @@ import Internals.ListSet
 /**
  * @param out the function to select a `PrintStream` from type name
  */
-final class TypeScriptEmitter( // TODO: Rename
+final class Emitter( // TODO: Rename
     val settings: Settings,
-    out: TypeScriptEmitter.Printer,
-    importResolver: TypeScriptEmitter.ImportResolver,
-    declarationMapper: TypeScriptEmitter.DeclarationMapper,
-    typeMapper: TypeScriptEmitter.TypeMapper) {
+    out: Emitter.Printer,
+    importResolver: Emitter.ImportResolver,
+    declarationMapper: Emitter.DeclarationMapper,
+    typeMapper: Emitter.TypeMapper) {
 
   import settings.{ fieldMapper, typescriptIndent => indent }
   import settings.typescriptLineSeparator.{ value => lineSeparator }
@@ -52,7 +52,7 @@ final class TypeScriptEmitter( // TODO: Rename
 
   private val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
-  private val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(
+  private val interfaceTypeGuard = Emitter.interfaceTypeGuard(
     _: String,
     _: String,
     _: Iterable[Member],
@@ -63,9 +63,9 @@ final class TypeScriptEmitter( // TODO: Rename
     settings
   )
 
-  private val declMapper: Function3[TypeScriptDeclarationMapper.Resolved, Declaration, PrintStream, Option[Unit]] =
+  private val declMapper: Function3[DeclarationMapper.Resolved, Declaration, PrintStream, Option[Unit]] =
     declarationMapper(
-      _: TypeScriptDeclarationMapper.Resolved,
+      _: DeclarationMapper.Resolved,
       settings,
       resolvedTypeMapper,
       fieldMapper,
@@ -73,14 +73,14 @@ final class TypeScriptEmitter( // TODO: Rename
       _: PrintStream
     )
 
-  private val requires: TypeScriptImportResolver.Resolved = { decl =>
+  private val requires: ImportResolver.Resolved = { decl =>
     importResolver(decl).getOrElse({
-      TypeScriptImportResolver.defaultResolver(decl)
+      ImportResolver.defaultResolver(decl)
     })
   }
 
   private val emitUnionDeclaration: UnionDeclaration => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+    val default: DeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case UnionDeclaration(name, fields, _, superInterface) => {
           val tpeName = typeNaming(decl.reference)
@@ -130,7 +130,7 @@ ${indent}return (""")
   }
 
   private def emitTaggedDeclaration: TaggedDeclaration => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+    val default: DeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case TaggedDeclaration(_, field) => {
           val tpeName = typeNaming(decl.reference)
@@ -138,13 +138,13 @@ ${indent}return (""")
           val valueType = resolvedTypeMapper(
             settings,
             decl,
-            TypeScriptField(field.name),
+            Field(field.name),
             field.typeRef
           )
 
           o.print(s"export type ${tpeName} = ${valueType}${lineSeparator}")
 
-          val simpleCheck = TypeScriptEmitter.valueCheck(
+          val simpleCheck = Emitter.valueCheck(
             "v",
             field.typeRef,
             t => s"is${typeNaming(t)}"
@@ -179,7 +179,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
       fieldMapper(settings, ownerType.name, member.name, member.typeRef)
 
     val nameSuffix: String = {
-      if (tsField.flags contains TypeScriptField.omitable) "?"
+      if (tsField.flags contains Field.omitable) "?"
       else ""
     }
 
@@ -189,12 +189,12 @@ ${indent}return ${simpleCheck}${lineSeparator}
   }
 
   private val emitValueBody: (ValueBodyDeclaration, PrintStream) => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = {
+    val default: DeclarationMapper.Resolved = {
       val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
         resolvedTypeMapper(
           settings,
           owner,
-          TypeScriptField(name),
+          Field(name),
           tpe
         )
       }
@@ -334,12 +334,12 @@ ${indent}return ${simpleCheck}${lineSeparator}
   }
 
   private val emitValueMember: (ValueMemberDeclaration, PrintStream) => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = {
+    val default: DeclarationMapper.Resolved = {
       val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
         resolvedTypeMapper(
           settings,
           owner,
-          TypeScriptField(name),
+          Field(name),
           tpe
         )
       }
@@ -426,7 +426,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
   }
 
   private val emitSingletonDeclaration: SingletonDeclaration => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+    val default: DeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case sd @ SingletonDeclaration(_, values, superInterface) => {
           val tpeName = typeNaming(decl.reference)
@@ -489,7 +489,7 @@ ${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineS
   }
 
   private def emitInterfaceDeclaration: InterfaceDeclaration => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+    val default: DeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case InterfaceDeclaration(n, fields, typeParams, superInterface, _) => {
           val tpeName = typeNaming(decl.reference)
@@ -531,7 +531,7 @@ ${indent}return (""")
   }
 
   private val emitEnumDeclaration: EnumDeclaration => Unit = {
-    val default: TypeScriptDeclarationMapper.Resolved = { (decl, o) =>
+    val default: DeclarationMapper.Resolved = { (decl, o) =>
       decl match {
         case decl: ValueMemberDeclaration =>
           emitValueMember(decl, o)
@@ -600,11 +600,11 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
   @inline private def typeParameters(params: List[String]): String =
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
-  private lazy val resolvedTypeMapper: TypeScriptTypeMapper.Resolved = {
+  private lazy val resolvedTypeMapper: TypeMapper.Resolved = {
     (
         _settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         typeRef: TypeRef
     ) =>
       typeMapper(resolvedTypeMapper, _settings, ownerType, member, typeRef)
@@ -613,9 +613,9 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
 
   private def defaultTypeMapping(
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       typeRef: TypeRef
-    ): String = TypeScriptEmitter.defaultTypeMapping(
+    ): String = Emitter.defaultTypeMapping(
     settings,
     member,
     typeRef,
@@ -647,23 +647,23 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
   }
 }
 
-private[scalats] object TypeScriptEmitter {
+private[scalats] object Emitter {
 
   type DeclarationMapper = Function6[
-    TypeScriptDeclarationMapper.Resolved,
+    DeclarationMapper.Resolved,
     Settings,
-    TypeScriptTypeMapper.Resolved,
-    TypeScriptFieldMapper,
+    TypeMapper.Resolved,
+    FieldMapper,
     Declaration,
     PrintStream,
     Option[Unit]
   ]
 
   type TypeMapper = Function5[
-    TypeScriptTypeMapper.Resolved,
+    TypeMapper.Resolved,
     Settings,
     Declaration,
-    TypeScriptField,
+    Field,
     TypeRef,
     Option[String]
   ]
@@ -726,6 +726,9 @@ private[scalats] object TypeScriptEmitter {
       case ArrayRef(t) =>
         s"Array.isArray(${name}) && ${name}.every(elmt => ${valueCheck("elmt", t, guardNaming)})"
 
+      case SetRef(t) =>
+        s"(${name} instanceof Set) && Array.from(${name}).every(elmt => ${valueCheck("elmt", t, guardNaming)})"
+
       case TupleRef(ts) => {
         def checkElmts = ts.zipWithIndex.map {
           case (t, i) => valueCheck(s"${name}[${i}]", t, guardNaming)
@@ -752,7 +755,7 @@ private[scalats] object TypeScriptEmitter {
 
   private[scalats] def defaultTypeMapping(
       settings: Settings,
-      member: TypeScriptField,
+      member: Field,
       typeRef: TypeRef,
       typeNaming: TypeRef => String,
       tr: TypeRef => String
@@ -792,8 +795,7 @@ private[scalats] object TypeScriptEmitter {
     case NullableType(innerType) if settings.optionToNullable =>
       s"(${tr(innerType)} | null)"
 
-    case NullableType(innerType)
-        if (member.flags contains TypeScriptField.omitable) => {
+    case NullableType(innerType) if (member.flags contains Field.omitable) => {
       // omitable and !optionToNullable
       tr(innerType)
     }

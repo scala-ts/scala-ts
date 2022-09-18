@@ -1,25 +1,25 @@
 package io.github.scalats.core
 
-import io.github.scalats.typescript
+import io.github.scalats.ast
 
-import typescript.{ Declaration, TypeRef }
+import ast.{ Declaration, TypeRef }
 
 /**
  * The implementations must be class with a no-arg constructor.
  *
  * See:
- * - [[TypeScriptTypeMapper.ArrayAsGeneric]]
- * - [[TypeScriptTypeMapper.ArrayAsBrackets]]
- * - [[TypeScriptTypeMapper.DateAsString]]
- * - [[TypeScriptTypeMapper.NumberAsString]]
- * - [[TypeScriptTypeMapper.NullableAsOption]]
+ * - [[TypeMapper.ArrayAsGeneric]]
+ * - [[TypeMapper.ArrayAsBrackets]]
+ * - [[TypeMapper.DateAsString]]
+ * - [[TypeMapper.NumberAsString]]
+ * - [[TypeMapper.NullableAsOption]]
  */
-trait TypeScriptTypeMapper // TODO: Rename
+trait TypeMapper
     extends Function5[
-      TypeScriptTypeMapper.Resolved,
+      TypeMapper.Resolved,
       Settings,
       Declaration,
-      TypeScriptField,
+      Field,
       TypeRef,
       Option[String]
     ] { self =>
@@ -32,60 +32,59 @@ trait TypeScriptTypeMapper // TODO: Rename
    * @return Some TypeScript type, or none
    */
   def apply(
-      parent: TypeScriptTypeMapper.Resolved,
+      parent: TypeMapper.Resolved,
       settings: Settings,
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       tpe: TypeRef
     ): Option[String]
 
-  def andThen(m: TypeScriptTypeMapper): TypeScriptTypeMapper =
-    new TypeScriptTypeMapper {
+  def andThen(m: TypeMapper): TypeMapper = new TypeMapper {
 
-      @inline def apply(
-          parent: TypeScriptTypeMapper.Resolved,
-          settings: Settings,
-          ownerType: Declaration,
-          member: TypeScriptField,
-          tpe: TypeRef
-        ): Option[String] =
-        self(parent, settings, ownerType, member, tpe).orElse(
-          m(parent, settings, ownerType, member, tpe)
-        )
-    }
+    @inline def apply(
+        parent: TypeMapper.Resolved,
+        settings: Settings,
+        ownerType: Declaration,
+        member: Field,
+        tpe: TypeRef
+      ): Option[String] =
+      self(parent, settings, ownerType, member, tpe).orElse(
+        m(parent, settings, ownerType, member, tpe)
+      )
+  }
 
   override def toString: String = getClass.getName
 }
 
-object TypeScriptTypeMapper {
+object TypeMapper {
   import com.github.ghik.silencer.silent
 
   /** `(settings, ownerType, member, type) => TypeScript type` */
   type Resolved =
-    Function4[Settings, Declaration, TypeScriptField, TypeRef, String]
+    Function4[Settings, Declaration, Field, TypeRef, String]
 
-  object Defaults extends TypeScriptTypeMapper {
+  object Defaults extends TypeMapper {
 
     @silent @inline def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ) = Option.empty[String]
   }
 
   /** Emits Array as `Array<T>` */
-  final class ArrayAsGeneric extends TypeScriptTypeMapper {
+  final class ArrayAsGeneric extends TypeMapper {
 
     def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case typescript.ArrayRef(innerType) =>
+      case ast.ArrayRef(innerType) =>
         Some(s"Array<${parent(settings, ownerType, member, innerType)}>")
 
       case _ => None
@@ -95,16 +94,16 @@ object TypeScriptTypeMapper {
   lazy val arrayAsGeneric = new ArrayAsGeneric()
 
   /** Emits Array as `T[]` */
-  final class ArrayAsBrackets extends TypeScriptTypeMapper {
+  final class ArrayAsBrackets extends TypeMapper {
 
     def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case typescript.ArrayRef(innerType) =>
+      case ast.ArrayRef(innerType) =>
         Some(s"${parent(settings, ownerType, member, innerType)}[]")
 
       case _ => None
@@ -113,16 +112,16 @@ object TypeScriptTypeMapper {
 
   lazy val arrayAsBrackets = new ArrayAsBrackets()
 
-  final class NumberAsString extends TypeScriptTypeMapper {
+  final class NumberAsString extends TypeMapper {
 
     def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case _: typescript.NumberRef =>
+      case _: ast.NumberRef =>
         Some("string")
 
       case _ =>
@@ -132,16 +131,16 @@ object TypeScriptTypeMapper {
 
   lazy val numberAsString = new NumberAsString()
 
-  final class DateAsString extends TypeScriptTypeMapper {
+  final class DateAsString extends TypeMapper {
 
     def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case typescript.DateRef | typescript.DateTimeRef =>
+      case ast.DateRef | ast.DateTimeRef =>
         Some("string")
 
       case _ =>
@@ -152,20 +151,20 @@ object TypeScriptTypeMapper {
   lazy val dateAsString = new DateAsString()
 
   /**
-   * Maps [[typescript.NullableType]] to `Option<T>`
+   * Maps [[ast.NullableType]] to `Option<T>`
    * (e.g. [[https://github.com/AlexGalays/space-monad space-monad]]
    * or [[https://gcanti.github.io/fp-ts/modules/Option.ts fp-ts]])
    */
-  final class NullableAsOption extends TypeScriptTypeMapper {
+  final class NullableAsOption extends TypeMapper {
 
     def apply(
-        parent: TypeScriptTypeMapper.Resolved,
+        parent: TypeMapper.Resolved,
         settings: Settings,
         ownerType: Declaration,
-        member: TypeScriptField,
+        member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case typescript.NullableType(innerType) =>
+      case ast.NullableType(innerType) =>
         Some(s"Option<${parent(settings, ownerType, member, innerType)}>")
 
       case _ =>
@@ -176,12 +175,12 @@ object TypeScriptTypeMapper {
   lazy val nullableAsOption = new NullableAsOption()
 
   @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
-  def chain(multi: Seq[TypeScriptTypeMapper]): Option[TypeScriptTypeMapper] = {
+  def chain(multi: Seq[TypeMapper]): Option[TypeMapper] = {
     @scala.annotation.tailrec
     def go(
-        in: Seq[TypeScriptTypeMapper],
-        out: TypeScriptTypeMapper
-      ): TypeScriptTypeMapper = in.headOption match {
+        in: Seq[TypeMapper],
+        out: TypeMapper
+      ): TypeMapper = in.headOption match {
       case Some(next) => go(in.tail, out.andThen(next))
       case _          => out
     }

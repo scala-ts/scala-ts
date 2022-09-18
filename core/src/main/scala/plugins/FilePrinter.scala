@@ -2,9 +2,9 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import io.github.scalats.ast.{ Declaration, TypeRef }
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.core.Settings
-import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 // TODO: Printer that gather class and interface
 final class FilePrinter(outDir: File) extends BasePrinter {

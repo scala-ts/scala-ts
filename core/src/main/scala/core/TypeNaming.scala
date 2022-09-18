@@ -1,18 +1,17 @@
 package io.github.scalats.core
 
-import io.github.scalats.typescript.TypeRef
+import io.github.scalats.ast.TypeRef
 
-// TODO: Rename
-trait TypeScriptTypeNaming extends Function2[Settings, TypeRef, String] {
+trait TypeNaming extends Function2[Settings, TypeRef, String] {
 
   /** Returns the TypeScript type name for the given declaration. */
   def apply(settings: Settings, tpe: TypeRef): String
 }
 
-object TypeScriptTypeNaming {
+object TypeNaming {
 
   /** Use `TypeRef.name` as-is as type name. */
-  object Identity extends TypeScriptTypeNaming {
+  object Identity extends TypeNaming {
     def apply(settings: Settings, tpe: TypeRef): String = tpe.name
   }
 }

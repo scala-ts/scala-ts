@@ -1,5 +1,4 @@
-package io.github.scalats.typescript
-// TODO: Rename package
+package io.github.scalats.ast
 
 import io.github.scalats.core.Internals
 
@@ -14,7 +13,7 @@ sealed trait TypeRef {
   def name: String
 }
 
-private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
+private[ast] sealed trait GenericTypeRef { ref: TypeRef =>
 
   /** The type name */
   def name: String
@@ -75,7 +74,7 @@ case class SingletonTypeRef(
     values: ListSet[Value])
     extends TypeRef
     with UnionMemberRef {
-  override val requires = ListSet.empty[TypeRef]
+  override val requires: ListSet[TypeRef] = ListSet(this)
 
   override lazy val toString = s"#${name}{${values mkString ", "}}"
 }

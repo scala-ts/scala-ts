@@ -1332,63 +1332,67 @@ final class ScalaParser(
           case typeParam if (typeParams contains typeParam) =>
             ScalaModel.TypeParamRef(typeParam)
 
-          case _ if isAnyVal =>
-            // #ValueClass_1
-            scalaType.decls
-              .filter(!_.is(Flags.Method))
-              .map(_.info)
-              .headOption match {
-              case Some(valueTpe) =>
-                ScalaModel.TaggedRef(
-                  identifier = buildQualifiedIdentifier(typeSymbol),
-                  tagged = scalaTypeRef(valueTpe, Set.empty)
-                )
+          case _ => {
+            if (isAnyVal) {
+              // #ValueClass_1
+              scalaType.decls
+                .filter(!_.is(Flags.Method))
+                .map(_.info)
+                .headOption match {
+                case Some(valueTpe) =>
+                  ScalaModel.TaggedRef(
+                    identifier = buildQualifiedIdentifier(typeSymbol),
+                    tagged = scalaTypeRef(valueTpe, Set.empty)
+                  )
 
-              case _ =>
-                unknown
-            }
+                case _ =>
+                  unknown
+              }
+            } else if (typeSymbol is Flags.Enum) {
+              ScalaModel.EnumerationRef(buildQualifiedIdentifier(typeSymbol))
+            } else if (isEnumerationValue(scalaType)) {
+              val id = scalaType match {
+                case Types.TypeRef(t @ Types.TermRef(_, _), _) => {
+                  val n = t.info.typeSymbol.fullName.toString.stripSuffix(f"$$")
 
-          case _ if (typeSymbol is Flags.Enum) =>
-            ScalaModel.EnumerationRef(buildQualifiedIdentifier(typeSymbol))
-
-          case _ if isEnumerationValue(scalaType) => {
-            val id = scalaType match {
-              case Types.TypeRef(t @ Types.TermRef(_, _), _) => {
-                val n = t.info.typeSymbol.fullName.toString.stripSuffix(f"$$")
-
-                if (n startsWith f"$$wrapper._$$") {
-                  f"$$wrapper.expr.${n drop 11}"
-                } else {
-                  n
+                  if (n startsWith f"$$wrapper._$$") {
+                    f"$$wrapper.expr.${n drop 11}"
+                  } else {
+                    n
+                  }
                 }
+
+                case Types.TypeRef(m, v) if (v.toString == "class Value") =>
+                  m.typeSymbol.fullName.toString.stripSuffix(f"$$")
+
+                case _ =>
+                  scalaType.typeSymbol.fullName.toString
               }
 
-              case Types.TypeRef(m, v) if (v.toString == "class Value") =>
-                m.typeSymbol.fullName.toString.stripSuffix(f"$$")
+              val qualId = id.split("\\.").toList.reverse match {
+                case nme :: rev =>
+                  ScalaModel.QualifiedIdentifier(
+                    name = nme,
+                    enclosingClassNames = rev.reverse
+                  )
 
-              case _ =>
-                scalaType.typeSymbol.fullName.toString
+                case _ =>
+                  ScalaModel.QualifiedIdentifier(
+                    name = scalaType.typeSymbol.fullName.toString,
+                    enclosingClassNames = List.empty
+                  )
+              }
+
+              ScalaModel.EnumerationRef(qualId)
+            } else if (
+              typeSymbol.is(Flags.ModuleClass) ||
+              typeSymbol.is(Flags.Module)
+            ) {
+              ScalaModel.CaseObjectRef(buildQualifiedIdentifier(typeSymbol))
+            } else {
+              unknown
             }
-
-            val qualId = id.split("\\.").toList.reverse match {
-              case nme :: rev =>
-                ScalaModel.QualifiedIdentifier(
-                  name = nme,
-                  enclosingClassNames = rev.reverse
-                )
-
-              case _ =>
-                ScalaModel.QualifiedIdentifier(
-                  name = scalaType.typeSymbol.fullName.toString,
-                  enclosingClassNames = List.empty
-                )
-            }
-
-            ScalaModel.EnumerationRef(qualId)
           }
-
-          case _ =>
-            unknown
         }
     }
 

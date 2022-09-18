@@ -1,7 +1,7 @@
 package io.github.scalats.core
 
 import io.github.scalats.{ scala => ScalaModel }
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
 import Internals.ListSet
 
@@ -222,6 +222,9 @@ final class Transpiler(config: Settings) {
         idToString(id),
         typeArgs.map(transpileTypeRef(_, inInterfaceContext))
       )
+
+    case ScalaModel.CaseObjectRef(id) =>
+      SingletonTypeRef(name = idToString(id), values = ListSet.empty)
 
     case ScalaModel.DateRef =>
       DateRef

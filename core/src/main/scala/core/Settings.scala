@@ -15,8 +15,8 @@ final class Settings(
     val prependEnclosingClassNames: Boolean,
     val typescriptIndent: String,
     val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
-    val typeNaming: TypeScriptTypeNaming,
-    val fieldMapper: TypeScriptFieldMapper,
+    val typeNaming: TypeNaming,
+    val fieldMapper: FieldMapper,
     val discriminator: Settings.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters", "VariableShadowing"))
@@ -27,8 +27,8 @@ final class Settings(
       typescriptIndent: String = this.typescriptIndent,
       typescriptLineSeparator: Settings.TypeScriptLineSeparator =
         this.typescriptLineSeparator,
-      typeNaming: TypeScriptTypeNaming = this.typeNaming,
-      fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
+      typeNaming: TypeNaming = this.typeNaming,
+      fieldMapper: FieldMapper = this.fieldMapper,
       discriminator: Settings.Discriminator = this.discriminator
     ): Settings =
     new Settings(
@@ -75,8 +75,8 @@ object Settings {
       prependEnclosingClassNames: Boolean = true,
       typescriptIndent: String = DefaultTypeScriptIndent,
       typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
-      typeNaming: TypeScriptTypeNaming = TypeScriptTypeNaming.Identity,
-      fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
+      typeNaming: TypeNaming = TypeNaming.Identity,
+      fieldMapper: FieldMapper = FieldMapper.Identity,
       discriminator: Discriminator = DefaultDiscriminator
     ): Settings =
     new Settings(
@@ -130,15 +130,15 @@ object Settings {
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
 
-    val typeNaming: TypeScriptTypeNaming = str("typeNaming").flatMap {
+    val typeNaming: TypeNaming = str("typeNaming").flatMap {
       case "Identity" =>
-        Some(TypeScriptTypeNaming.Identity)
+        Some(TypeNaming.Identity)
 
       case className =>
         try {
           Option(
             loadClass(className)
-              .asSubclass(classOf[TypeScriptTypeNaming])
+              .asSubclass(classOf[TypeNaming])
               .getDeclaredConstructor()
               .newInstance()
           )
@@ -150,21 +150,21 @@ object Settings {
         }
 
     }.getOrElse {
-      TypeScriptTypeNaming.Identity
+      TypeNaming.Identity
     }
 
-    val fieldMapper: TypeScriptFieldMapper = str("fieldMapper").flatMap {
+    val fieldMapper: FieldMapper = str("fieldMapper").flatMap {
       case "SnakeCase" =>
-        Some(TypeScriptFieldMapper.SnakeCase)
+        Some(FieldMapper.SnakeCase)
 
       case "Identity" =>
-        Some(TypeScriptFieldMapper.Identity)
+        Some(FieldMapper.Identity)
 
       case className =>
         try {
           Option(
             loadClass(className)
-              .asSubclass(classOf[TypeScriptFieldMapper])
+              .asSubclass(classOf[FieldMapper])
               .getDeclaredConstructor()
               .newInstance()
           )
@@ -176,7 +176,7 @@ object Settings {
         }
 
     }.getOrElse {
-      TypeScriptFieldMapper.Identity
+      FieldMapper.Identity
     }
 
     val discriminator: Discriminator =
@@ -197,7 +197,7 @@ object Settings {
 
   def toConfig(conf: Settings, prefix: Option[String] = None): Config = {
     val typeNaming: String = conf.typeNaming match {
-      case TypeScriptTypeNaming.Identity =>
+      case TypeNaming.Identity =>
         "Identity"
 
       case custom =>
@@ -205,10 +205,10 @@ object Settings {
     }
 
     val fieldMapper: String = conf.fieldMapper match {
-      case TypeScriptFieldMapper.SnakeCase =>
+      case FieldMapper.SnakeCase =>
         "SnakeCase"
 
-      case TypeScriptFieldMapper.Identity =>
+      case FieldMapper.Identity =>
         "Identity"
 
       case custom =>

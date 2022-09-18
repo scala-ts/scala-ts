@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
 import Internals.ListSet
 
@@ -11,8 +11,7 @@ import Internals.ListSet
  *
  * The implementations must be class with a no-arg constructor.
  */
-trait TypeScriptImportResolver // TODO: Rename
-    extends (Declaration => Option[ListSet[TypeRef]]) { self =>
+trait ImportResolver extends (Declaration => Option[ListSet[TypeRef]]) { self =>
 
   /**
    * Resolves `Some` required import for the given `declaration`.
@@ -21,22 +20,21 @@ trait TypeScriptImportResolver // TODO: Rename
    */
   def apply(declaration: Declaration): Option[ListSet[TypeRef]]
 
-  def andThen(m: TypeScriptImportResolver): TypeScriptImportResolver =
-    new TypeScriptImportResolver {
+  def andThen(m: ImportResolver): ImportResolver = new ImportResolver {
 
-      @inline def apply(decl: Declaration): Option[ListSet[TypeRef]] =
-        self(decl).orElse(m(decl))
-    }
+    @inline def apply(decl: Declaration): Option[ListSet[TypeRef]] =
+      self(decl).orElse(m(decl))
+  }
 }
 
-object TypeScriptImportResolver {
+object ImportResolver {
   type Resolved = Declaration => ListSet[TypeRef]
 
-  object Defaults extends TypeScriptImportResolver {
+  object Defaults extends ImportResolver {
     def apply(declaration: Declaration): Option[ListSet[TypeRef]] = None
   }
 
-  final class UnionWithLiteralSingleton extends TypeScriptImportResolver {
+  final class UnionWithLiteralSingleton extends ImportResolver {
 
     def apply(declaration: Declaration): Option[ListSet[TypeRef]] =
       declaration match {
@@ -61,13 +59,13 @@ object TypeScriptImportResolver {
 
   @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   def chain(
-      multi: Seq[TypeScriptImportResolver]
-    ): Option[TypeScriptImportResolver] = {
+      multi: Seq[ImportResolver]
+    ): Option[ImportResolver] = {
     @scala.annotation.tailrec
     def go(
-        in: Seq[TypeScriptImportResolver],
-        out: TypeScriptImportResolver
-      ): TypeScriptImportResolver =
+        in: Seq[ImportResolver],
+        out: ImportResolver
+      ): ImportResolver =
       in.headOption match {
         case Some(next) => go(in.tail, out.andThen(next))
         case _          => out
@@ -102,7 +100,17 @@ object TypeScriptImportResolver {
           qualifiers(elements.toList ::: in.tail, out)
 
         case Some(SelectValue(_, _, qual, _)) =>
-          qualifiers(in.tail, out ++ qual.requires)
+          qualifiers(
+            in.tail,
+            out ++ qual.requires.filterNot {
+              case SingletonTypeRef(nme, _) =>
+                // Singleton can be found as qualifier and as union type
+                out.exists(_.name == nme)
+
+              case _ =>
+                false
+            }
+          )
 
         case Some(_) =>
           qualifiers(in.tail, out)
@@ -135,10 +143,10 @@ object TypeScriptImportResolver {
       case vd @ ValueMemberDeclaration(
             v @ (ListValue(_, _, _, _) | SetValue(_, _, _, _))
           ) =>
-        qualifiers(List(v), ListSet.empty) ++ vd.reference.requires
+        qualifiers(List(v), vd.reference.requires)
 
       case vd @ ValueMemberDeclaration(v @ DictionaryValue(_, _, _, _)) =>
-        qualifiers(List(v), ListSet.empty) ++ vd.reference.requires
+        qualifiers(List(v), vd.reference.requires)
 
       case ValueMemberDeclaration(SelectValue(_, ref, qual, _)) =>
         qual.requires ++ ref.requires

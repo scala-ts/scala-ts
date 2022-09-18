@@ -1,19 +1,18 @@
 package io.github.scalats.core
 
+import io.github.scalats.ast._
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
 import org.specs2.specification.core.Fragments
 
-final class TypeScriptImportResolverSpec
-    extends org.specs2.mutable.Specification {
-  "TypeScript import resolver".title
+final class ImportResolverSpec extends org.specs2.mutable.Specification {
+  "Import resolver".title
 
   "Required types of type declaration" should {
     import TranspilerResults._
 
     "with default resolver" >> {
-      import TypeScriptImportResolver.defaultResolver
+      import ImportResolver.defaultResolver
 
       "be resolved for union type" in {
         defaultResolver(union1) must_=== ListSet.empty[TypeRef] and {
@@ -183,7 +182,7 @@ final class TypeScriptImportResolverSpec
     }
 
     "with UnionWithLiteralSingleton" >> {
-      import TypeScriptImportResolver.{ unionWithLiteralSingleton => resolve }
+      import ImportResolver.{ unionWithLiteralSingleton => resolve }
 
       "be resolved for union type" in {
         resolve(union1) must beSome[ListSet[TypeRef]].which {

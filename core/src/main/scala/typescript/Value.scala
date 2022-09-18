@@ -1,5 +1,4 @@
-package io.github.scalats.typescript
-// TODO: Rename package
+package io.github.scalats.ast
 
 sealed trait Value {
 

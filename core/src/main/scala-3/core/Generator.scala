@@ -7,7 +7,7 @@ import dotty.tools.dotc.core.Types.Type
 import dotty.tools.dotc.ast.tpd
 import dotty.tools.dotc.core.Contexts.Context
 
-object TypeScriptGenerator:
+object Generator:
   import tpd._
 
   /**
@@ -31,10 +31,10 @@ object TypeScriptGenerator:
       types: List[(Type, Tree)],
       symtab: Map[String, (Type, Tree)],
       logger: Logger,
-      importResolver: TypeScriptImportResolver,
-      declMapper: TypeScriptDeclarationMapper,
-      typeMapper: TypeScriptTypeMapper,
-      printer: TypeScriptPrinter,
+      importResolver: ImportResolver,
+      declMapper: DeclarationMapper,
+      typeMapper: TypeMapper,
+      printer: Printer,
       examined: ListSet[ScalaParser.TypeFullId],
       compiled: Set[String],
       acceptsType: Symbol => Boolean
@@ -51,7 +51,7 @@ object TypeScriptGenerator:
     import parseResult.{ parsed => scalaTypes }
 
     val typeScriptTypes = transpiler(scalaTypes)
-    val emiter = new TypeScriptEmitter(
+    val emiter = new Emitter(
       settings,
       printer,
       importResolver,
@@ -64,4 +64,4 @@ object TypeScriptGenerator:
     parseResult.examined
   }
 
-end TypeScriptGenerator
+end Generator

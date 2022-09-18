@@ -2,20 +2,20 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import io.github.scalats.typescript.Declaration
+import io.github.scalats.ast.Declaration
 
 /**
  * The implementations must be class with a no-arg constructor.
  *
  * See:
- * - [[TypeScriptDeclarationMapper.EnumerationAsEnum]]
+ * - [[DeclarationMapper.EnumerationAsEnum]]
  */
-trait TypeScriptDeclarationMapper // TODO: Rename
+trait DeclarationMapper
     extends Function6[
-      TypeScriptDeclarationMapper.Resolved,
+      DeclarationMapper.Resolved,
       Settings,
-      TypeScriptTypeMapper.Resolved,
-      TypeScriptFieldMapper,
+      TypeMapper.Resolved,
+      FieldMapper,
       Declaration,
       PrintStream,
       Option[Unit]
@@ -31,22 +31,22 @@ trait TypeScriptDeclarationMapper // TODO: Rename
    * @return Some print operation, or None if `declaration` is not handled
    */
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
+      parent: DeclarationMapper.Resolved,
       settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeMapper.Resolved,
+      fieldMapper: FieldMapper,
       declaration: Declaration,
       out: PrintStream
     ): Option[Unit]
 
-  def andThen(m: TypeScriptDeclarationMapper): TypeScriptDeclarationMapper =
-    new TypeScriptDeclarationMapper {
+  def andThen(m: DeclarationMapper): DeclarationMapper =
+    new DeclarationMapper {
 
       @inline def apply(
-          parent: TypeScriptDeclarationMapper.Resolved,
+          parent: DeclarationMapper.Resolved,
           settings: Settings,
-          typeMapper: TypeScriptTypeMapper.Resolved,
-          fieldMapper: TypeScriptFieldMapper,
+          typeMapper: TypeMapper.Resolved,
+          fieldMapper: FieldMapper,
           declaration: Declaration,
           out: PrintStream
         ): Option[Unit] =
@@ -59,8 +59,8 @@ trait TypeScriptDeclarationMapper // TODO: Rename
   override def toString: String = getClass.getName
 }
 
-object TypeScriptDeclarationMapper {
-  import io.github.scalats.typescript.{
+object DeclarationMapper {
+  import io.github.scalats.ast.{
     EnumDeclaration,
     InterfaceDeclaration,
     SingletonDeclaration,
@@ -75,13 +75,13 @@ object TypeScriptDeclarationMapper {
 
   type Resolved = Function2[Declaration, PrintStream, Unit]
 
-  object Defaults extends TypeScriptDeclarationMapper {
+  object Defaults extends DeclarationMapper {
 
     def apply(
         parent: Resolved,
         settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
+        typeMapper: TypeMapper.Resolved,
+        fieldMapper: FieldMapper,
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = None
@@ -92,13 +92,13 @@ object TypeScriptDeclarationMapper {
    * `<valueType> & { <name>: undefined }`
    * (rather than type alias for `<valueType>`).
    */
-  final class ValueClassAsTagged extends TypeScriptDeclarationMapper {
+  final class ValueClassAsTagged extends DeclarationMapper {
 
     def apply(
         parent: Resolved,
         settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
+        typeMapper: TypeMapper.Resolved,
+        fieldMapper: FieldMapper,
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = {
@@ -126,7 +126,7 @@ object TypeScriptDeclarationMapper {
             val valueType = typeMapper(
               settings,
               decl,
-              TypeScriptField(field.name),
+              Field(field.name),
               field.typeRef
             )
 
@@ -140,7 +140,7 @@ export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
 }""")
 
             // Type guard
-            val simpleCheck = TypeScriptEmitter.valueCheck(
+            val simpleCheck = Emitter.valueCheck(
               "v",
               field.typeRef,
               { t =>
@@ -167,14 +167,14 @@ ${indent}return ${simpleCheck}${lineSep}
    * Maps `EnumDeclaration` as TypeScript `enum`
    * (rather than union type as default).
    */
-  final class EnumerationAsEnum extends TypeScriptDeclarationMapper {
-    import io.github.scalats.typescript.ValueMemberDeclaration
+  final class EnumerationAsEnum extends DeclarationMapper {
+    import io.github.scalats.ast.ValueMemberDeclaration
 
     def apply(
         parent: Resolved,
         settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
+        typeMapper: TypeMapper.Resolved,
+        fieldMapper: FieldMapper,
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = declaration match {
@@ -253,13 +253,13 @@ export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
    * - If the singleton declares a single value, uses it content as literal.
    * - If the singleton declared multiple values, uses them as literal object.
    */
-  final class SingletonAsLiteral extends TypeScriptDeclarationMapper {
+  final class SingletonAsLiteral extends DeclarationMapper {
 
     def apply(
         parent: Resolved,
         settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
+        typeMapper: TypeMapper.Resolved,
+        fieldMapper: FieldMapper,
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = declaration match {
@@ -312,13 +312,13 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
    *
    * Declared fields and super interface are ignored.
    */
-  final class UnionAsSimpleUnion extends TypeScriptDeclarationMapper {
+  final class UnionAsSimpleUnion extends DeclarationMapper {
 
     def apply(
         parent: Resolved,
         settings: Settings,
-        typeMapper: TypeScriptTypeMapper.Resolved,
-        fieldMapper: TypeScriptFieldMapper,
+        typeMapper: TypeMapper.Resolved,
+        fieldMapper: FieldMapper,
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = declaration match {
@@ -406,13 +406,13 @@ ${indent}${indent}""")
 
   @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
   def chain(
-      multi: Seq[TypeScriptDeclarationMapper]
-    ): Option[TypeScriptDeclarationMapper] = {
+      multi: Seq[DeclarationMapper]
+    ): Option[DeclarationMapper] = {
     @scala.annotation.tailrec
     def go(
-        in: Seq[TypeScriptDeclarationMapper],
-        out: TypeScriptDeclarationMapper
-      ): TypeScriptDeclarationMapper = in.headOption match {
+        in: Seq[DeclarationMapper],
+        out: DeclarationMapper
+      ): DeclarationMapper = in.headOption match {
       case Some(next) => go(in.tail, out.andThen(next))
       case _          => out
     }

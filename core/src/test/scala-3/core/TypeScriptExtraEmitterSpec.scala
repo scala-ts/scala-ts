@@ -39,7 +39,7 @@ export function is${ns}Color(v: any): v is ${ns}Color {
       "as enum" in {
         emit(
           ListSet(TranspilerExtraSpec.colorDecl),
-          declMapper = TypeScriptDeclarationMapper.enumerationAsEnum
+          declMapper = DeclarationMapper.enumerationAsEnum
         ) must beTypedEqualTo(s"""export enum ${ns}Color {
   Red = 'Red',
   Green = 'Green',

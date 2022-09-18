@@ -1046,31 +1046,33 @@ final class ScalaParser[Uni <: Universe](
           case typeParam if (typeParams contains typeParam) =>
             TypeParamRef(typeParam)
 
-          case _ if isAnyValChild(scalaType) =>
-            // #ValueClass_1
-            scalaType.members
-              .filter(!_.isMethod)
-              .map(_.typeSignature)
-              .headOption match {
-              case Some(valueTpe) =>
-                TaggedRef(
-                  identifier = buildQualifiedIdentifier(typeSymbol),
-                  tagged = scalaTypeRef(valueTpe, Set.empty)
-                )
+          case _ => {
+            if (isAnyValChild(scalaType)) {
+              // #ValueClass_1
+              scalaType.members
+                .filter(!_.isMethod)
+                .map(_.typeSignature)
+                .headOption match {
+                case Some(valueTpe) =>
+                  TaggedRef(
+                    identifier = buildQualifiedIdentifier(typeSymbol),
+                    tagged = scalaTypeRef(valueTpe, Set.empty)
+                  )
 
-              case _ =>
-                unknown
+                case _ =>
+                  unknown
+              }
+            } else if (isEnumerationValue(scalaType)) {
+              val enumerationObject =
+                mirror.staticModule(fullId(scalaType) stripSuffix ".Value")
+
+              EnumerationRef(buildQualifiedIdentifier(enumerationObject))
+            } else if (typeSymbol.isModuleClass || typeSymbol.isModule) {
+              CaseObjectRef(buildQualifiedIdentifier(typeSymbol))
+            } else {
+              unknown
             }
-
-          case _ if isEnumerationValue(scalaType) => {
-            val enumerationObject =
-              mirror.staticModule(fullId(scalaType) stripSuffix ".Value")
-
-            EnumerationRef(buildQualifiedIdentifier(enumerationObject))
           }
-
-          case _ =>
-            unknown
         }
     }
 

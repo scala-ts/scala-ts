@@ -106,7 +106,7 @@ object ScalaRuntimeFixtures {
     values = ListSet(
       ScalaModel.ListInvariant(
         "purple",
-        ScalaModel.CollectionRef(colorRef),
+        ScalaModel.ListRef(colorRef),
         colorRef,
         List(
           ScalaModel.SelectInvariant(

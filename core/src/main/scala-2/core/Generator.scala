@@ -15,7 +15,7 @@ import Internals.ListSet
  * @define declMapperParam the function to mapper the transpiled declaration
  * @define typeMapperParam the function to mapper the transpiled types to TypeScript code (if the standard emitter is used)
  */
-object TypeScriptGenerator {
+object Generator {
 
   /**
    * Generates the TypeScript for the specified Scala `types`.
@@ -39,10 +39,10 @@ object TypeScriptGenerator {
       types: List[(universe.Type, universe.Tree)],
       symtab: Map[String, (universe.Type, universe.Tree)],
       logger: Logger,
-      importResolver: TypeScriptImportResolver,
-      declMapper: TypeScriptDeclarationMapper,
-      typeMapper: TypeScriptTypeMapper,
-      printer: TypeScriptPrinter,
+      importResolver: ImportResolver,
+      declMapper: DeclarationMapper,
+      typeMapper: TypeMapper,
+      printer: Printer,
       examined: ListSet[ScalaParser.TypeFullId],
       compiled: Set[String],
       acceptsType: universe.Symbol => Boolean
@@ -60,7 +60,7 @@ object TypeScriptGenerator {
     // println(s"scalaTypes = ${scalaTypes.map(_.identifier)}")
 
     val typeScriptTypes = transpiler(scalaTypes)
-    val emiter = new TypeScriptEmitter(
+    val emiter = new Emitter(
       settings,
       printer,
       importResolver,

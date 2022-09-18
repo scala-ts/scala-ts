@@ -2,11 +2,11 @@ package io.github.scalats.plugins
 
 import java.io.PrintStream
 
-import io.github.scalats.core.{ Settings, TypeScriptPrinter }
+import io.github.scalats.ast.TypeRef
+import io.github.scalats.core.{ Printer, Settings }
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript.TypeRef
 
-abstract class BasePrinter extends TypeScriptPrinter {
+abstract class BasePrinter extends Printer {
   private lazy val preludeUrl = sys.props.get("scala-ts.printer.prelude-url")
 
   /**

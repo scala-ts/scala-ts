@@ -2,16 +2,16 @@ package io.github.scalats.core
 
 import scala.collection.immutable.Set
 
-final class TypeScriptField( // TODO: Rename
+final class Field(
     val name: String,
-    val flags: Set[TypeScriptField.Flag]) {
+    val flags: Set[Field.Flag]) {
 
-  override def toString = s"TypeScriptField${tupled.toString}"
+  override def toString = s"Field${tupled.toString}"
 
   override def hashCode: Int = tupled.hashCode
 
   override def equals(that: Any): Boolean = that match {
-    case other: TypeScriptField =>
+    case other: Field =>
       this.tupled == other.tupled
 
     case _ =>
@@ -21,13 +21,13 @@ final class TypeScriptField( // TODO: Rename
   private lazy val tupled = name -> flags
 }
 
-object TypeScriptField {
+object Field {
 
   def apply(
       name: String,
       flags: Set[Flag] = Set.empty
-    ): TypeScriptField =
-    new TypeScriptField(name, flags)
+    ): Field =
+    new Field(name, flags)
 
   final class Flag(val name: String) extends AnyVal
 

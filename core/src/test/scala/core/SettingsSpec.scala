@@ -44,15 +44,15 @@ final class SettingsSpec extends org.specs2.mutable.Specification {
   }
 }
 
-final class CustomFieldMapper extends TypeScriptFieldMapper {
+final class CustomFieldMapper extends FieldMapper {
 
   def apply(
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: io.github.scalats.typescript.TypeRef
+      propertyType: io.github.scalats.ast.TypeRef
     ) =
-    TypeScriptField(s"_${propertyName}", Set.empty)
+    Field(s"_${propertyName}", Set.empty)
 
   override def hashCode: Int = getClass.hashCode
 

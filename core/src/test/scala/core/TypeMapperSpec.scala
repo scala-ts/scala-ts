@@ -1,18 +1,18 @@
 package io.github.scalats.core
 
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
-final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
-  "TypeScript type mapper".title
+final class TypeMapperSpec extends org.specs2.mutable.Specification {
+  "Type mapper".title
 
-  import TypeScriptTypeMapper._
+  import TypeMapper._
 
-  lazy val unresolved: Function4[Settings, Declaration, TypeScriptField, TypeRef, String] =
+  lazy val unresolved: Function4[Settings, Declaration, Field, TypeRef, String] =
     (_, _, _, _) => "_tpe_"
 
   lazy val settings = Settings()
 
-  val member = TypeScriptField("_")
+  val member = Field("_")
 
   val owner = InterfaceDeclaration(
     name = "_",
@@ -77,7 +77,7 @@ final class TypeScriptTypeMapperSpec extends org.specs2.mutable.Specification {
 
     "be chained" in {
       chain(Seq(numberAsString, dateAsString))
-        .aka("chained") must beSome[TypeScriptTypeMapper].which { m =>
+        .aka("chained") must beSome[TypeMapper].which { m =>
         val mapper = m(unresolved, settings, owner, member, _: TypeRef)
 
         mapper(NumberRef.int) must beSome("string") and {

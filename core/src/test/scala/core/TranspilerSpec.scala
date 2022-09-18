@@ -1,8 +1,8 @@
 package io.github.scalats.core
 
 import io.github.scalats.{ scala => ScalaModel }
+import io.github.scalats.ast._
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
 import ScalaRuntimeFixtures.results._
 import TranspilerCompat.{ ns, valueClassNs }

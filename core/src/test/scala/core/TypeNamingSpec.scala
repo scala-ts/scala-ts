@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
 final class TypeScriptTypeNamingSpec extends org.specs2.mutable.Specification {
   "TypeScript type naming".title
@@ -8,7 +8,7 @@ final class TypeScriptTypeNamingSpec extends org.specs2.mutable.Specification {
   val settings = Settings()
 
   "Default type naming" should {
-    val naming = TypeScriptTypeNaming.Identity(settings, _: TypeRef)
+    val naming = TypeNaming.Identity(settings, _: TypeRef)
 
     "be applied on simple types" in {
       naming(StringRef) must_=== "string"

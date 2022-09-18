@@ -18,10 +18,10 @@ import scala.collection.immutable.ListSet
 import io.github.scalats.core.{
   Logger,
   ScalaParser,
-  TypeScriptDeclarationMapper,
-  TypeScriptGenerator,
-  TypeScriptImportResolver,
-  TypeScriptTypeMapper
+  DeclarationMapper,
+  Generator,
+  ImportResolver,
+  TypeMapper
 }
 import io.github.scalats.tsconfig.ConfigFactory
 
@@ -317,24 +317,24 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
 
     val scalaTypes = typeBuf.result()
 
-    val declMapper = TypeScriptDeclarationMapper
+    val declMapper = DeclarationMapper
       .chain(config.typeScriptDeclarationMappers)
-      .getOrElse(TypeScriptDeclarationMapper.Defaults)
+      .getOrElse(DeclarationMapper.Defaults)
 
-    val typeMapper = TypeScriptTypeMapper
+    val typeMapper = TypeMapper
       .chain(config.typeScriptTypeMappers)
-      .getOrElse(TypeScriptTypeMapper.Defaults)
+      .getOrElse(TypeMapper.Defaults)
 
-    val importResolver = TypeScriptImportResolver
+    val importResolver = ImportResolver
       .chain(config.typeScriptImportResolvers)
-      .getOrElse(TypeScriptImportResolver.Defaults)
+      .getOrElse(ImportResolver.Defaults)
 
     compiled.synchronized {
       // Include the current compilation unit as it's known
       compiled += ctx.source.file.canonicalPath
     }
 
-    val ex = TypeScriptGenerator.generate(
+    val ex = Generator.generate(
       settings = config.settings,
       types = scalaTypes,
       symtab = symtab,

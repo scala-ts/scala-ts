@@ -17,7 +17,7 @@ private[core] trait TranspilerExtraSpec { self: TranspilerSpec =>
 }
 
 private[core] object TranspilerExtraSpec {
-  import io.github.scalats.typescript._
+  import io.github.scalats.ast._
   import TranspilerCompat.ns
 
   private val colorRef = CustomTypeRef(s"${ns}Color")

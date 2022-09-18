@@ -22,6 +22,8 @@ case class CaseClassRef(
     typeArgs: List[TypeRef])
     extends TypeRef
 
+case class CaseObjectRef(identifier: QualifiedIdentifier) extends TypeRef
+
 case class ListRef(innerType: TypeRef) extends TypeRef
 
 case class SetRef(innerType: TypeRef) extends TypeRef

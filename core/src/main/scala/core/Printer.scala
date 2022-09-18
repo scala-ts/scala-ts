@@ -2,11 +2,11 @@ package io.github.scalats.core
 
 import java.io.PrintStream
 
-import io.github.scalats.typescript.{ Declaration, TypeRef }
+import io.github.scalats.ast.{ Declaration, TypeRef }
 
 import Internals.ListSet
 
-trait TypeScriptPrinter // TODO: Rename
+trait Printer
     extends Function4[Settings, Declaration.Kind, String, ListSet[
       TypeRef
     ], PrintStream] {
@@ -28,9 +28,9 @@ trait TypeScriptPrinter // TODO: Rename
     ): PrintStream
 }
 
-object TypeScriptPrinter {
+object Printer {
 
-  object StandardOutput extends TypeScriptPrinter {
+  object StandardOutput extends Printer {
 
     def apply(
         configuration: Settings,
