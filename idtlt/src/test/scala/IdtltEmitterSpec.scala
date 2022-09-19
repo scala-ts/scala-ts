@@ -1,19 +1,19 @@
 package io.github.scalats.idtlt
 
+import io.github.scalats.ast._
 import io.github.scalats.core.{
+  DeclarationMapper,
+  Emitter,
+  Field,
+  ImportResolver,
   Settings,
   TranspilerResults,
-  TypeScriptDeclarationMapper,
-  TypeScriptEmitter,
-  TypeScriptField,
-  TypeScriptImportResolver,
-  TypeScriptTypeMapper
+  TypeMapper
 }
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
-final class EmitterSpec extends org.specs2.mutable.Specification {
-  "TypeScript emitter".title
+final class IdtltEmitterSpec extends org.specs2.mutable.Specification {
+  "Idtlt TypeScript emitter".title
 
   import TranspilerResults._
   import TestCompat.{ ns, valueClassNs }
@@ -49,9 +49,10 @@ export const discriminatedEmpty: (_: Empty) => DiscriminatedEmpty = (v: Empty) =
 
 export function isEmpty(v: any): v is Empty {
   return (
-    v === {}
+    typeof v === 'object' && Object.keys(v).length === 0
   );
 }""")
+
     }
 
     "emit interface for a class with one primitive member" in {
@@ -775,22 +776,21 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
 
   // ---
 
-  private val idtltDeclMapper = new DeclarationMapper
+  private val idtltDeclMapper = new IdtltDeclarationMapper
 
-  private val idtltTypeMapper = new TypeMapper
+  private val idtltTypeMapper = new IdtltTypeMapper
 
   def emit(
       decls: ListSet[Declaration],
       config: Settings = Settings(),
-      declMapper: TypeScriptDeclarationMapper = idtltDeclMapper,
-      importResolver: TypeScriptImportResolver =
-        TypeScriptImportResolver.Defaults,
-      typeMapper: TypeScriptTypeMapper = idtltTypeMapper
+      declMapper: DeclarationMapper = idtltDeclMapper,
+      importResolver: ImportResolver = ImportResolver.Defaults,
+      typeMapper: TypeMapper = idtltTypeMapper
     ): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(
+    val emiter = new Emitter(
       config,
       (_, _, _, _) => out,
       importResolver,
@@ -808,7 +808,7 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
   }
 }
 
-object CustomTypeNaming extends io.github.scalats.core.TypeScriptTypeNaming {
+object CustomTypeNaming extends io.github.scalats.core.TypeNaming {
 
   def apply(settings: Settings, tpe: TypeRef) = {
     if (tpe.name == "this") {
@@ -819,13 +819,13 @@ object CustomTypeNaming extends io.github.scalats.core.TypeScriptTypeNaming {
   }
 }
 
-object CustomFieldMapper extends io.github.scalats.core.TypeScriptFieldMapper {
+object CustomFieldMapper extends io.github.scalats.core.FieldMapper {
 
   def apply(
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: io.github.scalats.typescript.TypeRef
+      propertyType: TypeRef
     ) =
-    TypeScriptField(s"_${propertyName}", scala.collection.immutable.Set.empty)
+    Field(s"_${propertyName}", scala.collection.immutable.Set.empty)
 }

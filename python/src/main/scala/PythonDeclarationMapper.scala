@@ -2,26 +2,26 @@ package io.github.scalats.python
 
 import java.io.PrintStream
 
+import io.github.scalats.ast._
 import io.github.scalats.core.{
+  DeclarationMapper,
+  Field,
+  FieldMapper,
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptField,
-  TypeScriptFieldMapper,
-  TypeScriptTypeMapper
+  TypeMapper
 }
-import io.github.scalats.typescript._
 
-final class PythonDeclarationMapper extends TypeScriptDeclarationMapper {
+final class PythonDeclarationMapper extends DeclarationMapper {
 
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
+      parent: DeclarationMapper.Resolved,
       settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeMapper.Resolved,
+      fieldMapper: FieldMapper,
       declaration: Declaration,
       out: PrintStream
     ): Option[Unit] = {
-    import settings.{ typescriptIndent => indent }
+    import settings.indent
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
@@ -117,6 +117,16 @@ class ${tpeName}Companion:""")
 ${indent}def ${nme}(self) -> ${tpeName}:
 ${indent}${indent}return ${nme.toLowerCase}.${nme}Inhabitant""")
             }
+
+            out.println(s"""
+
+${tpeName}KnownValues: typing.List[${tpeName}] = [""")
+
+            singletons.foreach { nme =>
+              out.println(s"${indent}${tpeName}Companion.${nme}(),")
+            }
+
+            out.println("]")
           }
 
           if (fields.nonEmpty) {
@@ -132,7 +142,7 @@ ${indent}${indent}return ${nme.toLowerCase}.${nme}Inhabitant""")
 
       case decl @ TaggedDeclaration(id, field) =>
         Some {
-          val member = TypeScriptField(field.name)
+          val member = Field(field.name)
           val tmapper = typeMapper(settings, decl, member, _: TypeRef)
 
           out.println(s"""# Declare tagged type ${tpeName}
@@ -174,7 +184,7 @@ class ${tpeName}Invariants:""")
       case decl @ SingletonDeclaration(name, values, superInterface) =>
         Some {
           // TODO: super
-          val member = TypeScriptField(name)
+          val member = Field(name)
           val tmapper = typeMapper(settings, decl, member, _: TypeRef)
 
           out.println(s"# Declare singleton ${tpeName}")
@@ -268,7 +278,7 @@ ${tpeName}Invariants = I${tpeName}Invariants(""")
         }
 
       case decl @ ValueBodyDeclaration(_) => {
-        val member = TypeScriptField(decl.owner.name)
+        val member = Field(decl.owner.name)
         val tmapper = typeMapper(settings, decl, member, _: TypeRef)
 
         def nestedEmit(vb: ValueBodyDeclaration): Unit =
@@ -392,8 +402,8 @@ ${tpeName}Invariants = I${tpeName}Invariants(""")
 
   private def emitField(
       settings: Settings,
-      fieldMapper: TypeScriptFieldMapper,
-      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: FieldMapper,
+      typeMapper: TypeMapper.Resolved,
       o: PrintStream,
       owner: Declaration,
       member: Member
@@ -401,7 +411,7 @@ ${tpeName}Invariants = I${tpeName}Invariants(""")
     val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
     o.println(
-      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)}"
+      s"${settings.indent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)}"
     )
   }
 }

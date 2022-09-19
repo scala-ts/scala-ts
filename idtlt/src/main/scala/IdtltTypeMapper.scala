@@ -1,19 +1,15 @@
 package io.github.scalats.idtlt
 
-import io.github.scalats.core.{
-  Settings,
-  TypeScriptField,
-  TypeScriptTypeMapper
-}
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
+import io.github.scalats.core.{ Field, Settings, TypeMapper }
 
-final class TypeMapper extends TypeScriptTypeMapper {
+final class IdtltTypeMapper extends TypeMapper {
 
   def apply(
-      parent: TypeScriptTypeMapper.Resolved,
+      parent: TypeMapper.Resolved,
       settings: Settings,
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       tpe: TypeRef
     ): Option[String] = ownerType match {
     case SingletonDeclaration(_, _, None) =>
@@ -68,7 +64,7 @@ final class TypeMapper extends TypeScriptTypeMapper {
           s"idtlt.union(${tr(innerType)}, idtlt.null)"
 
         case NullableType(innerType) =>
-          // TODO: ?? member.flags contains TypeScriptField.omitable
+          // TODO: ?? member.flags contains Field.omitable
           s"${tr(innerType)}.optional()"
         // TODO: space-monad? string.nullable().map(Option)
 

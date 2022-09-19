@@ -13,13 +13,13 @@ import sbt.Keys._
 import sbt.internal.util.Attributed
 
 import _root_.io.github.scalats.core.{
+  DeclarationMapper,
+  FieldMapper,
+  ImportResolver,
+  Printer,
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptFieldMapper,
-  TypeScriptImportResolver,
-  TypeScriptPrinter,
-  TypeScriptTypeMapper,
-  TypeScriptTypeNaming
+  TypeMapper,
+  TypeNaming
 }
 import _root_.io.github.scalats.plugins.{
   FilePrinter,
@@ -32,15 +32,15 @@ import _root_.io.github.scalats.tsconfig.{
   ConfigRenderOptions
 }
 
-// TODO: Rename with deprecation (trait) + update doc
-object TypeScriptGeneratorPlugin extends AutoPlugin {
+object ScalatsGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
   override def trigger = noTrigger
 
   object autoImport {
+    import _root_.io.github.scalats.core.Printer
 
     /** Printer class, along with system properties */
-    type PrinterSetting = (Class[_ <: TypeScriptPrinter], Map[String, String])
+    type PrinterSetting = (Class[_ <: Printer], Map[String, String])
 
     /** Printer preload, either as in-memory lines, or from a source URL */
     type PrinterPrelude = Either[Seq[String], URL]
@@ -62,51 +62,65 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       settingKey[Boolean]("Option types will be compiled to 'type | null'")
 
     val scalatsPrinter =
-      settingKey[PrinterSetting]("Class implementing 'TypeScriptPrinter' to print the generated TypeScript code according the Scala type (default: io.github.scalats.plugins.FilePrinter) (with system properties to be passed in `scalacOptions`)")
+      settingKey[PrinterSetting]("Class implementing 'Printer' to print the generated TypeScript code according the Scala type (default: io.github.scalats.plugins.FilePrinter) (with system properties to be passed in `scalacOptions`)")
 
     val scalatsPrinterPrelude =
       settingKey[Option[PrinterPrelude]]("Prelude for printer supporting it (e.g. `scalatsFilePrinter` or `scalatsSingleFilePrinter`); Either an in-memory string (see `scalatsPrinterInMemoryPrelude`), or a source URL (see `scalatsPrinterUrlPrelude`)")
 
-    // TODO: Rename
-    val scalatsTypeScriptImportResolvers =
-      settingKey[Seq[Class[_ <: TypeScriptImportResolver]]](
-        "Class implementing 'TypeScriptImportResolver' to customize the mapping (default: None)"
+    @deprecated("Use scalatsImportResolvers", "0.5.14")
+    @inline def scalatsTypeScriptImportResolvers = scalatsImportResolvers
+
+    val scalatsImportResolvers =
+      settingKey[Seq[Class[_ <: ImportResolver]]](
+        "Class implementing 'ImportResolver' to customize the mapping (default: None)"
       )
 
-    // TODO: Rename
-    val scalatsTypeScriptDeclarationMappers =
-      settingKey[Seq[Class[_ <: TypeScriptDeclarationMapper]]](
-        "Class implementing 'TypeScriptDeclarationMapper' to customize the mapping (default: None)"
+    @deprecated("Use scalatsDeclarationMappers", "0.5.14")
+    @inline def scalatsTypeScriptDeclarationMappers = scalatsDeclarationMappers
+
+    val scalatsDeclarationMappers =
+      settingKey[Seq[Class[_ <: DeclarationMapper]]](
+        "Class implementing 'DeclarationMapper' to customize the mapping (default: None)"
       )
 
-    // TODO: Rename
-    val scalatsTypeScriptTypeMappers =
-      settingKey[Seq[Class[_ <: TypeScriptTypeMapper]]](
-        "Class implementing 'TypeScriptTypeMapper' to customize the mapping (default: None)"
+    @deprecated("Use scalatsTypeMappers", "0.5.14")
+    @inline def scalatsTypeScriptTypeMappers = scalatsTypeMappers
+
+    val scalatsTypeMappers =
+      settingKey[Seq[Class[_ <: TypeMapper]]](
+        "Class implementing 'TypeMapper' to customize the mapping (default: None)"
       )
 
     val scalatsPrependEnclosingClassNames =
       settingKey[Boolean]("Whether to prepend enclosing class/object names")
 
-    // TODO: Rename
-    val scalatsTypescriptIndent = settingKey[String](
+    @deprecated("Use scalatsIndent", "0.5.14")
+    @inline def scalatsTypescriptIndent = scalatsIndent
+
+    val scalatsIndent = settingKey[String](
       "Characters used as TypeScript indentation (default: 2 spaces)"
     )
 
-    // TODO: Rename
-    val scalatsTypescriptLineSeparator = settingKey[String](
+    @deprecated("Use scalatsLineSeparator", "0.5.14")
+    @inline def scalatsTypescriptLineSeparator = scalatsLineSeparator
+
+    val scalatsLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')"
     )
 
-    // TODO: Rename
-    val scalatsTypeScriptTypeNaming =
-      settingKey[Class[_ <: TypeScriptTypeNaming]](
+    @deprecated("Use scalatsTypeNaming", "0.5.14")
+    @inline def scalatsTypeScriptTypeNaming = scalatsTypeNaming
+
+    val scalatsTypeNaming =
+      settingKey[Class[_ <: TypeNaming]](
         "Conversions for the field names (default: Identity)"
       )
 
-    // TODO: Rename
-    val scalatsTypeScriptFieldMapper =
-      settingKey[Class[_ <: TypeScriptFieldMapper]](
+    @deprecated("Use scalatsFieldMapper", "0.5.14")
+    @inline def scalatsTypeScriptFieldMapper = scalatsFieldMapper
+
+    val scalatsFieldMapper =
+      settingKey[Class[_ <: FieldMapper]](
         "Conversions for the field names (default: Identity)"
       )
 
@@ -139,26 +153,26 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     // ---
 
     lazy val scalatsEnumerationAsEnum =
-      classOf[TypeScriptDeclarationMapper.EnumerationAsEnum]
+      classOf[DeclarationMapper.EnumerationAsEnum]
 
     lazy val scalatsSingletonAsLiteral =
-      classOf[TypeScriptDeclarationMapper.SingletonAsLiteral]
+      classOf[DeclarationMapper.SingletonAsLiteral]
 
     lazy val scalatsValueClassAsTagged =
-      classOf[TypeScriptDeclarationMapper.ValueClassAsTagged]
+      classOf[DeclarationMapper.ValueClassAsTagged]
 
     lazy val scalatsUnionAsSimpleUnion =
-      classOf[TypeScriptDeclarationMapper.UnionAsSimpleUnion]
+      classOf[DeclarationMapper.UnionAsSimpleUnion]
 
     lazy val scalatsUnionWithLiteralSingletonImportResolvers =
-      classOf[TypeScriptImportResolver.UnionWithLiteralSingleton]
+      classOf[ImportResolver.UnionWithLiteralSingleton]
 
     lazy val scalatsUnionWithLiteral: Seq[Def.Setting[_]] = Seq(
-      scalatsTypeScriptDeclarationMappers ++= Seq(
+      scalatsDeclarationMappers ++= Seq(
         scalatsSingletonAsLiteral,
         scalatsUnionAsSimpleUnion
       ),
-      scalatsTypeScriptImportResolvers ++= Seq(
+      scalatsImportResolvers ++= Seq(
         scalatsUnionWithLiteralSingletonImportResolvers
       )
     )
@@ -166,18 +180,18 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     // ---
 
     lazy val scalatsNullableAsOption =
-      classOf[TypeScriptTypeMapper.NullableAsOption]
+      classOf[TypeMapper.NullableAsOption]
 
     lazy val scalatsDateAsString =
-      classOf[TypeScriptTypeMapper.DateAsString]
+      classOf[TypeMapper.DateAsString]
 
     lazy val scalatsNumberAsString =
-      classOf[TypeScriptTypeMapper.NumberAsString]
+      classOf[TypeMapper.NumberAsString]
 
     // ---
 
     @SuppressWarnings(Array("AsInstanceOf"))
-    def scalatsPrinterForClass[C <: TypeScriptPrinter](
+    def scalatsPrinterForClass[C <: Printer](
         props: (String, String)*
       )(implicit
         ct: ClassTag[C]
@@ -296,28 +310,28 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           _.data.toURI.toURL
         }
 
-        val typeNaming: TypeScriptTypeNaming = {
-          val Identity = TypeScriptTypeNaming.Identity.getClass
+        val typeNaming: TypeNaming = {
+          val Identity = TypeNaming.Identity.getClass
 
-          scalatsTypeScriptTypeNaming.value match {
+          scalatsTypeNaming.value match {
             case Identity =>
-              TypeScriptTypeNaming.Identity
+              TypeNaming.Identity
 
             case cls =>
               cls.getDeclaredConstructor().newInstance()
           }
         }
 
-        val fieldMapper: TypeScriptFieldMapper = {
-          val Identity = TypeScriptFieldMapper.Identity.getClass
-          val SnakeCase = TypeScriptFieldMapper.SnakeCase.getClass
+        val fieldMapper: FieldMapper = {
+          val Identity = FieldMapper.Identity.getClass
+          val SnakeCase = FieldMapper.SnakeCase.getClass
 
-          scalatsTypeScriptFieldMapper.value match {
+          scalatsFieldMapper.value match {
             case Identity =>
-              TypeScriptFieldMapper.Identity
+              FieldMapper.Identity
 
             case SnakeCase =>
-              TypeScriptFieldMapper.SnakeCase
+              FieldMapper.SnakeCase
 
             case cls =>
               cls.getDeclaredConstructor().newInstance()
@@ -331,9 +345,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           ), // TODO: (medium priority) scalatsEmitCodecs.value
           scalatsOptionToNullable.value,
           scalatsPrependEnclosingClassNames.value,
-          scalatsTypescriptIndent.value,
+          scalatsIndent.value,
           new Settings.TypeScriptLineSeparator(
-            scalatsTypescriptLineSeparator.value
+            scalatsLineSeparator.value
           ),
           typeNaming,
           fieldMapper,
@@ -370,7 +384,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
         // Declaration mapper
         val importResolvers =
-          scalatsTypeScriptImportResolvers.value.map { cls =>
+          scalatsImportResolvers.value.map { cls =>
             try {
               cls.getDeclaredConstructor()
             } catch {
@@ -385,7 +399,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
 
         // Declaration mapper
         val declMappers =
-          scalatsTypeScriptDeclarationMappers.value.map { cls =>
+          scalatsDeclarationMappers.value.map { cls =>
             try {
               cls.getDeclaredConstructor()
             } catch {
@@ -399,7 +413,7 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
           }
 
         // Type mapper
-        val typeMappers = scalatsTypeScriptTypeMappers.value.map { cls =>
+        val typeMappers = scalatsTypeMappers.value.map { cls =>
           try {
             cls.getDeclaredConstructor()
           } catch {
@@ -429,9 +443,9 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
             excludes = scalatsTypeExcludes.value
           ),
           printer = printer,
-          typeScriptImportResolvers = importResolvers,
-          typeScriptDeclarationMappers = declMappers,
-          typeScriptTypeMappers = typeMappers,
+          importResolvers = importResolvers,
+          declarationMappers = declMappers,
+          typeMappers = typeMappers,
           additionalClasspath = additionalClasspath
         )
 
@@ -504,18 +518,16 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
     scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
       s"// Generated by ScalaTS ${version}: https://scala-ts.github.io/scala-ts/"
     ),
-    scalatsTypeScriptImportResolvers := Seq
-      .empty[Class[_ <: TypeScriptImportResolver]],
-    scalatsTypeScriptDeclarationMappers := Seq
-      .empty[Class[_ <: TypeScriptDeclarationMapper]],
-    scalatsTypeScriptTypeMappers := Seq.empty[Class[_ <: TypeScriptTypeMapper]],
+    scalatsImportResolvers := Seq.empty[Class[_ <: ImportResolver]],
+    scalatsDeclarationMappers := Seq.empty[Class[_ <: DeclarationMapper]],
+    scalatsTypeMappers := Seq.empty[Class[_ <: TypeMapper]],
     scalatsOptionToNullable := false,
     scalatsPrependEnclosingClassNames := false,
-    scalatsTypescriptIndent := "  ",
-    scalatsTypescriptLineSeparator := ";",
+    scalatsIndent := "  ",
+    scalatsLineSeparator := ";",
     // scalatsEmitCodecs := false, // TODO: (medium priority)
-    scalatsTypeScriptTypeNaming := TypeScriptTypeNaming.Identity.getClass,
-    scalatsTypeScriptFieldMapper := TypeScriptFieldMapper.Identity.getClass,
+    scalatsTypeNaming := TypeNaming.Identity.getClass,
+    scalatsFieldMapper := FieldMapper.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text
   )
 
@@ -524,12 +536,10 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       settings: Settings,
       compilationRuleSet: SourceRuleSet,
       typeRuleSet: SourceRuleSet,
-      printer: Class[_ <: TypeScriptPrinter],
-      typeScriptImportResolvers: Seq[Class[_ <: TypeScriptImportResolver]],
-      typeScriptDeclarationMappers: Seq[
-        Class[_ <: TypeScriptDeclarationMapper]
-      ],
-      typeScriptTypeMappers: Seq[Class[_ <: TypeScriptTypeMapper]],
+      printer: Class[_ <: Printer],
+      importResolvers: Seq[Class[_ <: ImportResolver]],
+      declarationMappers: Seq[Class[_ <: DeclarationMapper]],
+      typeMappers: Seq[Class[_ <: TypeMapper]],
       additionalClasspath: Seq[URL]
     ): Config = {
 
@@ -550,30 +560,30 @@ object TypeScriptGeneratorPlugin extends AutoPlugin {
       Arrays.asList(additionalClasspath.map(_.toString): _*)
     )
 
-    if (printer != TypeScriptPrinter.StandardOutput.getClass) {
+    if (printer != Printer.StandardOutput.getClass) {
       repr.put("printer", printer.getName)
     }
 
-    if (typeScriptImportResolvers.nonEmpty) {
+    if (importResolvers.nonEmpty) {
       repr.put(
-        "typeScriptImportResolvers",
-        Arrays.asList(typeScriptImportResolvers.map(_.getName): _*)
+        "importResolvers",
+        Arrays.asList(importResolvers.map(_.getName): _*)
       )
 
     }
 
-    if (typeScriptDeclarationMappers.nonEmpty) {
+    if (declarationMappers.nonEmpty) {
       repr.put(
-        "typeScriptDeclarationMappers",
-        Arrays.asList(typeScriptDeclarationMappers.map(_.getName): _*)
+        "declarationMappers",
+        Arrays.asList(declarationMappers.map(_.getName): _*)
       )
 
     }
 
-    if (typeScriptTypeMappers.nonEmpty) {
+    if (typeMappers.nonEmpty) {
       repr.put(
-        "typeScriptTypeMappers",
-        Arrays.asList(typeScriptTypeMappers.map(_.getName): _*)
+        "typeMappers",
+        Arrays.asList(typeMappers.map(_.getName): _*)
       )
 
     }

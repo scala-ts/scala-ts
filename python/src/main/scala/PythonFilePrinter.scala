@@ -2,13 +2,16 @@ package io.github.scalats.python
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import io.github.scalats.ast.{ Declaration, SingletonTypeRef, TypeRef }
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.core.Settings
 import io.github.scalats.plugins.BasePrinter
-import io.github.scalats.typescript.{ Declaration, TypeRef, SingletonTypeRef }
 
 final class PythonFilePrinter(outDir: File) extends BasePrinter {
   private val tracker = scala.collection.mutable.Map.empty[String, File]
+
+  private lazy val baseModule: Option[String] =
+    sys.props.get("scala-ts.printer.python-base-module").filter(_.nonEmpty)
 
   @com.github.ghik.silencer.silent(".*kind.*never used.*")
   def apply(
@@ -42,9 +45,19 @@ final class PythonFilePrinter(outDir: File) extends BasePrinter {
 import datetime  # noqa: F401
 """)
 
-    printImports(conf, kind, requires, stream)
-
     if (requires.nonEmpty) {
+      baseModule match {
+        case Some(base) =>
+          printImports(conf, base + '.', kind, requires, stream) { mod =>
+            s"from ${base} import ${mod}"
+          }
+
+        case None =>
+          printImports(conf, "", kind, requires, stream) { mod =>
+            s"import ${mod}"
+          }
+      }
+
       stream.println()
     }
 
@@ -55,9 +68,11 @@ import datetime  # noqa: F401
 
   private def printImports(
       settings: Settings,
+      tpePrefix: String,
       kind: Declaration.Kind,
       requires: ListSet[TypeRef],
       out: PrintStream
+    )(importModule: String => String
     ): Unit = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
     val requiredTypes = requires.toList.sortBy(_.name)
@@ -68,11 +83,11 @@ import datetime  # noqa: F401
 
       tpe match {
         case _: SingletonTypeRef if (kind != Declaration.Union) =>
-          out.println(s"import ${mod}  # Singleton")
+          out.println(s"${importModule(mod)}  # Singleton")
 
         case _ =>
-          out.println(s"""import ${mod}  # noqa: F401
-from ${mod} import ${tpeName}""")
+          out.println(s"""${importModule(mod)}  # noqa: F401
+from ${tpePrefix}${mod} import ${tpeName}""")
       }
     }
   }

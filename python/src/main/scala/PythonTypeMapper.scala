@@ -1,19 +1,15 @@
 package io.github.scalats.python
 
-import io.github.scalats.core.{
-  Settings,
-  TypeScriptField,
-  TypeScriptTypeMapper
-}
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
+import io.github.scalats.core.{ Field, Settings, TypeMapper }
 
-final class PythonTypeMapper extends TypeScriptTypeMapper {
+final class PythonTypeMapper extends TypeMapper {
 
   def apply(
-      parent: TypeScriptTypeMapper.Resolved,
+      parent: TypeMapper.Resolved,
       settings: Settings,
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       tpe: TypeRef
     ): Option[String] = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)

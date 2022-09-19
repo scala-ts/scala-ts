@@ -3,16 +3,16 @@ package io.github.scalats.sbt.idtlt
 import sbt._
 import sbt.Keys._
 
-import _root_.io.github.scalats.idtlt.{ DeclarationMapper, TypeMapper }
-import _root_.io.github.scalats.sbt.TypeScriptGeneratorPlugin
+import _root_.io.github.scalats.idtlt._
+import _root_.io.github.scalats.sbt.ScalatsGeneratorPlugin
 
-object TypeScriptIdtltPlugin extends AutoPlugin {
-  override def requires = TypeScriptGeneratorPlugin
+object ScalatsIdtltPlugin extends AutoPlugin {
+  override def requires = ScalatsGeneratorPlugin
   override def trigger = noTrigger
 
   object autoImport {}
 
-  import TypeScriptGeneratorPlugin.autoImport._
+  import ScalatsGeneratorPlugin.autoImport._
 
   override lazy val projectSettings: Seq[Def.Setting[_]] =
     scalatsAddScalatsDependency(
@@ -36,22 +36,22 @@ export const _externalDependencyModules = [idtlt];"""
           scalatsPrinterInMemoryPrelude(imports)
         }
       },
-      scalatsTypeScriptTypeMappers := Seq(
+      scalatsTypeMappers := Seq(
         // Custom type mapper
-        classOf[TypeMapper]
+        classOf[IdtltTypeMapper]
       ),
-      scalatsTypeScriptDeclarationMappers := Seq(
+      scalatsDeclarationMappers := Seq(
         // Custom declaration mapper (before type mapper)
-        classOf[DeclarationMapper]
+        classOf[IdtltDeclarationMapper]
       ),
       scalacOptions in Compile ++= Seq(
         "-P:scalats:sys.scala-ts.printer.import-pattern=import * as ns%1$s from '%2$s'"
       ),
-      scalatsTypeScriptImportResolvers ++= Seq(
+      scalatsImportResolvers ++= Seq(
         scalatsUnionWithLiteralSingletonImportResolvers
       ),
       scalatsAdditionalClasspath ++= {
-        classOf[DeclarationMapper].getClassLoader match {
+        classOf[IdtltDeclarationMapper].getClassLoader match {
           case cls: java.net.URLClassLoader =>
             cls.getURLs.toSeq.flatMap { url =>
               val repr = url.toString

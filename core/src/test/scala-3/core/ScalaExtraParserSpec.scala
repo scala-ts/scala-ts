@@ -45,7 +45,7 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
         import io.github.scalats.{ scala => ScalaModel }
 
         parseTypes(List(colorTpe)) must_=== List(color)
-      }
+      } tag "wip"
 
       "as case class field" in {
         parseTypes(

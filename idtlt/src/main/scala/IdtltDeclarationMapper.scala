@@ -2,37 +2,34 @@ package io.github.scalats.idtlt
 
 import java.io.PrintStream
 
+import io.github.scalats.ast._
 import io.github.scalats.core.{
+  DeclarationMapper,
+  Emitter,
+  Field,
+  FieldMapper,
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptEmitter,
-  TypeScriptField,
-  TypeScriptFieldMapper,
-  TypeScriptTypeMapper
+  TypeMapper
 }
-import io.github.scalats.typescript._
 
-final class DeclarationMapper extends TypeScriptDeclarationMapper {
+final class IdtltDeclarationMapper extends DeclarationMapper {
 
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
+      parent: DeclarationMapper.Resolved,
       settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeMapper.Resolved,
+      fieldMapper: FieldMapper,
       declaration: Declaration,
       out: PrintStream
     ): Option[Unit] = {
-    import settings.{
-      typescriptLineSeparator => lineSep,
-      typescriptIndent => indent
-    }
+    import settings.{ lineSeparator => lineSep, indent }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
     import declaration.name
     val tpeName = typeNaming(declaration.reference)
 
-    val interfaceTypeGuard = TypeScriptEmitter.interfaceTypeGuard(
+    val interfaceTypeGuard = Emitter.interfaceTypeGuard(
       indent + indent,
       _: String,
       _: Iterable[Member],
@@ -199,11 +196,11 @@ ${indent})${lineSep}
 
       case decl @ TaggedDeclaration(id, field) =>
         Some {
-          val member = TypeScriptField(field.name)
+          val member = Field(field.name)
           val tmapper = typeMapper(settings, decl, member, _: TypeRef)
           val tagged = tmapper(field.typeRef)
 
-          val fieldTpe = TypeScriptEmitter.defaultTypeMapping(
+          val fieldTpe = Emitter.defaultTypeMapping(
             settings,
             member,
             field.typeRef,
@@ -376,8 +373,8 @@ export const idtlt${tpeName} =
 
   private def emitField(
       settings: Settings,
-      fieldMapper: TypeScriptFieldMapper,
-      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: FieldMapper,
+      typeMapper: TypeMapper.Resolved,
       o: PrintStream,
       owner: Declaration,
       member: Member
@@ -385,7 +382,7 @@ export const idtlt${tpeName} =
     val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
     o.println(
-      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
+      s"${settings.indent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
     )
   }
 }

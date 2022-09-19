@@ -28,9 +28,9 @@ final class Configuration(
     val compilationRuleSet: SourceRuleSet,
     val typeRuleSet: SourceRuleSet,
     val printer: Printer,
-    val typeScriptImportResolvers: Seq[ImportResolver],
-    val typeScriptDeclarationMappers: Seq[DeclarationMapper],
-    val typeScriptTypeMappers: Seq[TypeMapper],
+    val importResolvers: Seq[ImportResolver],
+    val declarationMappers: Seq[DeclarationMapper],
+    val typeMappers: Seq[TypeMapper],
     val additionalClasspath: Seq[URL]) {
 
   override def equals(that: Any): Boolean = that match {
@@ -49,9 +49,9 @@ final class Configuration(
       this.compilationRuleSet,
       this.typeRuleSet,
       this.printer,
-      this.typeScriptImportResolvers,
-      this.typeScriptDeclarationMappers,
-      this.typeScriptTypeMappers,
+      this.importResolvers,
+      this.declarationMappers,
+      this.typeMappers,
       this.additionalClasspath
     )
 
@@ -75,10 +75,9 @@ object Configuration {
       compilationRuleSet: SourceRuleSet = SourceRuleSet(),
       typeRuleSet: SourceRuleSet = SourceRuleSet(),
       printer: Printer = Printer.StandardOutput,
-      typeScriptImportResolvers: Seq[ImportResolver] = Seq.empty,
-      typeScriptDeclarationMappers: Seq[DeclarationMapper] = Seq.empty,
-      typeScriptTypeMappers: Seq[TypeMapper] =
-        Seq.empty, // (TypeMapper.Defaults),
+      importResolvers: Seq[ImportResolver] = Seq.empty,
+      declarationMappers: Seq[DeclarationMapper] = Seq.empty,
+      typeMappers: Seq[TypeMapper] = Seq.empty, // (TypeMapper.Defaults),
       additionalClasspath: Seq[URL] = Seq.empty
     ): Configuration =
     new Configuration(
@@ -86,9 +85,9 @@ object Configuration {
       compilationRuleSet,
       typeRuleSet,
       printer,
-      typeScriptImportResolvers,
-      typeScriptDeclarationMappers,
-      typeScriptTypeMappers,
+      importResolvers,
+      declarationMappers,
+      typeMappers,
       additionalClasspath
     )
 
@@ -189,14 +188,13 @@ object Configuration {
     def insts[T: ClassTag](key: String): Seq[T] =
       instances[T](logger, config, additionalClassLoader, key)
 
-    def typeMappers: Seq[TypeMapper] =
-      insts[TypeMapper]("typeScriptTypeMappers")
+    def typeMappers: Seq[TypeMapper] = insts[TypeMapper]("typeMappers")
 
     def importResolvers: Seq[ImportResolver] =
-      insts[ImportResolver]("typeScriptImportResolvers")
+      insts[ImportResolver]("importResolvers")
 
     def declarationMappers: Seq[DeclarationMapper] =
-      insts[DeclarationMapper]("typeScriptDeclarationMappers")
+      insts[DeclarationMapper]("declarationMappers")
 
     new Configuration(
       settings,

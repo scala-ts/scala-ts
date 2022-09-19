@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import transport  # noqa: F401
-from transport import Transport
+from generated import transport  # noqa: F401
+from generated.transport import Transport
 
 
 # Declare interface Foo

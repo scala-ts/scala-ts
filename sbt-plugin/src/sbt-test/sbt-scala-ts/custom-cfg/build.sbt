@@ -4,7 +4,7 @@ name := "sbt-plugin-test-custom-cfg"
 
 version := "1.0-SNAPSHOT"
 
-enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
+enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
 // Custom option transpiling
 scalatsOptionToNullable := true
@@ -12,10 +12,10 @@ scalatsOptionToNullable := true
 // TODO: cross example with custom class in separate module
 
 // Custom type naming (defined in `project/CustomTypeNaming.scala`)
-scalatsTypeScriptTypeNaming := classOf[scalats.CustomTypeNaming]
+scalatsTypeNaming := classOf[scalats.CustomTypeNaming]
 
 // Custom field naming (defined in `project/CustomFieldMapper.scala`)
-scalatsTypeScriptFieldMapper := classOf[scalats.CustomFieldMapper]
+scalatsFieldMapper := classOf[scalats.CustomFieldMapper]
 
 // Overwrite the directory the printer is initialized with
 scalatsOnCompile / sourceManaged := {
@@ -34,7 +34,7 @@ scalatsPrinterPrelude := scalatsPrinterInMemoryPrelude(
 )
 
 // Custom declaration mapper (before type mapper)
-scalatsTypeScriptDeclarationMappers := Seq(
+scalatsDeclarationMappers := Seq(
   scalatsEnumerationAsEnum,
   scalatsValueClassAsTagged,
   classOf[scalats.CustomDeclarationMapper]
@@ -42,7 +42,7 @@ scalatsTypeScriptDeclarationMappers := Seq(
 )
 
 // Custom type mapper
-scalatsTypeScriptTypeMappers := Seq(
+scalatsTypeMappers := Seq(
   scalatsNullableAsOption, // Also scalatsDateAsString, scalatsNumberAsString
   classOf[scalats.CustomTypeMapper]
   // defined in `project/CustomTypeMapper.scala`

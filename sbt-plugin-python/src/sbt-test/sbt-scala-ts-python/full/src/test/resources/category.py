@@ -3,10 +3,10 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import ipsum  # noqa: F401
-from ipsum import Ipsum
-import lorem  # noqa: F401
-from lorem import Lorem
+from generated import ipsum  # noqa: F401
+from generated.ipsum import Ipsum
+from generated import lorem  # noqa: F401
+from generated.lorem import Lorem
 
 
 # Declare union Category
@@ -21,3 +21,9 @@ class CategoryCompanion:
     @classmethod
     def Lorem(self) -> Category:
         return lorem.LoremInhabitant
+
+
+CategoryKnownValues: typing.List[Category] = [
+    CategoryCompanion.Ipsum(),
+    CategoryCompanion.Lorem(),
+]

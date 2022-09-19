@@ -1,38 +1,38 @@
 > clean
-$ absent target/scala-ts/src_managed/name.py
-$ absent target/scala-ts/src_managed/bar.py
-$ absent target/scala-ts/src_managed/foo.py
-$ absent target/scala-ts/src_managed/constants.py
+$ absent target/scala-ts/generated/name.py
+$ absent target/scala-ts/generated/bar.py
+$ absent target/scala-ts/generated/foo.py
+$ absent target/scala-ts/generated/constants.py
 
-$ absent target/scala-ts/src_managed/transport.py
-$ absent target/scala-ts/src_managed/busline.py
-$ absent target/scala-ts/src_managed/trainline.py
+$ absent target/scala-ts/generated/transport.py
+$ absent target/scala-ts/generated/busline.py
+$ absent target/scala-ts/generated/trainline.py
 
-$ absent target/scala-ts/src_managed/weekday.py
+$ absent target/scala-ts/generated/weekday.py
 
-$ absent target/scala-ts/src_managed/state.py
-$ absent target/scala-ts/src_managed/alabama.py
-$ absent target/scala-ts/src_managed/alaska.py
+$ absent target/scala-ts/generated/state.py
+$ absent target/scala-ts/generated/alabama.py
+$ absent target/scala-ts/generated/alaska.py
 
-$ absent target/scala-ts/src_managed/greeting.py
-$ absent target/scala-ts/src_managed/words.py
-$ absent target/scala-ts/src_managed/bye.py
-$ absent target/scala-ts/src_managed/goodbye.py
-$ absent target/scala-ts/src_managed/hello.py
-$ absent target/scala-ts/src_managed/hi.py
-$ absent target/scala-ts/src_managed/whatever.py
+$ absent target/scala-ts/generated/greeting.py
+$ absent target/scala-ts/generated/words.py
+$ absent target/scala-ts/generated/bye.py
+$ absent target/scala-ts/generated/goodbye.py
+$ absent target/scala-ts/generated/hello.py
+$ absent target/scala-ts/generated/hi.py
+$ absent target/scala-ts/generated/whatever.py
 
-$ absent target/scala-ts/src_managed/notsupportedclassastypeargs.py
-$ absent target/scala-ts/src_managed/notsupportedasnotsupportedfield.py
+$ absent target/scala-ts/generated/notsupportedclassastypeargs.py
+$ absent target/scala-ts/generated/notsupportedasnotsupportedfield.py
 
-$ absent target/scala-ts/src_managed/feature.py
-$ absent target/scala-ts/src_managed/foo.py
-$ absent target/scala-ts/src_managed/name.py
-$ absent target/scala-ts/src_managed/bar.py
-$ absent target/scala-ts/src_managed/category.py
-$ absent target/scala-ts/src_managed/lorem.py
-$ absent target/scala-ts/src_managed/ipsum.py
-$ absent target/scala-ts/src_managed/namedfeature.py
+$ absent target/scala-ts/generated/feature.py
+$ absent target/scala-ts/generated/foo.py
+$ absent target/scala-ts/generated/name.py
+$ absent target/scala-ts/generated/bar.py
+$ absent target/scala-ts/generated/category.py
+$ absent target/scala-ts/generated/lorem.py
+$ absent target/scala-ts/generated/ipsum.py
+$ absent target/scala-ts/generated/namedfeature.py
 
 # Simple generation from Scala case class
 > compile
@@ -40,86 +40,86 @@ $ absent target/scala-ts/src_managed/namedfeature.py
 # Check the generated files is as expected
 $ exists target/scala-ts.conf
 
-$ exists target/scala-ts/src_managed/name.py
-$ must-mirror target/scala-ts/src_managed/name.py src/test/resources/name.py
+$ exists target/scala-ts/generated/name.py
+$ must-mirror target/scala-ts/generated/name.py src/test/resources/name.py
 
-$ exists target/scala-ts/src_managed/bar.py
-$ must-mirror target/scala-ts/src_managed/bar.py src/test/resources/bar.py
+$ exists target/scala-ts/generated/bar.py
+$ must-mirror target/scala-ts/generated/bar.py src/test/resources/bar.py
 
-$ exists target/scala-ts/src_managed/foo.py
-$ must-mirror target/scala-ts/src_managed/foo.py src/test/resources/foo.py
+$ exists target/scala-ts/generated/foo.py
+$ must-mirror target/scala-ts/generated/foo.py src/test/resources/foo.py
 
-$ exists target/scala-ts/src_managed/constants.py
-$ must-mirror target/scala-ts/src_managed/constants.py src/test/resources/constants.py
+$ exists target/scala-ts/generated/constants.py
+$ must-mirror target/scala-ts/generated/constants.py src/test/resources/constants.py
 
-$ exists target/scala-ts/src_managed/transport.py
-$ must-mirror target/scala-ts/src_managed/transport.py src/test/resources/transport.py
+$ exists target/scala-ts/generated/transport.py
+$ must-mirror target/scala-ts/generated/transport.py src/test/resources/transport.py
 
-$ exists target/scala-ts/src_managed/busline.py
-$ must-mirror target/scala-ts/src_managed/busline.py src/test/resources/busline.py
+$ exists target/scala-ts/generated/busline.py
+$ must-mirror target/scala-ts/generated/busline.py src/test/resources/busline.py
 
-$ exists target/scala-ts/src_managed/trainline.py
-$ must-mirror target/scala-ts/src_managed/trainline.py src/test/resources/trainline.py
+$ exists target/scala-ts/generated/trainline.py
+$ must-mirror target/scala-ts/generated/trainline.py src/test/resources/trainline.py
 
-$ exists target/scala-ts/src_managed/weekday.py
-$ must-mirror target/scala-ts/src_managed/weekday.py src/test/resources/weekday.py
+$ exists target/scala-ts/generated/weekday.py
+$ must-mirror target/scala-ts/generated/weekday.py src/test/resources/weekday.py
 
-$ exists target/scala-ts/src_managed/state.py
-$ must-mirror target/scala-ts/src_managed/state.py src/test/resources/state.py
+$ exists target/scala-ts/generated/state.py
+$ must-mirror target/scala-ts/generated/state.py src/test/resources/state.py
 
-$ exists target/scala-ts/src_managed/alabama.py
-$ must-mirror target/scala-ts/src_managed/alabama.py src/test/resources/alabama.py
+$ exists target/scala-ts/generated/alabama.py
+$ must-mirror target/scala-ts/generated/alabama.py src/test/resources/alabama.py
 
-$ exists target/scala-ts/src_managed/alaska.py
-$ must-mirror target/scala-ts/src_managed/alaska.py src/test/resources/alaska.py
+$ exists target/scala-ts/generated/alaska.py
+$ must-mirror target/scala-ts/generated/alaska.py src/test/resources/alaska.py
 
-$ exists target/scala-ts/src_managed/greeting.py
-$ must-mirror target/scala-ts/src_managed/greeting.py src/test/resources/greeting.py
+$ exists target/scala-ts/generated/greeting.py
+$ must-mirror target/scala-ts/generated/greeting.py src/test/resources/greeting.py
 
-$ exists target/scala-ts/src_managed/words.py
-$ must-mirror target/scala-ts/src_managed/words.py src/test/resources/words.py
+$ exists target/scala-ts/generated/words.py
+$ must-mirror target/scala-ts/generated/words.py src/test/resources/words.py
 
-$ exists target/scala-ts/src_managed/bye.py
-$ must-mirror target/scala-ts/src_managed/bye.py src/test/resources/bye.py
+$ exists target/scala-ts/generated/bye.py
+$ must-mirror target/scala-ts/generated/bye.py src/test/resources/bye.py
 
-$ exists target/scala-ts/src_managed/goodbye.py
-$ must-mirror target/scala-ts/src_managed/goodbye.py src/test/resources/goodbye.py
+$ exists target/scala-ts/generated/goodbye.py
+$ must-mirror target/scala-ts/generated/goodbye.py src/test/resources/goodbye.py
 
-$ exists target/scala-ts/src_managed/hello.py
-$ must-mirror target/scala-ts/src_managed/hello.py src/test/resources/hello.py
+$ exists target/scala-ts/generated/hello.py
+$ must-mirror target/scala-ts/generated/hello.py src/test/resources/hello.py
 
-$ exists target/scala-ts/src_managed/hi.py
-$ must-mirror target/scala-ts/src_managed/hi.py src/test/resources/hi.py
+$ exists target/scala-ts/generated/hi.py
+$ must-mirror target/scala-ts/generated/hi.py src/test/resources/hi.py
 
-$ exists target/scala-ts/src_managed/whatever.py
-$ must-mirror target/scala-ts/src_managed/whatever.py src/test/resources/whatever.py
+$ exists target/scala-ts/generated/whatever.py
+$ must-mirror target/scala-ts/generated/whatever.py src/test/resources/whatever.py
 
-$ exists target/scala-ts/src_managed/classwithtypeargs.py
-$ must-mirror target/scala-ts/src_managed/classwithtypeargs.py src/test/resources/classwithtypeargs.py
+$ exists target/scala-ts/generated/classwithtypeargs.py
+$ must-mirror target/scala-ts/generated/classwithtypeargs.py src/test/resources/classwithtypeargs.py
 
-$ exists target/scala-ts/src_managed/classwithgenericfield.py
-$ must-mirror target/scala-ts/src_managed/classwithgenericfield.py src/test/resources/classwithgenericfield.py
+$ exists target/scala-ts/generated/classwithgenericfield.py
+$ must-mirror target/scala-ts/generated/classwithgenericfield.py src/test/resources/classwithgenericfield.py
 
-$ exists target/scala-ts/src_managed/feature.py
-$ must-mirror target/scala-ts/src_managed/feature.py src/test/resources/feature.py
+$ exists target/scala-ts/generated/feature.py
+$ must-mirror target/scala-ts/generated/feature.py src/test/resources/feature.py
 
-$ exists target/scala-ts/src_managed/foo.py
-$ must-mirror target/scala-ts/src_managed/foo.py src/test/resources/foo.py
+$ exists target/scala-ts/generated/foo.py
+$ must-mirror target/scala-ts/generated/foo.py src/test/resources/foo.py
 
-$ exists target/scala-ts/src_managed/bar.py
-$ must-mirror target/scala-ts/src_managed/bar.py src/test/resources/bar.py
+$ exists target/scala-ts/generated/bar.py
+$ must-mirror target/scala-ts/generated/bar.py src/test/resources/bar.py
 
-$ exists target/scala-ts/src_managed/category.py
-$ must-mirror target/scala-ts/src_managed/category.py src/test/resources/category.py
+$ exists target/scala-ts/generated/category.py
+$ must-mirror target/scala-ts/generated/category.py src/test/resources/category.py
 
-$ exists target/scala-ts/src_managed/lorem.py
-$ must-mirror target/scala-ts/src_managed/lorem.py src/test/resources/lorem.py
+$ exists target/scala-ts/generated/lorem.py
+$ must-mirror target/scala-ts/generated/lorem.py src/test/resources/lorem.py
 
-$ exists target/scala-ts/src_managed/ipsum.py
-$ must-mirror target/scala-ts/src_managed/ipsum.py src/test/resources/ipsum.py
+$ exists target/scala-ts/generated/ipsum.py
+$ must-mirror target/scala-ts/generated/ipsum.py src/test/resources/ipsum.py
 
-$ exists target/scala-ts/src_managed/namedfeature.py
-$ must-mirror target/scala-ts/src_managed/namedfeature.py src/test/resources/namedfeature.py
+$ exists target/scala-ts/generated/namedfeature.py
+$ must-mirror target/scala-ts/generated/namedfeature.py src/test/resources/namedfeature.py
 
 # Preserve the generated files (to compile with tsc after)
 > preserveGeneratedPython

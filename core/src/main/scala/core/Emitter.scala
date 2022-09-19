@@ -8,6 +8,8 @@ import Internals.ListSet
 
 // TODO: Gather the emit as a default DeclarationMapper.Resolver
 /**
+ * Default emitter.
+ *
  * @param out the function to select a `PrintStream` from type name
  */
 final class Emitter( // TODO: Rename
@@ -17,8 +19,8 @@ final class Emitter( // TODO: Rename
     declarationMapper: Emitter.DeclarationMapper,
     typeMapper: Emitter.TypeMapper) {
 
-  import settings.{ fieldMapper, typescriptIndent => indent }
-  import settings.typescriptLineSeparator.{ value => lineSeparator }
+  import settings.{ fieldMapper, indent => indent }
+  import settings.lineSeparator.{ value => lineSeparator }
 
   def emit(declarations: ListSet[Declaration]): Unit =
     declarations.foreach {
@@ -687,7 +689,7 @@ private[scalats] object Emitter {
     val check = fieldCheck(tpeName, _: Member, guardNaming, settings)
 
     if (fields.isEmpty) {
-      s"${indent}v === {}"
+      s"${indent}typeof v === 'object' && Object.keys(v).length === 0"
     } else {
       fields.map(check).mkString(s"${indent}(", s") &&\n${indent}(", ")")
     }

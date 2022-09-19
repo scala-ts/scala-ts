@@ -28,7 +28,7 @@ final class TypeScriptEmitterSpec
 
 export function isEmpty(v: any): v is Empty {
   return (
-    v === {}
+    typeof v === 'object' && Object.keys(v).length === 0
   );
 }
 """)

@@ -1,16 +1,16 @@
 package io.github.scalats.python
 
+import io.github.scalats.ast._
 import io.github.scalats.core.{
+  DeclarationMapper,
+  Emitter,
+  Field,
+  ImportResolver,
   Settings,
   TranspilerResults,
-  TypeScriptDeclarationMapper,
-  TypeScriptEmitter,
-  TypeScriptField,
-  TypeScriptImportResolver,
-  TypeScriptTypeMapper
+  TypeMapper
 }
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
 final class PythonEmitterSpec extends org.specs2.mutable.Specification {
   "Python emitter".title
@@ -512,17 +512,17 @@ class TSSingletonInvariantsFactory:
 
 @dataclass
 class ITSSingletonInvariants:
-  _name: TSScalaRuntimeFixturesAnyValChild
+  _name: TS${valueClassNs}AnyValChild
   _code: int
   _const: str
-  _foo: TSScalaRuntimeFixturesAnyValChild
+  _foo: TS${valueClassNs}AnyValChild
   _list: typing.List[str]
   _set: typing.List[int]
   _mapping: typing.Dict[str, str]
-  _dictOfList: typing.Dict[str, typing.List[TSScalaRuntimeFixturesAnyValChild]]
-  _concatSeq: typing.List[TSScalaRuntimeFixturesAnyValChild]
+  _dictOfList: typing.Dict[str, typing.List[TS${valueClassNs}AnyValChild]]
+  _concatSeq: typing.List[TS${valueClassNs}AnyValChild]
   _mergedSet: typing.List[int]
-  _taggedDict: typing.Dict[TSScalaRuntimeFixturesAnyValChild, str]
+  _taggedDict: typing.Dict[TS${valueClassNs}AnyValChild, str]
 
 
 TSSingletonInvariants = ITSSingletonInvariants(
@@ -721,6 +721,12 @@ class ${ns}FamilyCompanion:
   def ${ns}FamilyMember3(self) -> ${ns}Family:
     return ${ns.toLowerCase}familymember3.${ns}FamilyMember3Inhabitant
 
+
+${ns}FamilyKnownValues: typing.List[${ns}Family] = [
+  ${ns}FamilyCompanion.${ns}FamilyMember2(),
+  ${ns}FamilyCompanion.${ns}FamilyMember3(),
+]
+
 # Fields are ignored: foo
 """
     }
@@ -749,15 +755,14 @@ class ${ns}TestEnumeration(Enum):
   def emit(
       decls: ListSet[Declaration],
       config: Settings = Settings(),
-      declMapper: TypeScriptDeclarationMapper = pyDeclMapper,
-      importResolver: TypeScriptImportResolver =
-        TypeScriptImportResolver.Defaults,
-      typeMapper: TypeScriptTypeMapper = pyTypeMapper
+      declMapper: DeclarationMapper = pyDeclMapper,
+      importResolver: ImportResolver = ImportResolver.Defaults,
+      typeMapper: TypeMapper = pyTypeMapper
     ): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(
+    val emiter = new Emitter(
       config,
       (_, _, _, _) => out,
       importResolver,
@@ -775,7 +780,7 @@ class ${ns}TestEnumeration(Enum):
   }
 }
 
-object CustomTypeNaming extends io.github.scalats.core.TypeScriptTypeNaming {
+object CustomTypeNaming extends io.github.scalats.core.TypeNaming {
 
   def apply(settings: Settings, tpe: TypeRef) = {
     if (tpe.name == "this") {
@@ -786,13 +791,13 @@ object CustomTypeNaming extends io.github.scalats.core.TypeScriptTypeNaming {
   }
 }
 
-object CustomFieldMapper extends io.github.scalats.core.TypeScriptFieldMapper {
+object CustomFieldMapper extends io.github.scalats.core.FieldMapper {
 
   def apply(
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: io.github.scalats.typescript.TypeRef
+      propertyType: TypeRef
     ) =
-    TypeScriptField(s"_${propertyName}", scala.collection.immutable.Set.empty)
+    Field(s"_${propertyName}", scala.collection.immutable.Set.empty)
 }

@@ -13,8 +13,8 @@ final class Settings(
     val emitCodecs: Settings.EmitCodecs,
     val optionToNullable: Boolean,
     val prependEnclosingClassNames: Boolean,
-    val typescriptIndent: String,
-    val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
+    val indent: String,
+    val lineSeparator: Settings.TypeScriptLineSeparator,
     val typeNaming: TypeNaming,
     val fieldMapper: FieldMapper,
     val discriminator: Settings.Discriminator) {
@@ -24,9 +24,8 @@ final class Settings(
       emitCodecs: Settings.EmitCodecs = this.emitCodecs,
       optionToNullable: Boolean = this.optionToNullable,
       prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
-      typescriptIndent: String = this.typescriptIndent,
-      typescriptLineSeparator: Settings.TypeScriptLineSeparator =
-        this.typescriptLineSeparator,
+      indent: String = this.indent,
+      lineSeparator: Settings.TypeScriptLineSeparator = this.lineSeparator,
       typeNaming: TypeNaming = this.typeNaming,
       fieldMapper: FieldMapper = this.fieldMapper,
       discriminator: Settings.Discriminator = this.discriminator
@@ -35,8 +34,8 @@ final class Settings(
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -56,8 +55,8 @@ final class Settings(
     emitCodecs,
     optionToNullable,
     prependEnclosingClassNames,
-    typescriptIndent,
-    typescriptLineSeparator,
+    indent,
+    lineSeparator,
     typeNaming,
     fieldMapper,
     discriminator
@@ -73,8 +72,8 @@ object Settings {
       emitCodecs: EmitCodecs = EmitCodecsEnabled,
       optionToNullable: Boolean = false,
       prependEnclosingClassNames: Boolean = true,
-      typescriptIndent: String = DefaultTypeScriptIndent,
-      typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
+      indent: String = DefaultTypeScriptIndent,
+      lineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
       typeNaming: TypeNaming = TypeNaming.Identity,
       fieldMapper: FieldMapper = FieldMapper.Identity,
       discriminator: Discriminator = DefaultDiscriminator
@@ -83,8 +82,8 @@ object Settings {
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -119,11 +118,11 @@ object Settings {
 
     val optionToNullable = bool("optionToNullable", false)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
-    val typescriptIndent: String =
-      str("typescriptIndent").getOrElse(DefaultTypeScriptIndent)
+    val indent: String =
+      str("indent").getOrElse(DefaultTypeScriptIndent)
 
-    val typescriptLineSeparator: TypeScriptLineSeparator =
-      str("typescriptLineSeparator").fold(TypeScriptSemiColon) {
+    val lineSeparator: TypeScriptLineSeparator =
+      str("lineSeparator").fold(TypeScriptSemiColon) {
         new TypeScriptLineSeparator(_)
       }
 
@@ -186,8 +185,8 @@ object Settings {
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -223,9 +222,9 @@ object Settings {
 
     repr.put(s"${p}prependEnclosingClassNames", conf.prependEnclosingClassNames)
 
-    repr.put(s"${p}typescriptIndent", conf.typescriptIndent)
+    repr.put(s"${p}indent", conf.indent)
 
-    repr.put(s"${p}typescriptLineSeparator", conf.typescriptLineSeparator.value)
+    repr.put(s"${p}lineSeparator", conf.lineSeparator.value)
 
     repr.put(s"${p}typeNaming", typeNaming)
     repr.put(s"${p}fieldMapper", fieldMapper)

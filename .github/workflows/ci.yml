@@ -8,6 +8,7 @@ on:
 
 jobs:
   build_n_test:
+    name: 'Build & Test core and SBT plugins'
     runs-on: ubuntu-latest
 
     steps:
@@ -37,9 +38,39 @@ jobs:
       run: sbt +core/testOnly
       # TODO: core/target/test-reports/TEST-*.xml
 
+    - name: 'Run idtl tests'
+      run: sbt +idtlt/testOnly
+      # TODO: core/target/test-reports/TEST-*.xml
+
+    - name: 'Run python tests'
+      run: sbt +python/testOnly
+      # TODO: core/target/test-reports/TEST-*.xml
+
     - name: 'Run SBT plugin tests'
       run: |
         sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.16 ;^scripted'
+
+    - name: 'Persist generated data'
+      uses: actions/upload-artifact@v3
+      with:
+        name: tmp-generated
+        path: /tmp/sbt-scala-ts/
+
+  typescript:
+    name: 'Validate TypeScript code generation'
+    runs-on: ubuntu-latest
+    needs: build_n_test
+
+    steps:
+    - name: 'Checkout repository'
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: tmp-generated
+        path: /tmp/sbt-scala-ts
 
     - name: 'Set up Node'
       uses: actions/setup-node@v1
@@ -62,19 +93,56 @@ jobs:
         test -d "$TD" || mkdir -p "$TD"
         cp junit.xml "$TD/junit.xml"
 
+  python:
+    name: 'Validate Python code generation'
+    runs-on: ubuntu-latest
+    needs: build_n_test
+
+    steps:
+    - name: 'Checkout repository'
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: tmp-generated
+        path: /tmp/sbt-scala-ts
+
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8' 
 
     - name: 'Check Python generated from SBT scripted tests'
       run: |
-        export TD=/tmp/sbt-scala-ts/sbt-plugin-test-python-full/target/scala-ts/
+        export TD=/tmp/sbt-scala-ts/sbt-plugin-test-python-full/target/scala-ts
         cp sbt-plugin-python/src/sbt-test/Pipfile "$TD/Pipfile"
+        cp sbt-plugin-python/src/sbt-test/sbt-scala-ts-python/full/src/test/resources/setup.py "$TD/setup.py"
         cd "$TD"
+        which pipenv || pip install pipenv
         pipenv install --dev
-        python src_managed/*.py
-        pipenv run flake8 --ignore=E501 src_managed/
-        pipenv run mypy src_managed/*.py
+        python generated/*.py
+        pipenv run flake8 --ignore=E501 generated/
+        pipenv run mypy --namespace-packages --explicit-package-bases generated/
+
+    - name: 'Run Python tests'
+      run: |
+        export TD=/tmp/sbt-scala-ts/sbt-plugin-test-python-full/target/scala-ts
+        cp -R sbt-plugin-python/src/sbt-test/sbt-scala-ts-python/full/src/test/python "$TD/tests"
+        cd "$TD"
+        pipenv run mypy --namespace-packages --explicit-package-bases tests/*.py
+        pipenv run python -m pytest tests/*.py
+
+  publish:
+    name: 'Publish artifacts'
+    runs-on: ubuntu-latest
+    needs: [typescript, python]
+
+    steps:
+    - name: 'Checkout repository'
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: 'Publish snapshot (master)'
       if: ${{ github.ref == 'refs/heads/master' }}

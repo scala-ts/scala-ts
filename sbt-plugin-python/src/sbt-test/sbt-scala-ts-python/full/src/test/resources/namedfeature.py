@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import feature  # noqa: F401
-from feature import Feature
+from generated import feature  # noqa: F401
+from generated.feature import Feature
 
 
 # Declare interface NamedFeature

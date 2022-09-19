@@ -613,7 +613,7 @@ final class ScalaParser(
         Some(
           ScalaModel.SetInvariant(
             name = k,
-            typeRef = ScalaModel.ListRef(elmTpe),
+            typeRef = ScalaModel.SetRef(elmTpe),
             valueTypeRef = elmTpe,
             values = elements
           )

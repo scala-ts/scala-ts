@@ -59,7 +59,7 @@ Additionally, the plugin can be enabled per project.
 
 ```ocaml
 // Not enabled by default
-enablePlugins(TypeScriptGeneratorPlugin)
+enablePlugins(ScalatsGeneratorPlugin)
 ```
 
 The TypeScript files are generated at compile-time.
@@ -140,7 +140,7 @@ addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts-idtlt" % {{site.latest_release
 Then in the `build.sbt` is can be configured as below.
 
 ```ocaml
-enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
+enablePlugins(ScalatsIdtltPlugin) // Required as disabled by default
 ```
 
 **Example:** Scala case class

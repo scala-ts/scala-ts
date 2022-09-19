@@ -40,7 +40,7 @@ abstract class BasePrinter extends Printer {
       out: PrintStream
     )(importPath: TypeRef => String
     ): Unit = {
-    import settings.{ typescriptLineSeparator => sep }
+    import settings.{ lineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
     val requiredTypes = requires.toList.sortBy(_.name)

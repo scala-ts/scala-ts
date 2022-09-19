@@ -271,15 +271,14 @@ final class CompilerPlugin(val global: Global)
       }
 
       val declMapper = DeclarationMapper
-        .chain(config.typeScriptDeclarationMappers)
+        .chain(config.declarationMappers)
         .getOrElse(DeclarationMapper.Defaults)
 
-      val typeMapper = TypeMapper
-        .chain(config.typeScriptTypeMappers)
-        .getOrElse(TypeMapper.Defaults)
+      val typeMapper =
+        TypeMapper.chain(config.typeMappers).getOrElse(TypeMapper.Defaults)
 
       val importResolver = ImportResolver
-        .chain(config.typeScriptImportResolvers)
+        .chain(config.importResolvers)
         .getOrElse(ImportResolver.Defaults)
 
       compiled.synchronized {

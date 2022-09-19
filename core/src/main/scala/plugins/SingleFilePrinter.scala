@@ -38,7 +38,7 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
       }
     }
 
-    import conf.{ typescriptLineSeparator => lineSep }
+    import conf.{ lineSeparator => lineSep }
 
     val stream = new PrintStream(new FileOutputStream(f, append))
 

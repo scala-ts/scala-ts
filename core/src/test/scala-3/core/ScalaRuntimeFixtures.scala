@@ -112,13 +112,13 @@ object ScalaRuntimeFixtures {
           ScalaModel.SelectInvariant(
             "purple[0]",
             colorRef,
-            ScalaModel.UnknownTypeRef(colorId),
+            ScalaModel.CaseObjectRef(colorId),
             "Red"
           ),
           ScalaModel.SelectInvariant(
             "purple[1]",
             colorRef,
-            ScalaModel.UnknownTypeRef(colorId),
+            ScalaModel.CaseObjectRef(colorId),
             "Blue"
           )
         )

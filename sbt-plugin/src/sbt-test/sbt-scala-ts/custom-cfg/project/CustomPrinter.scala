@@ -4,7 +4,7 @@ import scala.collection.immutable.ListSet
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
-import io.github.scalats.typescript.{ Declaration, TypeRef }
+import io.github.scalats.ast.{ Declaration, TypeRef }
 import io.github.scalats.plugins.BasePrinter
 
 final class CustomPrinter(outDir: File) extends BasePrinter {
@@ -35,7 +35,20 @@ final class CustomPrinter(outDir: File) extends BasePrinter {
     printImports(conf, requires, out) { tpe => s"./scalats${tpe.name}" }
 
     if (requires.nonEmpty) {
-      out.println()
+      import conf.{ lineSeparator, indent }
+
+      val requiredTypes = requires.toList.sortBy(_.name)
+      val typeNaming = conf.typeNaming(conf, _: TypeRef)
+
+      out.println("""
+export const dependencyModules = [""")
+
+      requiredTypes.foreach { tpe =>
+        out.println(s"${indent}ns${typeNaming(tpe)},")
+      }
+
+      out.println(s"""]${lineSeparator}
+""")
     }
 
     out

@@ -318,15 +318,14 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
     val scalaTypes = typeBuf.result()
 
     val declMapper = DeclarationMapper
-      .chain(config.typeScriptDeclarationMappers)
+      .chain(config.declarationMappers)
       .getOrElse(DeclarationMapper.Defaults)
 
-    val typeMapper = TypeMapper
-      .chain(config.typeScriptTypeMappers)
-      .getOrElse(TypeMapper.Defaults)
+    val typeMapper =
+      TypeMapper.chain(config.typeMappers).getOrElse(TypeMapper.Defaults)
 
     val importResolver = ImportResolver
-      .chain(config.typeScriptImportResolvers)
+      .chain(config.importResolvers)
       .getOrElse(ImportResolver.Defaults)
 
     compiled.synchronized {

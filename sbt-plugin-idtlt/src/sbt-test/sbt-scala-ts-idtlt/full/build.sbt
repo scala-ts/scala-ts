@@ -4,7 +4,7 @@ name := "sbt-plugin-test-idtlt-full"
 
 version := "1.0-SNAPSHOT"
 
-enablePlugins(TypeScriptIdtltPlugin) // Required as disabled by default
+enablePlugins(ScalatsIdtltPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.8"
 

@@ -46,8 +46,8 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
   emitCodecs = true
   optionToNullable = false
   prependEnclosingClassNames = true
-  typescriptIndent = "  "
-  typescriptLineSeparator = ";"
+  indent = "  "
+  lineSeparator = ";"
   typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_dis"
@@ -68,7 +68,7 @@ final class ConfigurationSpec extends org.specs2.mutable.Specification {
         compilationRuleSet = compilationRuleSet,
         typeRuleSet = typeRuleSet,
         settings = Settings(
-          typescriptIndent = "  ",
+          indent = "  ",
           prependEnclosingClassNames = false,
           fieldMapper = FieldMapper.SnakeCase
         )
@@ -106,8 +106,8 @@ settings {
   emitCodecs = true
   optionToNullable = false
   prependEnclosingClassNames = false
-  typescriptIndent = "  "
-  typescriptLineSeparator = ";"
+  indent = "  "
+  lineSeparator = ";"
   typeNaming = "Identity"
   fieldMapper = "SnakeCase"
   discriminator = "_type"
@@ -139,8 +139,8 @@ settings {
   emitCodecs = true
   optionToNullable = false
   prependEnclosingClassNames = true
-  typescriptIndent = "  "
-  typescriptLineSeparator = ";"
+  indent = "  "
+  lineSeparator = ";"
   typeNaming = "Identity"
   fieldMapper = "Identity"
   discriminator = "_type"
@@ -148,12 +148,12 @@ settings {
 
 additionalClasspath = [ "file:/tmp/foo1", "file:/tmp/foo2" ]
 
-typeScriptTypeMappers = [
-  "io.github.scalats.core.TypeScriptTypeMapper$Defaults$"
+typeMappers = [
+  "io.github.scalats.core.TypeMapper$Defaults$"
 ]
 
-typeScriptImportResolvers = [
-  "io.github.scalats.core.TypeScriptImportResolver$Defaults$"
+importResolvers = [
+  "io.github.scalats.core.ImportResolver$Defaults$"
 ]
 """)
 

@@ -4,8 +4,8 @@ from dataclasses import dataclass  # noqa: F401
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import name  # noqa: F401
-from name import Name
+from generated import name  # noqa: F401
+from generated.name import Name
 
 
 # Declare singleton Constants

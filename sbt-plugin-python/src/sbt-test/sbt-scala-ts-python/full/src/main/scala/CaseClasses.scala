@@ -25,7 +25,7 @@ case class ClassWithTypeArgs[T](
     value: T)
 
 case class ClassWithGenericField(
-    notSupportedClassAsTypeArgs: ClassWithTypeArgs[Float])
+    field: ClassWithTypeArgs[Float])
 
 object Constants {
   def code = 1

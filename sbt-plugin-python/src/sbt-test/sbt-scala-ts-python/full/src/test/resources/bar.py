@@ -4,10 +4,10 @@ from dataclasses import dataclass
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import name  # noqa: F401
-from name import Name
-import transport  # noqa: F401
-from transport import Transport
+from generated import name  # noqa: F401
+from generated.name import Name
+from generated import transport  # noqa: F401
+from generated.transport import Transport
 
 
 # Declare interface Bar

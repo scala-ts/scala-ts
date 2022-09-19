@@ -4,11 +4,19 @@ name := "sbt-plugin-test-python-full"
 
 version := "1.0-SNAPSHOT"
 
-enablePlugins(PythonPlugin) // Required as disabled by default
+enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.8"
 
 crossScalaVersions := Seq("2.12.16", scalaVersion.value)
+
+scalatsPythonBaseModule := Some("generated")
+
+scalatsOnCompile / sourceManaged := {
+  val dir = target.value / "scala-ts" / "generated"
+  dir.mkdirs()
+  dir
+}
 
 // ---
 
@@ -21,15 +29,6 @@ Compile / compile := {
   sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 
   res
-}
-
-TaskKey[Unit]("debug") := {
-  import sbt.io.IO
-  val logger = streams.value.log
-
-  val files = IO.listFiles(target.value)
-
-  sys.error(s"__FILES = ${files mkString ", "}")
 }
 
 TaskKey[Unit]("preserveGeneratedPython") := {

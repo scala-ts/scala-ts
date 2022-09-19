@@ -3,10 +3,10 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import busline  # noqa: F401
-from busline import BusLine
-import trainline  # noqa: F401
-from trainline import TrainLine
+from generated import busline  # noqa: F401
+from generated.busline import BusLine
+from generated import trainline  # noqa: F401
+from generated.trainline import TrainLine
 
 
 # Declare union Transport

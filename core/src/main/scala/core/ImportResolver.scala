@@ -6,8 +6,7 @@ import Internals.ListSet
 
 /**
  * Resolves the imports for TypeScript declarations.
- * Must be consistent with applied [[TypeScriptPrinter]]
- * and [[TypeScriptDeclarationMapper]].
+ * Must be consistent with applied [[Printer]] and [[DeclarationMapper]].
  *
  * The implementations must be class with a no-arg constructor.
  */

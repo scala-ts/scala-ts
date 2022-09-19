@@ -173,7 +173,7 @@ final class ImportResolverSpec extends org.specs2.mutable.Specification {
             )
           }
 
-          defaultResolver(singleton) must_=== ListSet(
+          defaultResolver(singleton).toSet must_=== Set(
             CustomTypeRef("Foo", Nil),
             CustomTypeRef("Greeting", Nil)
           )

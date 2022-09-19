@@ -3,16 +3,16 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import bye  # noqa: F401
-from bye import Bye
-import goodbye  # noqa: F401
-from goodbye import GoodBye
-import hello  # noqa: F401
-from hello import Hello
-import hi  # noqa: F401
-from hi import Hi
-import whatever  # noqa: F401
-from whatever import Whatever
+from generated import bye  # noqa: F401
+from generated.bye import Bye
+from generated import goodbye  # noqa: F401
+from generated.goodbye import GoodBye
+from generated import hello  # noqa: F401
+from generated.hello import Hello
+from generated import hi  # noqa: F401
+from generated.hi import Hi
+from generated import whatever  # noqa: F401
+from generated.whatever import Whatever
 
 
 # Declare union Greeting
@@ -35,3 +35,11 @@ class GreetingCompanion:
     @classmethod
     def Hi(self) -> Greeting:
         return hi.HiInhabitant
+
+
+GreetingKnownValues: typing.List[Greeting] = [
+    GreetingCompanion.Bye(),
+    GreetingCompanion.GoodBye(),
+    GreetingCompanion.Hello(),
+    GreetingCompanion.Hi(),
+]

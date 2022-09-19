@@ -4,7 +4,7 @@ from dataclasses import dataclass  # noqa: F401
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import httperrors  # Singleton
+from generated import httperrors  # Singleton
 
 
 # Declare singleton Faults

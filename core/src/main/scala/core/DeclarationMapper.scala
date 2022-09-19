@@ -27,7 +27,7 @@ trait DeclarationMapper
    * @param typeMapper the resolved type mapper
    * @param fieldMapper the field mapper
    * @param declaration the transpiled declaration to be emitted
-   * @param out the printer to output the TypeScript code
+   * @param out the printer to output the code
    * @return Some print operation, or None if `declaration` is not handled
    */
   def apply(
@@ -102,10 +102,7 @@ object DeclarationMapper {
         declaration: Declaration,
         out: PrintStream
       ): Option[Unit] = {
-      import settings.{
-        typescriptIndent => indent,
-        typescriptLineSeparator => lineSep
-      }
+      import settings.{ indent, lineSeparator => lineSep }
 
       declaration match {
         case ValueBodyDeclaration(
@@ -181,10 +178,7 @@ ${indent}return ${simpleCheck}${lineSep}
       case decl @ EnumDeclaration(_, possibilities, values) =>
         Some {
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
-          import settings.{
-            typescriptIndent => indent,
-            typescriptLineSeparator => lineSep
-          }
+          import settings.{ indent => indent, lineSeparator => lineSep }
 
           val tpeName = typeNaming(decl.reference)
 
@@ -281,10 +275,7 @@ export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
               s"'${name}'"
           }
 
-          import settings.{
-            typescriptIndent => indent,
-            typescriptLineSeparator => lineSep
-          }
+          import settings.{ indent, lineSeparator => lineSep }
 
           val singleName = settings.typeNaming(settings, decl.reference)
 
@@ -324,10 +315,7 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
       ): Option[Unit] = declaration match {
       case decl @ UnionDeclaration(_, _, possibilities, _) =>
         Some {
-          import settings.{
-            typescriptIndent => indent,
-            typescriptLineSeparator => lineSep
-          }
+          import settings.{ indent, lineSeparator => lineSep }
 
           val typeNaming = settings.typeNaming(settings, _: TypeRef)
           val tpeName = typeNaming(decl.reference)

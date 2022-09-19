@@ -4,8 +4,8 @@ from dataclasses import dataclass  # noqa: F401
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import greeting  # noqa: F401
-from greeting import Greeting
+from generated import greeting  # noqa: F401
+from generated.greeting import Greeting
 
 
 # Declare singleton Words

@@ -4,11 +4,13 @@ name := "sbt-plugin-test-single-file-printer"
 
 version := "1.0-SNAPSHOT"
 
+resolvers += Resolver.sonatypeRepo("snapshots")
+
 scalaVersion := "2.13.8"
 
 crossScalaVersions := Seq(scalaVersion.value, "3.1.3")
 
-enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
+enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
 scalatsPrinter := scalatsSingleFilePrinter("generated.ts")
 

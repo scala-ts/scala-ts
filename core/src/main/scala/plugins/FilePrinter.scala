@@ -28,7 +28,7 @@ final class FilePrinter(outDir: File) extends BasePrinter {
       }
     )
 
-    import conf.{ typescriptLineSeparator => lineSep }
+    import conf.{ lineSeparator => lineSep }
 
     val stream = new PrintStream(new FileOutputStream(f, true))
 
@@ -49,7 +49,7 @@ export const ns${name} = exports${lineSep}
 export const dependencyModules = [""")
 
       requiredTypes.foreach { tpe =>
-        stream.println(s"${conf.typescriptIndent}ns${typeNaming(tpe)},")
+        stream.println(s"${conf.indent}ns${typeNaming(tpe)},")
       }
 
       stream.println(s"""]${lineSep}

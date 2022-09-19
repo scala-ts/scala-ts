@@ -3,10 +3,10 @@
 import typing  # noqa: F401
 import datetime  # noqa: F401
 
-import barnum  # noqa: F401
-from barnum import BarNum
-import foolure  # noqa: F401
-from foolure import FooLure
+from generated import barnum  # noqa: F401
+from generated.barnum import BarNum
+from generated import foolure  # noqa: F401
+from generated.foolure import FooLure
 
 
 # Declare union Feature
@@ -21,3 +21,9 @@ class FeatureCompanion:
     @classmethod
     def FooLure(self) -> Feature:
         return foolure.FooLureInhabitant
+
+
+FeatureKnownValues: typing.List[Feature] = [
+    FeatureCompanion.BarNum(),
+    FeatureCompanion.FooLure(),
+]

@@ -2,18 +2,18 @@ package scalats
 
 import io.github.scalats.core.{
   Settings,
-  TypeScriptField,
-  TypeScriptTypeMapper
+  Field,
+  TypeMapper
 }
-import io.github.scalats.typescript.{ Declaration, DateRef, TypeRef }
+import io.github.scalats.ast.{ Declaration, DateRef, TypeRef }
 
-final class CustomTypeMapper extends TypeScriptTypeMapper {
+final class CustomTypeMapper extends TypeMapper {
 
   def apply(
-      parent: TypeScriptTypeMapper.Resolved,
+      parent: TypeMapper.Resolved,
       settings: Settings,
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       tpe: TypeRef
     ): Option[String] = {
     if (member.name == "_created" && tpe == DateRef) {

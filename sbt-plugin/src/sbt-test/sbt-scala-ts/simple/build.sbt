@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 crossScalaVersions := Seq("2.12.16", "2.13.8", "3.1.3")
 
-enablePlugins(TypeScriptGeneratorPlugin) // Required as disabled by default
+enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
 // Distribute src/test/typescript as ts-test
 Compile / compile := {

@@ -1,18 +1,14 @@
 package scalats
 
-import io.github.scalats.core.{
-  Settings,
-  TypeScriptFieldMapper,
-  TypeScriptField
-}
+import io.github.scalats.core.{ FieldMapper, Field, Settings }
 
-class CustomFieldMapper extends io.github.scalats.core.TypeScriptFieldMapper {
+class CustomFieldMapper extends io.github.scalats.core.FieldMapper {
 
   def apply(
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: io.github.scalats.typescript.TypeRef
+      propertyType: io.github.scalats.ast.TypeRef
     ) =
-    TypeScriptField(s"_${propertyName}", scala.collection.immutable.Set.empty)
+    Field(s"_${propertyName}", scala.collection.immutable.Set.empty)
 }
