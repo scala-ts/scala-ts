@@ -4,7 +4,7 @@ layout: default
 
 # Scala-TS
 
-*Scala-TS* is a simple tool which generates [TypeScript](https://www.typescriptlang.org) types from [Scala](https://www.scala-lang.org/) types, to easily integrate REST-ful Scala backends and TypeScript frontends.
+*Scala-TS* is a tool which convert [Scala](https://www.scala-lang.org/) data model types to other langages such as [TypeScript](https://www.typescriptlang.org) (to easily integrate REST-ful Scala backends and TypeScript frontends).
 
 > See [release notes](./release-notes.html)
 
@@ -12,7 +12,7 @@ layout: default
 
 ## Usage
 
-*Scala-TS* can be used as a [SBT plugin](#sbt-plugin) (recommended) or as a Scala [compiler plugin](#compiler-plugin), to handle generate TypeScript on Scala compilation.
+*Scala-TS* can be used as a [SBT plugin](#sbt-plugin) (recommended) or as a Scala [compiler plugin](#compiler-plugin), to perform code generation during Scala compilation.
 
 ![Akka HTTP & Svelte example](assets/demo-akka-http-svelte/components.svg)
 
