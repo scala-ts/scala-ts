@@ -10,9 +10,9 @@ $ exists target/scala-ts/src_managed/generated.ts
 # Check the generated files is as expected
 $ must-mirror target/scala-ts/src_managed/generated.ts src/test/resources/generated.ts
 
-## Scala 3.1
+## Scala 3.2
 
-> ;++3.1.3 ;clean
+> ;++3.2.0 ;clean
 $ absent target/scala-ts/src_managed/generated.ts
 
 # Simple generation from Scala case class
