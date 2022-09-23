@@ -13,10 +13,10 @@ final class Settings(
     val emitCodecs: Settings.EmitCodecs,
     val optionToNullable: Boolean,
     val prependEnclosingClassNames: Boolean,
-    val typescriptIndent: String,
-    val typescriptLineSeparator: Settings.TypeScriptLineSeparator,
-    val typeNaming: TypeScriptTypeNaming,
-    val fieldMapper: TypeScriptFieldMapper,
+    val indent: String,
+    val lineSeparator: Settings.TypeScriptLineSeparator,
+    val typeNaming: TypeNaming,
+    val fieldMapper: FieldMapper,
     val discriminator: Settings.Discriminator) {
 
   @SuppressWarnings(Array("MaxParameters", "VariableShadowing"))
@@ -24,19 +24,18 @@ final class Settings(
       emitCodecs: Settings.EmitCodecs = this.emitCodecs,
       optionToNullable: Boolean = this.optionToNullable,
       prependEnclosingClassNames: Boolean = this.prependEnclosingClassNames,
-      typescriptIndent: String = this.typescriptIndent,
-      typescriptLineSeparator: Settings.TypeScriptLineSeparator =
-        this.typescriptLineSeparator,
-      typeNaming: TypeScriptTypeNaming = this.typeNaming,
-      fieldMapper: TypeScriptFieldMapper = this.fieldMapper,
+      indent: String = this.indent,
+      lineSeparator: Settings.TypeScriptLineSeparator = this.lineSeparator,
+      typeNaming: TypeNaming = this.typeNaming,
+      fieldMapper: FieldMapper = this.fieldMapper,
       discriminator: Settings.Discriminator = this.discriminator
     ): Settings =
     new Settings(
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -56,8 +55,8 @@ final class Settings(
     emitCodecs,
     optionToNullable,
     prependEnclosingClassNames,
-    typescriptIndent,
-    typescriptLineSeparator,
+    indent,
+    lineSeparator,
     typeNaming,
     fieldMapper,
     discriminator
@@ -73,18 +72,18 @@ object Settings {
       emitCodecs: EmitCodecs = EmitCodecsEnabled,
       optionToNullable: Boolean = false,
       prependEnclosingClassNames: Boolean = true,
-      typescriptIndent: String = DefaultTypeScriptIndent,
-      typescriptLineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
-      typeNaming: TypeScriptTypeNaming = TypeScriptTypeNaming.Identity,
-      fieldMapper: TypeScriptFieldMapper = TypeScriptFieldMapper.Identity,
+      indent: String = DefaultTypeScriptIndent,
+      lineSeparator: TypeScriptLineSeparator = TypeScriptSemiColon,
+      typeNaming: TypeNaming = TypeNaming.Identity,
+      fieldMapper: FieldMapper = FieldMapper.Identity,
       discriminator: Discriminator = DefaultDiscriminator
     ): Settings =
     new Settings(
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -119,26 +118,26 @@ object Settings {
 
     val optionToNullable = bool("optionToNullable", false)
     val prependEnclosingClassNames = bool("prependEnclosingClassNames", true)
-    val typescriptIndent: String =
-      str("typescriptIndent").getOrElse(DefaultTypeScriptIndent)
+    val indent: String =
+      str("indent").getOrElse(DefaultTypeScriptIndent)
 
-    val typescriptLineSeparator: TypeScriptLineSeparator =
-      str("typescriptLineSeparator").fold(TypeScriptSemiColon) {
+    val lineSeparator: TypeScriptLineSeparator =
+      str("lineSeparator").fold(TypeScriptSemiColon) {
         new TypeScriptLineSeparator(_)
       }
 
     def loadClass(n: String) =
       cl.fold[Class[_]](Class forName n)(_.loadClass(n))
 
-    val typeNaming: TypeScriptTypeNaming = str("typeNaming").flatMap {
+    val typeNaming: TypeNaming = str("typeNaming").flatMap {
       case "Identity" =>
-        Some(TypeScriptTypeNaming.Identity)
+        Some(TypeNaming.Identity)
 
       case className =>
         try {
           Option(
             loadClass(className)
-              .asSubclass(classOf[TypeScriptTypeNaming])
+              .asSubclass(classOf[TypeNaming])
               .getDeclaredConstructor()
               .newInstance()
           )
@@ -150,21 +149,21 @@ object Settings {
         }
 
     }.getOrElse {
-      TypeScriptTypeNaming.Identity
+      TypeNaming.Identity
     }
 
-    val fieldMapper: TypeScriptFieldMapper = str("fieldMapper").flatMap {
+    val fieldMapper: FieldMapper = str("fieldMapper").flatMap {
       case "SnakeCase" =>
-        Some(TypeScriptFieldMapper.SnakeCase)
+        Some(FieldMapper.SnakeCase)
 
       case "Identity" =>
-        Some(TypeScriptFieldMapper.Identity)
+        Some(FieldMapper.Identity)
 
       case className =>
         try {
           Option(
             loadClass(className)
-              .asSubclass(classOf[TypeScriptFieldMapper])
+              .asSubclass(classOf[FieldMapper])
               .getDeclaredConstructor()
               .newInstance()
           )
@@ -176,7 +175,7 @@ object Settings {
         }
 
     }.getOrElse {
-      TypeScriptFieldMapper.Identity
+      FieldMapper.Identity
     }
 
     val discriminator: Discriminator =
@@ -186,8 +185,8 @@ object Settings {
       emitCodecs,
       optionToNullable,
       prependEnclosingClassNames,
-      typescriptIndent,
-      typescriptLineSeparator,
+      indent,
+      lineSeparator,
       typeNaming,
       fieldMapper,
       discriminator
@@ -197,7 +196,7 @@ object Settings {
 
   def toConfig(conf: Settings, prefix: Option[String] = None): Config = {
     val typeNaming: String = conf.typeNaming match {
-      case TypeScriptTypeNaming.Identity =>
+      case TypeNaming.Identity =>
         "Identity"
 
       case custom =>
@@ -205,10 +204,10 @@ object Settings {
     }
 
     val fieldMapper: String = conf.fieldMapper match {
-      case TypeScriptFieldMapper.SnakeCase =>
+      case FieldMapper.SnakeCase =>
         "SnakeCase"
 
-      case TypeScriptFieldMapper.Identity =>
+      case FieldMapper.Identity =>
         "Identity"
 
       case custom =>
@@ -223,9 +222,9 @@ object Settings {
 
     repr.put(s"${p}prependEnclosingClassNames", conf.prependEnclosingClassNames)
 
-    repr.put(s"${p}typescriptIndent", conf.typescriptIndent)
+    repr.put(s"${p}indent", conf.indent)
 
-    repr.put(s"${p}typescriptLineSeparator", conf.typescriptLineSeparator.value)
+    repr.put(s"${p}lineSeparator", conf.lineSeparator.value)
 
     repr.put(s"${p}typeNaming", typeNaming)
     repr.put(s"${p}fieldMapper", fieldMapper)

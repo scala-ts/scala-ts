@@ -17,10 +17,11 @@ private[core] trait TranspilerExtraSpec { self: TranspilerSpec =>
 }
 
 private[core] object TranspilerExtraSpec {
-  import io.github.scalats.typescript._
+  import io.github.scalats.ast._
   import TranspilerCompat.ns
 
-  private val colorRef = CustomTypeRef(s"${ns}Color")
+  private val colorTpeRef = CustomTypeRef(s"${ns}Color")
+  private val colorObjRef = SingletonTypeRef(s"${ns}Color", ListSet.empty)
 
   val colorDecl = EnumDeclaration(
     name = s"${ns}Color",
@@ -28,11 +29,11 @@ private[core] object TranspilerExtraSpec {
     values = ListSet(
       ListValue(
         "purple",
-        ArrayRef(colorRef),
-        colorRef,
+        ArrayRef(colorTpeRef),
+        colorTpeRef,
         List(
-          SelectValue("purple[0]", colorRef, colorRef, "Red"),
-          SelectValue("purple[1]", colorRef, colorRef, "Blue")
+          SelectValue("purple[0]", colorTpeRef, colorObjRef, "Red"),
+          SelectValue("purple[1]", colorTpeRef, colorObjRef, "Blue")
         )
       )
     )

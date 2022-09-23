@@ -1,7 +1,7 @@
 package io.github.scalats.core
 
 import io.github.scalats.{ scala => ScalaModel }
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
 import Internals.ListSet
 
@@ -178,9 +178,20 @@ final class Transpiler(config: Settings) {
       scalaTypeRef: ScalaModel.TypeRef,
       inInterfaceContext: Boolean
     ): TypeRef = scalaTypeRef match {
-    case ScalaModel.BigDecimalRef | ScalaModel.BigIntegerRef |
-        ScalaModel.DoubleRef | ScalaModel.IntRef | ScalaModel.LongRef =>
-      NumberRef
+    case ScalaModel.BigDecimalRef =>
+      NumberRef.bigDecimal
+
+    case ScalaModel.BigIntegerRef =>
+      NumberRef.bigInt
+
+    case ScalaModel.DoubleRef =>
+      NumberRef.double
+
+    case ScalaModel.IntRef =>
+      NumberRef.int
+
+    case ScalaModel.LongRef =>
+      NumberRef.long
 
     case ScalaModel.BooleanRef =>
       BooleanRef
@@ -194,7 +205,10 @@ final class Transpiler(config: Settings) {
     case ScalaModel.TaggedRef(id, tagged) =>
       TaggedRef(idToString(id), transpileTypeRef(tagged, false))
 
-    case ScalaModel.CollectionRef(innerType) =>
+    case ScalaModel.SetRef(innerType) =>
+      SetRef(transpileTypeRef(innerType, inInterfaceContext))
+
+    case ScalaModel.ListRef(innerType) =>
       ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
 
     case ScalaModel.EnumerationRef(id) =>
@@ -208,6 +222,9 @@ final class Transpiler(config: Settings) {
         idToString(id),
         typeArgs.map(transpileTypeRef(_, inInterfaceContext))
       )
+
+    case ScalaModel.CaseObjectRef(id) =>
+      SingletonTypeRef(name = idToString(id), values = ListSet.empty)
 
     case ScalaModel.DateRef =>
       DateRef

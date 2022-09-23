@@ -4,25 +4,25 @@ import java.io.PrintStream
 
 import io.github.scalats.core.{
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptFieldMapper,
-  TypeScriptTypeMapper
+  DeclarationMapper,
+  FieldMapper,
+  TypeMapper
 }
 
-import io.github.scalats.typescript.{
+import io.github.scalats.ast.{
   Declaration,
   InterfaceDeclaration,
   UnionDeclaration,
   TypeRef
 }
 
-final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
+final class CustomDeclarationMapper extends DeclarationMapper {
 
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
+      parent: DeclarationMapper.Resolved,
       settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeMapper.Resolved,
+      fieldMapper: FieldMapper,
       declaration: Declaration,
       out: PrintStream
     ): Option[Unit] = declaration match {
@@ -40,11 +40,11 @@ final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
           val tsField = fieldMapper(settings, name, member.name, member.typeRef)
 
           out.println(
-            s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, decl, tsField, member.typeRef)}${settings.typescriptLineSeparator}"
+            s"${settings.indent}${tsField.name}: ${typeMapper(settings, decl, tsField, member.typeRef)}${settings.lineSeparator}"
           )
         }
 
-        out.println(s"${settings.typescriptIndent}_additionalField?: string${settings.typescriptLineSeparator}")
+        out.println(s"${settings.indent}_additionalField?: string${settings.lineSeparator}")
 
         out.println(s"""}
 

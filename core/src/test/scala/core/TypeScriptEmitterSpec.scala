@@ -1,7 +1,7 @@
 package io.github.scalats.core
 
+import io.github.scalats.ast._
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
 final class TypeScriptEmitterSpec
     extends org.specs2.mutable.Specification
@@ -28,7 +28,7 @@ final class TypeScriptEmitterSpec
 
 export function isEmpty(v: any): v is Empty {
   return (
-    v === {}
+    typeof v === 'object' && Object.keys(v).length === 0
   );
 }
 """)
@@ -127,7 +127,7 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
       "as tagged type" in {
         emit(
           ListSet(taggedDeclaration1),
-          declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+          declMapper = DeclarationMapper.valueClassAsTagged
         ) must beTypedEqualTo(
           s"""export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
@@ -236,7 +236,7 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
         "with value clas as dictionary key type" in {
           emit(
             ListSet(singleton3),
-            declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+            declMapper = DeclarationMapper.valueClassAsTagged
           ) must_=== s"""export class ${valueClassNs}TestObject3 {
   public name: ${valueClassNs}AnyValChild = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
 
@@ -278,7 +278,7 @@ export function is${valueClassNs}TestObject3(v: any): v is ${valueClassNs}TestOb
                 "\"value\""
               ),
               SelectValue("foo", taggedRef, ThisTypeRef, "const"),
-              LiteralValue("code", NumberRef, "1"),
+              LiteralValue("code", NumberRef.int, "1"),
               ListValue(
                 name = "list",
                 typeRef = ArrayRef(taggedRef),
@@ -301,7 +301,7 @@ export function is${valueClassNs}TestObject3(v: any): v is ${valueClassNs}TestOb
 
           emit(
             ListSet(singleton2WithTagged),
-            declMapper = TypeScriptDeclarationMapper.valueClassAsTagged
+            declMapper = DeclarationMapper.valueClassAsTagged
           ) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
   public name: string = "Foo";
 
@@ -404,7 +404,7 @@ export function is${ns}FamilyMember2(v: any): v is ${ns}FamilyMember2 {
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+            declMapper = DeclarationMapper.singletonAsLiteral
           ) must_=== s"""export const FooInhabitant = 'Foo';
 
 export type Foo = typeof FooInhabitant;
@@ -424,7 +424,7 @@ export function isFoo(v: any): v is Foo {
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+            declMapper = DeclarationMapper.singletonAsLiteral
           ) must_=== """export const FooInhabitant = "lorem";
 
 export type Foo = typeof FooInhabitant;
@@ -440,14 +440,18 @@ export function isFoo(v: any): v is Foo {
             name = "Foo",
             values = ListSet(
               barVal,
-              LiteralValue(name = "ipsum", typeRef = NumberRef, rawValue = "2")
+              LiteralValue(
+                name = "ipsum",
+                typeRef = NumberRef.int,
+                rawValue = "2"
+              )
             ),
             superInterface = Option.empty
           )
 
           emit(
             ListSet(obj),
-            declMapper = TypeScriptDeclarationMapper.singletonAsLiteral
+            declMapper = DeclarationMapper.singletonAsLiteral
           ) must_=== """export const FooInhabitant = { bar: "lorem", ipsum: 2 };
 
 export type Foo = typeof FooInhabitant;
@@ -477,7 +481,7 @@ export function is${ns}Family(v: any): v is ${ns}Family {
       "as union" in {
         emit(
           ListSet(union1, unionIface),
-          declMapper = TypeScriptDeclarationMapper.unionAsSimpleUnion
+          declMapper = DeclarationMapper.unionAsSimpleUnion
         ) must_=== s"""export type ${ns}Family = ${ns}FamilyMember1 | ${ns}FamilyMember2 | ${ns}FamilyMember3;
 
 export const ${ns}Family = {
@@ -522,7 +526,7 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
       "as enum" in {
         emit(
           ListSet(enum1),
-          declMapper = TypeScriptDeclarationMapper.enumerationAsEnum
+          declMapper = DeclarationMapper.enumerationAsEnum
         ) must beTypedEqualTo(s"""export enum ${ns}TestEnumeration {
   A = 'A',
   B = 'B',
@@ -553,16 +557,14 @@ private[core] object TypeScriptEmitterSpec {
   def emit(
       decls: ListSet[Declaration],
       config: Settings = Settings(),
-      declMapper: TypeScriptDeclarationMapper =
-        TypeScriptDeclarationMapper.Defaults,
-      importResolver: TypeScriptImportResolver =
-        TypeScriptImportResolver.Defaults,
-      typeMapper: TypeScriptTypeMapper = TypeScriptTypeMapper.Defaults
+      declMapper: DeclarationMapper = DeclarationMapper.Defaults,
+      importResolver: ImportResolver = ImportResolver.Defaults,
+      typeMapper: TypeMapper = TypeMapper.Defaults
     ): String = {
     val buf = new java.io.ByteArrayOutputStream()
     lazy val out = new java.io.PrintStream(buf)
 
-    val emiter = new TypeScriptEmitter(
+    val emiter = new Emitter(
       config,
       (_, _, _, _) => out,
       importResolver,

@@ -106,19 +106,19 @@ object ScalaRuntimeFixtures {
     values = ListSet(
       ScalaModel.ListInvariant(
         "purple",
-        ScalaModel.CollectionRef(colorRef),
+        ScalaModel.ListRef(colorRef),
         colorRef,
         List(
           ScalaModel.SelectInvariant(
             "purple[0]",
             colorRef,
-            ScalaModel.UnknownTypeRef(colorId),
+            ScalaModel.CaseObjectRef(colorId),
             "Red"
           ),
           ScalaModel.SelectInvariant(
             "purple[1]",
             colorRef,
-            ScalaModel.UnknownTypeRef(colorId),
+            ScalaModel.CaseObjectRef(colorId),
             "Blue"
           )
         )
@@ -231,33 +231,32 @@ object ScalaRuntimeFixtures {
 
   // ---
 
-  val (
-    testClass1Tree,
-    testClass1CompanionTree,
-    testClass1BTree,
-    testClass2Tree,
-    testClass3Tree,
-    testClass4Tree,
-    testClass5Tree,
-    testClass6Tree,
-    testClass7Tree,
-    anyValChildTree,
-    testClass8Tree,
-    testEnumerationTree,
-    testClass9Tree,
-    testClass10Tree,
-    testObject1Tree,
-    testObject2Tree,
-    familyTree,
-    familyMember1Tree,
-    familyMember2Tree,
-    familyMember3Tree,
-    logOpaqueAliasTree,
-    familyUnionTree,
-    loremTree,
-    ipsumTree,
-    colorTree,
-    styleTree
+  val Tuple2(
+    Tuple22(
+      testClass1Tree,
+      testClass1CompanionTree,
+      testClass1BTree,
+      testClass2Tree,
+      testClass3Tree,
+      testClass4Tree,
+      testClass5Tree,
+      testClass6Tree,
+      testClass7Tree,
+      anyValChildTree,
+      testClass8Tree,
+      testEnumerationTree,
+      testClass9Tree,
+      testClass10Tree,
+      testObject1Tree,
+      testObject2Tree,
+      familyTree,
+      familyMember1Tree,
+      familyMember2Tree,
+      familyMember3Tree,
+      logOpaqueAliasTree,
+      familyUnionTree
+    ),
+    Tuple4(loremTree, ipsumTree, colorTree, styleTree)
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -383,33 +382,37 @@ case class Style(name: String, color: Color)
                 ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _,
               _
             ) =>
-          (
-            testClass1Tree.asInstanceOf[Tree],
-            testClass1CompanionTree.asInstanceOf[Tree],
-            testClass1BTree.asInstanceOf[Tree],
-            testClass2Tree.asInstanceOf[Tree],
-            testClass3Tree.asInstanceOf[Tree],
-            testClass4Tree.asInstanceOf[Tree],
-            testClass5Tree.asInstanceOf[Tree],
-            testClass6Tree.asInstanceOf[Tree],
-            testClass7Tree.asInstanceOf[Tree],
-            anyValChildTree.asInstanceOf[Tree],
-            testClass8Tree.asInstanceOf[Tree],
-            testEnumerationTree.asInstanceOf[Tree],
-            testClass9Tree.asInstanceOf[Tree],
-            testClass10Tree.asInstanceOf[Tree],
-            testObject1Tree.asInstanceOf[Tree],
-            testObject2Tree.asInstanceOf[Tree],
-            familyTree.asInstanceOf[Tree],
-            familyMember1Tree.asInstanceOf[Tree],
-            familyMember2Tree.asInstanceOf[Tree],
-            familyMember3Tree.asInstanceOf[Tree],
-            logOpaqueAliasTree.asInstanceOf[Tree],
-            familyUnionTree.asInstanceOf[Tree],
-            loremTree.asInstanceOf[Tree],
-            ipsumTree.asInstanceOf[Tree],
-            colorTree.asInstanceOf[Tree],
-            styleTree.asInstanceOf[Tree]
+          Tuple2(
+            Tuple22(
+              testClass1Tree.asInstanceOf[Tree],
+              testClass1CompanionTree.asInstanceOf[Tree],
+              testClass1BTree.asInstanceOf[Tree],
+              testClass2Tree.asInstanceOf[Tree],
+              testClass3Tree.asInstanceOf[Tree],
+              testClass4Tree.asInstanceOf[Tree],
+              testClass5Tree.asInstanceOf[Tree],
+              testClass6Tree.asInstanceOf[Tree],
+              testClass7Tree.asInstanceOf[Tree],
+              anyValChildTree.asInstanceOf[Tree],
+              testClass8Tree.asInstanceOf[Tree],
+              testEnumerationTree.asInstanceOf[Tree],
+              testClass9Tree.asInstanceOf[Tree],
+              testClass10Tree.asInstanceOf[Tree],
+              testObject1Tree.asInstanceOf[Tree],
+              testObject2Tree.asInstanceOf[Tree],
+              familyTree.asInstanceOf[Tree],
+              familyMember1Tree.asInstanceOf[Tree],
+              familyMember2Tree.asInstanceOf[Tree],
+              familyMember3Tree.asInstanceOf[Tree],
+              logOpaqueAliasTree.asInstanceOf[Tree],
+              familyUnionTree.asInstanceOf[Tree]
+            ),
+            Tuple4(
+              loremTree.asInstanceOf[Tree],
+              ipsumTree.asInstanceOf[Tree],
+              colorTree.asInstanceOf[Tree],
+              styleTree.asInstanceOf[Tree]
+            )
           )
 
         case invalid =>

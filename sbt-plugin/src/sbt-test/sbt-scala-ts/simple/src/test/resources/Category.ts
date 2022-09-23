@@ -9,6 +9,6 @@ export interface Category {
 
 export function isCategory(v: any): v is Category {
   return (
-    v === {}
+    typeof v === 'object' && Object.keys(v).length === 0
   );
 }

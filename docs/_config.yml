@@ -1,6 +1,6 @@
 theme: jekyll-theme-minimal
 title: Scala-TS
-description: Simple tool which can generate TypeScript from Scala
+description: Simple tool to transpile Scala datamodel
 show_downloads: false
 latest_release: 0.5.13
 scala_major_version: 2.13

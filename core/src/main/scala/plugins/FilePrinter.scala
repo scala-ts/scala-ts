@@ -2,9 +2,9 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import io.github.scalats.ast.{ Declaration, TypeRef }
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.core.Settings
-import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 // TODO: Printer that gather class and interface
 final class FilePrinter(outDir: File) extends BasePrinter {
@@ -28,7 +28,7 @@ final class FilePrinter(outDir: File) extends BasePrinter {
       }
     )
 
-    import conf.{ typescriptLineSeparator => lineSep }
+    import conf.{ lineSeparator => lineSep }
 
     val stream = new PrintStream(new FileOutputStream(f, true))
 
@@ -40,6 +40,21 @@ export const ns${name} = exports${lineSep}
 """)
 
     printImports(conf, requires, stream) { tpe => s"./${tpe.name}" }
+
+    if (requires.nonEmpty) {
+      val typeNaming = conf.typeNaming(conf, _: TypeRef)
+      val requiredTypes = requires.toList.sortBy(_.name)
+
+      stream.println("""
+export const dependencyModules = [""")
+
+      requiredTypes.foreach { tpe =>
+        stream.println(s"${conf.indent}ns${typeNaming(tpe)},")
+      }
+
+      stream.println(s"""]${lineSep}
+""")
+    }
 
     stream
   }

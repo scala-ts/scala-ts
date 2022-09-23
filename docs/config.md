@@ -8,12 +8,12 @@ layout: default
 
 ## Compiler settings
 
-- `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`); Default `false` as builtin behaviour is option-to-undefined (see [`TypeScriptTypeMapper.NullableAsOption`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptTypeMapper$$NullableAsOption.html)).
+- `optionToNullable` - Translate `Option` types to union type with `null` (e.g. `Option[Int]` to `number | null`); Default `false` as builtin behaviour is option-to-undefined (see [`TypeMapper.NullableAsOption`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeMapper$$NullableAsOption.html)).
 - `prependEnclosingClassNames` - Prepend the name of enclosing classes to the generated types (default: `true`)
-- `typescriptIndent` - The characters used as TypeScript indentation (default: 2 spaces).
-- `typescriptLineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
-- `typeNaming` - The conversions for the type names (class implementing [`TypeScriptTypeNaming`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptTypeNaming.html); default: [`Identity`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeScriptTypeNaming$$Identity$.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L13)*
-- `fieldMapper` - The conversions for the field names (implements [`TypeScriptFieldMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptFieldMapper.html); default: [`Identity`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptFieldMapper$$Identity$.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L16)*
+- `indent` - The characters used as TypeScript indentation (default: 2 spaces).
+- `lineSeparator` - The characters used to separate TypeScript line/statements (default: `;`).
+- `typeNaming` - The conversions for the type names (class implementing [`TypeNaming`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeNaming.html); default: [`Identity`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/io/github/scalats/core/TypeNaming$$Identity$.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L13)*
+- `fieldMapper` - The conversions for the field names (implements [`FieldMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/FieldMapper.html); default: [`Identity`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/FieldMapper$$Identity$.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L16)*
 - `discriminator` - The name of the field to be used as discriminator (default: `_type`).
 
 The Scala code base to be considered to generate TypeScript from can be filtered using the following build options.
@@ -45,28 +45,28 @@ typeRuleSet {
 
 Also the settings can be used from advanced configuration.
 
-- `printer` - An optional printer class (implements [`TypeScriptPrinter`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptPrinter.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L26)*
-- `typeScriptTypeMappers` - A list of type mappers (implements [`TypeScriptTypeMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptTypeMapper.html)).
-- `typeScriptImportResolvers` - A list of import resolvers (implements [`TypeScriptImportResolver`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptImportResolver.html)).
-- `typeScriptDeclarationMappers` - A list of declaration mappers (implements [`TypeScriptDeclarationMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper.html)). Some additional declaration mappers are provided: [`enumerationAsEnum`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$.html#enumerationAsEnum:io.github.scalats.core.TypeScriptDeclarationMapper.EnumerationAsEnum), [`singletonAsLiteral`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$.html#singletonAsLiteral:io.github.scalats.core.TypeScriptDeclarationMapper.SingletonAsLiteral), [`scalatsUnionAsSimpleUnion`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$.html#unionAsSimpleUnion:io.github.scalats.core.TypeScriptDeclarationMapper.UnionAsSimpleUnion), `scalatsUnionWithLiteral`, [`valueClassAsTagged`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeScriptDeclarationMapper$.html#valueClassAsTagged:io.github.scalats.core.TypeScriptDeclarationMapper.ValueClassAsTagged) (*See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L37)*).
+- `printer` - An optional printer class (implements [`Printer`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/Printer.html)). *See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L26)*
+- `typeMappers` - A list of type mappers (implements [`TypeMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/TypeMapper.html)).
+- `importResolvers` - A list of import resolvers (implements [`ImportResolver`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/ImportResolver.html)).
+- `DeclarationMappers` - A list of declaration mappers (implements [`DeclarationMapper`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/DeclarationMapper.html)). Some additional declaration mappers are provided: [`enumerationAsEnum`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/DeclarationMapper$.html#enumerationAsEnum:io.github.scalats.core.DeclarationMapper.EnumerationAsEnum), [`singletonAsLiteral`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/DeclarationMapper$.html#singletonAsLiteral:io.github.scalats.core.DeclarationMapper.SingletonAsLiteral), [`scalatsUnionAsSimpleUnion`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/DeclarationMapper$.html#unionAsSimpleUnion:io.github.scalats.core.DeclarationMapper.UnionAsSimpleUnion), `scalatsUnionWithLiteral`, [`valueClassAsTagged`](https://javadoc.io/static/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.last_release}}/io/github/scalats/core/DeclarationMapper$.html#valueClassAsTagged:io.github.scalats.core.DeclarationMapper.ValueClassAsTagged) (*See: [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/custom-cfg/build.sbt#L37)*).
 - `additionalClasspath` - A list of URL to be added to the plugin classpath (to be able to load `fieldNaming` or `printer` ...).
 
 [![javadoc](https://javadoc.io/badge2/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}/javadoc.svg)](https://javadoc.io/doc/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}/{{site.latest_release}}) 
 
 ## SBT plugin settings
 
-The [compiler plugin settings](#compiler-settings) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsTypescriptIndent` SBT setting corresponds to the compiler plugin setting `typescriptIndent`.
+The [compiler plugin settings](#compiler-settings) can be configured as SBT settings, using the `scalats` prefix; e.g. The `scalatsIndent` SBT setting corresponds to the compiler plugin setting `indent`.
 
 ```ocaml
-scalatsTypescriptIndent := "\t"
+scalatsIndent := "\t"
 ```
 
 The SBT plugin also has some specific settings.
 
 - `scalatsOnCompile` - Boolean setting that if true triggers the TypeScript generation on Scala compilation (default: `true`).
 - `scalatsDebug` - Boolean setting to enable debug for the SBT plugin (default: `false`)
-- `sourceManaged in scalatsOnCompile` - The directory to initialize the printer with, where to generate the TypeScript code (default: `target/scala-ts/src_managed`).
-- `scalatsPrinterPrelude` - The prelude content to be printed at the beginning of each generated TypeScript file (default: `// Generated by ScalaTS ...`).
+- `sourceManaged in scalatsOnCompile` - The directory to initialize the printer with, where to generate the code (default: `target/scala-ts/src_managed`).
+- `scalatsPrinterPrelude` - The prelude content to be printed at the beginning of each generated file (default: `// Generated by ScalaTS ...`).
 
 > Since SBT 1.5, the slash syntax must be used; e.g. `scalatsOnCompile / sourceManaged`.
 
@@ -88,7 +88,7 @@ scalatsPrinterPrelude := scalatsPrinterUrlPrelude(
   (baseDirectory.value / "project" / "prelude.ts").toURI.toURL)
 ```
 
-More than the prelude, the TypeScript printer can be further customized through the `scalatsPrinter` settings, with the utilities provided along the SBT plugin.
+More than the prelude, the printer can be further customized through the `scalatsPrinter` settings, with the utilities provided along the SBT plugin.
 
 - `scalatsFilePrinter` - Print one file per type.
 - `scalatsSingleFilePrinter` - Print all types in a single file (see [example](https://github.com/scala-ts/scala-ts/blob/master/sbt-plugin/src/sbt-test/sbt-scala-ts/single-file-printer/build.sbt#L9).
@@ -114,7 +114,7 @@ Optionally the following argument can be passed.
 
 TODO
 
-When specifying classes for the advanced settings (such as `typeScriptTypeMappers`), the classes must be loadable in the classloader for the [compiler plugins](https://docs.scala-lang.org/overviews/plugins/index.html) (different from either the SBT/SBT plugins own classpath or the classpath to compile the Scala sources).
+When specifying classes for the advanced settings (such as `typeMappers`), the classes must be loadable in the classloader for the [compiler plugins](https://docs.scala-lang.org/overviews/plugins/index.html) (different from either the SBT/SBT plugins own classpath or the classpath to compile the Scala sources).
 
 The Scala version for the compiler plugins must be the same as the one for the sources to be compiled (cf `scalaVersion` SBT setting).
 

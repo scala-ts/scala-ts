@@ -8,12 +8,12 @@ import scala.tools.nsc.plugins.{ Plugin, PluginComponent }
 import scala.util.matching.Regex
 
 import io.github.scalats.core.{
+  DeclarationMapper,
+  Generator,
+  ImportResolver,
   Logger,
   ScalaParser,
-  TypeScriptDeclarationMapper,
-  TypeScriptGenerator,
-  TypeScriptImportResolver,
-  TypeScriptTypeMapper
+  TypeMapper
 }
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.tsconfig.ConfigFactory
@@ -270,24 +270,23 @@ final class CompilerPlugin(val global: Global)
         def warning(msg: => String): Unit = plugin.warning(msg)
       }
 
-      val declMapper = TypeScriptDeclarationMapper
-        .chain(config.typeScriptDeclarationMappers)
-        .getOrElse(TypeScriptDeclarationMapper.Defaults)
+      val declMapper = DeclarationMapper
+        .chain(config.declarationMappers)
+        .getOrElse(DeclarationMapper.Defaults)
 
-      val typeMapper = TypeScriptTypeMapper
-        .chain(config.typeScriptTypeMappers)
-        .getOrElse(TypeScriptTypeMapper.Defaults)
+      val typeMapper =
+        TypeMapper.chain(config.typeMappers).getOrElse(TypeMapper.Defaults)
 
-      val importResolver = TypeScriptImportResolver
-        .chain(config.typeScriptImportResolvers)
-        .getOrElse(TypeScriptImportResolver.Defaults)
+      val importResolver = ImportResolver
+        .chain(config.importResolvers)
+        .getOrElse(ImportResolver.Defaults)
 
       compiled.synchronized {
         // Include the current compilation unit as it's known
         compiled += unit.source.file.canonicalPath
       }
 
-      val ex = TypeScriptGenerator.generate(global)(
+      val ex = Generator.generate(global)(
         settings = plugin.config.settings,
         types = scalaTypes,
         symtab = symtab,

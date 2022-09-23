@@ -1,4 +1,4 @@
-package io.github.scalats.typescript
+package io.github.scalats.ast
 
 sealed trait Value {
 

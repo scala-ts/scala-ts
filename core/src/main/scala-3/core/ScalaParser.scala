@@ -542,7 +542,7 @@ final class ScalaParser(
         Some(
           ScalaModel.ListInvariant(
             name = k,
-            typeRef = ScalaModel.CollectionRef(elmTpe),
+            typeRef = ScalaModel.ListRef(elmTpe),
             valueTypeRef = elmTpe,
             values = elements
           )
@@ -558,7 +558,7 @@ final class ScalaParser(
         if (app.tpe <:< SeqType.appliedTo(vtpe) &&
           a.symbol.name.toString == "++") =>
       scalaTypeRef(app.tpe, Set.empty) match {
-        case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
+        case colTpe @ ScalaModel.ListRef(valueTpe) => {
           val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
@@ -613,7 +613,7 @@ final class ScalaParser(
         Some(
           ScalaModel.SetInvariant(
             name = k,
-            typeRef = ScalaModel.CollectionRef(elmTpe),
+            typeRef = ScalaModel.SetRef(elmTpe),
             valueTypeRef = elmTpe,
             values = elements
           )
@@ -629,7 +629,7 @@ final class ScalaParser(
         if (app.tpe <:< SetType.appliedTo(vtpe) &&
           a.symbol.name.toString == "++") =>
       scalaTypeRef(app.tpe, Set.empty) match {
-        case colTpe @ ScalaModel.CollectionRef(valueTpe) => {
+        case colTpe @ ScalaModel.SetRef(valueTpe) => {
           val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
@@ -1332,63 +1332,67 @@ final class ScalaParser(
           case typeParam if (typeParams contains typeParam) =>
             ScalaModel.TypeParamRef(typeParam)
 
-          case _ if isAnyVal =>
-            // #ValueClass_1
-            scalaType.decls
-              .filter(!_.is(Flags.Method))
-              .map(_.info)
-              .headOption match {
-              case Some(valueTpe) =>
-                ScalaModel.TaggedRef(
-                  identifier = buildQualifiedIdentifier(typeSymbol),
-                  tagged = scalaTypeRef(valueTpe, Set.empty)
-                )
+          case _ => {
+            if (isAnyVal) {
+              // #ValueClass_1
+              scalaType.decls
+                .filter(!_.is(Flags.Method))
+                .map(_.info)
+                .headOption match {
+                case Some(valueTpe) =>
+                  ScalaModel.TaggedRef(
+                    identifier = buildQualifiedIdentifier(typeSymbol),
+                    tagged = scalaTypeRef(valueTpe, Set.empty)
+                  )
 
-              case _ =>
-                unknown
-            }
+                case _ =>
+                  unknown
+              }
+            } else if (typeSymbol is Flags.Enum) {
+              ScalaModel.EnumerationRef(buildQualifiedIdentifier(typeSymbol))
+            } else if (isEnumerationValue(scalaType)) {
+              val id = scalaType match {
+                case Types.TypeRef(t @ Types.TermRef(_, _), _) => {
+                  val n = t.info.typeSymbol.fullName.toString.stripSuffix(f"$$")
 
-          case _ if (typeSymbol is Flags.Enum) =>
-            ScalaModel.EnumerationRef(buildQualifiedIdentifier(typeSymbol))
-
-          case _ if isEnumerationValue(scalaType) => {
-            val id = scalaType match {
-              case Types.TypeRef(t @ Types.TermRef(_, _), _) => {
-                val n = t.info.typeSymbol.fullName.toString.stripSuffix(f"$$")
-
-                if (n startsWith f"$$wrapper._$$") {
-                  f"$$wrapper.expr.${n drop 11}"
-                } else {
-                  n
+                  if (n startsWith f"$$wrapper._$$") {
+                    f"$$wrapper.expr.${n drop 11}"
+                  } else {
+                    n
+                  }
                 }
+
+                case Types.TypeRef(m, v) if (v.toString == "class Value") =>
+                  m.typeSymbol.fullName.toString.stripSuffix(f"$$")
+
+                case _ =>
+                  scalaType.typeSymbol.fullName.toString
               }
 
-              case Types.TypeRef(m, v) if (v.toString == "class Value") =>
-                m.typeSymbol.fullName.toString.stripSuffix(f"$$")
+              val qualId = id.split("\\.").toList.reverse match {
+                case nme :: rev =>
+                  ScalaModel.QualifiedIdentifier(
+                    name = nme,
+                    enclosingClassNames = rev.reverse
+                  )
 
-              case _ =>
-                scalaType.typeSymbol.fullName.toString
+                case _ =>
+                  ScalaModel.QualifiedIdentifier(
+                    name = scalaType.typeSymbol.fullName.toString,
+                    enclosingClassNames = List.empty
+                  )
+              }
+
+              ScalaModel.EnumerationRef(qualId)
+            } else if (
+              typeSymbol.is(Flags.ModuleClass) ||
+              typeSymbol.is(Flags.Module)
+            ) {
+              ScalaModel.CaseObjectRef(buildQualifiedIdentifier(typeSymbol))
+            } else {
+              unknown
             }
-
-            val qualId = id.split("\\.").toList.reverse match {
-              case nme :: rev =>
-                ScalaModel.QualifiedIdentifier(
-                  name = nme,
-                  enclosingClassNames = rev.reverse
-                )
-
-              case _ =>
-                ScalaModel.QualifiedIdentifier(
-                  name = scalaType.typeSymbol.fullName.toString,
-                  enclosingClassNames = List.empty
-                )
-            }
-
-            ScalaModel.EnumerationRef(qualId)
           }
-
-          case _ =>
-            unknown
         }
     }
 
@@ -1437,9 +1441,15 @@ final class ScalaParser(
 
             case innerType :: _
                 if (
+                  scalaType <:< SetType.appliedTo(innerType)
+                ) =>
+              ScalaModel.SetRef(scalaTypeRef(innerType, typeParams))
+
+            case innerType :: _
+                if (
                   scalaType <:< IterableType.appliedTo(innerType)
                 ) =>
-              ScalaModel.CollectionRef(scalaTypeRef(innerType, typeParams))
+              ScalaModel.ListRef(scalaTypeRef(innerType, typeParams))
 
             case innerType :: _
                 if (scalaType <:< Tuple1Type.appliedTo(innerType)) =>

@@ -2,11 +2,11 @@ package io.github.scalats.plugins
 
 import java.io.PrintStream
 
-import io.github.scalats.core.{ Settings, TypeScriptPrinter }
+import io.github.scalats.ast.TypeRef
+import io.github.scalats.core.{ Printer, Settings }
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript.TypeRef
 
-abstract class BasePrinter extends TypeScriptPrinter {
+abstract class BasePrinter extends Printer {
   private lazy val preludeUrl = sys.props.get("scala-ts.printer.prelude-url")
 
   /**
@@ -24,7 +24,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
         pattern.format(_: String, _: String)
 
       case _ => { (tpeName: String, importPath: String) =>
-        s"* as ns${tpeName} from '${importPath}';\nimport type { ${tpeName} } from '${importPath}'"
+        s"import * as ns${tpeName} from '${importPath}';\nimport type { ${tpeName} } from '${importPath}'"
       }
     }
 
@@ -40,7 +40,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
       out: PrintStream
     )(importPath: TypeRef => String
     ): Unit = {
-    import settings.{ typescriptLineSeparator => sep }
+    import settings.{ lineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
     val requiredTypes = requires.toList.sortBy(_.name)
@@ -49,21 +49,7 @@ abstract class BasePrinter extends TypeScriptPrinter {
       val tpeName = typeNaming(tpe)
       val preformatted = preformatImport(tpeName, importPath(tpe))
 
-      out.println(s"import ${preformatted}${sep}")
-    }
-
-    // ---
-
-    if (requiredTypes.nonEmpty) {
-      out.println("""
-export const dependencyModules = [""")
-
-      requiredTypes.foreach { tpe =>
-        out.println(s"${settings.typescriptIndent}ns${typeNaming(tpe)},")
-      }
-
-      out.println(s"""]${sep}
-""")
+      out.println(s"${preformatted}${sep}")
     }
   }
 }

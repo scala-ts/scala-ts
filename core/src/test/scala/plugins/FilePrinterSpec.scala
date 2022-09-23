@@ -4,8 +4,8 @@ import java.io.{ File, PrintStream }
 
 import scala.io.Source.fromFile
 
+import io.github.scalats.ast.{ CustomTypeRef, Declaration, TypeRef }
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript.{ CustomTypeRef, Declaration, TypeRef }
 
 final class FilePrinterSpec extends org.specs2.mutable.Specification {
   "File printer".title

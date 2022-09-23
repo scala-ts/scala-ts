@@ -4,27 +4,24 @@ import java.io.PrintStream
 
 import io.github.scalats.core.{
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptFieldMapper,
-  TypeScriptTypeMapper
+  DeclarationMapper,
+  FieldMapper,
+  TypeMapper
 }
 
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
-final class CustomDeclarationMapper extends TypeScriptDeclarationMapper {
+final class CustomDeclarationMapper extends DeclarationMapper {
 
   def apply(
-      parent: TypeScriptDeclarationMapper.Resolved,
+      parent: DeclarationMapper.Resolved,
       settings: Settings,
-      typeMapper: TypeScriptTypeMapper.Resolved,
-      fieldMapper: TypeScriptFieldMapper,
+      typeMapper: TypeMapper.Resolved,
+      fieldMapper: FieldMapper,
       declaration: Declaration,
       out: PrintStream
     ): Option[Unit] = {
-    import settings.{
-      typescriptLineSeparator => lineSep,
-      typescriptIndent => indent
-    }
+    import settings.{ lineSeparator => lineSep, indent }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
@@ -176,8 +173,8 @@ $deriving""")
 
   private def emitField(
       settings: Settings,
-      fieldMapper: TypeScriptFieldMapper,
-      typeMapper: TypeScriptTypeMapper.Resolved,
+      fieldMapper: FieldMapper,
+      typeMapper: TypeMapper.Resolved,
       o: PrintStream,
       owner: Declaration,
       member: Member
@@ -185,7 +182,7 @@ $deriving""")
     val tsField = fieldMapper(settings, owner.name, member.name, member.typeRef)
 
     o.println(
-      s"${settings.typescriptIndent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
+      s"${settings.indent}${tsField.name}: ${typeMapper(settings, owner, tsField, member.typeRef)},"
     )
   }
 }

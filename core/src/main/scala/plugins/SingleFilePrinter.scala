@@ -2,9 +2,9 @@ package io.github.scalats.plugins
 
 import java.io.{ File, FileOutputStream, PrintStream }
 
+import io.github.scalats.ast.{ Declaration, TypeRef }
 import io.github.scalats.core.Internals.ListSet
 import io.github.scalats.core.Settings
-import io.github.scalats.typescript.{ Declaration, TypeRef }
 
 /**
  * Prints all the generated code the a single file.
@@ -38,7 +38,7 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
       }
     }
 
-    import conf.{ typescriptLineSeparator => lineSep }
+    import conf.{ lineSeparator => lineSep }
 
     val stream = new PrintStream(new FileOutputStream(f, append))
 

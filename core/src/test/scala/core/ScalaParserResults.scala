@@ -30,7 +30,7 @@ final class ScalaParserResults(
 
   val caseClass3 = CaseClass(
     identifier = QualifiedIdentifier("TestClass3", ns),
-    fields = ListSet(TypeMember("name", CollectionRef(TypeParamRef("T")))),
+    fields = ListSet(TypeMember("name", ListRef(TypeParamRef("T")))),
     values = ListSet.empty,
     typeArgs = List("T")
   )
@@ -69,7 +69,7 @@ final class ScalaParserResults(
           CaseClassRef(
             QualifiedIdentifier("TestClass5", ns),
             typeArgs = List(
-              CollectionRef(
+              ListRef(
                 OptionRef(
                   CaseClassRef(
                     QualifiedIdentifier(
@@ -149,7 +149,7 @@ final class ScalaParserResults(
       ),
       TypeMember(
         "aliases",
-        CollectionRef(
+        ListRef(
           TaggedRef(
             identifier = QualifiedIdentifier("AnyValChild", valueClassNs),
             tagged = StringRef
@@ -208,7 +208,7 @@ final class ScalaParserResults(
       SelectInvariant("foo", StringRef, ThisTypeRef, "name"),
       ListInvariant(
         name = "list",
-        typeRef = CollectionRef(StringRef),
+        typeRef = ListRef(StringRef),
         valueTypeRef = StringRef,
         values = List(
           LiteralInvariant("list[0]", StringRef, "\"first\""),
@@ -217,7 +217,7 @@ final class ScalaParserResults(
       ),
       SetInvariant(
         name = "set",
-        typeRef = CollectionRef(IntRef),
+        typeRef = SetRef(IntRef),
         valueTypeRef = IntRef,
         values = Set(
           SelectInvariant("set[0]", IntRef, ThisTypeRef, "code"),
@@ -249,7 +249,7 @@ final class ScalaParserResults(
       DictionaryInvariant(
         name = "dictOfList",
         keyTypeRef = StringRef,
-        valueTypeRef = CollectionRef(StringRef),
+        valueTypeRef = ListRef(StringRef),
         entries = Map(
           LiteralInvariant(
             "dictOfList.0",
@@ -257,7 +257,7 @@ final class ScalaParserResults(
             "\"excludes\""
           ) -> ListInvariant(
             "dictOfList[0]",
-            CollectionRef(StringRef),
+            ListRef(StringRef),
             StringRef,
             List(
               LiteralInvariant(
@@ -278,7 +278,7 @@ final class ScalaParserResults(
             "\"includes\""
           ) -> ListInvariant(
             "dictOfList[1]",
-            CollectionRef(StringRef),
+            ListRef(StringRef),
             StringRef,
             List(
               LiteralInvariant(
@@ -306,13 +306,13 @@ final class ScalaParserResults(
         children = List(
           SelectInvariant(
             name = "concatSeq[0]",
-            typeRef = CollectionRef(StringRef),
+            typeRef = ListRef(StringRef),
             qualifier = ThisTypeRef,
             term = "list"
           ),
           ListInvariant(
             name = "concatSeq[1]",
-            typeRef = CollectionRef(StringRef),
+            typeRef = ListRef(StringRef),
             valueTypeRef = StringRef,
             values = List(
               LiteralInvariant("concatSeq[1][0]", StringRef, "\"foo\""),
@@ -321,7 +321,7 @@ final class ScalaParserResults(
           ),
           ListInvariant(
             name = "concatSeq[2]",
-            typeRef = CollectionRef(StringRef),
+            typeRef = ListRef(StringRef),
             valueTypeRef = StringRef,
             values =
               List(LiteralInvariant("concatSeq[2][0]", StringRef, "\"lorem\""))
@@ -334,14 +334,14 @@ final class ScalaParserResults(
         children = List(
           ListInvariant(
             name = "concatList[0]",
-            typeRef = CollectionRef(StringRef),
+            typeRef = ListRef(StringRef),
             valueTypeRef = StringRef,
             values =
               List(LiteralInvariant("concatList[0][0]", StringRef, "\"foo\""))
           ),
           SelectInvariant(
             name = "concatList[1]",
-            typeRef = CollectionRef(StringRef),
+            typeRef = ListRef(StringRef),
             qualifier = ThisTypeRef,
             term = "list"
           )
@@ -353,13 +353,13 @@ final class ScalaParserResults(
         children = List(
           SelectInvariant(
             name = "mergedSet[0]",
-            typeRef = CollectionRef(IntRef),
+            typeRef = SetRef(IntRef),
             qualifier = ThisTypeRef,
             term = "set"
           ),
           SetInvariant(
             name = "mergedSet[1]",
-            typeRef = CollectionRef(IntRef),
+            typeRef = SetRef(IntRef),
             valueTypeRef = IntRef,
             values = Set(LiteralInvariant("mergedSet[1][0]", IntRef, "3"))
           )

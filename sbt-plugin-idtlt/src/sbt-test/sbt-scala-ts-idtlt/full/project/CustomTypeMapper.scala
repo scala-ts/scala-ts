@@ -2,18 +2,18 @@ package scalats
 
 import io.github.scalats.core.{
   Settings,
-  TypeScriptField,
-  TypeScriptTypeMapper
+  Field,
+  TypeMapper
 }
-import io.github.scalats.typescript._
+import io.github.scalats.ast._
 
-final class CustomTypeMapper extends TypeScriptTypeMapper {
+final class CustomTypeMapper extends TypeMapper {
 
   def apply(
-      parent: TypeScriptTypeMapper.Resolved,
+      parent: TypeMapper.Resolved,
       settings: Settings,
       ownerType: Declaration,
-      member: TypeScriptField,
+      member: Field,
       tpe: TypeRef
     ): Option[String] = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
@@ -28,7 +28,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
       case StringRef =>
         "idtlt.string"
 
-      case NumberRef =>
+      case _: NumberRef =>
         "idtlt.number"
 
       case BooleanRef =>
@@ -55,7 +55,7 @@ final class CustomTypeMapper extends TypeScriptTypeMapper {
         s"idtlt.union(${tr(innerType)}, idtlt.null)"
 
       case NullableType(innerType) =>
-        // TODO: ?? member.flags contains TypeScriptField.omitable
+        // TODO: ?? member.flags contains Field.omitable
         s"${tr(innerType)}.optional()"
       // TODO: space-monad? string.nullable().map(Option)
 

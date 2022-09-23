@@ -9,12 +9,12 @@ import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 
 import io.github.scalats.core.{
+  DeclarationMapper,
+  ImportResolver,
   Logger,
+  Printer,
   Settings,
-  TypeScriptDeclarationMapper,
-  TypeScriptImportResolver,
-  TypeScriptPrinter,
-  TypeScriptTypeMapper
+  TypeMapper
 }
 
 /**
@@ -27,10 +27,10 @@ final class Configuration(
     val settings: Settings,
     val compilationRuleSet: SourceRuleSet,
     val typeRuleSet: SourceRuleSet,
-    val printer: TypeScriptPrinter,
-    val typeScriptImportResolvers: Seq[TypeScriptImportResolver],
-    val typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper],
-    val typeScriptTypeMappers: Seq[TypeScriptTypeMapper],
+    val printer: Printer,
+    val importResolvers: Seq[ImportResolver],
+    val declarationMappers: Seq[DeclarationMapper],
+    val typeMappers: Seq[TypeMapper],
     val additionalClasspath: Seq[URL]) {
 
   override def equals(that: Any): Boolean = that match {
@@ -49,9 +49,9 @@ final class Configuration(
       this.compilationRuleSet,
       this.typeRuleSet,
       this.printer,
-      this.typeScriptImportResolvers,
-      this.typeScriptDeclarationMappers,
-      this.typeScriptTypeMappers,
+      this.importResolvers,
+      this.declarationMappers,
+      this.typeMappers,
       this.additionalClasspath
     )
 
@@ -74,12 +74,10 @@ object Configuration {
       settings: Settings = Settings(),
       compilationRuleSet: SourceRuleSet = SourceRuleSet(),
       typeRuleSet: SourceRuleSet = SourceRuleSet(),
-      printer: TypeScriptPrinter = TypeScriptPrinter.StandardOutput,
-      typeScriptImportResolvers: Seq[TypeScriptImportResolver] = Seq.empty,
-      typeScriptDeclarationMappers: Seq[TypeScriptDeclarationMapper] =
-        Seq.empty,
-      typeScriptTypeMappers: Seq[TypeScriptTypeMapper] =
-        Seq.empty, // (TypeScriptTypeMapper.Defaults),
+      printer: Printer = Printer.StandardOutput,
+      importResolvers: Seq[ImportResolver] = Seq.empty,
+      declarationMappers: Seq[DeclarationMapper] = Seq.empty,
+      typeMappers: Seq[TypeMapper] = Seq.empty, // (TypeMapper.Defaults),
       additionalClasspath: Seq[URL] = Seq.empty
     ): Configuration =
     new Configuration(
@@ -87,9 +85,9 @@ object Configuration {
       compilationRuleSet,
       typeRuleSet,
       printer,
-      typeScriptImportResolvers,
-      typeScriptDeclarationMappers,
-      typeScriptTypeMappers,
+      importResolvers,
+      declarationMappers,
+      typeMappers,
       additionalClasspath
     )
 
@@ -156,11 +154,11 @@ object Configuration {
     }
 
     @SuppressWarnings(Array("AsInstanceOf"))
-    def customPrinter: Option[TypeScriptPrinter] =
+    def customPrinter: Option[Printer] =
       opt("printer")(config.getString(_)).map { pc =>
-        val printerClass: Class[TypeScriptPrinter] = additionalClassLoader
+        val printerClass: Class[Printer] = additionalClassLoader
           .fold[Class[_]](Class.forName(pc))(_.loadClass(pc))
-          .asInstanceOf[Class[TypeScriptPrinter]]
+          .asInstanceOf[Class[Printer]]
 
         def newInstance() =
           printerClass.getDeclaredConstructor().newInstance()
@@ -185,19 +183,18 @@ object Configuration {
         }
       }
 
-    val printer = customPrinter.getOrElse(TypeScriptPrinter.StandardOutput)
+    val printer = customPrinter.getOrElse(Printer.StandardOutput)
 
     def insts[T: ClassTag](key: String): Seq[T] =
       instances[T](logger, config, additionalClassLoader, key)
 
-    def typeMappers: Seq[TypeScriptTypeMapper] =
-      insts[TypeScriptTypeMapper]("typeScriptTypeMappers")
+    def typeMappers: Seq[TypeMapper] = insts[TypeMapper]("typeMappers")
 
-    def importResolvers: Seq[TypeScriptImportResolver] =
-      insts[TypeScriptImportResolver]("typeScriptImportResolvers")
+    def importResolvers: Seq[ImportResolver] =
+      insts[ImportResolver]("importResolvers")
 
-    def declarationMappers: Seq[TypeScriptDeclarationMapper] =
-      insts[TypeScriptDeclarationMapper]("typeScriptDeclarationMappers")
+    def declarationMappers: Seq[DeclarationMapper] =
+      insts[DeclarationMapper]("declarationMappers")
 
     new Configuration(
       settings,

@@ -1,4 +1,4 @@
-package io.github.scalats.typescript
+package io.github.scalats.ast
 
 import io.github.scalats.core.Internals.ListSet
 

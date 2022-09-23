@@ -1,8 +1,8 @@
 package io.github.scalats.core
 
 import io.github.scalats.{ scala => ScalaModel }
+import io.github.scalats.ast._
 import io.github.scalats.core.Internals.ListSet
-import io.github.scalats.typescript._
 
 import ScalaRuntimeFixtures.results._
 import TranspilerCompat.{ ns, valueClassNs }
@@ -180,7 +180,7 @@ final class TranspilerSpec
           values = ListSet(
             ListInvariant(
               name = "start",
-              typeRef = CollectionRef(greetingTypeRef),
+              typeRef = ListRef(greetingTypeRef),
               valueTypeRef = greetingTypeRef,
               values = List(
                 SelectInvariant(
@@ -275,7 +275,7 @@ object TranspilerResults {
     s"${ns}TestClass5",
     ListSet(
       Member("name", NullableType(SimpleTypeRef("T"))),
-      Member("counters", MapType(StringRef, NumberRef))
+      Member("counters", MapType(StringRef, NumberRef.bigInt))
     ),
     typeParams = List("T"),
     superInterface = Option.empty,
@@ -323,10 +323,10 @@ object TranspilerResults {
     s"${ns}TestClass10",
     ListSet(
       Member("name", StringRef),
-      Member("tuple", TupleRef(List(NumberRef))),
-      Member("tupleA", TupleRef(List(StringRef, NumberRef))),
-      Member("tupleB", TupleRef(List(StringRef, NumberRef))),
-      Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef)))
+      Member("tuple", TupleRef(List(NumberRef.int))),
+      Member("tupleA", TupleRef(List(StringRef, NumberRef.int))),
+      Member("tupleB", TupleRef(List(StringRef, NumberRef.long))),
+      Member("tupleC", TupleRef(List(StringRef, StringRef, NumberRef.long)))
     ),
     typeParams = List.empty,
     superInterface = None,
@@ -343,7 +343,7 @@ object TranspilerResults {
     s"${ns}TestObject2",
     ListSet(
       LiteralValue("name", StringRef, "\"Foo \\\"bar\\\"\""),
-      LiteralValue("code", NumberRef, "1"),
+      LiteralValue("code", NumberRef.int, "1"),
       LiteralValue("const", StringRef, "\"value\""),
       SelectValue("foo", StringRef, ThisTypeRef, "name"),
       ListValue(
@@ -357,11 +357,11 @@ object TranspilerResults {
       ),
       SetValue(
         name = "set",
-        typeRef = ArrayRef(NumberRef),
-        valueTypeRef = NumberRef,
+        typeRef = SetRef(NumberRef.int),
+        valueTypeRef = NumberRef.int,
         elements = Set(
-          SelectValue("set[0]", NumberRef, ThisTypeRef, "code"),
-          LiteralValue("set[1]", NumberRef, "2")
+          SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
+          LiteralValue("set[1]", NumberRef.int, "2")
         )
       ),
       DictionaryValue(
@@ -485,19 +485,19 @@ object TranspilerResults {
       ),
       MergedSetsValue(
         name = "mergedSet",
-        valueTypeRef = NumberRef,
+        valueTypeRef = NumberRef.int,
         children = List(
           SelectValue(
             name = "mergedSet[0]",
-            typeRef = ArrayRef(NumberRef),
+            typeRef = SetRef(NumberRef.int),
             qualifier = ThisTypeRef,
             term = "set"
           ),
           SetValue(
             name = "mergedSet[1]",
-            typeRef = ArrayRef(NumberRef),
-            valueTypeRef = NumberRef,
-            elements = Set(LiteralValue("mergedSet[1][0]", NumberRef, "3"))
+            typeRef = SetRef(NumberRef.int),
+            valueTypeRef = NumberRef.int,
+            elements = Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))
           )
         )
       )

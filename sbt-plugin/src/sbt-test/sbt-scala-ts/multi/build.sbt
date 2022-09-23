@@ -7,7 +7,7 @@ inThisBuild(
 )
 
 val common = (project in file("common"))
-  .enablePlugins(TypeScriptGeneratorPlugin)
+  .enablePlugins(ScalatsGeneratorPlugin)
   . // Required as disabled by default
   settings(
     // Distribute src/test/typescript as ts-test
@@ -24,7 +24,7 @@ val common = (project in file("common"))
 
 val api = (project in file("api"))
   .dependsOn(common)
-  .enablePlugins(TypeScriptGeneratorPlugin)
+  .enablePlugins(ScalatsGeneratorPlugin)
   . // Required as disabled by default
   settings(
     scalatsTypeExcludes := Set(".*\\.common\\..*"),

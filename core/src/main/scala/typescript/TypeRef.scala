@@ -1,4 +1,4 @@
-package io.github.scalats.typescript
+package io.github.scalats.ast
 
 import io.github.scalats.core.Internals
 
@@ -13,7 +13,7 @@ sealed trait TypeRef {
   def name: String
 }
 
-private[typescript] sealed trait GenericTypeRef { ref: TypeRef =>
+private[ast] sealed trait GenericTypeRef { ref: TypeRef =>
 
   /** The type name */
   def name: String
@@ -74,7 +74,7 @@ case class SingletonTypeRef(
     values: ListSet[Value])
     extends TypeRef
     with UnionMemberRef {
-  override val requires = ListSet.empty[TypeRef]
+  override val requires: ListSet[TypeRef] = ListSet(this)
 
   override lazy val toString = s"#${name}{${values mkString ", "}}"
 }
@@ -90,6 +90,19 @@ case class ArrayRef(innerType: TypeRef) extends TypeRef {
   lazy val name = "Array"
 
   override def toString = s"Array<${innerType.toString}>"
+}
+
+/**
+ * Reference to an type of `Set` (e.g. `Set<string>`).
+ *
+ * @param innerType the element type (e.g. `string` for `Set<string>`)
+ */
+case class SetRef(innerType: TypeRef) extends TypeRef {
+  @inline def requires = innerType.requires
+
+  lazy val name = "Set"
+
+  override def toString = s"Set<${innerType.toString}>"
 }
 
 /**
@@ -127,7 +140,31 @@ object SimpleTypeRef {
   def unapply(ref: SimpleTypeRef): Option[String] = Option(ref.name)
 }
 
-case object NumberRef extends SimpleTypeRef("number")
+sealed class NumberRef private[scalats] (
+    val subtype: NumberRef.Subtype)
+    extends SimpleTypeRef("number")
+
+object NumberRef {
+  val int = new NumberRef(Int)
+
+  val long = new NumberRef(Long)
+
+  val double = new NumberRef(Double)
+
+  val bigInt = new NumberRef(BigInt)
+
+  val bigDecimal = new NumberRef(BigDecimal)
+
+  // ---
+
+  sealed trait Subtype
+  case object BigInt extends Subtype
+  case object BigDecimal extends Subtype
+
+  case object Int extends Subtype
+  case object Long extends Subtype
+  case object Double extends Subtype
+}
 
 case object StringRef extends SimpleTypeRef("string")
 

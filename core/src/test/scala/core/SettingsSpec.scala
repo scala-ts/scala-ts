@@ -10,7 +10,7 @@ final class SettingsSpec extends org.specs2.mutable.Specification {
   import ConfigRenderOptions.concise
 
   val fullConf =
-    """{"discriminator":"_type","emitCodecs":true,"fieldMapper":"Identity","optionToNullable":false,"prependEnclosingClassNames":true,"typeNaming":"Identity","typescriptIndent":"\t","typescriptLineSeparator":";"}"""
+    """{"discriminator":"_type","emitCodecs":true,"fieldMapper":"Identity","indent":"\t","lineSeparator":";","optionToNullable":false,"prependEnclosingClassNames":true,"typeNaming":"Identity"}"""
 
   "Fully defined settings" should {
     "be loaded" in {
@@ -19,12 +19,12 @@ final class SettingsSpec extends org.specs2.mutable.Specification {
         Logger(org.slf4j.LoggerFactory getLogger getClass)
       )
 
-      cfg must_=== Settings(typescriptIndent = "\t")
+      cfg must_=== Settings(indent = "\t")
     }
 
     "be written" in {
       Settings
-        .toConfig(Settings(typescriptIndent = "\t"))
+        .toConfig(Settings(indent = "\t"))
         .root()
         .render(concise) must_=== fullConf
     }
@@ -44,15 +44,15 @@ final class SettingsSpec extends org.specs2.mutable.Specification {
   }
 }
 
-final class CustomFieldMapper extends TypeScriptFieldMapper {
+final class CustomFieldMapper extends FieldMapper {
 
   def apply(
       settings: Settings,
       ownerType: String,
       propertyName: String,
-      propertyType: io.github.scalats.typescript.TypeRef
+      propertyType: io.github.scalats.ast.TypeRef
     ) =
-    TypeScriptField(s"_${propertyName}", Set.empty)
+    Field(s"_${propertyName}", Set.empty)
 
   override def hashCode: Int = getClass.hashCode
 

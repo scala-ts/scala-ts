@@ -9,6 +9,6 @@ export interface Feature {
 
 export function isFeature(v: any): v is Feature {
   return (
-    v === {}
+    typeof v === 'object' && Object.keys(v).length === 0
   );
 }

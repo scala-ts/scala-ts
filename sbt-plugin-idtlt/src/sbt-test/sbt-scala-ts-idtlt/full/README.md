@@ -1,3 +1,3 @@
-# Custom configuration
+# idonttrustlikethat
 
-Scripted SBT test with custom field naming and printer.
+Scripted SBT test
