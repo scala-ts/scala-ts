@@ -56,6 +56,10 @@ project sbt-plugin
 ^publishSigned
 project sbt-plugin-idtlt
 ^publishSigned
+project sbt-plugin-python
+^publishSigned
+project python
++publishSigned
 project idtlt
 +publishSigned
 project core
