@@ -2,6 +2,8 @@ on:
   schedule:
     - cron: '0 12 * * 0'
 name: weekly
+permissions:
+  workflows: write
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
