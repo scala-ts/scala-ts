@@ -6,7 +6,6 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 import scala.concurrent.ExecutionContext
-
 import scala.concurrent.duration._
 
 import org.slf4j.LoggerFactory
