@@ -17,7 +17,7 @@ inThisBuild(
 
 // Common model
 lazy val common = (project in file("common"))
-  .enablePlugins(TypeScriptGeneratorPlugin)
+  .enablePlugins(ScalatsGeneratorPlugin)
   .settings(
     Seq(
       name := "scala-ts-demo-common"
