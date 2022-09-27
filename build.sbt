@@ -5,7 +5,7 @@ scalafmtOnCompile := true
 
 inThisBuild(
   List(
-    resolvers += Resolver.sonatypeRepo("staging"),
+    resolvers ++= Resolver.sonatypeOssRepos("staging"),
     // scalaVersion := "2.13.3",
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
@@ -17,7 +17,7 @@ inThisBuild(
 
 // Common model
 lazy val common = (project in file("common"))
-  .enablePlugins(TypeScriptIdtltPlugin)
+  .enablePlugins(ScalatsIdtltPlugin)
   .settings(
     name := "scala-ts-demo-common",
     scalatsOnCompile / sourceManaged := {

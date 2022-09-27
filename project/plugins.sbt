@@ -10,9 +10,12 @@ addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.1")
 
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
-addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.10")
+addSbtPlugin(
+  ("com.github.sbt" % "sbt-native-packager" % "1.9.10")
+    .exclude("org.scala-lang.modules", "*")
+)
 
-val scalaTSVer = "0.5.13"
+val scalaTSVer = "0.5.14"
 
 addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % scalaTSVer)
 
