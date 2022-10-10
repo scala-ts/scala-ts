@@ -139,10 +139,10 @@
     magic-string "^0.25.7"
     resolve "^1.17.0"
 
-"@rollup/plugin-html@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.npmjs.org/@rollup/plugin-html/-/plugin-html-0.2.4.tgz"
-  integrity sha512-x0qpNXxbmGa9Jnl4OX89AORPe2T/a4DqNK69BGRnEdaPKq6MdiUXSTam/eCkF5DxkQGcRcPq0L4vzr/E3q4mVA==
+"@rollup/plugin-html@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.0.tgz#b48782867d7aac0c1079ee0c77be25be194c462f"
+  integrity sha512-BFtHaKBiGN3z5fwhUIY8aZxEry1as4xU6iWvrVgOHSHNoH1ZfLaPcghnf2wwcQgt/oN5iF2vk9BoxDouzqIj+A==
 
 "@rollup/plugin-node-resolve@14.1.0":
   version "14.1.0"
