@@ -1,5 +1,6 @@
 import unittest
 
+import time
 from datetime import datetime
 
 from generated.busline import BusLine
@@ -11,6 +12,7 @@ class BarSuite(unittest.TestCase):
 
     def test(self):
         now = datetime.now()
+        now_time = time.gmtime()
 
         bar1 = Bar(
             name=Name('One'),
@@ -19,7 +21,8 @@ class BarSuite(unittest.TestCase):
             amount=None,
             transports=[],
             updated=now,
-            created=now)
+            created=now,
+            time=now_time)
 
         self.assertEqual(bar1.name, 'One')
         self.assertEqual(len(bar1.aliases), 0)
@@ -28,6 +31,7 @@ class BarSuite(unittest.TestCase):
         self.assertEqual(len(bar1.transports), 0)
         self.assertEqual(bar1.updated, now)
         self.assertEqual(bar1.created, now)
+        self.assertEqual(bar1.time, now_time)
 
         # --
         busline = BusLine(
@@ -42,7 +46,8 @@ class BarSuite(unittest.TestCase):
             amount=100,
             transports=[busline],
             updated=now,
-            created=now)
+            created=now,
+            time=now_time)
 
         self.assertEqual(bar2.name, 'Two')
         self.assertEqual(bar2.aliases, ['Deux', 'Ni'])
@@ -51,5 +56,6 @@ class BarSuite(unittest.TestCase):
         self.assertEqual(bar2.transports, [busline])
         self.assertEqual(bar2.updated, now)
         self.assertEqual(bar2.created, now)
+        self.assertEqual(bar2.time, now_time)
 
         self.assertNotEqual(bar1, bar2)

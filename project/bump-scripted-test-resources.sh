@@ -7,7 +7,7 @@ fi
 
 VERSION=$1
 
-for TS in `ls -v -1 sbt-*/src/sbt-test/sbt-*/*/src/test/resources/*.ts sbt-*/src/sbt-test/sbt-*/*/*/src/test/resources/*.ts`
+for TS in `ls -v -1 sbt-*/src/sbt-test/sbt-*/*/src/test/resources/*.ts sbt-*/src/sbt-test/sbt-*/*/*/src/test/resources/*.ts sbt-*/src/sbt-test/sbt-*/*/*/src/test/resources/*.py`
 do
   echo -n "$TS ..."
 

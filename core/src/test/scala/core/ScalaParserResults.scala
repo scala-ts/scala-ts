@@ -54,7 +54,8 @@ final class ScalaParserResults(
     identifier = QualifiedIdentifier("TestClass5", ns),
     fields = ListSet(
       TypeMember("name", OptionRef(TypeParamRef("T"))),
-      TypeMember("counters", MapRef(StringRef, BigIntegerRef))
+      TypeMember("counters", MapRef(StringRef, BigIntegerRef)),
+      TypeMember("time", TimeRef)
     ),
     values = ListSet.empty,
     typeArgs = List("T")

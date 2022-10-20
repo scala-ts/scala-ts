@@ -84,6 +84,7 @@ T = typing.TypeVar('T')
 class ${ns}TestClass5(typing.Generic[T]):
   name: typing.Optional[T]
   counters: typing.Dict[str, complex]
+  time: time.struct_time
 """
       )
     }

@@ -11,7 +11,8 @@ case class Bar(
     amount: Option[BigInt],
     transports: Seq[Transport],
     updated: LocalDate,
-    created: LocalDate)
+    created: LocalDate,
+    time: java.time.OffsetTime)
 
 case class Foo(
     id: Long,

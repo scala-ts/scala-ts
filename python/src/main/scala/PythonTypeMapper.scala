@@ -38,6 +38,9 @@ final class PythonTypeMapper extends TypeMapper {
       case BooleanRef =>
         "bool"
 
+      case TimeRef =>
+        "time.struct_time"
+
       case DateRef | DateTimeRef =>
         "datetime.datetime"
 

@@ -84,12 +84,14 @@ export function is${ns}TestClass3(v: any): v is ${ns}TestClass3 {
         s"""export interface ${ns}TestClass5<T> {
   name?: T;
   counters: { [key: string]: number };
+  time: string;
 }
 
 export function is${ns}TestClass5(v: any): v is ${ns}TestClass5 {
   return (
     (!v['name'] || ((typeof v['name']) === 'T')) &&
-    ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number')))
+    ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number'))) &&
+    ((typeof v['time']) === 'string')
   );
 }
 """

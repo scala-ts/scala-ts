@@ -43,6 +43,7 @@ final class PythonFilePrinter(outDir: File) extends BasePrinter {
 
     stream.println("""import typing  # noqa: F401
 import datetime  # noqa: F401
+import time  # noqa: F401
 """)
 
     if (requires.nonEmpty) {

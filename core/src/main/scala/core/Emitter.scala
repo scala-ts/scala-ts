@@ -715,6 +715,9 @@ private[scalats] object Emitter {
       guardNaming: TypeRef => String
     ): String =
     typeRef match {
+      case TimeRef =>
+        s"(typeof ${name}) === 'string'"
+
       case DateRef | DateTimeRef =>
         s"${name} && (${name} instanceof Date)"
 
@@ -766,7 +769,7 @@ private[scalats] object Emitter {
 
     case BooleanRef => "boolean"
 
-    case StringRef => "string"
+    case TimeRef | StringRef => "string"
 
     case DateRef | DateTimeRef => "Date"
 

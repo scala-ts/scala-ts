@@ -1509,6 +1509,9 @@ final class ScalaParser(
         case ("java.time.LocalDate", _) =>
           Some(ScalaModel.DateRef)
 
+        case ("java.time.LocalTime" | "java.time.OffsetTime", _) =>
+          Some(ScalaModel.TimeRef)
+
         case (
               full,
               "Instant" | "LocalDateTime" | "ZonedDateTime" | "OffsetDateTime"
