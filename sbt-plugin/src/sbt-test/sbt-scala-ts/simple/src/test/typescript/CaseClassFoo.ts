@@ -52,6 +52,7 @@ const foo2: CaseClassFoo = {
     firstName: 'First2',
     lastName: 'Last2',
     grade: 2,
+    time: '12:34'
   }
 }
 
@@ -97,6 +98,7 @@ describe('Foo', () => {
         firstName: 'First2',
         lastName: 'Last2',
         grade: 2,
+        time: '12:34'
       }
     }
 

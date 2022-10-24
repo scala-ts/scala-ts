@@ -275,7 +275,8 @@ object TranspilerResults {
     s"${ns}TestClass5",
     ListSet(
       Member("name", NullableType(SimpleTypeRef("T"))),
-      Member("counters", MapType(StringRef, NumberRef.bigInt))
+      Member("counters", MapType(StringRef, NumberRef.bigInt)),
+      Member("time", TimeRef)
     ),
     typeParams = List("T"),
     superInterface = Option.empty,

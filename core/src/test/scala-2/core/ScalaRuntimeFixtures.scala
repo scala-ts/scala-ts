@@ -110,13 +110,16 @@ object ScalaRuntimeFixtures {
 
   case class TestClass5[T](
       name: Option[T],
-      counters: Map[String, java.math.BigInteger])
+      counters: Map[String, java.math.BigInteger],
+      time: java.time.LocalTime)
 
   val TestClass5Type = typeOf[TestClass5[_]]
 
   lazy val TestClass5Tree: Tree = typecheck(q"""case class TestClass5[T](
     name: Option[T],
-    counters: Map[String, java.math.BigInteger])""")
+    counters: Map[String, java.math.BigInteger],
+    time: java.time.LocalTime
+  )""")
 
   case class TestClass6[T](
       name: Option[TestClass5[List[Option[TestClass4[String]]]]],

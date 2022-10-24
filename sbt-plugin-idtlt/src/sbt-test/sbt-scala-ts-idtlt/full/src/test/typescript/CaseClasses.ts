@@ -15,7 +15,8 @@ const bar1: nsBar.Bar = {
   amount: 456,
   transports: [],
   updated: new Date(date2),
-  created: new Date(date1)
+  created: new Date(date1),
+  time: '12:34'
 }
 
 const bar2: nsBar.Bar = {
@@ -24,7 +25,8 @@ const bar2: nsBar.Bar = {
   age: 3,
   transports: [],
   updated: new Date(date2),
-  created: new Date(date1)
+  created: new Date(date1),
+  time: '12:34'
 }
 
 const bar3: nsBar.Bar = {
@@ -38,7 +40,8 @@ const bar3: nsBar.Bar = {
     testTransport.transport3,
   ],
   updated: new Date(date2),
-  created: new Date(date1)
+  created: new Date(date1),
+  time: '12:34'
 }
 
 describe('Bar', () => {
@@ -50,7 +53,8 @@ describe('Bar', () => {
       amount: 456,
       transports: [],
       updated: date2,
-      created: date1
+      created: date1,
+      time: '12:34'
     }
 
     expect(nsBar.isBar(input)).toBe(false)
@@ -76,7 +80,8 @@ describe('Bar', () => {
       amount: 456,
       transports: [],
       updated: new Date(date2),
-      created: new Date(date1)
+      created: new Date(date1),
+      time: '12:34'
     }
 
     expect(nsBar.isBar(raw)).toBe(true)
@@ -95,7 +100,8 @@ describe('Bar', () => {
       age: 3,
       transports: [],
       updated: date2,
-      created: date1
+      created: date1,
+      time: '12:34'
     }
 
     expect(nsBar.isBar(input)).toBe(false)
@@ -119,7 +125,8 @@ describe('Bar', () => {
       age: 3,
       transports: [],
       updated: new Date(date2),
-      created: new Date(date1)
+      created: new Date(date1),
+      time: '12:34'
     }
 
     expect(nsBar.isBar(raw)).toBe(true)
@@ -143,7 +150,8 @@ describe('Bar', () => {
         testTransport.transport3
       ],
       updated: date2,
-      created: date1
+      created: date1,
+      time: '12:34'
     }
 
     expect(nsBar.isBar(input)).toBe(false)
@@ -172,7 +180,8 @@ describe('Bar', () => {
         testTransport.transport3,
       ],
       updated: new Date(date2),
-      created: new Date(date1)
+      created: new Date(date1),
+      time: '12:34'
     }
 
     expect(nsBar.isBar(raw)).toBe(true)

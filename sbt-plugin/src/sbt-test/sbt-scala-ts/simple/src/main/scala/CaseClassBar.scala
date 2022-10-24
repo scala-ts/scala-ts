@@ -5,7 +5,8 @@ final class Grade(val value: Int) extends AnyVal
 case class CaseClassBar(
     firstName: String,
     lastName: String,
-    grade: Grade)
+    grade: Grade,
+    time: java.time.LocalTime)
 
 object Constants {
   def code = 1

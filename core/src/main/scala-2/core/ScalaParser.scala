@@ -1172,6 +1172,9 @@ final class ScalaParser[Uni <: Universe](
         case ("java.time.LocalDate", _) =>
           Some(DateRef)
 
+        case ("java.time.LocalTime" | "java.time.OffsetTime", _) =>
+          Some(TimeRef)
+
         case (
               full,
               "Instant" | "LocalDateTime" | "ZonedDateTime" | "OffsetDateTime"

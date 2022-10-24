@@ -232,6 +232,9 @@ final class Transpiler(config: Settings) {
     case ScalaModel.DateTimeRef =>
       DateTimeRef
 
+    case ScalaModel.TimeRef =>
+      TimeRef
+
     case ScalaModel.TypeParamRef(name) =>
       SimpleTypeRef(name)
 

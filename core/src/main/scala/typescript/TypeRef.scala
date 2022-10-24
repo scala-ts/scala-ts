@@ -174,6 +174,8 @@ case object DateRef extends SimpleTypeRef("Date")
 
 case object DateTimeRef extends SimpleTypeRef("DateTime")
 
+case object TimeRef extends SimpleTypeRef("Time")
+
 private[scalats] case object ThisTypeRef extends SimpleTypeRef("this")
 
 /**

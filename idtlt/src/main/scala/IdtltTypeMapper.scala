@@ -26,7 +26,7 @@ final class IdtltTypeMapper extends TypeMapper {
       }
 
       val tsType = tpe match {
-        case StringRef =>
+        case TimeRef | StringRef =>
           "idtlt.string"
 
         case _: NumberRef =>
