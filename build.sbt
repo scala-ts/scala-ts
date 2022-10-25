@@ -70,7 +70,7 @@ lazy val core = project
       val specsVer = "4.10.6"
 
       Seq(
-        "org.slf4j" % "slf4j-api" % "2.0.0",
+        "org.slf4j" % "slf4j-api" % "2.0.3",
         "ch.qos.logback" % "logback-classic" % "1.2.11"
       ) ++ Seq("core", "junit").map(n =>
         ("org.specs2" %% s"specs2-${n}" % specsVer)
@@ -315,4 +315,12 @@ lazy val root = (project in file("."))
     publish := ({}),
     publishTo := None
   )
-  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`, python, `sbt-plugin-python`)
+  .aggregate(
+    shaded,
+    core,
+    `sbt-plugin`,
+    idtlt,
+    `sbt-plugin-idtlt`,
+    python,
+    `sbt-plugin-python`
+  )
