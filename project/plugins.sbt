@@ -11,6 +11,6 @@ addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 addSbtPlugin(("com.github.sbt" % "sbt-native-packager" % "1.9.10").
   exclude("org.scala-lang.modules", "*"))
 
-val scalaTSVer = "0.5.14"
+val scalaTSVer = "0.5.15"
 
 addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % scalaTSVer)
