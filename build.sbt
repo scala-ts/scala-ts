@@ -23,7 +23,7 @@ lazy val shaded = project
 val fullCrossScalaVersions = Def.setting {
   Seq(
     scalaVersion.value,
-    "2.13.8",
+    "2.13.10",
     "3.2.0"
   )
 }
