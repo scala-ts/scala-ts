@@ -48,7 +48,7 @@ jobs:
 
     - name: 'Run SBT plugin tests'
       run: |
-        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.16 ;^scripted'
+        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12.17 ;^scripted'
 
     - name: 'Persist generated data'
       uses: actions/upload-artifact@v3
