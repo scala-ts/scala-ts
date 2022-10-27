@@ -138,10 +138,10 @@
     is-reference "1.2.1"
     magic-string "^0.26.4"
 
-"@rollup/plugin-html@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.0.tgz#b48782867d7aac0c1079ee0c77be25be194c462f"
-  integrity sha512-BFtHaKBiGN3z5fwhUIY8aZxEry1as4xU6iWvrVgOHSHNoH1ZfLaPcghnf2wwcQgt/oN5iF2vk9BoxDouzqIj+A==
+"@rollup/plugin-html@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.1.tgz#c29f8a3edbc8527bc2e1a466f86cc906483391a2"
+  integrity sha512-ex4qCaauEhrhYTlFaW/D1Y66I/qL8Uu04FWFR+eQgjOtRCegMtscn69fS6ZGeL1GG6qCFdV8DTaP911uyMycWw==
 
 "@rollup/plugin-node-resolve@15.0.0":
   version "15.0.0"
