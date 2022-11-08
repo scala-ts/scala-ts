@@ -163,14 +163,6 @@
     "@rollup/pluginutils" "^5.0.1"
     magic-string "^0.26.4"
 
-"@rollup/pluginutils@^4.1.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-4.2.1.tgz#e6c6c3aba0744edce3fb2074922d3776c0af2a6d"
-  integrity sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==
-  dependencies:
-    estree-walker "^2.0.1"
-    picomatch "^2.2.2"
-
 "@rollup/pluginutils@^5.0.1":
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-5.0.1.tgz#63def51f5a76dadd984689d33c7f000164152a97"
@@ -857,10 +849,10 @@ enhanced-resolve@^5.8.3:
     graceful-fs "^4.2.4"
     tapable "^2.2.0"
 
-es-module-lexer@^0.9.3:
-  version "0.9.3"
-  resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-0.9.3.tgz#6f13db00cc38417137daf74366f535c8eb438f19"
-  integrity sha512-1HQ2M2sPtxwnvOvT1ZClHyQDiggdNjURWpY2we6aMKCQiUVxTmVs2UYPLIrD84sS+kMdUwfBSylbJPwNnBrnHQ==
+es-module-lexer@^1.0.5:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-1.1.0.tgz#bf56a09b5f1c6aea6ba231b0a636a0f60c410b70"
+  integrity sha512-fJg+1tiyEeS8figV+fPcPpm8WqJEflG3yPU0NOm5xMvrNkuiy7HzX/Ljng4Y0hAoiw4/3hQTCFYw+ub8+a2pRA==
 
 es6-promise@^3.1.2:
   version "3.3.1"
@@ -1041,7 +1033,7 @@ estree-walker@^0.6.1:
   version "0.6.1"
   resolved "https://registry.npmjs.org/estree-walker/-/estree-walker-0.6.1.tgz"
 
-estree-walker@^2.0.1, estree-walker@^2.0.2:
+estree-walker@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/estree-walker/-/estree-walker-2.0.2.tgz"
 
@@ -1490,7 +1482,7 @@ jest-util@^29.2.1:
     graceful-fs "^4.2.9"
     picomatch "^2.2.3"
 
-joycon@^3.0.1:
+joycon@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/joycon/-/joycon-3.1.1.tgz#bce8596d6ae808f8b68168f5fc69280996894f03"
   integrity sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==
@@ -1506,10 +1498,10 @@ js-yaml@4.1.0:
   dependencies:
     argparse "^2.0.1"
 
-jsonc-parser@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-3.0.0.tgz#abdd785701c7e7eaca8a9ec8cf070ca51a745a22"
-  integrity sha512-fQzRfAbIBnR0IQvftw9FJveWiHp72Fg20giDrHz6TdfB12UH/uue0D3hm57UB5KgAVuniLMCaS8P1IMj9NR7cA==
+jsonc-parser@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-3.2.0.tgz#31ff3f4c2b9793f89c67212627c51c6394f88e76"
+  integrity sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==
 
 jsonfile@^4.0.0:
   version "4.0.0"
@@ -1921,7 +1913,7 @@ picocolors@^1.0.0:
   resolved "https://registry.npmjs.org/picocolors/-/picocolors-1.0.0.tgz"
   integrity sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==
 
-picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.2.2:
+picomatch@^2.0.4, picomatch@^2.2.1:
   version "2.2.2"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-2.2.2.tgz"
 
@@ -2147,16 +2139,16 @@ rollup-plugin-css-asset@1.0.2:
     convert-source-map "^1.7.0"
     rollup-pluginutils "^2.8.2"
 
-rollup-plugin-esbuild@4.10.1:
-  version "4.10.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-esbuild/-/rollup-plugin-esbuild-4.10.1.tgz#84a32419b56680149a0456442a71456e49f122c0"
-  integrity sha512-/ymcRB283zjFp1JTBXO8ekxv0c9vRc2L6OTljghsLthQ4vqeDSDWa9BVz1tHiVrx6SbUnUpDPLC0K/MXK7j5TA==
+rollup-plugin-esbuild@4.10.2:
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-esbuild/-/rollup-plugin-esbuild-4.10.2.tgz#094a2178764af182ae08764e4dedff6b14793091"
+  integrity sha512-OPrBgdN1ZC2zQvq/rm5Zvzpb0Rez7zbbVJ+1b5Az//kLlfhwR1mqOP3wAhkg9sn5nF7p+97p55TORE0RNXzNcw==
   dependencies:
-    "@rollup/pluginutils" "^4.1.1"
-    debug "^4.3.3"
-    es-module-lexer "^0.9.3"
-    joycon "^3.0.1"
-    jsonc-parser "^3.0.0"
+    "@rollup/pluginutils" "^5.0.1"
+    debug "^4.3.4"
+    es-module-lexer "^1.0.5"
+    joycon "^3.1.1"
+    jsonc-parser "^3.2.0"
 
 rollup-plugin-livereload@2.0.5:
   version "2.0.5"
