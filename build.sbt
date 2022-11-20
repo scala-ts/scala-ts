@@ -71,7 +71,7 @@ lazy val core = project
 
       Seq(
         "org.slf4j" % "slf4j-api" % "2.0.0",
-        "ch.qos.logback" % "logback-classic" % "1.2.11"
+        "ch.qos.logback" % "logback-classic" % "1.4.5"
       ) ++ Seq("core", "junit").map(n =>
         ("org.specs2" %% s"specs2-${n}" % specsVer)
           .cross(CrossVersion.for3Use2_13) % Test
@@ -315,4 +315,12 @@ lazy val root = (project in file("."))
     publish := ({}),
     publishTo := None
   )
-  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`, python, `sbt-plugin-python`)
+  .aggregate(
+    shaded,
+    core,
+    `sbt-plugin`,
+    idtlt,
+    `sbt-plugin-idtlt`,
+    python,
+    `sbt-plugin-python`
+  )
