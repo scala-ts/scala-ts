@@ -1,10 +1,6 @@
 package scalats
 
-import io.github.scalats.core.{
-  Settings,
-  Field,
-  TypeMapper
-}
+import io.github.scalats.core.{ Settings, Field, TypeMapper }
 import io.github.scalats.ast._
 
 final class CustomTypeMapper extends TypeMapper {
