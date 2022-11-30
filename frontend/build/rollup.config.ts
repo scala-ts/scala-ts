@@ -1,4 +1,5 @@
 import path from 'path'
+import { fileURLToPath } from 'url'
 import childProcess from 'child_process'
 
 import type { RollupOptions } from 'rollup'
@@ -17,7 +18,6 @@ import html from '@rollup/plugin-html'
 // @ts-ignore
 import livereload from 'rollup-plugin-livereload'
 
-import { scss } from 'svelte-preprocess'
 import preprocess from 'svelte-preprocess'
 
 import { config } from "dotenv";
@@ -25,7 +25,8 @@ import { envValidator } from "./envValidator";
 import { errorDebugString } from "idonttrustlikethat";
 import { indexTemplate } from "./indexTemplate";
 
-const buildDirectory = path.resolve(__dirname);
+const __filename = fileURLToPath(import.meta.url);
+const buildDirectory = path.dirname(__filename)
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -98,12 +99,13 @@ const options: RollupOptions = {
     svelte({
       exclude: "node_modules/**/*",
       preprocess: [
-        preprocess({}),
-        scss({
-          renderSync: true,
-          includePaths: ["./src/theme"],
-          prependData: '@import "util.scss";',
-        }),
+        preprocess({
+          scss: {
+            renderSync: true,
+            includePaths: ["./src/theme"],
+            prependData: '@import "util.scss";',
+          }
+        })
       ],
       compilerOptions: {
         // This is a better default.
