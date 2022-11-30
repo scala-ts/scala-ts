@@ -315,4 +315,12 @@ lazy val root = (project in file("."))
     publish := ({}),
     publishTo := None
   )
-  .aggregate(shaded, core, `sbt-plugin`, idtlt, `sbt-plugin-idtlt`, python, `sbt-plugin-python`)
+  .aggregate(
+    shaded,
+    core,
+    `sbt-plugin`,
+    idtlt,
+    `sbt-plugin-idtlt`,
+    python,
+    `sbt-plugin-python`
+  )
