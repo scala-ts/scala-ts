@@ -45,15 +45,6 @@ object Compiler extends AutoPlugin {
           "-Ywarn-unused-import",
           "-Ywarn-macros:after"
         )
-      } else if (sv == "2.11") {
-        Seq(
-          "-Xmax-classfile-name",
-          "128",
-          "-Yopt:_",
-          "-Ydead-code",
-          "-Yclosure-elim",
-          "-Yconst-opt"
-        )
       } else if (sv == "2.13") {
         Seq(
           "-explaintypes",
