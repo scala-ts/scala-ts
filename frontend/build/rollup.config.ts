@@ -101,7 +101,6 @@ const options: RollupOptions = {
       preprocess: [
         preprocess({
           scss: {
-            renderSync: true,
             includePaths: ["./src/theme"],
             prependData: '@import "util.scss";',
           }
