@@ -608,7 +608,7 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
         ownerType: Declaration,
         member: Field,
         typeRef: TypeRef
-    ) =>
+      ) =>
       typeMapper(resolvedTypeMapper, _settings, ownerType, member, typeRef)
         .getOrElse(defaultTypeMapping(ownerType, member, typeRef))
   }
