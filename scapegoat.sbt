@@ -1,3 +1,4 @@
+/*
 ThisBuild / scapegoatVersion := "1.4.15"
 
 ThisBuild / scapegoatReports := Seq("text") // xml in 2.13 require extra dep
@@ -46,3 +47,4 @@ pomPostProcess := {
 
   Processor()
 }
+ */
