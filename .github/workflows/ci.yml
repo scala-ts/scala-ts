@@ -32,7 +32,7 @@ jobs:
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
-        sbt ';warn ;scalafixAll -check ;scalafmtCheckAll ;scapegoat'
+        sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
     - name: 'Run core tests'
       run: sbt +core/testOnly

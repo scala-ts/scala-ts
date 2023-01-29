@@ -46,6 +46,11 @@ lazy val core = project
   .settings(
     name := "scala-ts-core",
     crossScalaVersions := fullCrossScalaVersions.value,
+    ThisBuild / scapegoatVersion := {
+      println(s"scalaBinaryVersion = ${scalaBinaryVersion.value}")
+      if (scalaBinaryVersion.value == "2.11") "1.4.17"
+      else "2.1.0"
+    },
     Compile / unmanagedJars += (shaded / assembly).value,
     Compile / unmanagedSourceDirectories += {
       val base = (Compile / sourceDirectory).value
@@ -157,6 +162,10 @@ lazy val idtlt = project
   .settings(
     name := "scala-ts-idtlt",
     crossScalaVersions := fullCrossScalaVersions.value,
+    scapegoatVersion := {
+      if (scalaBinaryVersion.value == "2.11") "1.4.17"
+      else "2.1.0"
+    },
     libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
@@ -236,6 +245,10 @@ lazy val python = project
   .settings(
     name := "scala-ts-python",
     crossScalaVersions := fullCrossScalaVersions.value,
+    scapegoatVersion := {
+      if (scalaBinaryVersion.value == "2.11") "1.4.17"
+      else "2.1.0"
+    },
     libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
