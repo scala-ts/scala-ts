@@ -15,6 +15,8 @@ addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
 
+addSbtPlugin("com.sksamuel.scapegoat" % "sbt-scapegoat" % "1.1.1")
+
 addSbtPlugin("cchantep" % "sbt-hl-compiler" % "0.8")
 
 addSbtPlugin("cchantep" % "sbt-scaladoc-compiler" % "0.2")

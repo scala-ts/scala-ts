@@ -47,9 +47,8 @@ lazy val core = project
     name := "scala-ts-core",
     crossScalaVersions := fullCrossScalaVersions.value,
     ThisBuild / scapegoatVersion := {
-      println(s"scalaBinaryVersion = ${scalaBinaryVersion.value}")
       if (scalaBinaryVersion.value == "2.11") "1.4.17"
-      else "2.1.0"
+      else "2.1.1"
     },
     Compile / unmanagedJars += (shaded / assembly).value,
     Compile / unmanagedSourceDirectories += {
@@ -62,12 +61,14 @@ lazy val core = project
     },
     libraryDependencies := libraryDependenciesWithScapegoat.value,
     libraryDependencies ++= {
+      val v = scalaVersion.value
+
       if (scalaBinaryVersion.value == "3") {
-        Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)
+        Seq("org.scala-lang" %% "scala3-compiler" % v)
       } else {
         Seq(
-          "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-          "org.scala-lang" % "scala-compiler" % scalaVersion.value
+          "org.scala-lang" % "scala-reflect" % v,
+          "org.scala-lang" % "scala-compiler" % v
         )
       }
     },
