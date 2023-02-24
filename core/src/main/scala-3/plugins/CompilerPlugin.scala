@@ -147,7 +147,10 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
 
   import tpd.*
 
-  override def run(using ctx: Context): Unit = {
+  override def run(
+      using
+      ctx: Context
+    ): Unit = {
     val compiledFile: File = ctx.source.file.file
     val (config, outDir, debug) = initer(ctx)
 
