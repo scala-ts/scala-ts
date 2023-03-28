@@ -603,8 +603,7 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
     if (params.isEmpty) "" else params.mkString("<", ", ", ">")
 
   private lazy val resolvedTypeMapper: TypeMapper.Resolved = {
-    (
-        _settings: Settings,
+    (_settings: Settings,
         ownerType: Declaration,
         member: Field,
         typeRef: TypeRef
