@@ -18,14 +18,16 @@ lazy val shaded = project
     ),
     publish := ({}),
     publishTo := None
-  )
+)
+
+val scala213Version = "2.13.10"
 
 val fullCrossScalaVersions = Def.setting {
   Seq(
     "2.11.12",
     scalaVersion.value,
-    "2.13.8",
-    "3.2.0"
+    scala213Version,
+    "3.2.2"
   )
 }
 
@@ -34,7 +36,9 @@ val libraryDependenciesWithScapegoat = Def.setting {
 
   libraryDependencies.value.map { dep =>
     if (v == "3" && dep.name == "scalac-scapegoat-plugin") {
-      dep.cross(CrossVersion.for3Use2_13With("", ".7"))
+      val minorSuffix = scala213Version.stripPrefix("2.13")
+
+      dep.cross(CrossVersion.for3Use2_13With("", minorSuffix))
     } else {
       dep
     }
@@ -49,6 +53,13 @@ lazy val core = project
     ThisBuild / scapegoatVersion := {
       if (scalaBinaryVersion.value == "2.11") "1.4.17"
       else "2.1.1"
+    },
+    scalacOptions ++= {
+      if (scalaBinaryVersion.value == "3") {
+        Seq("-Wconf:cat=deprecation&msg=.*JavaConverters.*:s")
+      } else {
+        Seq.empty
+      }
     },
     Compile / unmanagedJars += (shaded / assembly).value,
     Compile / unmanagedSourceDirectories += {
