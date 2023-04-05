@@ -101,16 +101,30 @@ private[scalats] object Internals {
 
     @inline def isTraversableAgain: Boolean = values.isTraversableAgain
 
-    @inline def max[A1 >: T](implicit ord: Ordering[A1]): T =
+    @inline def max[A1 >: T](
+        implicit
+        ord: Ordering[A1]
+      ): T =
       values.max[A1](ord)
 
-    @inline def maxBy[B](f: T => B)(implicit cmp: Ordering[B]): T =
+    @inline def maxBy[B](
+        f: T => B
+      )(implicit
+        cmp: Ordering[B]
+      ): T =
       values.maxBy(f)(cmp)
 
-    @inline def min[A1 >: T](implicit ord: Ordering[A1]): T =
+    @inline def min[A1 >: T](
+        implicit
+        ord: Ordering[A1]
+      ): T =
       values.min(ord)
 
-    @inline def minBy[B](f: T => B)(implicit cmp: Ordering[B]): T =
+    @inline def minBy[B](
+        f: T => B
+      )(implicit
+        cmp: Ordering[B]
+      ): T =
       values.minBy(f)(cmp)
 
     @inline def mkString: String = values.mkString
@@ -124,7 +138,10 @@ private[scalats] object Internals {
       ): String =
       values.mkString(start, sep, end)
 
-    @inline def product[A1 >: T](implicit num: Numeric[A1]): A1 =
+    @inline def product[A1 >: T](
+        implicit
+        num: Numeric[A1]
+      ): A1 =
       values.product(num)
 
     @inline def reduce[A1 >: T](
