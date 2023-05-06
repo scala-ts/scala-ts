@@ -2697,10 +2697,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svelte-check@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-3.3.0.tgz#c748a0331c47acb0263ad900bdcbae7577491508"
-  integrity sha512-wZtOvY8V2fjzCbS4dGjDp0Ebh6VyXg6A39s7TDc8wc0154yqWKu18Rd9Ad+GOs7sXst7dbTmjvOaexjwoqPM7A==
+svelte-check@3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-3.3.1.tgz#bdfb75df347b72e27643c8ad1bf6610a6be9708e"
+  integrity sha512-+Yb1F50M76JRPdZlxB8/blg75GiqKH/8QJTNtC3cKvxCbrRK7zpgmOg2oxem9n4eDAIllesm74guR3AnlAtNVg==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.17"
     chokidar "^3.4.1"
