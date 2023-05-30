@@ -27,7 +27,7 @@
     "@rollup/plugin-alias": "5.0.0",
     "@rollup/plugin-commonjs": "25.0.0",
     "@rollup/plugin-html": "1.0.2",
-    "@rollup/plugin-node-resolve": "15.0.2",
+    "@rollup/plugin-node-resolve": "15.1.0",
     "@rollup/plugin-replace": "5.0.2",
     "@types/estree": "1.0.1",
     "@types/expect": "24.3.0",
