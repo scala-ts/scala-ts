@@ -74,7 +74,7 @@ object Compiler extends AutoPlugin {
     highlightActivation := HLEnabledBySysProp("highlight"),
     libraryDependencies ++= {
       if (scalaBinaryVersion.value != "3") {
-        val silencerVersion = "1.7.13"
+        val silencerVersion = "1.17.13"
 
         Seq(
           compilerPlugin(
