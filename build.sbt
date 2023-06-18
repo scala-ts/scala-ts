@@ -18,7 +18,7 @@ lazy val shaded = project
     ),
     publish := ({}),
     publishTo := None
-)
+  )
 
 val scala213Version = "2.13.10"
 
