@@ -34,7 +34,7 @@
     "@types/node": "20.3.1",
     "concurrently": "8.2.0",
     "cross-env": "7.0.3",
-    "dotenv": "16.3.0",
+    "dotenv": "16.3.1",
     "esbuild": "0.18.4",
     "expect": "29.5.0",
     "husky": "^8.0.3",
