@@ -26,7 +26,7 @@ The SBT plugin can also be built:
 
     sbt '^ sbt-plugin/publishLocal'
 
-*Running tests:* ![CI](https://github.com/scala-ts/scala-ts/workflows/CI/badge.svg):
+*Running tests:* [![CI](https://github.com/scala-ts/scala-ts/workflows/CI/badge.svg)](https://github.com/scala-ts/scala-ts/actions/workflows/ci.yml)
 
 The tests for the core library and compiler plugin can be executed.
 
