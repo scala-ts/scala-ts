@@ -88,7 +88,7 @@ lazy val core = project
 
       Seq(
         "org.slf4j" % "slf4j-api" % "1.7.36",
-        "ch.qos.logback" % "logback-classic" % "1.2.12"
+        "ch.qos.logback" % "logback-classic" % "1.4.11"
       ) ++ Seq("core", "junit").map(n =>
         ("org.specs2" %% s"specs2-${n}" % specsVer)
           .cross(CrossVersion.for3Use2_13) % Test
