@@ -41,7 +41,7 @@
     "lint-staged": "^14.0.1",
     "madge": "^6.1.0",
     "mocha": "10.2.0",
-    "@types/mocha": "10.0.1",
+    "@types/mocha": "10.0.2",
     "prettier": "3.0.3",
     "prettier-plugin-svelte": "3.0.3",
     "rimraf": "5.0.1",
