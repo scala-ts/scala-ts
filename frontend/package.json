@@ -28,7 +28,7 @@
     "@rollup/plugin-html": "1.0.3",
     "@rollup/plugin-node-resolve": "15.2.1",
     "@rollup/plugin-replace": "5.0.2",
-    "@rollup/plugin-typescript": "11.1.4",
+    "@rollup/plugin-typescript": "11.1.5",
     "@types/estree": "1.0.2",
     "@types/expect": "24.3.0",
     "@types/mocha": "10.0.2",
