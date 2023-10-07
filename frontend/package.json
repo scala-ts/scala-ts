@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.4",
-    "@rollup/plugin-alias": "5.0.0",
+    "@rollup/plugin-alias": "5.0.1",
     "@rollup/plugin-commonjs": "25.0.4",
     "@rollup/plugin-html": "1.0.2",
     "@rollup/plugin-node-resolve": "15.2.1",
