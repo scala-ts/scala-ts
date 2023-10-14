@@ -12,11 +12,11 @@ export const dependencyModules = [
 ];
 
 export class Constants {
-  public code: number = 1;
+  public code: number & 1 = 1;
 
-  public name: string = "foo";
+  public name: string & "foo" = "foo";
 
-  public LowerGrade: Grade = 0;
+  public LowerGrade: Grade & 0 = 0;
 
   public list: ReadonlyArray<Grade> = [ this.LowerGrade ];
 

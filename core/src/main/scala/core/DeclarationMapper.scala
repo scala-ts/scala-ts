@@ -132,8 +132,8 @@ object DeclarationMapper {
 
             out.println(s"""
 
-export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
-  return ${field.name} as ${tpeName}
+export function ${tpeName}<T extends ${valueType}>(${field.name}: T): ${tpeName} & T {
+  return ${field.name} as (${tpeName} & T)
 }""")
 
             // Type guard
