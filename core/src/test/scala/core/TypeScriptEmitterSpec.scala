@@ -133,8 +133,8 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
         ) must beTypedEqualTo(
           s"""export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
-  return value as ${valueClassNs}AnyValChild
+export function ${valueClassNs}AnyValChild<T extends string>(value: T): ${valueClassNs}AnyValChild & T {
+  return value as (${valueClassNs}AnyValChild & T)
 }
 
 export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyValChild {
@@ -192,11 +192,11 @@ export function is${ns}TestObject1(v: any): v is ${ns}TestObject1 {
         "with value class as constant" in {
           // SCALATS1: No implements SupI
           emit(ListSet(singleton2)) must_=== s"""export class ${ns}TestObject2 implements SupI {
-  public name: string = "Foo \\"bar\\"";
+  public name: string & "Foo \\"bar\\"" = "Foo \\"bar\\"";
 
-  public code: number = 1;
+  public code: number & 1 = 1;
 
-  public const: string = "value";
+  public const: string & "value" = "value";
 
   public foo: string = this.name;
 
@@ -240,7 +240,7 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
             ListSet(singleton3),
             declMapper = DeclarationMapper.valueClassAsTagged
           ) must_=== s"""export class ${valueClassNs}TestObject3 {
-  public name: ${valueClassNs}AnyValChild = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
+  public name: ${valueClassNs}AnyValChild & "Foo" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
 
   public readonly mapping: { [key: ${valueClassNs}AnyValChild]: string } = (() => { const __buf837556430: { [key: ${valueClassNs}AnyValChild]: string } = {}; __buf837556430[ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
 
@@ -305,13 +305,13 @@ export function is${valueClassNs}TestObject3(v: any): v is ${valueClassNs}TestOb
             ListSet(singleton2WithTagged),
             declMapper = DeclarationMapper.valueClassAsTagged
           ) must_=== """export class ScalaRuntimeFixturesTestObject2 implements SupI {
-  public name: string = "Foo";
+  public name: string & "Foo" = "Foo";
 
-  public const: ScalaRuntimeFixturesAnyValChild = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("value");
+  public const: ScalaRuntimeFixturesAnyValChild & "value" = nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("value");
 
   public foo: ScalaRuntimeFixturesAnyValChild = this.const;
 
-  public code: number = 1;
+  public code: number & 1 = 1;
 
   public list: ReadonlyArray<ScalaRuntimeFixturesAnyValChild> = [ nsScalaRuntimeFixturesAnyValChild.ScalaRuntimeFixturesAnyValChild("first") ];
 
@@ -366,7 +366,7 @@ export function isWords(v: any): v is Words {
         emit(
           ListSet(unionMember2Singleton)
         ) must_=== s"""export class ${ns}FamilyMember2 implements ${ns}Family {
-  public foo: string = "bar";
+  public foo: string & "bar" = "bar";
 
   private static instance: ${ns}FamilyMember2;
 

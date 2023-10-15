@@ -31,29 +31,11 @@ val fullCrossScalaVersions = Def.setting {
   )
 }
 
-val libraryDependenciesWithScapegoat = Def.setting {
-  val v = scalaBinaryVersion.value
-
-  libraryDependencies.value.map { dep =>
-    if (v == "3" && dep.name == "scalac-scapegoat-plugin") {
-      val minorSuffix = scala213Version.stripPrefix("2.13")
-
-      dep.cross(CrossVersion.for3Use2_13With("", minorSuffix))
-    } else {
-      dep
-    }
-  }
-}
-
 lazy val core = project
   .in(file("core"))
   .settings(
     name := "scala-ts-core",
     crossScalaVersions := fullCrossScalaVersions.value,
-    ThisBuild / scapegoatVersion := {
-      if (scalaBinaryVersion.value == "2.11") "1.4.17"
-      else "2.1.1"
-    },
     scalacOptions ++= {
       if (scalaBinaryVersion.value == "3") {
         Seq("-Wconf:cat=deprecation&msg=.*JavaConverters.*:s")
@@ -70,7 +52,6 @@ lazy val core = project
         case _                      => base / "scala-2.12+"
       }
     },
-    libraryDependencies := libraryDependenciesWithScapegoat.value,
     libraryDependencies ++= {
       val v = scalaVersion.value
 
@@ -103,7 +84,6 @@ lazy val core = project
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
-              "com.sksamuel.scapegoat" | // plugin there (compile time only)
               "com.github.ghik" // plugin there (compile time only)
             ) =>
           None
@@ -174,17 +154,11 @@ lazy val idtlt = project
   .settings(
     name := "scala-ts-idtlt",
     crossScalaVersions := fullCrossScalaVersions.value,
-    scapegoatVersion := {
-      if (scalaBinaryVersion.value == "2.11") "1.4.17"
-      else "2.1.0"
-    },
-    libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
-              "com.sksamuel.scapegoat" | // plugin there (compile time only)
               "com.github.ghik" // plugin there (compile time only)
             ) =>
           None
@@ -257,17 +231,11 @@ lazy val python = project
   .settings(
     name := "scala-ts-python",
     crossScalaVersions := fullCrossScalaVersions.value,
-    scapegoatVersion := {
-      if (scalaBinaryVersion.value == "2.11") "1.4.17"
-      else "2.1.0"
-    },
-    libraryDependencies := libraryDependenciesWithScapegoat.value,
     Compile / unmanagedJars += (shaded / assembly).value,
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
         case Some(
-              "com.sksamuel.scapegoat" | // plugin there (compile time only)
               "com.github.ghik" // plugin there (compile time only)
             ) =>
           None

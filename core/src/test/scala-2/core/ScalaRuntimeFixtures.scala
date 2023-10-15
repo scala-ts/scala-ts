@@ -40,7 +40,9 @@ object ScalaRuntimeFixtures {
 
   // ---
 
-  implicit val mirror = runtimeUniverse.runtimeMirror(getClass.getClassLoader)
+  implicit val mirror: reflect.runtime.universe.JavaMirror =
+    runtimeUniverse.runtimeMirror(getClass.getClassLoader)
+
   import runtimeUniverse._
 
   private lazy val tb = {
