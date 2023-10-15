@@ -140,7 +140,7 @@ object SimpleTypeRef {
   def unapply(ref: SimpleTypeRef): Option[String] = Option(ref.name)
 }
 
-sealed class NumberRef private[scalats] (
+final class NumberRef private[scalats] (
     val subtype: NumberRef.Subtype)
     extends SimpleTypeRef("number")
 

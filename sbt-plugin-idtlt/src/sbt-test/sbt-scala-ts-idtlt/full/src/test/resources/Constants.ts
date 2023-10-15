@@ -13,11 +13,11 @@ export const dependencyModules = [
 ];
 
 export class Constants {
-  public code: number = 1;
+  public code: number & 1 = 1;
 
-  public UnknownName: nsName.Name = nsName.Name("unknown");
+  public UnknownName: nsName.Name & "unknown" = nsName.Name("unknown");
 
-  public defaultName: nsName.Name = nsName.Name("default");
+  public defaultName: nsName.Name & "default" = nsName.Name("default");
 
   public list: ReadonlyArray<number> = [ this.code, 2 ];
 
