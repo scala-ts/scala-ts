@@ -6,7 +6,9 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
-[*Version 0.5.13*](https://github.com/scala-ts/scala-ts/compare/0.5.13..0.5.13) - Scala 3 support
+[*Version 0.5.17*](https://github.com/scala-ts/scala-ts/compare/0.5.13..0.5.17) - Improve logging, tagged types and singletons
+
+[*Version 0.5.13*](https://github.com/scala-ts/scala-ts/compare/0.5.12..0.5.13) - Scala 3 support
 
 [*Version 0.5.12*](https://github.com/scala-ts/scala-ts/compare/0.5.11..0.5.12) - Improve invariant import resolution.
 
