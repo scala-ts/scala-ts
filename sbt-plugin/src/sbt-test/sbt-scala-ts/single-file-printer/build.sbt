@@ -4,9 +4,9 @@ name := "sbt-plugin-test-single-file-printer"
 
 version := "1.0-SNAPSHOT"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.11"
 
 crossScalaVersions := Seq(scalaVersion.value, "3.2.2")
 

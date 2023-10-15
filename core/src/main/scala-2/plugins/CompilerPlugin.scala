@@ -205,7 +205,6 @@ final class CompilerPlugin(val global: Global)
                 sym.fullName.startsWith("scala.")) &&
               ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)
             ) {
-
               val tpe = sym.typeSignature
               lazy val kind: String = if (sym.isModule) "object" else "class"
 
