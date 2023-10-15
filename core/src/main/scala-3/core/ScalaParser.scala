@@ -72,7 +72,7 @@ final class ScalaParser(
         !compiled.contains(sym.source.file.canonicalPath))
 
       if (notDefined) {
-        logger.debug(s"Postpone parsing of ${scalaType.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
+        logger.info(s"Postpone parsing of ${scalaType.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) is not yet compiled")
       }
 
       inline def skip = parse(
@@ -234,6 +234,8 @@ final class ScalaParser(
               }
             }
           } else {
+            logger.warning(s"Unsupported Scala class: ${tpeSym.fullName}")
+
             Result(
               examined + fullId(scalaType),
               Option.empty[ScalaModel.TypeDef]
