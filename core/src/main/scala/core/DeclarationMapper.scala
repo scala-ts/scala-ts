@@ -334,7 +334,7 @@ export const ${tpeName} = {
 
               if (values.headOption.nonEmpty) {
                 values.collect { case LiteralValue(_, _, v) => v }.map(v => {
-                  () => out.print(s"${indent}${v.toString}: ${inhabitant}")
+                  () => out.print(s"${indent}${v}: ${inhabitant}")
                 })
               } else {
                 List(() => {
