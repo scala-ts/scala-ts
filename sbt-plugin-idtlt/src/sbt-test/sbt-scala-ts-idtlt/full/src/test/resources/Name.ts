@@ -9,8 +9,8 @@ export const nsName = exports;
 // Validator for TaggedDeclaration Name
 export type Name = string & { __tag: 'Name' };
 
-export function Name(value: string): Name {
-  return value as Name;
+export function Name<T extends string>(value: T): Name & T {
+  return value as (Name & T);
 }
 
 export const idtltName = idtlt.string.tagged<Name>();

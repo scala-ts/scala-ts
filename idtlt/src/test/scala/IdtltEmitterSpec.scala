@@ -140,8 +140,8 @@ export function is${ns}TestClass7(v: any): boolean {
           s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
 export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
-  return value as ${valueClassNs}AnyValChild;
+export function ${valueClassNs}AnyValChild<T extends string>(value: T): ${valueClassNs}AnyValChild & T {
+  return value as (${valueClassNs}AnyValChild & T);
 }
 
 export const idtlt${valueClassNs}AnyValChild = idtlt.string.tagged<${valueClassNs}AnyValChild>();
@@ -158,8 +158,8 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
           s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
 export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
-export function ${valueClassNs}AnyValChild(value: string): ${valueClassNs}AnyValChild {
-  return value as ${valueClassNs}AnyValChild;
+export function ${valueClassNs}AnyValChild<T extends string>(value: T): ${valueClassNs}AnyValChild & T {
+  return value as (${valueClassNs}AnyValChild & T);
 }
 
 export const idtlt${valueClassNs}AnyValChild = idtlt.string.tagged<${valueClassNs}AnyValChild>();
@@ -457,11 +457,11 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
               fieldMapper = CustomFieldMapper
             )
           ) must_=== s"""export class TSSingleton {
-  public _name: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("Foo");
+  public _name: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild & "Foo" = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("Foo");
 
-  public _code: TSnumber = 1;
+  public _code: TSnumber & 1 = 1;
 
-  public _const: TSstring = "value";
+  public _const: TSstring & "value" = "value";
 
   public _foo: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = this._name;
 
@@ -523,13 +523,13 @@ export const idtltTSSingleton =
           emit(
             ListSet(singleton2WithTagged)
           ) must_=== s"""export class ${valueClassNs}TestObject2 {
-  public name: string = "Foo";
+  public name: string & "Foo" = "Foo";
 
-  public const: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("value");
+  public const: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild & "value" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("value");
 
   public foo: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = this.const;
 
-  public code: number = 1;
+  public code: number & 1 = 1;
 
   private static instance: ${valueClassNs}TestObject2;
 
@@ -625,7 +625,7 @@ export const idtltFoo =
           )
 
           emit(ListSet(obj)) must_=== """export class Foo {
-  public bar: string = "lorem";
+  public bar: string & "lorem" = "lorem";
 
   private static instance: Foo;
 
@@ -667,9 +667,9 @@ export const idtltFoo =
           )
 
           emit(ListSet(obj)) must_=== """export class Foo {
-  public bar: string = "lorem";
+  public bar: string & "lorem" = "lorem";
 
-  public ipsum: number = 2;
+  public ipsum: number & 2 = 2;
 
   private static instance: Foo;
 
