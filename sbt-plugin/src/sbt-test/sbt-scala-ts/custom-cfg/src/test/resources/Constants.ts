@@ -6,7 +6,7 @@ export const dependencyModules = [
 ];
 
 export class TSConstants {
-  public _DefaultName: TSName = nsTSName.TSName("default");
+  public _DefaultName: TSName & "default" = nsTSName.TSName("default");
 
   public _excluded: ReadonlyArray<string> = [ "foo", "bar" ];
 

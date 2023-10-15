@@ -211,8 +211,8 @@ ${indent})${lineSep}
           out.println(s"""// Validator for TaggedDeclaration ${tpeName}
 export type ${tpeName} = ${fieldTpe} & { __tag: '${id}' }${lineSep}
 
-export function ${tpeName}(${field.name}: ${fieldTpe}): ${tpeName} {
-  return ${field.name} as ${tpeName}${lineSep}
+export function ${tpeName}<T extends ${fieldTpe}>(${field.name}: T): ${tpeName} & T {
+  return ${field.name} as (${tpeName} & T)${lineSep}
 }
 
 export const idtlt${tpeName} = ${tagged}.tagged<${tpeName}>()${lineSep}

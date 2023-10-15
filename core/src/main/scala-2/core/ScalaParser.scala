@@ -84,7 +84,6 @@ final class ScalaParser[Uni <: Universe](
         )
       } else if (examined contains fullId(scalaType)) {
         // Skip already examined type (or a type parameter)
-        // val res = parseType(scalaType, examined)
         logger.debug(s"Skip already examined type: ${scalaType}")
 
         parse(
@@ -172,7 +171,6 @@ final class ScalaParser[Uni <: Universe](
           acceptsType,
           parsed ++ res.parsed
         )
-
       }
     }
 
@@ -248,6 +246,8 @@ final class ScalaParser[Uni <: Universe](
               }
             }
           } else {
+            logger.warning(s"Unsupported Scala class: ${tpeSym.fullName}")
+
             Result(examined + fullId(scalaType), Option.empty[TypeDef])
           }
         }
@@ -814,7 +814,7 @@ final class ScalaParser[Uni <: Universe](
         if (possibilities.size != ps.size) {
           val pos = tpe.typeSymbol.pos
 
-          logger.debug(s"Postpone parsing of sealed union ${tpe.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) has subclasses are not yet fully defined")
+          logger.info(s"Postpone parsing of sealed union ${tpe.typeSymbol.fullName} (${pos.source}:${pos.line}:${pos.column}) has subclasses are not yet fully defined")
 
           Result(
             examined = examined,

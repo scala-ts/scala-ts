@@ -404,9 +404,17 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.println(lineSeparator)
               }
 
-              case v @ (_: SelectValue | _: LiteralValue) => {
+              case v: SelectValue => {
+                o.print(s"${indent}public ${nme}: ${tpeMapper(v.reference)} = ")
+
+                emitValueBody(ValueBodyDeclaration(vd, v), o)
+
+                o.println(lineSeparator)
+              }
+
+              case v: LiteralValue => {
                 o.print(
-                  s"${indent}public ${nme}: ${tpeMapper(v.reference)} = "
+                  s"${indent}public ${nme}: ${tpeMapper(v.reference)} & ${v.rawValue} = "
                 )
 
                 emitValueBody(ValueBodyDeclaration(vd, v), o)

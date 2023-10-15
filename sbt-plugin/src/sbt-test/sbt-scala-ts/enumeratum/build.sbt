@@ -4,7 +4,7 @@ name := "sbt-plugin-test-enumeratum"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.18", "2.13.10")
+crossScalaVersions := Seq("2.12.18", "2.13.11")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 

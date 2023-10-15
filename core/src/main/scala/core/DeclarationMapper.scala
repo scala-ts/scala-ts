@@ -132,8 +132,8 @@ object DeclarationMapper {
 
             out.println(s"""
 
-export function ${tpeName}(${field.name}: ${valueType}): ${tpeName} {
-  return ${field.name} as ${tpeName}
+export function ${tpeName}<T extends ${valueType}>(${field.name}: T): ${tpeName} & T {
+  return ${field.name} as (${tpeName} & T)
 }""")
 
             // Type guard
@@ -334,7 +334,7 @@ export const ${tpeName} = {
 
               if (values.headOption.nonEmpty) {
                 values.collect { case LiteralValue(_, _, v) => v }.map(v => {
-                  () => out.print(s"${indent}${v.toString}: ${inhabitant}")
+                  () => out.print(s"${indent}${v}: ${inhabitant}")
                 })
               } else {
                 List(() => {
