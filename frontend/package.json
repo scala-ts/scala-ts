@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "disable-warning",
   "engines": {
-    "node": "16.x"
+    "node": "18.x"
   },
   "scripts": {
     "clean-dist": "rimraf ./dist",
