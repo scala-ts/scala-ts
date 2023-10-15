@@ -41,6 +41,6 @@ jobs:
     - name: 'Build TypeScript'
       run: |
         cd frontend
-        npm ci
-        npm run build
+        yarn install --frozen-lockfile
+        yarn build
         echo "TODO: npm run test"
