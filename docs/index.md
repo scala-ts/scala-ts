@@ -68,7 +68,7 @@ The TypeScript files are generated at compile-time.
 
 By default, the TypeScript generation is executed in directory `target/scala-ts/src_managed` (see `sourceManaged in scalatsOnCompile` in [configuration](./config.html)).
 
-> See [SBT plugin settings](./config.html#sbt-plugin-settings)
+> See [SBT plugin settings](./config.md#sbt-plugin-settings)
 
 > See [SBT examples on GitHub](https://github.com/scala-ts/scala-ts/tree/master/sbt-plugin/src/sbt-test/sbt-scala-ts/)
 
