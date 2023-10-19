@@ -10,7 +10,7 @@ lazy val shaded = project
     name := "scala-ts-shaded",
     crossPaths := false,
     autoScalaLibrary := false,
-    libraryDependencies += "com.typesafe" % "config" % "1.4.2",
+    libraryDependencies += "com.typesafe" % "config" % "1.4.3",
     assembly / assemblyShadeRules := Seq(
       ShadeRule
         .rename("com.typesafe.config.**" -> "io.github.scalats.tsconfig.@1")
