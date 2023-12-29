@@ -37,7 +37,7 @@ export const Feature = {
   FooLure: nsFooLure.FooLureInhabitant
 } as const;
 
-export const idtltFeatureKnownValues: ReadonlyArray<Feature> = Object.values(Feature) as ReadonlyArray<Feature>;
+export const idtltFeatureKnownValues: ReadonlySet<Feature> = new Set<Feature>(Object.values(Feature) as ReadonlyArray<Feature>);
 
 export function isFeature(v: any): v is Feature {
   return (

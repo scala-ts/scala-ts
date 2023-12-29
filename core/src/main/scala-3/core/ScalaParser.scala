@@ -1307,6 +1307,15 @@ final class ScalaParser(
   private lazy val Tuple1Type: Type =
     Symbols.requiredClass("scala.Tuple1").typeRef
 
+  private[core] def dataTypeRef(scalaType: Type): Option[ScalaTypeRef] = {
+    val t = scalaType.dealias
+
+    t.baseClasses.find { cls =>
+      val nme = cls.fullName
+      !nme.startsWith("scala") && !nme.startsWith("java")
+    }.map { sym => scalaTypeRef(sym.info, Set.empty) }
+  }
+
   private def scalaTypeRef(
       scalaType: Type,
       typeParams: Set[String]

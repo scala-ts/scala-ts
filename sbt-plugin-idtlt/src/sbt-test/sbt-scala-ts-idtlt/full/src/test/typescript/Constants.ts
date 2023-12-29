@@ -27,7 +27,7 @@ describe('Constants', () => {
     expect(ConstantsInhabitant.list.includes(2)).toBe(true)
 
     // Dictionary
-    const dict: { [key: string]: ReadonlyArray<nsName.Name> } = ConstantsInhabitant.dict
+    const dict: Partial<Record<string, ReadonlyArray<nsName.Name>>> = ConstantsInhabitant.dict
 
     const specific: ReadonlyArray<nsName.Name> | undefined = dict['specific']
 

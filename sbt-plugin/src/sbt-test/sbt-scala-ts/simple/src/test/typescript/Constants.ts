@@ -29,7 +29,7 @@ describe('Constants', () => {
     expect(ConstantsInhabitant.set.size).toEqual(2)
 
     // Dictionary
-    const dict: { [key: string]: string } = // Check inference
+    const dict: Readonly<Partial<Record<string, string>>> = // Check inference
       ConstantsInhabitant.dict
 
     expect(dict['A']).toEqual("value #1")
@@ -41,12 +41,12 @@ describe('Constants', () => {
     expect(ConstantsInhabitant.listOfDict instanceof Array).toBe(true)
     expect(ConstantsInhabitant.listOfDict.length).toEqual(2)
 
-    const first: { [key: string]: string } | undefined =
+    const first: Readonly<Partial<Record<string, string>>> | undefined =
       ConstantsInhabitant.listOfDict[0]
 
     expect(first).toEqual({ 'title': "Foo", 'description': "..." })
 
-    const second: { [key: string]: string } | undefined =
+    const second: Readonly<Partial<Record<string, string>>> | undefined =
       ConstantsInhabitant.listOfDict[1]
 
     expect(second).toEqual({ 'title': "Bar", 'description': "..." })

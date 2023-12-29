@@ -34,10 +34,12 @@ export type DiscriminatedState = typeof idtltDiscriminatedState.T;
 
 export const State = {
   "AL": nsAlabama.AlabamaInhabitant, 
-  "AK": nsAlaska.AlaskaInhabitant
+  Alabama: nsAlabama.AlabamaInhabitant /* Alias */, 
+  "AK": nsAlaska.AlaskaInhabitant, 
+  Alaska: nsAlaska.AlaskaInhabitant /* Alias */
 } as const;
 
-export const idtltStateKnownValues: ReadonlyArray<State> = Object.values(State) as ReadonlyArray<State>;
+export const idtltStateKnownValues: ReadonlySet<State> = new Set<State>(Object.values(State) as ReadonlyArray<State>);
 
 export function isState(v: any): v is State {
   return (

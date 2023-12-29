@@ -14,7 +14,7 @@ export class TSConstants {
 
   public _list: ReadonlyArray<TSName> = [ ...[ this._DefaultName ], ...[ nsTSName.TSName("test") ]];
 
-  public _seqOfMap: ReadonlyArray<{ [key: TSName]: string }> = [ (() => { const __buf1628682018: { [key: TSName]: string } = {}; __buf1628682018[nsTSName.TSName("lorem")] = "lorem"; __buf1628682018[this._DefaultName] = "ipsum"; return __buf1628682018 })(), (() => { const __buf1628682049: { [key: TSName]: string } = {}; __buf1628682049[nsTSName.TSName("dolor")] = "value"; return __buf1628682049 })() ];
+  public _seqOfMap: ReadonlyArray<Readonly<Partial<Record<TSName, string>>>> = [ (() => { const __buf1628682018: Partial<Record<TSName, string>> = {}; __buf1628682018[nsTSName.TSName("lorem")] = "lorem"; __buf1628682018[this._DefaultName] = "ipsum"; return __buf1628682018 })(), (() => { const __buf1628682049: Partial<Record<TSName, string>> = {}; __buf1628682049[nsTSName.TSName("dolor")] = "value"; return __buf1628682049 })() ];
 
   private static instance: TSConstants;
 

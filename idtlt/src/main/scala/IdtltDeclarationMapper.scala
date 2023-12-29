@@ -149,15 +149,21 @@ export const ${tpeName} = {
               val inhabitant = s"ns${ptpeName}.${ptpeName}Inhabitant"
 
               if (values.headOption.nonEmpty) {
-                values.map(v => { () =>
-                  out.print(s"${indent}")
-                  valueRightHand(sd, v)
-                  out.print(s": ${inhabitant}")
-                })
+                values.flatMap { v =>
+                  List(
+                    { () =>
+                      out.print(s"${indent}")
+                      valueRightHand(sd, v)
+                      out.print(s": ${inhabitant}")
+                    },
+                    () =>
+                      out.print(
+                        s"${indent}${ptpeName}: ${inhabitant} /* Alias */"
+                      )
+                  )
+                }
               } else {
-                List(() => {
-                  out.print(s"${indent}${nme}: ${inhabitant}")
-                })
+                List(() => out.print(s"${indent}${nme}: ${inhabitant}"))
               }
             }
 
@@ -175,7 +181,7 @@ export const ${tpeName} = {
           out.println(s"""
 } as const${lineSep}
 
-export const idtlt${tpeName}KnownValues: ReadonlyArray<${tpeName}> = Object.values(${tpeName}) as ReadonlyArray<${tpeName}>${lineSep}
+export const idtlt${tpeName}KnownValues: ReadonlySet<${tpeName}> = new Set<${tpeName}>(Object.values(${tpeName}) as ReadonlyArray<${tpeName}>)${lineSep}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")

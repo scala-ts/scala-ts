@@ -41,7 +41,7 @@ Considering a single scripted tests (e.g. `simple`), it can be executed interact
 ```bash
 export SCRIPTED_TEST="simple"
 export PLUGIN_VERSION="0.5.7"
-export SBT_VERSION="1.4.9"
+export SBT_VERSION="1.9.7"
 
 cd "sbt-plugin/src/sbt-test/sbt-scala-ts/${SCRIPTED_TEST}"
 sbt "-J-Dscala-ts.version=${PLUGIN_VERSION}" "-J-Dsbt.version=${SBT_VERSION}"

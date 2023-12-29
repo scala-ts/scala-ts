@@ -37,7 +37,7 @@ export const Category = {
   Lorem: nsLorem.LoremInhabitant
 } as const;
 
-export const idtltCategoryKnownValues: ReadonlyArray<Category> = Object.values(Category) as ReadonlyArray<Category>;
+export const idtltCategoryKnownValues: ReadonlySet<Category> = new Set<Category>(Object.values(Category) as ReadonlyArray<Category>);
 
 export function isCategory(v: any): v is Category {
   return (

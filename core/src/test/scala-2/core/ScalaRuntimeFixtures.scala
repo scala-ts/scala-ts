@@ -17,7 +17,7 @@ object ScalaRuntimeFixtures {
 
   private implicit def cl: ClassLoader = getClass.getClassLoader
 
-  private val scalaParser = new ScalaParser[runtimeUniverse.type](
+  private[core] val scalaParser = new ScalaParser[runtimeUniverse.type](
     universe = runtimeUniverse,
     compiled = Set.empty,
     logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
@@ -293,5 +293,11 @@ object ScalaRuntimeFixtures {
     q"""${tb untypecheck FamilyTree}; object FamilyMember3 extends Family {
       def foo = "lorem"
     }"""
+  )
+
+  val RefinementType = typeOf[Product with Serializable with Family]
+
+  lazy val RefinementTree: Tree = typecheck(
+    q"""${tb untypecheck FamilyTree}; type RefinementFoo = Product with Serializable with Family {}"""
   )
 }
