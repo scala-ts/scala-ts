@@ -469,15 +469,15 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
 
   public _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
 
-  public readonly _mapping: { [key: TSstring]: TSstring } = { "foo": nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"), "lorem": this._name };
+  public readonly _mapping: Readonly<Partial<Record<TSstring, TSstring>>> = { "foo": nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"), "lorem": this._name };
 
-  public readonly _dictOfList: { [key: TSstring]: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> } = { "excludes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ], "includes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ] };
+  public readonly _dictOfList: Readonly<Partial<Record<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>>> = { "excludes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ], "includes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ] };
 
   public _concatSeq: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> = [ ...this._list, ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar") ], ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("lorem") ]];
 
   public _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
 
-  public readonly _taggedDict: { [key: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild]: TSstring } = (() => { const __buf1519690942: { [key: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild]: TSstring } = {}; __buf1519690942[nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo")] = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"); return __buf1519690942 })();
+  public readonly _taggedDict: Readonly<Partial<Record<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>>> = (() => { const __buf1519690942: Partial<Record<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>> = {}; __buf1519690942[nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo")] = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"); return __buf1519690942 })();
 
   private static instance: TSSingleton;
 
@@ -724,10 +724,12 @@ export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
 
 export const ${ns}Family = {
   "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
-  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant /* Alias */, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant, 
+  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant /* Alias */
 } as const;
 
-export const idtlt${ns}FamilyKnownValues: ReadonlyArray<${ns}Family> = Object.values(${ns}Family) as ReadonlyArray<${ns}Family>;
+export const idtlt${ns}FamilyKnownValues: ReadonlySet<${ns}Family> = new Set<${ns}Family>(Object.values(${ns}Family) as ReadonlyArray<${ns}Family>);
 
 export function is${ns}Family(v: any): v is ${ns}Family {
   return (

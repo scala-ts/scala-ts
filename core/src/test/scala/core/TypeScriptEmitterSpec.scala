@@ -55,11 +55,7 @@ export function is${ns}TestClass1(v: any): v is ${ns}TestClass1 {
   name: T;
 }
 
-export function is${ns}TestClass2(v: any): v is ${ns}TestClass2 {
-  return (
-    ((typeof v['name']) === 'T')
-  );
-}
+// No valid type guard for generic interface ${ns}TestClass2
 """
       )
     }
@@ -70,11 +66,7 @@ export function is${ns}TestClass2(v: any): v is ${ns}TestClass2 {
   name: ReadonlyArray<T>;
 }
 
-export function is${ns}TestClass3(v: any): v is ${ns}TestClass3 {
-  return (
-    (Array.isArray(v['name']) && v['name'].every(elmt => (typeof elmt) === 'T'))
-  );
-}
+// No valid type guard for generic interface ${ns}TestClass3
 """
       )
     }
@@ -83,17 +75,11 @@ export function is${ns}TestClass3(v: any): v is ${ns}TestClass3 {
       emit(ListSet(interface5)) must beTypedEqualTo(
         s"""export interface ${ns}TestClass5<T> {
   name?: T;
-  counters: { [key: string]: number };
+  counters: Readonly<Partial<Record<string, number>>>;
   time: string;
 }
 
-export function is${ns}TestClass5(v: any): v is ${ns}TestClass5 {
-  return (
-    (!v['name'] || ((typeof v['name']) === 'T')) &&
-    ((typeof v['counters']) == 'object' && Object.keys(v['counters']).every(key => ((typeof key) === 'string') && ((typeof v['counters'][key]) === 'number'))) &&
-    ((typeof v['time']) === 'string')
-  );
-}
+// No valid type guard for generic interface ${ns}TestClass5
 """
       )
     }
@@ -105,11 +91,7 @@ export function is${ns}TestClass5(v: any): v is ${ns}TestClass5 {
   name: (${ns}TestClass1 | ${ns}TestClass1B);
 }
 
-export function is${ns}TestClass7(v: any): v is ${ns}TestClass7 {
-  return (
-    ((v['name'] && ns${ns}TestClass1.is${ns}TestClass1(v['name'])) || (v['name'] && ns${ns}TestClass1B.is${ns}TestClass1B(v['name'])))
-  );
-}
+// No valid type guard for generic interface ${ns}TestClass7
 """
       )
     }
@@ -204,9 +186,9 @@ export function is${ns}TestObject1(v: any): v is ${ns}TestObject1 {
 
   public set: ReadonlySet<number> = new Set([ this.code, 2 ]);
 
-  public readonly mapping: { [key: string]: string } = { "foo": "bar", "lorem": this.name };
+  public readonly mapping: Readonly<Partial<Record<string, string>>> = { "foo": "bar", "lorem": this.name };
 
-  public readonly dictOfList: { [key: string]: ReadonlyArray<string> } = { "excludes": [ "*.txt", ".gitignore" ], "includes": [ "images/**", "*.jpg", "*.png" ] };
+  public readonly dictOfList: Readonly<Partial<Record<string, ReadonlyArray<string>>>> = { "excludes": [ "*.txt", ".gitignore" ], "includes": [ "images/**", "*.jpg", "*.png" ] };
 
   public concatSeq: ReadonlyArray<string> = [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]];
 
@@ -242,7 +224,7 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
           ) must_=== s"""export class ${valueClassNs}TestObject3 {
   public name: ${valueClassNs}AnyValChild & "Foo" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
 
-  public readonly mapping: { [key: ${valueClassNs}AnyValChild]: string } = (() => { const __buf837556430: { [key: ${valueClassNs}AnyValChild]: string } = {}; __buf837556430[ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
+  public readonly mapping: Readonly<Partial<Record<${valueClassNs}AnyValChild, string>>> = (() => { const __buf837556430: Partial<Record<${valueClassNs}AnyValChild, string>> = {}; __buf837556430[ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo")] = "bar"; __buf837556430[this.name] = "lorem"; return __buf837556430 })();
 
   private static instance: ${valueClassNs}TestObject3;
 

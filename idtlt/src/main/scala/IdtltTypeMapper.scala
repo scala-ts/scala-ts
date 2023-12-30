@@ -120,7 +120,7 @@ final class IdtltTypeMapper extends TypeMapper {
         s"ReadonlyArray<${tr(tpe)}>"
 
       case MapType(kt, vt) =>
-        s"{ [key: ${tr(kt)}]: ${tr(vt)} }"
+        s"Readonly<Partial<Record<${tr(kt)}, ${tr(vt)}>>>"
 
       case _ =>
         typeNaming(vtpe)

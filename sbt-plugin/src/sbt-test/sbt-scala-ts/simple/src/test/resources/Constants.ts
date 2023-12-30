@@ -22,9 +22,9 @@ export class Constants {
 
   public set: ReadonlySet<string> = new Set([ "lorem", "ipsum" ]);
 
-  public readonly dict: { [key: string]: string } = { "A": "value #1", "B": this.name };
+  public readonly dict: Readonly<Partial<Record<string, string>>> = { "A": "value #1", "B": this.name };
 
-  public listOfDict: ReadonlyArray<{ [key: string]: string }> = [ { "title": "Foo", "description": "..." }, { "title": "Bar", "description": "..." } ];
+  public listOfDict: ReadonlyArray<Readonly<Partial<Record<string, string>>>> = [ { "title": "Foo", "description": "..." }, { "title": "Bar", "description": "..." } ];
 
   private static instance: Constants;
 

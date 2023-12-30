@@ -6,10 +6,14 @@ declare var exports: any;
 
 export const nsConstants = exports;
 
+import * as nsCategory from './Category';
 import * as nsName from './Name';
+import * as nsState from './State';
 
 export const dependencyModules = [
+  nsCategory,
   nsName,
+  nsState,
 ];
 
 export class Constants {
@@ -21,13 +25,15 @@ export class Constants {
 
   public list: ReadonlyArray<number> = [ this.code, 2 ];
 
-  public readonly dict: { [key: string]: ReadonlyArray<nsName.Name> } = { "specific": [ this.UnknownName, this.defaultName, nsName.Name("*") ], "invalid": [ nsName.Name("failed") ] };
+  public readonly dict: Readonly<Partial<Record<string, ReadonlyArray<nsName.Name>>>> = { "specific": [ this.UnknownName, this.defaultName, nsName.Name("*") ], "invalid": [ nsName.Name("failed") ] };
 
   public excluded: ReadonlyArray<string> = [ "foo", "bar" ];
 
   public filtered: ReadonlyArray<string> = [ ...this.excluded, ...[ "filtered" ]];
 
   public names: ReadonlyArray<nsName.Name> = [ ...[ this.UnknownName, this.defaultName ], ...[ nsName.Name("test") ]];
+
+  public readonly mapping: Readonly<Partial<Record<string, Readonly<Partial<Record<string, Readonly<Partial<Record<nsState.State, nsCategory.Category>>>>>>>>> = { "Foo": { "Lorem": (() => { const __buf707341971: Partial<Record<nsState.State, nsCategory.Category>> = {}; __buf707341971[nsState.State.Alabama] = nsCategory.Category.Lorem; __buf707341971[nsState.State.Alaska] = nsCategory.Category.Ipsum; return __buf707341971 })() } };
 
   private static instance: Constants;
 

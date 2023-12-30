@@ -38,7 +38,7 @@ export const Transport = {
 
 } as const;
 
-export const idtltTransportKnownValues: ReadonlyArray<Transport> = Object.values(Transport) as ReadonlyArray<Transport>;
+export const idtltTransportKnownValues: ReadonlySet<Transport> = new Set<Transport>(Object.values(Transport) as ReadonlyArray<Transport>);
 
 export function isTransport(v: any): v is Transport {
   return (

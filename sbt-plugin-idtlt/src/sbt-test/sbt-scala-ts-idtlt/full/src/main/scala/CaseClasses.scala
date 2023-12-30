@@ -45,4 +45,16 @@ object Constants {
   val filtered = excluded ++ Seq("filtered")
 
   def names = List(UnknownName, defaultName) ++ Seq(new Name("test"))
+
+  val mapping: Map[String, Map[String, Map[State, Category]]] = Map(
+    "Foo" -> Map(
+      "Bar" -> Map.empty,
+      "Lorem" -> Map(
+        State.Alabama -> Category.Lorem,
+        State.Alaska -> Category.Ipsum
+      )
+    ),
+    "Ipsum" -> Map.empty
+  )
+
 }

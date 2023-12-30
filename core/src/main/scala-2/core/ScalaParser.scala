@@ -26,6 +26,7 @@ final class ScalaParser[Uni <: Universe](
     NullaryMethodTypeTag,
     Symbol,
     symbolOf,
+    RefinedTypeTag,
     TermSymbolTag,
     Tree,
     Type,
@@ -329,7 +330,7 @@ final class ScalaParser[Uni <: Universe](
     case ApplyTag(a)
         if (a.tpe.dealias <:< MapType && a.tpe.typeArgs.size == 2) =>
       a.tpe.typeArgs match {
-        case _ :: _ :: Nil =>
+        case kt :: vt :: Nil =>
           // Dictionary
           val entries: Map[TypeInvariant.Simple, TypeInvariant] =
             a.args.zipWithIndex
@@ -340,12 +341,7 @@ final class ScalaParser[Uni <: Universe](
                 ] {
                   case (ArrowedTuple((ky, v)), idx) => {
                     for {
-                      key <- simpleTypeInvariant(
-                        s"${k}.${idx}",
-                        ky,
-                        ky,
-                        None
-                      )
+                      key <- simpleTypeInvariant(s"${k}.${idx}", ky, ky, None)
 
                       vlu <- typeInvariant(s"${k}[${idx}]", v, v, None)
                     } yield key -> vlu
@@ -358,13 +354,29 @@ final class ScalaParser[Uni <: Universe](
               )
               .toMap
 
+          def scalaTpe(tpe: Type): Option[ScalaTypeRef] = tpe.dealias match {
+            case RefinedTypeTag(t) =>
+              t.baseClasses.tail.find { cls =>
+                val nme = cls.fullName
+                !nme.startsWith("scala.") && !nme.startsWith("java.")
+              }.map { sym => scalaTypeRef(sym.info, Set.empty) }
+
+            case t => {
+              if (t.toString startsWith "scala.") {
+                None
+              } else {
+                Some(scalaTypeRef(t, Set.empty))
+              }
+            }
+          }
+
           entries.headOption match {
             case Some((fstk, fstv)) =>
               Some(
                 DictionaryInvariant(
                   name = k,
-                  keyTypeRef = fstk.typeRef,
-                  valueTypeRef = fstv.typeRef,
+                  keyTypeRef = scalaTpe(kt).getOrElse(fstk.typeRef),
+                  valueTypeRef = scalaTpe(vt).getOrElse(fstv.typeRef),
                   entries = entries
                 )
               )
@@ -1028,11 +1040,29 @@ final class ScalaParser[Uni <: Universe](
   private lazy val tuple1Symbol: Symbol =
     mirror.staticClass("_root_.scala.Tuple1")
 
+  private[core] def dataTypeRef(scalaType: Type): Option[ScalaTypeRef] =
+    scalaType.dealias match {
+      case RefinedTypeTag(t) =>
+        t.baseClasses.tail.find { cls =>
+          val nme = cls.fullName
+          !nme.startsWith("scala.") && !nme.startsWith("java.")
+        }.map { sym => scalaTypeRef(sym.info, Set.empty) }
+
+      case t => {
+        if (t.typeSymbol.fullName startsWith "scala.") {
+          None
+        } else {
+          Some(scalaTypeRef(t, Set.empty))
+        }
+      }
+    }
+
   private def scalaTypeRef(
       scalaType: Type,
       typeParams: Set[String]
     ): ScalaTypeRef = {
     import scalaType.typeSymbol
+
     val tpeName: String = typeSymbol.name.toString
 
     def unknown = UnknownTypeRef(buildQualifiedIdentifier(typeSymbol))

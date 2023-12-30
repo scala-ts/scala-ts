@@ -304,10 +304,17 @@ ${indent}return ${simpleCheck}${lineSeparator}
                   o.print(" }")
                 } else {
                   val bufNme = s"__buf${scala.math.abs(nme.hashCode)}"
+                  val tpe = tpeMapper(d.typeRef)
 
-                  o.print(
-                    s"(() => { const ${bufNme}: ${tpeMapper(d.typeRef)} = {}; "
-                  )
+                  val bufTpe: String = {
+                    if (tpe startsWith "Readonly<") {
+                      tpe.stripPrefix("Readonly<").stripSuffix(">")
+                    } else {
+                      tpe
+                    }
+                  }
+
+                  o.print(s"(() => { const ${bufNme}: ${bufTpe} = {}; ")
 
                   entries.foreach {
                     case (key, v) =>
@@ -517,15 +524,22 @@ ${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineS
           fieldList.foreach(emitField(o, decl, _))
 
           // Type guard
-          o.println(s"""}
+          if (typeParams.nonEmpty) {
+            o.println(s"""}
+
+// No valid type guard for generic interface ${tpeName}""")
+
+          } else {
+            o.println(s"""}
 
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (""")
 
-          o.println(interfaceTypeGuard(indent + indent, n, fieldList))
+            o.println(interfaceTypeGuard(indent + indent, n, fieldList))
 
-          o.println(s"""${indent})${lineSeparator}
+            o.println(s"""${indent})${lineSeparator}
 }""")
+          }
         }
 
         case _ =>
@@ -819,7 +833,7 @@ private[scalats] object Emitter {
       possibilities.map(tr).mkString("(", " | ", ")")
 
     case MapType(keyType, valueType) =>
-      s"{ [key: ${tr(keyType)}]: ${tr(valueType)} }"
+      s"Readonly<Partial<Record<${tr(keyType)}, ${tr(valueType)}>>>"
 
   }
 }

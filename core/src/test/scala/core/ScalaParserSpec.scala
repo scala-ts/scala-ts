@@ -210,5 +210,28 @@ final class ScalaParserSpec
         res must have size 1
       }
     }
+
+    "resolve data type" >> {
+      import io.github.scalats.scala.{
+        UnknownTypeRef,
+        CaseClassRef,
+        QualifiedIdentifier
+      }
+
+      "for TestClass8" in {
+        scalaParser.dataTypeRef(TestClass1Type) must beSome(
+          CaseClassRef(
+            QualifiedIdentifier("TestClass1", results.ns),
+            List.empty
+          )
+        )
+      }
+
+      "for type refinement" in {
+        scalaParser.dataTypeRef(RefinementType) must beSome(
+          UnknownTypeRef(sealedFamily1.identifier)
+        )
+      }
+    }
   }
 }

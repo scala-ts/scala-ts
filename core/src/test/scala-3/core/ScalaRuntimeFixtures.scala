@@ -197,7 +197,7 @@ object ScalaRuntimeFixtures {
 
   implicit def defaultCtx: Contexts.Context = state.context
 
-  private val scalaParser = new ScalaParser(
+  private[core] val scalaParser = new ScalaParser(
     compiled = Set("<typecheck>" /*, "core/src/test/scala-3/core/ScalaRuntimeFixtures.scala" */ ),
     logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
   )
@@ -256,7 +256,7 @@ object ScalaRuntimeFixtures {
       logOpaqueAliasTree,
       familyUnionTree
     ),
-    Tuple4(loremTree, ipsumTree, colorTree, styleTree)
+    Tuple5(loremTree, ipsumTree, colorTree, styleTree, refinementTree)
   ) = replCompiler.typeCheck("""
 case class TestClass1(name: String)
 
@@ -366,6 +366,8 @@ object Color {
 }
 
 case class Style(name: String, color: Color)
+
+type RefinementFoo = Product with Serializable with Family
 """)(using state) match {
     case Right(valDef) =>
       valDef.unforced match {
@@ -380,7 +382,7 @@ case class Style(name: String, color: Color)
                     (logOpaqueAliasTree @ Trees
                       .TypeDef(_, _)) :: familyUnionTree :: _
                   )
-                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _,
+                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _ :: _ :: refinementTree :: Nil,
               _
             ) =>
           Tuple2(
@@ -408,11 +410,12 @@ case class Style(name: String, color: Color)
               logOpaqueAliasTree.asInstanceOf[Tree],
               familyUnionTree.asInstanceOf[Tree]
             ),
-            Tuple4(
+            Tuple5(
               loremTree.asInstanceOf[Tree],
               ipsumTree.asInstanceOf[Tree],
               colorTree.asInstanceOf[Tree],
-              styleTree.asInstanceOf[Tree]
+              styleTree.asInstanceOf[Tree],
+              refinementTree.asInstanceOf[Tree]
             )
           )
 
@@ -535,4 +538,8 @@ case class Style(name: String, color: Color)
   val StyleTree: Tree = styleTree
 
   lazy val StyleType = styleTree.tpe
+
+  val RefinementTree: Tree = refinementTree
+
+  lazy val RefinementType = refinementTree.tpe
 }

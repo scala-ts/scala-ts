@@ -48,7 +48,7 @@ export const Greeting = {
   Hi: nsHi.HiInhabitant
 } as const;
 
-export const idtltGreetingKnownValues: ReadonlyArray<Greeting> = Object.values(Greeting) as ReadonlyArray<Greeting>;
+export const idtltGreetingKnownValues: ReadonlySet<Greeting> = new Set<Greeting>(Object.values(Greeting) as ReadonlyArray<Greeting>);
 
 export function isGreeting(v: any): v is Greeting {
   return (
