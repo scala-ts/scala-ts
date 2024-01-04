@@ -17,7 +17,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "idonttrustlikethat": "^2.1.0",
+    "idonttrustlikethat": "^2.1.2",
     "space-monad": "^1.0.0"
   }
 }
