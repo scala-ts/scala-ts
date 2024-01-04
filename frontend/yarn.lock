@@ -1679,10 +1679,10 @@ husky@^8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-idonttrustlikethat@2.1.0, idonttrustlikethat@>=2.0.1:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/idonttrustlikethat/-/idonttrustlikethat-2.1.0.tgz#657300b6838f1798ab74f79e72e1108d0304e5da"
-  integrity sha512-WXiWntC19mYSULxHkPiyA3mp2JLFKKmLYvUNyKwcYafgvH4tqQSeb5XfmN3IE4hTQNGzu1AViNnPt0Z8w5FEPQ==
+idonttrustlikethat@2.1.2, idonttrustlikethat@>=2.0.1:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/idonttrustlikethat/-/idonttrustlikethat-2.1.2.tgz#22c6ced94bccd84bfd0b57a3f9a883a6d9f4cde3"
+  integrity sha512-lbCZfysBbwtcyrNvBzIWUwHYy//XYsebs9rL2KC+DBotL2AU4eLNy8Kq77C/LljfGna6eg1FcZmuRcDL09RcdQ==
 
 ieee754@^1.1.13:
   version "1.2.1"
