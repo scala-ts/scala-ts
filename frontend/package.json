@@ -18,7 +18,7 @@
     "reset": "rm -rf node_modules && rm yarn.lock && yarn cache clean && yarn"
   },
   "dependencies": {
-    "idonttrustlikethat": "2.1.0",
+    "idonttrustlikethat": "2.1.2",
     "space-lift": "1.0.4",
     "typescript-router": "0.0.6"
   },
