@@ -176,7 +176,7 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
           s"""// Validator for InterfaceDeclaration ${valueClassNs}TestClass8
 export const idtlt${valueClassNs}TestClass8 = idtlt.object({
   name: ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild,
-  aliases: idtlt.array(ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild),
+  aliases: idtlt.readonlyArray(ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild),
 });
 
 // Deriving TypeScript type from ${valueClassNs}TestClass8 validator

@@ -10,7 +10,7 @@ export const nsBusLine = exports;
 export const idtltBusLine = idtlt.object({
   id: idtlt.number,
   name: idtlt.string,
-  stopIds: idtlt.array(idtlt.string),
+  stopIds: idtlt.readonlyArray(idtlt.string),
 });
 
 // Super-type declaration Transport is ignored
