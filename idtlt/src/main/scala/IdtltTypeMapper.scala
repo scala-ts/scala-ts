@@ -39,13 +39,13 @@ final class IdtltTypeMapper extends TypeMapper {
           "idtlt.isoDate"
 
         case ArrayRef(innerType) =>
-          s"idtlt.array(${tr(innerType)})"
+          s"idtlt.readonlyArray(${tr(innerType)})"
 
-        case SetRef(innerType) => // TODO: set.or(arrayAsSet)
-          s"idtlt.array(${tr(innerType)})"
+        case SetRef(innerType) =>
+          s"idtlt.arrayAsSet(${tr(innerType)}).map(set => { function _dummy() { return set.values().next().value }; return set as ReadonlySet<ReturnType<typeof _dummy>> })"
 
-        case TupleRef(params) =>
-          params.map(tr).mkString("idtlt.tuple(", ", ", ")")
+        case TupleRef(innerTypes) =>
+          s"idtlt.tuple(${innerTypes.map(tr) mkString ", "})"
 
         case tpe: TaggedRef => {
           val n = typeNaming(tpe)

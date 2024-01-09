@@ -17,10 +17,10 @@ export const dependencyModules = [
 // Validator for InterfaceDeclaration Bar
 export const idtltBar = idtlt.object({
   name: nsName.idtltName,
-  aliases: idtlt.array(nsName.idtltName),
+  aliases: idtlt.readonlyArray(nsName.idtltName),
   age: idtlt.number,
   amount: idtlt.number.optional(),
-  transports: idtlt.array(nsTransport.idtltTransport),
+  transports: idtlt.readonlyArray(nsTransport.idtltTransport),
   updated: idtlt.isoDate,
   created: idtlt.isoDate,
   time: idtlt.string,
