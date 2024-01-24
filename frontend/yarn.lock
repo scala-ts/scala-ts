@@ -2670,10 +2670,10 @@ rollup-plugin-css-asset@1.0.2:
     convert-source-map "^1.7.0"
     rollup-pluginutils "^2.8.2"
 
-rollup-plugin-esbuild@6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-esbuild/-/rollup-plugin-esbuild-6.1.0.tgz#966d297fe9edea3e6ba5dfd8ca3208825c82d7ce"
-  integrity sha512-HPpXU65V8bSpW8eSYPahtUJaJHmbxJGybuf/M8B3bz/6i11YaYHlNNJIQ38gSEV0FyohQOgVxJ2YMEEZtEmwvA==
+rollup-plugin-esbuild@6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-esbuild/-/rollup-plugin-esbuild-6.1.1.tgz#ec1dba647dbe1974f76192c75e907aa6eb636399"
+  integrity sha512-CehMY9FAqJD5OUaE/Mi1r5z0kNeYxItmRO2zG4Qnv2qWKF09J2lTy5GUzjJR354ZPrLkCj4fiBN41lo8PzBUhw==
   dependencies:
     "@rollup/pluginutils" "^5.0.5"
     debug "^4.3.4"
