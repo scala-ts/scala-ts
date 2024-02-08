@@ -40,7 +40,7 @@
     "husky": "^9.0.10",
     "lint-staged": "^15.2.2",
     "madge": "^6.1.0",
-    "mocha": "10.2.0",
+    "mocha": "10.3.0",
     "@types/mocha": "10.0.6",
     "prettier": "3.2.5",
     "prettier-plugin-svelte": "3.1.2",
