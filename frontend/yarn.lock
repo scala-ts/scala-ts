@@ -2465,10 +2465,10 @@ precinct@^9.0.0:
     module-definition "^4.1.0"
     node-source-walk "^5.0.1"
 
-prettier-plugin-svelte@3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-3.1.2.tgz#2e050eb56dbb467a42c45ad6ce18bb277d28ffa0"
-  integrity sha512-7xfMZtwgAWHMT0iZc8jN4o65zgbAQ3+O32V6W7pXrqNvKnHnkoyQCGCbKeUyXKZLbYE0YhFRnamfxfkEGxm8qA==
+prettier-plugin-svelte@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-3.2.0.tgz#78a03894e2dab1b0bd93c4df993cd849001822f2"
+  integrity sha512-3474Zxxw8z4k64aqZmwTfcGdh/ULM2zNQslORdXEkNjKqqsSxBmiASazoxdCrmaqsbKD2Y0rxKhBEn1u0Y+j9g==
 
 prettier@3.2.5:
   version "3.2.5"
