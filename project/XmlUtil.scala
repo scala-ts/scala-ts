@@ -7,6 +7,7 @@ object XmlUtil {
       tx: Elem => Option[Node]
     ): Node => Node = { node: Node =>
     val tr = new RuleTransformer(new RewriteRule {
+
       override def transform(node: Node): NodeSeq = node match {
         case e: Elem if e.label == "dependency" =>
           tx(e) match {
