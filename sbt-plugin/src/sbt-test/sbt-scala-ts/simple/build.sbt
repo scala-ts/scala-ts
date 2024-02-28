@@ -4,7 +4,7 @@ name := "sbt-plugin-test-simple"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.18", "2.13.12", "3.2.2")
+crossScalaVersions := Seq("2.12.18", "2.13.13", "3.2.2")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 

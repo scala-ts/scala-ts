@@ -2,7 +2,7 @@ inThisBuild(
   Seq(
     organization := "io.github.scala-ts",
     version := "1.0-SNAPSHOT",
-    scalaVersion := "2.13.12"
+    scalaVersion := "2.13.13"
   )
 )
 
