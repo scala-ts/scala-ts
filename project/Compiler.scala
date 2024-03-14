@@ -76,7 +76,7 @@ object Compiler extends AutoPlugin {
       val sv = scalaBinaryVersion.value
 
       if (sv != "3") {
-        val silencerVersion = if (sv == "2.13") "1.7.14" else "1.17.13"
+        val silencerVersion = if (sv == "2.13") "1.7.16" else "1.17.13"
 
         Seq(
           compilerPlugin(
