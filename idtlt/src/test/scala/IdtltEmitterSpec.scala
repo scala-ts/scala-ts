@@ -722,11 +722,28 @@ export const idtltDiscriminated${ns}Family = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminated${ns}Family validator
 export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
 
-export const ${ns}Family = {
+export const ${ns}FamilyValues = {
   "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
-  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant /* Alias */, 
-  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant, 
-  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant /* Alias */
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export type ${ns}FamilyValuesKey = keyof typeof ${ns}FamilyValues;
+
+export function map${ns}FamilyValues<T>(f: (_k: ${ns}FamilyValuesKey) => T): Readonly<Record<${ns}FamilyValuesKey, T>> {
+  return {
+    "bar": f(ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant), 
+    "lorem": f(ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant)
+  }
+}
+
+export const ${ns}FamilyTypes = {
+  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export const ${ns}Family = {
+  ...${ns}FamilyValues,
+  ...${ns}FamilyTypes
 } as const;
 
 export const idtlt${ns}FamilyKnownValues: ReadonlySet<${ns}Family> = new Set<${ns}Family>(Object.values(${ns}Family) as ReadonlyArray<${ns}Family>);
