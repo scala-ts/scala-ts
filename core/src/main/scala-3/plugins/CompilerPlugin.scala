@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.File
 
-import dotty.tools.dotc.{ CompilationUnit, report }
+import dotty.tools.dotc.report
 import dotty.tools.dotc.core.Flags
 import dotty.tools.dotc.core.Symbols.Symbol
 import dotty.tools.dotc.core.Types.Type
@@ -40,7 +40,7 @@ end CompilerPlugin
 private[plugins] object ScalaTSPhase:
   val name = "scalats"
 
-  type Initer = Context => (Configuration, File, Boolean)
+  type Initer = Context => (Configuration, Boolean)
 
   def initer(opts: List[String]): Initer = {
     val cfgPrefix = "configuration="
@@ -54,7 +54,7 @@ private[plugins] object ScalaTSPhase:
         outDir: File,
         cfgPath: Option[String],
         debug: Boolean
-      ): (Configuration, File, Boolean) = options.headOption match {
+      ): (Configuration, Boolean) = options.headOption match {
       case Some(opt) => {
         if (opt startsWith cfgPrefix) {
           parse(options.tail, outDir, Some(opt stripPrefix cfgPrefix), debug)
@@ -110,7 +110,7 @@ private[plugins] object ScalaTSPhase:
           }
         }
 
-        (config, outDir, debug)
+        config -> debug
       }
     }
 
@@ -152,7 +152,7 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
       ctx: Context
     ): Unit = {
     val compiledFile: File = ctx.source.file.file
-    val (config, outDir, debug) = initer(ctx)
+    val (config, debug) = initer(ctx)
 
     import config.compilationRuleSet
 
@@ -178,7 +178,7 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
         )
       }
 
-      handle(config, outDir, debug)
+      handle(config, debug)
     } else if (debug) {
       report.inform(
         s"${phaseName}.debug: Skip excluded ${compiledFile.getAbsolutePath}"
@@ -206,7 +206,6 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
 
   private def handle(
       config: Configuration,
-      outDir: File,
       debug: Boolean
     )(using
       ctx: Context

@@ -41,9 +41,6 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
       val colorTpe = ColorType -> ColorTree
 
       "declaration" in {
-        import scala.collection.immutable.ListSet
-        import io.github.scalats.{ scala => ScalaModel }
-
         parseTypes(List(colorTpe)) must_=== List(color)
       }
 

@@ -27,14 +27,25 @@ object Compiler extends AutoPlugin {
       if (scalaBinaryVersion.value == "3") {
         Seq.empty
       } else {
-        Seq("-target:jvm-1.8", "-Xlint", "-g:vars")
+        Seq("-Xlint", "-g:vars", "-language:higherKinds")
       }
     },
     scalacOptions ++= {
       val sv = scalaBinaryVersion.value
 
-      if (sv == "2.12") {
+      if (sv == "2.11") {
         Seq(
+          "-target:jvm-1.8",
+          "-Xmax-classfile-name",
+          "128",
+          "-Yopt:_",
+          "-Ydead-code",
+          "-Yclosure-elim",
+          "-Yconst-opt"
+        )
+      } else if (sv == "2.12") {
+        Seq(
+          "-target:jvm-1.8",
           "-Xmax-classfile-name",
           "128",
           "-Ywarn-numeric-widen",
@@ -45,17 +56,10 @@ object Compiler extends AutoPlugin {
           "-Ywarn-unused-import",
           "-Ywarn-macros:after"
         )
-      } else if (sv == "2.11") {
-        Seq(
-          "-Xmax-classfile-name",
-          "128",
-          "-Yopt:_",
-          "-Ydead-code",
-          "-Yclosure-elim",
-          "-Yconst-opt"
-        )
       } else if (sv == "2.13") {
         Seq(
+          "-release",
+          "8",
           "-explaintypes",
           "-Werror",
           "-Wnumeric-widen",
@@ -63,10 +67,21 @@ object Compiler extends AutoPlugin {
           "-Wvalue-discard",
           "-Wextra-implicit",
           "-Wmacros:after",
-          "-Wunused"
+          "-Wunused",
+          "-Wconf:msg=.*JavaConverters.*:s",
         )
       } else {
-        Seq("-Wunused:all", "-language:implicitConversions")
+        Seq(
+          "-release",
+          "8",
+          "-Wunused:all",
+          "-language:implicitConversions",
+          "-Wconf:msg=.*is\\ not\\ declared\\ infix.*:s",
+          "-Wconf:msg=.*is\\ deprecated\\ for\\ wildcard\\ arguments\\ of\\ types.*:s",
+          "-Wconf:msg=.*with\\ as\\ a\\ type\\ operator.*:s",
+          "-Wconf:msg=.*is\\ no\\ longer\\ supported\\ for\\ vararg\\ splices.*:s",
+          "-Wconf:msg=.*JavaConverters.*:s"
+        )
       }
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },

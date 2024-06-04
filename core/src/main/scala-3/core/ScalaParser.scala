@@ -1,13 +1,11 @@
 package io.github.scalats.core
 
-import scala.util.control.NonFatal
-
 import scala.collection.Factory
 
 import scala.collection.immutable.ListSet
 
 import dotty.tools.dotc.core.Contexts.Context
-import dotty.tools.dotc.core.{ Constants, Names, Denotations, Definitions }
+import dotty.tools.dotc.core.{ Constants, Names, Denotations }
 import dotty.tools.dotc.core.Symbols, Symbols.Symbol
 import dotty.tools.dotc.core.Types, Types.{ Type, MethodType }
 import dotty.tools.dotc.core.Flags
@@ -15,8 +13,6 @@ import dotty.tools.dotc.core.Flags
 import dotty.tools.dotc.util.NoSourcePosition
 
 import dotty.tools.dotc.ast.{ Trees, tpd }
-
-import dotty.tools.dotc.ast.untpd.ImportSelector
 
 import io.github.scalats.{ scala => ScalaModel }
 
@@ -282,9 +278,6 @@ final class ScalaParser(
 
   private val skipCompanion = true // TODO: (low priority) Configurable
 
-  @inline private def isLiteralType(tpe: Type): Boolean =
-    isAnyValChild(tpe) || tpe <:< defn.StringClass.info
-
   @annotation.tailrec
   private def appliedOp(
       op: Names.SimpleName,
@@ -323,9 +316,6 @@ final class ScalaParser(
       out.reverse
 
   }
-
-  private lazy val plainPrinter =
-    new dotty.tools.dotc.printing.PlainPrinter(ctx)
 
   private lazy val printerCtx: Context = {
     import dotty.tools.dotc.config._
@@ -454,9 +444,6 @@ final class ScalaParser(
 
   private lazy val MapType: Type =
     Symbols.requiredClass("scala.collection.immutable.Map").typeRef
-
-  private lazy val ProductType: Type =
-    Symbols.requiredClass("scala.Product").typeRef
 
   private object WithTypeArgs {
 

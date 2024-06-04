@@ -80,43 +80,4 @@ final class PythonTypeMapper extends TypeMapper {
 
     Some(tsType)
   }
-
-  private def valueType(
-      vtpe: TypeRef,
-      typeNaming: TypeRef => String
-    ): String = {
-    val tr = valueType(_: TypeRef, typeNaming)
-
-    vtpe match {
-      case TupleRef(args) =>
-        args.map(tr).mkString("[", ", ", "]")
-
-      case NullableType(inner) =>
-        s"Optional[${valueType(inner, typeNaming)}]"
-
-      case UnionType(possibilities) =>
-        possibilities.map(tr).mkString("typing.Union[", ", ", "]")
-
-      case custom @ (TaggedRef(_, _) | SingletonTypeRef(_, _)) =>
-        typeNaming(custom)
-
-      case custom @ CustomTypeRef(_, Nil) =>
-        typeNaming(custom)
-
-      case custom @ CustomTypeRef(_, args) => {
-        val n = typeNaming(custom)
-
-        s"""${n}${args.map(tr).mkString("[", ", ", "]")}"""
-      }
-
-      case ArrayRef(tpe) =>
-        s"list[${tr(tpe)}]"
-
-      case MapType(kt, vt) =>
-        s"dict[${tr(kt)}, ${tr(vt)}]"
-
-      case _ =>
-        typeNaming(vtpe)
-    }
-  }
 }
