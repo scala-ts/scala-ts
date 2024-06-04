@@ -139,10 +139,10 @@ export const idtlt${tpeName} = idtlt.union(""")
 $deriving
 $discrimitedDecl
 
-export const ${tpeName} = {
+export const ${tpeName}Values = {
 """)
 
-          ps.flatMap {
+          val singletons = ps.flatMap {
             case pt @ SingletonTypeRef(nme, values) => {
               val sd = SingletonDeclaration(nme, values, None)
               val ptpeName = typeNaming(pt)
@@ -155,11 +155,7 @@ export const ${tpeName} = {
                       out.print(s"${indent}")
                       valueRightHand(sd, v)
                       out.print(s": ${inhabitant}")
-                    },
-                    () =>
-                      out.print(
-                        s"${indent}${ptpeName}: ${inhabitant} /* Alias */"
-                      )
+                    }
                   )
                 }
               } else {
@@ -169,7 +165,9 @@ export const ${tpeName} = {
 
             case _ =>
               List.empty[() => Unit]
-          }.zipWithIndex.foreach {
+          }
+
+          singletons.zipWithIndex.foreach {
             case (print, i) =>
               if (i > 0) {
                 out.println(", ")
@@ -178,7 +176,94 @@ export const ${tpeName} = {
               print()
           }
 
-          out.println(s"""
+          if (singletons.nonEmpty) {
+            out.println()
+          }
+
+          out.println(s"""} as const${lineSep}
+
+export type ${tpeName}ValuesKey = keyof typeof ${tpeName}Values${lineSep}""")
+
+          if (singletons.nonEmpty) {
+            out.print(s"""
+export function map${tpeName}Values<T>(f: (_k: ${tpeName}ValuesKey) => T): Readonly<Record<${tpeName}ValuesKey, T>> {
+${indent}return {
+""")
+            ps.flatMap {
+              case pt @ SingletonTypeRef(nme, values) => {
+                val sd = SingletonDeclaration(nme, values, None)
+                val ptpeName = typeNaming(pt)
+                val inhabitant = s"ns${ptpeName}.${ptpeName}Inhabitant"
+
+                if (values.headOption.nonEmpty) {
+                  values.flatMap { v =>
+                    List(
+                      { () =>
+                        out.print(s"${indent}${indent}")
+                        valueRightHand(sd, v)
+                        out.print(s": f(${inhabitant})")
+                      }
+                    )
+                  }
+                } else {
+                  List(() =>
+                    out.print(s"${indent}${indent}${nme}: f(${inhabitant})")
+                  )
+                }
+              }
+
+              case _ =>
+                List.empty[() => Unit]
+            }.zipWithIndex.foreach {
+              case (print, i) =>
+                if (i > 0) {
+                  out.println(", ")
+                }
+
+                print()
+            }
+
+            out.println(s"""
+${indent}}
+}""")
+
+          }
+
+          out.print(s"""
+export const ${tpeName}Types = {
+""")
+
+          val aliases = ps.collect {
+            case pt @ SingletonTypeRef(_, _) =>
+              val ptpeName = typeNaming(pt)
+              val inhabitant = s"ns${ptpeName}.${ptpeName}Inhabitant"
+
+              { () =>
+                out.print(
+                  s"${indent}${ptpeName}: ${inhabitant}"
+                )
+              }
+
+          }
+
+          aliases.zipWithIndex.foreach {
+            case (print, i) =>
+              if (i > 0) {
+                out.println(", ")
+              }
+
+              print()
+          }
+
+          if (aliases.nonEmpty) {
+            out.println()
+          }
+
+          out.println(s"""} as const${lineSep}
+
+export const ${tpeName} = {
+${indent}...${tpeName}Values,
+${indent}...${tpeName}Types
 } as const${lineSep}
 
 export const idtlt${tpeName}KnownValues: ReadonlySet<${tpeName}> = new Set<${tpeName}>(Object.values(${tpeName}) as ReadonlyArray<${tpeName}>)${lineSep}

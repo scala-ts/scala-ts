@@ -41,11 +41,34 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedGreeting validator
 export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;
 
-export const Greeting = {
+export const GreetingValues = {
   Bye: nsBye.ByeInhabitant, 
   GoodBye: nsGoodBye.GoodByeInhabitant, 
   Hello: nsHello.HelloInhabitant, 
   Hi: nsHi.HiInhabitant
+} as const;
+
+export type GreetingValuesKey = keyof typeof GreetingValues;
+
+export function mapGreetingValues<T>(f: (_k: GreetingValuesKey) => T): Readonly<Record<GreetingValuesKey, T>> {
+  return {
+    Bye: f(nsBye.ByeInhabitant), 
+    GoodBye: f(nsGoodBye.GoodByeInhabitant), 
+    Hello: f(nsHello.HelloInhabitant), 
+    Hi: f(nsHi.HiInhabitant)
+  }
+}
+
+export const GreetingTypes = {
+  Bye: nsBye.ByeInhabitant, 
+  GoodBye: nsGoodBye.GoodByeInhabitant, 
+  Hello: nsHello.HelloInhabitant, 
+  Hi: nsHi.HiInhabitant
+} as const;
+
+export const Greeting = {
+  ...GreetingValues,
+  ...GreetingTypes
 } as const;
 
 export const idtltGreetingKnownValues: ReadonlySet<Greeting> = new Set<Greeting>(Object.values(Greeting) as ReadonlyArray<Greeting>);
