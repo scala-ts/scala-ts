@@ -32,9 +32,28 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedCategory validator
 export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;
 
-export const Category = {
+export const CategoryValues = {
   Ipsum: nsIpsum.IpsumInhabitant, 
   Lorem: nsLorem.LoremInhabitant
+} as const;
+
+export type CategoryValuesKey = keyof typeof CategoryValues;
+
+export function mapCategoryValues<T>(f: (_k: CategoryValuesKey) => T): Readonly<Record<CategoryValuesKey, T>> {
+  return {
+    Ipsum: f(nsIpsum.IpsumInhabitant), 
+    Lorem: f(nsLorem.LoremInhabitant)
+  }
+}
+
+export const CategoryTypes = {
+  Ipsum: nsIpsum.IpsumInhabitant, 
+  Lorem: nsLorem.LoremInhabitant
+} as const;
+
+export const Category = {
+  ...CategoryValues,
+  ...CategoryTypes
 } as const;
 
 export const idtltCategoryKnownValues: ReadonlySet<Category> = new Set<Category>(Object.values(Category) as ReadonlyArray<Category>);
