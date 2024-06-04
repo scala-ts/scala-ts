@@ -2,9 +2,7 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
-import scala.util.control.NonFatal
-
-import dotty.tools.dotc.core.{ Contexts, Symbols, Types, Flags }
+import dotty.tools.dotc.core.{ Contexts, Symbols, Types }
 
 import dotty.tools.dotc.ast.Trees
 import dotty.tools.dotc.ast.tpd.Tree
@@ -181,8 +179,8 @@ object ScalaRuntimeFixtures {
 
   val typecheck = { (input: String) =>
     replCompiler.typeCheck(input)(using state) match {
-      case Right(valDef) =>
-        valDef.unforced match {
+      case Right((_, valDef)) =>
+        valDef.unforcedRhs match {
           case Trees.Block(d :: _, _) =>
             d.asInstanceOf[Tree]
 
@@ -369,8 +367,8 @@ case class Style(name: String, color: Color)
 
 type RefinementFoo = Product with Serializable with Family
 """)(using state) match {
-    case Right(valDef) =>
-      valDef.unforced match {
+    case Right((_, valDef)) =>
+      valDef.unforcedRhs match {
         case Trees.Block(
               testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _ :: Trees
                 .TypeDef(

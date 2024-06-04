@@ -1319,9 +1319,7 @@ final class ScalaParser[Uni <: Universe](
   }
 }
 
-@com.github.ghik.silencer.silent(".*Unused\\ import.*")
 private[scalats] object ScalaParser {
-  import scala.language.higherKinds
 
   case class Result[M[_], Tpe](
       examined: ListSet[Tpe],
