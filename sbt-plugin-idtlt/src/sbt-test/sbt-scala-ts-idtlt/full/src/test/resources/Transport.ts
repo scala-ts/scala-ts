@@ -34,8 +34,17 @@ export const idtltDiscriminatedTransport = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedTransport validator
 export type DiscriminatedTransport = typeof idtltDiscriminatedTransport.T;
 
-export const Transport = {
+export const TransportValues = {
+} as const;
 
+export type TransportValuesKey = keyof typeof TransportValues;
+
+export const TransportTypes = {
+} as const;
+
+export const Transport = {
+  ...TransportValues,
+  ...TransportTypes
 } as const;
 
 export const idtltTransportKnownValues: ReadonlySet<Transport> = new Set<Transport>(Object.values(Transport) as ReadonlyArray<Transport>);
