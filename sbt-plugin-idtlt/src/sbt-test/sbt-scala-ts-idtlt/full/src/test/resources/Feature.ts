@@ -32,9 +32,28 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedFeature validator
 export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;
 
-export const Feature = {
+export const FeatureValues = {
   BarNum: nsBarNum.BarNumInhabitant, 
   FooLure: nsFooLure.FooLureInhabitant
+} as const;
+
+export type FeatureValuesKey = keyof typeof FeatureValues;
+
+export function mapFeatureValues<T>(f: (_k: FeatureValuesKey) => T): Readonly<Record<FeatureValuesKey, T>> {
+  return {
+    BarNum: f(nsBarNum.BarNumInhabitant), 
+    FooLure: f(nsFooLure.FooLureInhabitant)
+  }
+}
+
+export const FeatureTypes = {
+  BarNum: nsBarNum.BarNumInhabitant, 
+  FooLure: nsFooLure.FooLureInhabitant
+} as const;
+
+export const Feature = {
+  ...FeatureValues,
+  ...FeatureTypes
 } as const;
 
 export const idtltFeatureKnownValues: ReadonlySet<Feature> = new Set<Feature>(Object.values(Feature) as ReadonlyArray<Feature>);

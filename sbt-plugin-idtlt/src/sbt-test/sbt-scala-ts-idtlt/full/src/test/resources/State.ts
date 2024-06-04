@@ -32,11 +32,28 @@ export const idtltDiscriminatedState = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedState validator
 export type DiscriminatedState = typeof idtltDiscriminatedState.T;
 
-export const State = {
+export const StateValues = {
   "AL": nsAlabama.AlabamaInhabitant, 
-  Alabama: nsAlabama.AlabamaInhabitant /* Alias */, 
-  "AK": nsAlaska.AlaskaInhabitant, 
-  Alaska: nsAlaska.AlaskaInhabitant /* Alias */
+  "AK": nsAlaska.AlaskaInhabitant
+} as const;
+
+export type StateValuesKey = keyof typeof StateValues;
+
+export function mapStateValues<T>(f: (_k: StateValuesKey) => T): Readonly<Record<StateValuesKey, T>> {
+  return {
+    "AL": f(nsAlabama.AlabamaInhabitant), 
+    "AK": f(nsAlaska.AlaskaInhabitant)
+  }
+}
+
+export const StateTypes = {
+  Alabama: nsAlabama.AlabamaInhabitant, 
+  Alaska: nsAlaska.AlaskaInhabitant
+} as const;
+
+export const State = {
+  ...StateValues,
+  ...StateTypes
 } as const;
 
 export const idtltStateKnownValues: ReadonlySet<State> = new Set<State>(Object.values(State) as ReadonlyArray<State>);
