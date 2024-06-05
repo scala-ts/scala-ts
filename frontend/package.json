@@ -50,7 +50,7 @@
     "rollup-plugin-css-asset": "1.0.2",
     "rollup-plugin-esbuild": "6.1.1",
     "rollup-plugin-livereload": "2.0.5",
-    "rollup-plugin-svelte": "7.2.0",
+    "rollup-plugin-svelte": "7.2.1",
     "sass": "1.77.4",
     "sirv-cli": "2.0.2",
     "svelte": "4.2.17",
