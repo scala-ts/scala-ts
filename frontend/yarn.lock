@@ -2497,10 +2497,10 @@ rollup-plugin-livereload@2.0.5:
   dependencies:
     livereload "^0.9.1"
 
-rollup-plugin-svelte@7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-svelte/-/rollup-plugin-svelte-7.2.0.tgz#1aa4422dfba9709eed3104275cfc4089b7cc5737"
-  integrity sha512-Qvo5VNFQZtaI+sHSjcCIFDP+olfKVyslAoJIkL3DxuhUpNY5Ys0+hhxUY3kuEKt9BXFgkFJiiic/XRb07zdSbg==
+rollup-plugin-svelte@7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-svelte/-/rollup-plugin-svelte-7.2.1.tgz#75638b02f18fd5189b2d2b05ccd18f36fff772d1"
+  integrity sha512-I5p+eZXNKzIjGLdWBgpP2bxoqKpsUfttcLM9hoBx6IGX99NdVlWuU8VE81bTrcK9LzHUUF1k2QXWI8tjeKJRAA==
   dependencies:
     "@rollup/pluginutils" "^4.1.0"
     resolve.exports "^2.0.0"
