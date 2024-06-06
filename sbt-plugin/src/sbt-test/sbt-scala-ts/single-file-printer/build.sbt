@@ -8,7 +8,7 @@ resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 scalaVersion := "2.13.14"
 
-crossScalaVersions := Seq(scalaVersion.value, "3.4.1")
+crossScalaVersions := Seq(scalaVersion.value, "3.4.2")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
