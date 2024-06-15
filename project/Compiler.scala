@@ -68,7 +68,7 @@ object Compiler extends AutoPlugin {
           "-Wextra-implicit",
           "-Wmacros:after",
           "-Wunused",
-          "-Wconf:msg=.*JavaConverters.*:s",
+          "-Wconf:msg=.*JavaConverters.*:s"
         )
       } else {
         Seq(
@@ -91,7 +91,8 @@ object Compiler extends AutoPlugin {
       val sv = scalaBinaryVersion.value
 
       if (sv != "3") {
-        val silencerVersion = if (sv == "2.13" || sv == "2.12") "1.7.17" else "1.17.13"
+        val silencerVersion =
+          if (sv == "2.13" || sv == "2.12") "1.7.17" else "1.17.13"
 
         Seq(
           compilerPlugin(
