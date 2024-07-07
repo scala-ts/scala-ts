@@ -28,7 +28,7 @@ final class IdtltEmitterSpec extends org.specs2.mutable.Specification {
         union = false
       )
 
-      emit(ListSet(empty)) must beTypedEqualTo("""// Validator for InterfaceDeclaration Empty
+      emit(Map(empty.name -> ListSet(empty))) must beTypedEqualTo("""// Validator for InterfaceDeclaration Empty
 export const idtltEmpty = idtlt.object({
 });
 
@@ -56,7 +56,7 @@ export function isEmpty(v: any): v is Empty {
     }
 
     "emit interface for a class with one primitive member" in {
-      emit(ListSet(interface1)) must beTypedEqualTo(
+      emit(Map(interface1.name -> ListSet(interface1))) must beTypedEqualTo(
         s"""// Validator for InterfaceDeclaration ${ns}TestClass1
 export const idtlt${ns}TestClass1 = idtlt.object({
   name: idtlt.string,
@@ -86,7 +86,7 @@ export function is${ns}TestClass1(v: any): v is ${ns}TestClass1 {
     }
 
     "emit interface for a class with generic member" in {
-      emit(ListSet(interface2)) must beTypedEqualTo(
+      emit(Map(interface2.name -> ListSet(interface2))) must beTypedEqualTo(
         s"""// Not supported: InterfaceDeclaration '${ns}TestClass2'
 // - type parameters: T
 
@@ -98,7 +98,7 @@ export function is${ns}TestClass2(v: any): boolean {
     }
 
     "emit interface for a class with generic array" in {
-      emit(ListSet(interface3)) must beTypedEqualTo(
+      emit(Map(interface3.name -> ListSet(interface3))) must beTypedEqualTo(
         s"""// Not supported: InterfaceDeclaration '${ns}TestClass3'
 // - type parameters: T
 
@@ -110,7 +110,7 @@ export function is${ns}TestClass3(v: any): boolean {
     }
 
     "emit interface for a generic case class with a optional member" in {
-      emit(ListSet(interface5)) must beTypedEqualTo(
+      emit(Map(interface5.name -> ListSet(interface5))) must beTypedEqualTo(
         s"""// Not supported: InterfaceDeclaration '${ns}TestClass5'
 // - type parameters: T
 
@@ -123,7 +123,7 @@ export function is${ns}TestClass5(v: any): boolean {
 
     "emit interface for a generic case class with disjunction" in {
       // TODO: Add example to documentation
-      emit(ListSet(interface7)) must beTypedEqualTo(
+      emit(Map(interface7.name -> ListSet(interface7))) must beTypedEqualTo(
         s"""// Not supported: InterfaceDeclaration '${ns}TestClass7'
 // - type parameters: T
 
@@ -136,7 +136,9 @@ export function is${ns}TestClass7(v: any): boolean {
 
     "emit tagged type" >> {
       "as type alias" in {
-        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
+        emit(
+          Map(taggedDeclaration1.name -> ListSet(taggedDeclaration1))
+        ) must beTypedEqualTo(
           s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
 export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
@@ -154,7 +156,9 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
       }
 
       "as tagged type" in {
-        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
+        emit(
+          Map(taggedDeclaration1.name -> ListSet(taggedDeclaration1))
+        ) must beTypedEqualTo(
           s"""// Validator for TaggedDeclaration ${valueClassNs}AnyValChild
 export type ${valueClassNs}AnyValChild = string & { __tag: '${valueClassNs}AnyValChild' };
 
@@ -172,7 +176,7 @@ export function is${valueClassNs}AnyValChild(v: any): v is ${valueClassNs}AnyVal
       }
 
       "as member" in {
-        emit(ListSet(interface8)) must beTypedEqualTo(
+        emit(Map(interface8.name -> ListSet(interface8))) must beTypedEqualTo(
           s"""// Validator for InterfaceDeclaration ${valueClassNs}TestClass8
 export const idtlt${valueClassNs}TestClass8 = idtlt.object({
   name: ns${valueClassNs}AnyValChild.idtlt${valueClassNs}AnyValChild,
@@ -206,7 +210,7 @@ export function is${valueClassNs}TestClass8(v: any): v is ${valueClassNs}TestCla
 
     "for singleton" >> {
       "emit class #1" in {
-        emit(ListSet(singleton1)) must beTypedEqualTo(
+        emit(Map(singleton1.name -> ListSet(singleton1))) must beTypedEqualTo(
           s"""export class ${ns}TestObject1 {
   private static instance: ${ns}TestObject1;
 
@@ -240,7 +244,7 @@ export const idtlt${ns}TestObject1 =
 
           // SCALATS1: No implements SupI
           emit(
-            ListSet(singleton2)
+            Map(singleton2.name -> ListSet(singleton2))
           ) must_=== s"""// Validator for SingletonDeclaration ${ns}TestObject2
 export const idtlt${ns}TestObject2 = idtlt.object({
   name: idtlt.literal("Foo \\"bar\\""),
@@ -254,6 +258,7 @@ export const idtlt${ns}TestObject2 = idtlt.object({
   /* Unsupported 'MergedListsValue': concatSeq */
   /* Unsupported 'MergedListsValue': concatList */
   /* Unsupported 'MergedSetsValue': mergedSet */
+  /* Unsupported 'SingletonValue': Nested1 */
 });
 
 // Super-type declaration SupI is ignored
@@ -269,16 +274,19 @@ export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = {
   foo: this.name,
   list: [ "first", this.name ],
   set: new Set([ this.code, 2 ]),
-  mapping: { "foo": "bar", "lorem": this.name },
-  dictOfList: { "excludes": [ "*.txt", ".gitignore" ], "includes": [ "images/**", "*.jpg", "*.png" ] },
+  mapping: new Map([ ["foo", "bar"], ["lorem", this.name] ]),
+  dictOfList: new Map([ ["excludes", [ "*.txt", ".gitignore" ]], ["includes", [ "images/**", "*.jpg", "*.png" ]] ]),
   concatSeq: [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]],
   concatList: [ ...[ "foo" ], ...this.list],
-  mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ])
+  mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ]),
+  Nested1: ns${ns}TestObject2Nested1.${ns}TestObject2Nested1Inhabitant
 };
 
 export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
   return idtlt${ns}TestObject2.validate(v).ok;
-}"""
+}
+
+export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
         }
 
         val taggedRef =
@@ -451,33 +459,33 @@ export function is${ns}TestObject2(v: any): v is ${ns}TestObject2 {
           )
 
           emit(
-            ListSet(singleton),
+            Map(singleton.name -> ListSet(singleton)),
             config = Settings(
               typeNaming = CustomTypeNaming,
               fieldMapper = CustomFieldMapper
             )
           ) must_=== s"""export class TSSingleton {
-  public _name: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild & "Foo" = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("Foo");
+  public readonly _name: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild & "Foo" = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("Foo");
 
-  public _code: TSnumber & 1 = 1;
+  public readonly _code: TSnumber & 1 = 1;
 
-  public _const: TSstring & "value" = "value";
+  public readonly _const: TSstring & "value" = "value";
 
-  public _foo: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = this._name;
+  public readonly _foo: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = this._name;
 
-  public _list: ReadonlyArray<TSstring> = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
+  public readonly _list: ReadonlyArray<TSstring> = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
 
-  public _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
+  public readonly _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
 
-  public readonly _mapping: Readonly<Partial<Record<TSstring, TSstring>>> = { "foo": nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"), "lorem": this._name };
+  public readonly _mapping: Readonly<Map<TSstring, TSstring>> = new Map([ ["foo", nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")], ["lorem", this._name] ]);
 
-  public readonly _dictOfList: Readonly<Partial<Record<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>>> = { "excludes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ], "includes": [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ] };
+  public readonly _dictOfList: Readonly<Map<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>> = new Map([ ["excludes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ]], ["includes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ]] ]);
 
-  public _concatSeq: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> = [ ...this._list, ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar") ], ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("lorem") ]];
+  public readonly _concatSeq: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> = [ ...this._list, ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar") ], ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("lorem") ]];
 
-  public _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
+  public readonly _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
 
-  public readonly _taggedDict: Readonly<Partial<Record<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>>> = (() => { const __buf1519690942: Partial<Record<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>> = {}; __buf1519690942[nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo")] = nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar"); return __buf1519690942 })();
+  public readonly _taggedDict: Readonly<Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>> = (() => { const __buf1519690942: Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring> = new Map(); __buf1519690942.set(nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")); return __buf1519690942 })();
 
   private static instance: TSSingleton;
 
@@ -521,15 +529,15 @@ export const idtltTSSingleton =
           )
 
           emit(
-            ListSet(singleton2WithTagged)
+            Map(singleton2WithTagged.name -> ListSet(singleton2WithTagged))
           ) must_=== s"""export class ${valueClassNs}TestObject2 {
-  public name: string & "Foo" = "Foo";
+  public readonly name: string & "Foo" = "Foo";
 
-  public const: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild & "value" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("value");
+  public readonly const: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild & "value" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("value");
 
-  public foo: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = this.const;
+  public readonly foo: ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild = this.const;
 
-  public code: number & 1 = 1;
+  public readonly code: number & 1 = 1;
 
   private static instance: ${valueClassNs}TestObject2;
 
@@ -559,7 +567,7 @@ export const idtlt${valueClassNs}TestObject2 =
 
       "emit class #3" in {
         emit(
-          ListSet(unionMember2Singleton)
+          Map(unionMember2Singleton.name -> ListSet(unionMember2Singleton))
         ) must_=== s"""// Validator for SingletonDeclaration ${ns}FamilyMember2
 export const idtlt${ns}FamilyMember2 = idtlt.literal("bar");
 
@@ -573,7 +581,9 @@ export const ${ns}FamilyMember2Inhabitant: ${ns}FamilyMember2 = "bar";
 
 export function is${ns}FamilyMember2(v: any): v is ${ns}FamilyMember2 {
   return idtlt${ns}FamilyMember2.validate(v).ok;
-}"""
+}
+
+export type ${ns}FamilyMember2Singleton = ${ns}FamilyMember2;"""
       }
 
       "emit literal types" >> {
@@ -591,7 +601,7 @@ export function is${ns}FamilyMember2(v: any): v is ${ns}FamilyMember2 {
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """export class Foo {
+          emit(Map(obj.name -> ListSet(obj))) must_=== """export class Foo {
   private static instance: Foo;
 
   private constructor() {}
@@ -624,8 +634,8 @@ export const idtltFoo =
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """export class Foo {
-  public bar: string & "lorem" = "lorem";
+          emit(Map(obj.name -> ListSet(obj))) must_=== """export class Foo {
+  public readonly bar: string & "lorem" = "lorem";
 
   private static instance: Foo;
 
@@ -666,10 +676,10 @@ export const idtltFoo =
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """export class Foo {
-  public bar: string & "lorem" = "lorem";
+          emit(Map(obj.name -> ListSet(obj))) must_=== """export class Foo {
+  public readonly bar: string & "lorem" = "lorem";
 
-  public ipsum: number & 2 = 2;
+  public readonly ipsum: number & 2 = 2;
 
   private static instance: Foo;
 
@@ -698,10 +708,11 @@ export const idtltFoo =
       }
     }
 
-    "emit union" in {
-      emit(
-        ListSet(union1)
-      ) must_=== s"""// Validator for UnionDeclaration ${ns}Family
+    "emit union" >> {
+      "as single declaration" in {
+        emit(
+          Map(union1.name -> ListSet(union1))
+        ) must_=== s"""// Validator for UnionDeclaration ${ns}Family
 export const idtlt${ns}Family = idtlt.union(
   ns${ns}FamilyMember1.idtltDiscriminated${ns}FamilyMember1,
   ns${ns}FamilyMember2.idtltDiscriminated${ns}FamilyMember2,
@@ -756,10 +767,270 @@ export function is${ns}Family(v: any): v is ${ns}Family {
   );
 }
 """
+      }
+
+      "with interface" in {
+        emit(
+          Map(union1.name -> ListSet(union1, interface1))
+        ) must_=== s"""// Validator for UnionDeclaration ${ns}FamilyUnion
+export const idtlt${ns}FamilyUnion = idtlt.union(
+  ns${ns}FamilyMember1.idtltDiscriminated${ns}FamilyMember1,
+  ns${ns}FamilyMember2.idtltDiscriminated${ns}FamilyMember2,
+  ns${ns}FamilyMember3.idtltDiscriminated${ns}FamilyMember3);
+
+// Fields are ignored: foo
+
+// Deriving TypeScript type from ${ns}FamilyUnion validator
+export type ${ns}FamilyUnion = typeof idtlt${ns}FamilyUnion.T;
+
+export const idtltDiscriminated${ns}FamilyUnion = idtlt.intersection(
+  idtlt${ns}FamilyUnion,
+  idtlt.object({
+    _type: idtlt.literal('${ns}FamilyUnion')
+  })
+);
+
+// Deriving TypeScript type from idtltDiscriminated${ns}FamilyUnion validator
+export type Discriminated${ns}FamilyUnion = typeof idtltDiscriminated${ns}FamilyUnion.T;
+
+export const ${ns}FamilyUnionValues = {
+  "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export type ${ns}FamilyUnionValuesKey = keyof typeof ${ns}FamilyUnionValues;
+
+// Aliases for the Union utilities
+export const ${ns}FamilyValues = ${ns}FamilyUnionValues;
+
+export type ${ns}FamilyValuesKey = ${ns}FamilyUnionValuesKey;
+
+export function map${ns}FamilyUnionValues<T>(f: (_k: ${ns}FamilyUnionValuesKey) => T): Readonly<Record<${ns}FamilyUnionValuesKey, T>> {
+  return {
+    "bar": f(ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant), 
+    "lorem": f(ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant)
+  }
+}
+
+export function map${ns}FamilyValues<T>(f: (_k: ${ns}FamilyValuesKey) => T): Readonly<Record<${ns}FamilyValuesKey, T>> {
+  return map${ns}FamilyUnionValues<T>(f);
+}
+
+export const ${ns}FamilyUnionTypes = {
+  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export const ${ns}FamilyUnion = {
+  ...${ns}FamilyUnionValues,
+  ...${ns}FamilyUnionTypes
+} as const;
+
+export const idtlt${ns}FamilyUnionKnownValues: ReadonlySet<${ns}FamilyUnion> = new Set<${ns}FamilyUnion>(Object.values(${ns}FamilyUnion) as ReadonlyArray<${ns}FamilyUnion>);
+
+export function is${ns}FamilyUnion(v: any): v is ${ns}FamilyUnion {
+  return (
+    ns${ns}FamilyMember1.is${ns}FamilyMember1(v) ||
+    ns${ns}FamilyMember2.is${ns}FamilyMember2(v) ||
+    ns${ns}FamilyMember3.is${ns}FamilyMember3(v)
+  );
+}
+
+export const idtlt${ns}FamilyKnownValues: ReadonlySet<${ns}Family> =
+  idtlt${ns}FamilyUnionKnownValues;
+
+export const ${ns}Family = ${ns}FamilyUnion;
+
+// Validator for InterfaceDeclaration I${ns}TestClass1
+export const idtltI${ns}TestClass1 = idtlt.object({
+  name: idtlt.string,
+});
+
+// Deriving TypeScript type from I${ns}TestClass1 validator
+export type I${ns}TestClass1 = typeof idtltI${ns}TestClass1.T;
+
+export const idtltDiscriminatedI${ns}TestClass1 = idtlt.intersection(
+  idtltI${ns}TestClass1,
+  idtlt.object({
+    _type: idtlt.literal('I${ns}TestClass1')
+  })
+);
+
+// Deriving TypeScript type from idtltDiscriminatedI${ns}TestClass1 validator
+export type DiscriminatedI${ns}TestClass1 = typeof idtltDiscriminatedI${ns}TestClass1.T;
+
+export const discriminatedI${ns}TestClass1: (_: I${ns}TestClass1) => DiscriminatedI${ns}TestClass1 = (v: I${ns}TestClass1) => ({ _type: 'I${ns}TestClass1', ...v });
+
+export function isI${ns}TestClass1(v: any): v is I${ns}TestClass1 {
+  return (
+    ((typeof v['name']) === 'string')
+  );
+}
+
+// Validator for CompositeDeclaration ${ns}Family
+export const idtlt${ns}Family = idtlt.intersection(
+  idtltDiscriminated${ns}FamilyUnion,
+  idtltDiscriminatedI${ns}TestClass1);
+
+export function is${ns}Family(v: any): v is ${ns}Family {
+  return (
+    is${ns}FamilyUnion(v) &&
+    isI${ns}TestClass1(v)
+  );
+}
+
+// Deriving TypeScript type from ${ns}Family validator
+export type ${ns}Family = typeof idtlt${ns}Family.T;
+
+export const idtltDiscriminated${ns}Family = idtlt.intersection(
+  idtlt${ns}Family,
+  idtlt.object({
+    _type: idtlt.literal('${ns}Family')
+  })
+);
+
+// Deriving TypeScript type from idtltDiscriminated${ns}Family validator
+export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
+
+// Workaround for local type references in the same module
+type private${ns}Family = ${ns}Family;
+
+namespace ns${ns}Family {
+  export type ${ns}Family = private${ns}Family;
+}
+"""
+      }
+
+      "with non empty object" in {
+        emit(
+          Map(union1.name -> ListSet(union1, singleton1))
+        ) must beTypedEqualTo(
+          s"""// Validator for UnionDeclaration ${ns}Family
+export const idtlt${ns}Family = idtlt.union(
+  ns${ns}FamilyMember1.idtltDiscriminated${ns}FamilyMember1,
+  ns${ns}FamilyMember2.idtltDiscriminated${ns}FamilyMember2,
+  ns${ns}FamilyMember3.idtltDiscriminated${ns}FamilyMember3);
+
+// Fields are ignored: foo
+
+// Deriving TypeScript type from ${ns}Family validator
+export type ${ns}Family = typeof idtlt${ns}Family.T;
+
+export const idtltDiscriminated${ns}Family = idtlt.intersection(
+  idtlt${ns}Family,
+  idtlt.object({
+    _type: idtlt.literal('${ns}Family')
+  })
+);
+
+// Deriving TypeScript type from idtltDiscriminated${ns}Family validator
+export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
+
+export const ${ns}FamilyValues = {
+  "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export type ${ns}FamilyValuesKey = keyof typeof ${ns}FamilyValues;
+
+export function map${ns}FamilyValues<T>(f: (_k: ${ns}FamilyValuesKey) => T): Readonly<Record<${ns}FamilyValuesKey, T>> {
+  return {
+    "bar": f(ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant), 
+    "lorem": f(ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant)
+  }
+}
+
+export const ${ns}FamilyTypes = {
+  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export const ${ns}Family = {
+  ...${ns}FamilyValues,
+  ...${ns}FamilyTypes
+} as const;
+
+export const idtlt${ns}FamilyKnownValues: ReadonlySet<${ns}Family> = new Set<${ns}Family>(Object.values(${ns}Family) as ReadonlyArray<${ns}Family>);
+
+export function is${ns}Family(v: any): v is ${ns}Family {
+  return (
+    ns${ns}FamilyMember1.is${ns}FamilyMember1(v) ||
+    ns${ns}FamilyMember2.is${ns}FamilyMember2(v) ||
+    ns${ns}FamilyMember3.is${ns}FamilyMember3(v)
+  );
+}
+"""
+        )
+      }
+
+      "with empty object" in {
+        emit(
+          Map(
+            union1.name -> ListSet(
+              union1,
+              singleton1.copy(values = ListSet.empty)
+            )
+          )
+        ) must beTypedEqualTo(s"""// Validator for UnionDeclaration ${ns}Family
+export const idtlt${ns}Family = idtlt.union(
+  ns${ns}FamilyMember1.idtltDiscriminated${ns}FamilyMember1,
+  ns${ns}FamilyMember2.idtltDiscriminated${ns}FamilyMember2,
+  ns${ns}FamilyMember3.idtltDiscriminated${ns}FamilyMember3);
+
+// Fields are ignored: foo
+
+// Deriving TypeScript type from ${ns}Family validator
+export type ${ns}Family = typeof idtlt${ns}Family.T;
+
+export const idtltDiscriminated${ns}Family = idtlt.intersection(
+  idtlt${ns}Family,
+  idtlt.object({
+    _type: idtlt.literal('${ns}Family')
+  })
+);
+
+// Deriving TypeScript type from idtltDiscriminated${ns}Family validator
+export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
+
+export const ${ns}FamilyValues = {
+  "bar": ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  "lorem": ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export type ${ns}FamilyValuesKey = keyof typeof ${ns}FamilyValues;
+
+export function map${ns}FamilyValues<T>(f: (_k: ${ns}FamilyValuesKey) => T): Readonly<Record<${ns}FamilyValuesKey, T>> {
+  return {
+    "bar": f(ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant), 
+    "lorem": f(ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant)
+  }
+}
+
+export const ${ns}FamilyTypes = {
+  ${ns}FamilyMember2: ns${ns}FamilyMember2.${ns}FamilyMember2Inhabitant, 
+  ${ns}FamilyMember3: ns${ns}FamilyMember3.${ns}FamilyMember3Inhabitant
+} as const;
+
+export const ${ns}Family = {
+  ...${ns}FamilyValues,
+  ...${ns}FamilyTypes
+} as const;
+
+export const idtlt${ns}FamilyKnownValues: ReadonlySet<${ns}Family> = new Set<${ns}Family>(Object.values(${ns}Family) as ReadonlyArray<${ns}Family>);
+
+export function is${ns}Family(v: any): v is ${ns}Family {
+  return (
+    ns${ns}FamilyMember1.is${ns}FamilyMember1(v) ||
+    ns${ns}FamilyMember2.is${ns}FamilyMember2(v) ||
+    ns${ns}FamilyMember3.is${ns}FamilyMember3(v)
+  );
+}
+""")
+      }
     }
 
     "emit enumeration as union" in {
-      emit(ListSet(enum1)) must beTypedEqualTo(
+      emit(Map(enum1.name -> ListSet(enum1))) must beTypedEqualTo(
         s"""// Validator for EnumDeclaration ${ns}TestEnumeration
 export const idtlt${ns}TestEnumeration = idtlt.union(
   idtlt.literal('A'),
@@ -800,7 +1071,7 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
   private val idtltTypeMapper = new IdtltTypeMapper
 
   def emit(
-      decls: ListSet[Declaration],
+      decls: Map[String, ListSet[Declaration]],
       config: Settings = Settings(),
       declMapper: DeclarationMapper = idtltDeclMapper,
       importResolver: ImportResolver = ImportResolver.Defaults,
@@ -811,7 +1082,7 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
 
     val emiter = new Emitter(
       config,
-      (_, _, _, _) => out,
+      (_, _, _, _, _) => out,
       importResolver,
       declMapper,
       typeMapper
@@ -819,6 +1090,7 @@ export function is${ns}TestEnumeration(v: any): v is ${ns}TestEnumeration {
 
     try {
       emiter.emit(decls)
+
       out.flush()
       buf.toString
     } finally {

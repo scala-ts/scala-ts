@@ -11,12 +11,13 @@ import io.github.scalats.ast.Declaration
  * - [[DeclarationMapper.EnumerationAsEnum]]
  */
 trait DeclarationMapper
-    extends Function6[
+    extends Function7[
       DeclarationMapper.Resolved,
       Settings,
       TypeMapper.Resolved,
       FieldMapper,
       Declaration,
+      DeclarationMapper.Context,
       PrintStream,
       Option[Unit]
     ] { self =>
@@ -27,6 +28,7 @@ trait DeclarationMapper
    * @param typeMapper the resolved type mapper
    * @param fieldMapper the field mapper
    * @param declaration the transpiled declaration to be emitted
+   * @param context the optional context (useful for conditional while composing)
    * @param out the printer to output the code
    * @return Some print operation, or None if `declaration` is not handled
    */
@@ -36,6 +38,7 @@ trait DeclarationMapper
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
       declaration: Declaration,
+      context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit]
 
@@ -48,12 +51,28 @@ trait DeclarationMapper
           typeMapper: TypeMapper.Resolved,
           fieldMapper: FieldMapper,
           declaration: Declaration,
+          context: DeclarationMapper.Context,
           out: PrintStream
         ): Option[Unit] =
-        self(parent, settings, typeMapper, fieldMapper, declaration, out)
-          .orElse(
-            m(parent, settings, typeMapper, fieldMapper, declaration, out)
+        self(
+          parent,
+          settings,
+          typeMapper,
+          fieldMapper,
+          declaration,
+          context,
+          out
+        ).orElse(
+          m(
+            parent,
+            settings,
+            typeMapper,
+            fieldMapper,
+            declaration,
+            context,
+            out
           )
+        )
     }
 
   override def toString: String = getClass.getName
@@ -73,7 +92,9 @@ object DeclarationMapper {
     ValueBodyDeclaration
   }
 
-  type Resolved = Function2[Declaration, PrintStream, Unit]
+  type Context = Map[String, String]
+
+  type Resolved = Function3[Declaration, Context, PrintStream, Unit]
 
   object Defaults extends DeclarationMapper {
 
@@ -83,6 +104,7 @@ object DeclarationMapper {
         typeMapper: TypeMapper.Resolved,
         fieldMapper: FieldMapper,
         declaration: Declaration,
+        context: Context,
         out: PrintStream
       ): Option[Unit] = None
   }
@@ -100,6 +122,7 @@ object DeclarationMapper {
         typeMapper: TypeMapper.Resolved,
         fieldMapper: FieldMapper,
         declaration: Declaration,
+        context: Context,
         out: PrintStream
       ): Option[Unit] = {
       import settings.{ indent, lineSeparator => lineSep }
@@ -173,6 +196,7 @@ ${indent}return ${simpleCheck}${lineSep}
         typeMapper: TypeMapper.Resolved,
         fieldMapper: FieldMapper,
         declaration: Declaration,
+        context: DeclarationMapper.Context,
         out: PrintStream
       ): Option[Unit] = declaration match {
       case decl @ EnumDeclaration(_, possibilities, values) =>
@@ -224,7 +248,7 @@ class ${tpeName}Extra {""")
                   out.println()
                 }
 
-                parent(ValueMemberDeclaration(sd, v), out)
+                parent(ValueMemberDeclaration(sd, v), context, out)
             }
 
             out.println(s"""}
@@ -248,6 +272,7 @@ export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
    * - If the singleton declared multiple values, uses them as literal object.
    */
   final class SingletonAsLiteral extends DeclarationMapper {
+    import io.github.scalats.ast.ValueMemberDeclaration
 
     def apply(
         parent: Resolved,
@@ -255,13 +280,14 @@ export ${tpeName}Invariants = new ${tpeName}Extra()${lineSep}""")
         typeMapper: TypeMapper.Resolved,
         fieldMapper: FieldMapper,
         declaration: Declaration,
+        context: DeclarationMapper.Context,
         out: PrintStream
       ): Option[Unit] = declaration match {
       case decl @ SingletonDeclaration(name, values, _) =>
         Some {
           val constValue: String = values.headOption match {
             case Some(LiteralValue(_, _, raw)) => {
-              if (values.size > 1) {
+              if (values.tail.nonEmpty) {
                 values.map {
                   case LiteralValue(n, _, r) => s"${n}: $r"
                   case _                     => "/* TODO */"
@@ -288,6 +314,28 @@ export function is${singleName}(v: any): v is ${singleName} {
 ${indent}return ${singleName}Inhabitant == v${lineSep}
 }"""
           )
+
+          if (!context.contains("noSingletonAlias")) {
+            // For compatiblity with Composite integration
+
+            out.println(s"""
+export type ${singleName}Singleton = ${singleName}${lineSep}""")
+          }
+
+          values.headOption.foreach { _ =>
+            if (values.tail.nonEmpty) {
+              out.println(s"""
+class ${singleName}ValuesClass {""")
+
+              values.toList.foreach { v =>
+                parent(ValueMemberDeclaration(decl, v), context, out)
+              }
+
+              out.println(s"""}
+
+export const ${singleName}Values = new ${singleName}ValuesClass()${lineSep}""")
+            }
+          }
         }
 
       case _ =>
@@ -311,6 +359,7 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
         typeMapper: TypeMapper.Resolved,
         fieldMapper: FieldMapper,
         declaration: Declaration,
+        context: DeclarationMapper.Context,
         out: PrintStream
       ): Option[Unit] = declaration match {
       case decl @ UnionDeclaration(_, _, possibilities, _) =>
@@ -321,8 +370,20 @@ ${indent}return ${singleName}Inhabitant == v${lineSep}
           val tpeName = typeNaming(decl.reference)
           val ps = possibilities.toList.sortBy(_.name)
           val pst = ps.map(typeNaming)
+          val rhs = ps.map { t =>
+            val nme = typeNaming(t)
 
-          out.print(s"""export type ${tpeName} = ${pst mkString " | "}${lineSep}
+            t match {
+              case SingletonTypeRef(_, _) =>
+                // See default import format for singleton reference on `BasePrinter`
+                s"ns${nme}.${nme}"
+
+              case _ =>
+                nme
+            }
+          }.mkString(" | ")
+
+          out.print(s"""export type ${tpeName} = ${rhs}${lineSep}
 
 export const ${tpeName} = {
 """)
@@ -382,7 +443,7 @@ ${indent}${indent}""")
             false
           ) => {
         // Ignore super interface for interface member of union
-        Some(parent(decl.copy(superInterface = None), out))
+        Some(parent(decl.copy(superInterface = None), context, out))
       }
 
       case _ =>

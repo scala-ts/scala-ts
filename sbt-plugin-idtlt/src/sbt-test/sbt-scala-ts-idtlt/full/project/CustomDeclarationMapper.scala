@@ -19,6 +19,7 @@ final class CustomDeclarationMapper extends DeclarationMapper {
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
       declaration: Declaration,
+      context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit] = {
     import settings.{ lineSeparator => lineSep, indent }
@@ -43,7 +44,7 @@ ${indent}})
 
     def emit: Unit = declaration match {
       case tagged @ TaggedDeclaration(_, _) =>
-        parent(tagged, out)
+        parent(tagged, context, out)
 
       case iface @ InterfaceDeclaration(
             _,
@@ -163,7 +164,7 @@ $deriving""")
       }
 
       case decl =>
-        parent(decl, out)
+        parent(decl, context, out)
     }
 
     Some(emit)

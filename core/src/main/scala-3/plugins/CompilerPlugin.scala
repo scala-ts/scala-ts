@@ -2,28 +2,30 @@ package io.github.scalats.plugins
 
 import java.io.File
 
-import dotty.tools.dotc.report
-import dotty.tools.dotc.core.Flags
-import dotty.tools.dotc.core.Symbols.Symbol
-import dotty.tools.dotc.core.Types.Type
-import dotty.tools.dotc.core.Contexts.Context
-import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.plugins.{ PluginPhase, StandardPlugin }
-import dotty.tools.dotc.transform.{ Pickler, Staging }
-
 import scala.util.matching.Regex
 
 import scala.collection.immutable.ListSet
 
+import dotty.tools.dotc.core.Contexts.Context
+import dotty.tools.dotc.core.Flags
+import dotty.tools.dotc.core.Symbols.Symbol
+import dotty.tools.dotc.core.Types.Type
+
+import dotty.tools.dotc.ast.tpd
+
 import io.github.scalats.core.{
-  Logger,
-  ScalaParser,
   DeclarationMapper,
   Generator,
   ImportResolver,
+  Logger,
+  ScalaParser,
   TypeMapper
 }
 import io.github.scalats.tsconfig.ConfigFactory
+
+import dotty.tools.dotc.plugins.{ PluginPhase, StandardPlugin }
+import dotty.tools.dotc.report
+import dotty.tools.dotc.transform.{ Pickler, Staging }
 
 final class CompilerPlugin extends StandardPlugin:
   val name = ScalaTSPhase.name
@@ -236,27 +238,28 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
     def traverse[Acc](
         trees: Seq[Tree],
         acc: Acc,
-        handled: List[Type] = List.empty
+        handled: List[Type]
       )(f: ((Type, Tree), Acc) => Acc
       ): Acc =
       trees.headOption match {
         case Some(tree) => {
-          import tree.{ tpe, symbol => sym }
+          import tree.{ symbol => sym }
 
+          val tpe = tree.tpe.dealias
           val isModule = sym.is(Flags.Module) || sym.is(Flags.ModuleClass)
           val isPackage = sym.is(Flags.Package) || sym.is(Flags.PackageClass)
           val isTypeDef = tree.isInstanceOf[TypeDef]
 
           if (
-            !(sym.fullName.startsWith("java.") ||
-              sym.fullName.startsWith("scala.")) &&
+            !(sym.fullName.startsWith("java") ||
+              sym.fullName.startsWith("scala")) &&
             ((isModule && isTypeDef && !isPackage) || (sym.isClass && !isModule))
           ) {
             lazy val kind: String = if (isModule) "object" else "class"
 
             val b = Seq.newBuilder[Tree]
 
-            tree.filterSubTrees(_ != tree).foreach { b += _ }
+            tree.filterSubTrees(_ != tree).foreach { x => b += x }
 
             val newTrees: Seq[Tree] = b.result() ++: trees.tail
 
@@ -311,11 +314,13 @@ private class ScalaTSPhase(initer: ScalaTSPhase.Initer) extends PluginPhase {
     }
 
     val symtab =
-      (traverse(body, List.empty[(String, (Type, Tree))]) {
+      (traverse(body, List.empty[(String, (Type, Tree))], List.empty) {
         case (ref @ (_, tree), acc) =>
           typeBuf += ref
           tree.symbol.fullName.toString -> ref :: acc
-      }).toMap
+      }).groupBy(_._1).map {
+        case (k, ls) => k -> (ListSet.empty ++ ls.map(_._2))
+      }
 
     val scalaTypes = typeBuf.result()
 

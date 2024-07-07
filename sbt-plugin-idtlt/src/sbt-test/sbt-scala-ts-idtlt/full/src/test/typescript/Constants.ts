@@ -27,9 +27,9 @@ describe('Constants', () => {
     expect(ConstantsInhabitant.list.includes(2)).toBe(true)
 
     // Dictionary
-    const dict: Partial<Record<string, ReadonlyArray<nsName.Name>>> = ConstantsInhabitant.dict
+    const dict: Readonly<Map<string, ReadonlyArray<nsName.Name>>> = ConstantsInhabitant.dict
 
-    const specific: ReadonlyArray<nsName.Name> | undefined = dict['specific']
+    const specific: ReadonlyArray<nsName.Name> | undefined = dict.get('specific')
 
     if (!specific) {
       fail('Missing specific')
@@ -40,7 +40,7 @@ describe('Constants', () => {
     expect(specific.includes(nsName.Name("*"))).toBe(true)
     expect(specific.length).toEqual(3)
 
-    const invalid: ReadonlyArray<nsName.Name> | undefined = dict['invalid']
+    const invalid: ReadonlyArray<nsName.Name> | undefined = dict.get('invalid')
     expect(invalid).toEqual([ nsName.Name("failed") ])
   })
 

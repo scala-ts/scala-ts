@@ -7,9 +7,9 @@ import io.github.scalats.ast.{ Declaration, TypeRef }
 import Internals.ListSet
 
 trait Printer
-    extends Function4[Settings, Declaration.Kind, String, ListSet[
-      TypeRef
-    ], PrintStream] {
+    extends Function5[Settings, Declaration.Kind, ListSet[
+      Declaration.Kind
+    ], String, ListSet[TypeRef], PrintStream] {
 
   /**
    * Resolves the printer to be used to the specified type
@@ -23,6 +23,7 @@ trait Printer
   def apply(
       configuration: Settings,
       kind: Declaration.Kind,
+      others: ListSet[Declaration.Kind],
       name: String,
       requires: ListSet[TypeRef]
     ): PrintStream
@@ -35,6 +36,7 @@ object Printer {
     def apply(
         configuration: Settings,
         kind: Declaration.Kind,
+        others: ListSet[Declaration.Kind],
         name: String,
         requires: ListSet[TypeRef]
       ): PrintStream = Console.out

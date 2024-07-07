@@ -8,8 +8,10 @@ private[core] trait TypeScriptExtraEmitterSpec { self: TypeScriptEmitterSpec =>
 
   "Scala3 support" should {
     "emit enumeration with invariants" >> {
+      import TranspilerExtraSpec.colorDecl
+
       "as entries" in {
-        emit(ListSet(TranspilerExtraSpec.colorDecl)) must beTypedEqualTo(
+        emit(Map(colorDecl.name -> ListSet(colorDecl))) must beTypedEqualTo(
           s"""const ${ns}ColorEntries = {
   Red: 'Red',
   Green: 'Green',
@@ -24,7 +26,7 @@ export const ${ns}Color = {
 } as const;
 
 class ${ns}ColorExtra {
-  public purple: ReadonlyArray<${ns}Color> = [ ${ns}Color.Red, ${ns}Color.Blue ];
+  public readonly purple: ReadonlyArray<${ns}Color> = [ ${ns}Color.Red, ${ns}Color.Blue ];
 }
 
 export ${ns}ColorInvariants = new ${ns}ColorExtra();
@@ -38,7 +40,7 @@ export function is${ns}Color(v: any): v is ${ns}Color {
 
       "as enum" in {
         emit(
-          ListSet(TranspilerExtraSpec.colorDecl),
+          Map(colorDecl.name -> ListSet(colorDecl)),
           declMapper = DeclarationMapper.enumerationAsEnum
         ) must beTypedEqualTo(s"""export enum ${ns}Color {
   Red = 'Red',
@@ -61,7 +63,7 @@ export function is${ns}Color(v: any): v is ${ns}Color {
 }
 
 class ${ns}ColorExtra {
-  public purple: ReadonlyArray<${ns}Color> = [ ${ns}Color.Red, ${ns}Color.Blue ];
+  public readonly purple: ReadonlyArray<${ns}Color> = [ ${ns}Color.Red, ${ns}Color.Blue ];
 }
 
 export ${ns}ColorInvariants = new ${ns}ColorExtra();

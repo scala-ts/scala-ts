@@ -22,32 +22,70 @@ final class Emitter( // TODO: Rename
   import settings.{ fieldMapper, indent => indent }
   import settings.lineSeparator.{ value => lineSeparator }
 
-  def emit(declarations: ListSet[Declaration]): Unit =
-    declarations.foreach {
-      case decl: InterfaceDeclaration =>
-        emitInterfaceDeclaration(decl)
+  import DeclarationMapper.Context
 
-      case decl: EnumDeclaration =>
-        emitEnumDeclaration(decl)
+  /**
+   * @param declarations The declarations grouped by (type) name
+   */
+  def emit(declarations: Map[String, ListSet[Declaration]]): Unit =
+    emit(declarations, Map.empty)
 
-      case decl: SingletonDeclaration =>
-        emitSingletonDeclaration(decl)
-
-      case decl: UnionDeclaration =>
-        emitUnionDeclaration(decl)
-
-      case decl: TaggedDeclaration =>
-        emitTaggedDeclaration(decl)
-
-      case decl: ValueMemberDeclaration =>
-        withOut(Declaration.Value, decl.name, requires(decl)) { o =>
-          emitValueMember(decl, o)
+  def emit(
+      declarations: Map[String, ListSet[Declaration]],
+      context: Context
+    ): Unit = declarations.foreach {
+    case (name, decls) =>
+      decls.headOption.foreach { first =>
+        withOut(
+          decl = first.kind,
+          others = decls.tail.map(_.kind),
+          name = name,
+          imports = decls.flatMap(requires)
+        ) { out =>
+          if (decls.tail.nonEmpty) {
+            emitCompositeDeclaration(
+              decl = CompositeDeclaration(name = name, members = decls),
+              context = context,
+              out
+            )
+          } else {
+            emitDeclaration(first, context, out)
+          }
         }
+      }
+  }
 
-      case decl: ValueBodyDeclaration =>
-        withOut(Declaration.Value, decl.name, requires(decl)) { o =>
-          o.print(s"/* Unexpected value body: ${decl.value.name} */")
-        }
+  private def emitDeclaration(
+      decl: Declaration,
+      context: Context,
+      out: PrintStream
+    ): Unit =
+    decl match {
+      case i: InterfaceDeclaration =>
+        emitInterfaceDeclaration(out)(i, context)
+
+      case e: EnumDeclaration =>
+        emitEnumDeclaration(out)(e, context)
+
+      case s: SingletonDeclaration =>
+        emitSingletonDeclaration(out)(s, context)
+
+      case u: UnionDeclaration =>
+        emitUnionDeclaration(out)(u, context)
+
+      case c: CompositeDeclaration =>
+        emitCompositeDeclaration(c, context, out)
+
+      case t: TaggedDeclaration =>
+        emitTaggedDeclaration(out)(t, context)
+
+      case vm: ValueMemberDeclaration =>
+        emitValueMember(vm, context, out)
+
+      case vb: ValueBodyDeclaration =>
+        out.print(
+          s"/* Unexpected value body: ${vb.value.name} */"
+        )
     }
 
   // ---
@@ -65,13 +103,14 @@ final class Emitter( // TODO: Rename
     settings
   )
 
-  private val declMapper: Function3[DeclarationMapper.Resolved, Declaration, PrintStream, Option[Unit]] =
+  private val declMapper: Function4[DeclarationMapper.Resolved, Declaration, Context, PrintStream, Option[Unit]] =
     declarationMapper(
       _: DeclarationMapper.Resolved,
       settings,
       resolvedTypeMapper,
       fieldMapper,
       _: Declaration,
+      _: Context,
       _: PrintStream
     )
 
@@ -81,8 +120,167 @@ final class Emitter( // TODO: Rename
     })
   }
 
-  private val emitUnionDeclaration: UnionDeclaration => Unit = {
-    val default: DeclarationMapper.Resolved = { (decl, o) =>
+  private def emitCompositeDeclaration(
+      decl: CompositeDeclaration,
+      context: Context,
+      out: PrintStream
+    ): Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, ctx, o) =>
+      decl match {
+        case CompositeDeclaration(_, ms) => {
+          val members: ListSet[Declaration] = {
+            if (ms.tail.nonEmpty) {
+              ms.filter {
+                case SingletonDeclaration(_, values, _) =>
+                  // Filter out empty companion object
+                  values.nonEmpty
+
+                case _ =>
+                  true
+              }
+            } else {
+              ms
+            }
+          }
+
+          members.headOption match {
+            case Some(member) if members.tail.isEmpty =>
+              emitDeclaration(member, ctx, out)
+
+            case Some(_) => {
+              val emitInterface = emitInterfaceDeclaration(o)
+              val emitEnum = emitEnumDeclaration(o)
+              val emitUnion = emitUnionDeclaration(o)
+              val emitTagged = emitTaggedDeclaration(o)
+              val emitSingleton = emitSingletonDeclaration(o)
+
+              val emittedTypes = Seq.newBuilder[String]
+
+              members.zipWithIndex.foreach {
+                case (member, i) =>
+                  if (i > 0) {
+                    o.println()
+                  }
+
+                  member match {
+                    case m: InterfaceDeclaration => {
+                      val iface = m.copy(name = s"I${m.name}")
+
+                      emitInterface(iface, ctx)
+
+                      emittedTypes += typeNaming(iface.reference)
+                    }
+
+                    case m: EnumDeclaration => {
+                      val enu = m.copy(name = s"${m.name}Enum")
+
+                      emitEnum(enu, ctx)
+
+                      emittedTypes += typeNaming(enu.reference)
+                    }
+
+                    case m: SingletonDeclaration => {
+                      val snme = s"${m.name}Singleton"
+                      val single = m.copy(name = snme)
+
+                      emitSingleton(
+                        single,
+                        ctx + ("noSingletonAlias" -> "true")
+                      )
+
+                      o.println(
+                        s"""
+export const ${m.name}Inhabitant = ${m.name}SingletonInhabitant${lineSeparator}"""
+                      )
+
+                      if (members.size == 1) {
+                        // Singleton is not a companion object
+                        emittedTypes += typeNaming(single.reference)
+                      }
+                    }
+
+                    case m: UnionDeclaration => {
+                      val union = m.copy(name = s"${m.name}Union")
+
+                      emitUnion(union, ctx)
+
+                      emittedTypes += typeNaming(union.reference)
+                    }
+
+                    case m: TaggedDeclaration => {
+                      val tagged = m.copy(name = s"${m.name}Tagged")
+
+                      emitTagged(tagged, ctx)
+
+                      emittedTypes += typeNaming(tagged.reference)
+                    }
+
+                    case decl: ValueMemberDeclaration =>
+                      emitValueMember(decl, ctx, o)
+
+                    case decl: CompositeDeclaration =>
+                      o.println(
+                        s"/* Unexpected nested composite ${decl.name} */"
+                      )
+
+                    case decl: ValueBodyDeclaration =>
+                      o.print(
+                        s"/* Unexpected value body: ${decl.value.name} */"
+                      )
+                  }
+              }
+
+              val tpeName = typeNaming(decl.reference)
+              val memberTypes = emittedTypes.result()
+
+              o.print(s"""
+export type ${tpeName} = ${memberTypes mkString " & "}${lineSeparator}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (
+""")
+
+              memberTypes.zipWithIndex.foreach {
+                case (t, i) =>
+                  if (i > 0) {
+                    o.print(s""" &&
+""")
+                  }
+
+                  o.print(
+                    s"${indent}${indent}is${t.headOption.map(_.toUpper).mkString}${t drop 1}(v)"
+                  )
+              }
+
+              o.print(s"""
+${indent})${lineSeparator}
+}""")
+            }
+
+            case None =>
+          }
+        }
+
+        case vm: ValueMemberDeclaration =>
+          emitValueMember(vm, ctx, o)
+
+        case vb: ValueBodyDeclaration =>
+          emitValueBody(vb, ctx, o)
+
+        case _ =>
+          emitDeclaration(decl, ctx, o)
+      }
+    }
+
+    declMapper(default, decl, context, out).getOrElse(
+      default(decl, context, out)
+    )
+  }
+
+  private def emitUnionDeclaration(
+      out: PrintStream
+    ): (UnionDeclaration, Context) => Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, context, o) =>
       decl match {
         case UnionDeclaration(name, fields, _, superInterface) => {
           val tpeName = typeNaming(decl.reference)
@@ -114,25 +312,27 @@ ${indent}return (""")
         }
 
         case decl: ValueMemberDeclaration =>
-          emitValueMember(decl, o)
+          emitValueMember(decl, context, o)
 
         case decl: ValueBodyDeclaration =>
-          emitValueBody(decl, o)
+          emitValueBody(decl, context, o)
 
         case _ =>
           o.print(s"/* Unsupported on Union: $decl */")
       }
     }
 
-    { decl =>
-      withOut(Declaration.Union, decl.name, requires(decl)) { o =>
-        declMapper(default, decl, o).getOrElse(default(decl, o))
-      }
+    { (decl, context) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
-  private def emitTaggedDeclaration: TaggedDeclaration => Unit = {
-    val default: DeclarationMapper.Resolved = { (decl, o) =>
+  private def emitTaggedDeclaration(
+      out: PrintStream
+    ): (TaggedDeclaration, Context) => Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, _, o) =>
       decl match {
         case TaggedDeclaration(_, field) => {
           val tpeName = typeNaming(decl.reference)
@@ -165,10 +365,10 @@ ${indent}return ${simpleCheck}${lineSeparator}
       }
     }
 
-    { decl =>
-      withOut(Declaration.Tagged, decl.name, requires(decl)) { o =>
-        declMapper(default, decl, o).getOrElse(default(decl, o))
-      }
+    { (decl, context) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
@@ -190,7 +390,11 @@ ${indent}return ${simpleCheck}${lineSeparator}
     )
   }
 
-  private val emitValueBody: (ValueBodyDeclaration, PrintStream) => Unit = {
+  private val emitValueBody: (
+      ValueBodyDeclaration,
+      Context,
+      PrintStream
+    ) => Unit = {
     val default: DeclarationMapper.Resolved = {
       val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
         resolvedTypeMapper(
@@ -201,8 +405,8 @@ ${indent}return ${simpleCheck}${lineSeparator}
         )
       }
 
-      { (decl, o) =>
-        val nestedEmit = emitValueBody(_: ValueBodyDeclaration, o)
+      { (decl, context, o) =>
+        val nestedEmit = emitValueBody(_: ValueBodyDeclaration, context, o)
 
         decl match {
           case vb @ ValueBodyDeclaration(value) => {
@@ -211,6 +415,20 @@ ${indent}return ${simpleCheck}${lineSeparator}
             value match {
               case LiteralValue(_, _, rawValue) =>
                 o.print(rawValue)
+
+              case SingletonValue(_, vtpe) => {
+                val nme = tpeMapper(vtpe)
+                val expr = {
+                  if (nme.startsWith("ns") && nme.contains('.')) {
+                    // Already qualified
+                    s"${nme}Inhabitant"
+                  } else {
+                    s"ns${nme}.${nme}Inhabitant"
+                  }
+                }
+
+                o.print(expr)
+              }
 
               case SelectValue(_, _, qual, term) => {
                 val qualTpeNme = tpeMapper(qual)
@@ -287,7 +505,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
                     case _                                  => false
                   }
                 ) {
-                  o.print("{ ")
+                  o.print("new Map([ ")
 
                   // All keys are literal string
                   entries.zipWithIndex.foreach {
@@ -296,12 +514,14 @@ ${indent}return ${simpleCheck}${lineSeparator}
                         o.print(", ")
                       }
 
+                      o.print('[')
                       nestedEmit(ValueBodyDeclaration(vb.member, key))
-                      o.print(": ")
+                      o.print(", ")
                       nestedEmit(ValueBodyDeclaration(vb.member, v))
+                      o.print(']')
                   }
 
-                  o.print(" }")
+                  o.print(" ])")
                 } else {
                   val bufNme = s"__buf${scala.math.abs(nme.hashCode)}"
                   val tpe = tpeMapper(d.typeRef)
@@ -314,15 +534,15 @@ ${indent}return ${simpleCheck}${lineSeparator}
                     }
                   }
 
-                  o.print(s"(() => { const ${bufNme}: ${bufTpe} = {}; ")
+                  o.print(s"(() => { const ${bufNme}: ${bufTpe} = new Map(); ")
 
                   entries.foreach {
                     case (key, v) =>
-                      o.print(s"${bufNme}[")
+                      o.print(s"${bufNme}.set(")
                       nestedEmit(ValueBodyDeclaration(vb.member, key))
-                      o.print("] = ")
+                      o.print(", ")
                       nestedEmit(ValueBodyDeclaration(vb.member, v))
-                      o.print("; ")
+                      o.print("); ")
                   }
 
                   o.print(s"return ${bufNme} })()")
@@ -337,12 +557,18 @@ ${indent}return ${simpleCheck}${lineSeparator}
       }
     }
 
-    { (decl, out) =>
-      declMapper(default, decl, out).getOrElse(default(decl, out))
+    { (decl, context, out) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
-  private val emitValueMember: (ValueMemberDeclaration, PrintStream) => Unit = {
+  private val emitValueMember: (
+      ValueMemberDeclaration,
+      Context,
+      PrintStream
+    ) => Unit = {
     val default: DeclarationMapper.Resolved = {
       val tm = { (owner: Declaration, name: String, tpe: TypeRef) =>
         resolvedTypeMapper(
@@ -353,7 +579,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
         )
       }
 
-      { (decl, o) =>
+      { (decl, context, o) =>
         decl match {
           case vd: ValueMemberDeclaration => {
             val tpeMapper = tm(vd.owner, decl.name, _: TypeRef)
@@ -363,40 +589,40 @@ ${indent}return ${simpleCheck}${lineSeparator}
             vd.value match {
               case l @ ListValue(_, _, tpe, _) => {
                 o.print(
-                  s"${indent}public $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, l), o)
+                emitValueBody(ValueBodyDeclaration(vd, l), context, o)
 
                 o.println(lineSeparator)
               }
 
               case l @ MergedListsValue(_, tpe, _) => {
                 o.print(
-                  s"${indent}public $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, l), o)
+                emitValueBody(ValueBodyDeclaration(vd, l), context, o)
 
                 o.println(lineSeparator)
               }
 
               case s @ SetValue(_, _, tpe, _) => {
                 o.print(
-                  s"${indent}public $nme: ReadonlySet<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ReadonlySet<${tpeMapper(tpe)}> = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, s), o)
+                emitValueBody(ValueBodyDeclaration(vd, s), context, o)
 
                 o.println(lineSeparator)
               }
 
               case l @ MergedSetsValue(_, tpe, _) => {
                 o.print(
-                  s"${indent}public $nme: ReadonlySet<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ReadonlySet<${tpeMapper(tpe)}> = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, l), o)
+                emitValueBody(ValueBodyDeclaration(vd, l), context, o)
 
                 o.println(lineSeparator)
               }
@@ -406,25 +632,43 @@ ${indent}return ${simpleCheck}${lineSeparator}
                   s"${indent}public readonly ${nme}: ${tpeMapper(d.typeRef)} = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, d), o)
+                emitValueBody(ValueBodyDeclaration(vd, d), context, o)
+
+                o.println(lineSeparator)
+              }
+
+              case s @ SingletonValue(name, ref) => {
+                val tpeName = tpeMapper(ref)
+                val tpeExpr = {
+                  if (tpeName.startsWith("ns") && tpeName.contains('.')) {
+                    // Already qualified
+                    s"${tpeName}Singleton"
+                  } else {
+                    s"ns${tpeName}.${tpeName}Singleton"
+                  }
+                }
+
+                o.print(s"${indent}public readonly ${name}: ${tpeExpr} = ")
+
+                emitValueBody(ValueBodyDeclaration(vd, s), context, o)
 
                 o.println(lineSeparator)
               }
 
               case v: SelectValue => {
-                o.print(s"${indent}public ${nme}: ${tpeMapper(v.reference)} = ")
+                o.print(s"${indent}public readonly ${nme}: ${tpeMapper(v.reference)} = ")
 
-                emitValueBody(ValueBodyDeclaration(vd, v), o)
+                emitValueBody(ValueBodyDeclaration(vd, v), context, o)
 
                 o.println(lineSeparator)
               }
 
               case v: LiteralValue => {
                 o.print(
-                  s"${indent}public ${nme}: ${tpeMapper(v.reference)} & ${v.rawValue} = "
+                  s"${indent}public readonly ${nme}: ${tpeMapper(v.reference)} & ${v.rawValue} = "
                 )
 
-                emitValueBody(ValueBodyDeclaration(vd, v), o)
+                emitValueBody(ValueBodyDeclaration(vd, v), context, o)
 
                 o.println(lineSeparator)
               }
@@ -437,13 +681,17 @@ ${indent}return ${simpleCheck}${lineSeparator}
       }
     }
 
-    { (decl, out) =>
-      declMapper(default, decl, out).getOrElse(default(decl, out))
+    { (decl, context, out) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
-  private val emitSingletonDeclaration: SingletonDeclaration => Unit = {
-    val default: DeclarationMapper.Resolved = { (decl, o) =>
+  private def emitSingletonDeclaration(
+      out: PrintStream
+    ): (SingletonDeclaration, Context) => Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, context, o) =>
       decl match {
         case sd @ SingletonDeclaration(_, values, superInterface) => {
           val tpeName = typeNaming(decl.reference)
@@ -459,7 +707,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
 
           if (values.nonEmpty) {
             values.toList.foreach { v =>
-              emitValueMember(ValueMemberDeclaration(sd, v), o)
+              emitValueMember(ValueMemberDeclaration(sd, v), context, o)
               o.println()
             }
           }
@@ -485,28 +733,37 @@ export const ${tpeName}Inhabitant: ${tpeName} = ${tpeName}.getInstance()${lineSe
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return (v instanceof ${tpeName}) && (v === ${tpeName}Inhabitant)${lineSeparator}
 }""")
+
+          if (!context.contains("noSingletonAlias")) {
+            // For compatiblity with Composite integration
+
+            out.println(s"""
+export type ${tpeName}Singleton = ${tpeName}${lineSeparator}""")
+          }
         }
 
         case decl: ValueMemberDeclaration =>
-          emitValueMember(decl, o)
+          emitValueMember(decl, context, o)
 
         case decl: ValueBodyDeclaration =>
-          emitValueBody(decl, o)
+          emitValueBody(decl, context, o)
 
         case _ =>
           o.print(s"/* Unsupported on Singleton: $decl */")
       }
     }
 
-    { decl =>
-      withOut(Declaration.Singleton, decl.name, requires(decl)) { o =>
-        declMapper(default, decl, o).getOrElse(default(decl, o))
-      }
+    { (decl, context) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
-  private def emitInterfaceDeclaration: InterfaceDeclaration => Unit = {
-    val default: DeclarationMapper.Resolved = { (decl, o) =>
+  private def emitInterfaceDeclaration(
+      out: PrintStream
+    ): (InterfaceDeclaration, Context) => Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, _, o) =>
       decl match {
         case InterfaceDeclaration(n, fields, typeParams, superInterface, _) => {
           val tpeName = typeNaming(decl.reference)
@@ -547,18 +804,18 @@ ${indent}return (""")
       }
     }
 
-    { decl =>
-      withOut(Declaration.Interface, decl.name, requires(decl)) { o =>
-        declMapper(default, decl, o).getOrElse(default(decl, o))
-      }
+    { (decl, context) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
-  private val emitEnumDeclaration: EnumDeclaration => Unit = {
-    val default: DeclarationMapper.Resolved = { (decl, o) =>
+  private def emitEnumDeclaration(out: PrintStream): (EnumDeclaration, Context) => Unit = {
+    val default: DeclarationMapper.Resolved = { (decl, context, o) =>
       decl match {
         case decl: ValueMemberDeclaration =>
-          emitValueMember(decl, o)
+          emitValueMember(decl, context, o)
 
         case EnumDeclaration(_, possibilities, values) => {
           val tpeName = typeNaming(decl.reference)
@@ -593,7 +850,7 @@ ${indent}values: Object.keys(${tpeName}Entries)
                   o.println()
                 }
 
-                emitValueMember(ValueMemberDeclaration(sd, v), o)
+                emitValueMember(ValueMemberDeclaration(sd, v), context, o)
             }
 
             o.println(s"""}
@@ -612,10 +869,10 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
       }
     }
 
-    { decl =>
-      withOut(Declaration.Enum, decl.name, requires(decl)) { o =>
-        declMapper(default, decl, o).getOrElse(default(decl, o))
-      }
+    { (decl, context) =>
+      declMapper(default, decl, context, out).getOrElse(
+        default(decl, context, out)
+      )
     }
   }
 
@@ -648,11 +905,12 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
 
   private def withOut[T](
       decl: Declaration.Kind,
+      others: ListSet[Declaration.Kind],
       name: String,
       imports: ListSet[TypeRef]
     )(f: PrintStream => T
     ): T = {
-    lazy val print = out(settings, decl, name, imports)
+    lazy val print = out(settings, decl, others, name, imports)
 
     try {
       val res = f(print)
@@ -672,12 +930,13 @@ ${indent}return ${tpeName}.values.includes(v)${lineSeparator}
 
 private[scalats] object Emitter {
 
-  type DeclarationMapper = Function6[
+  type DeclarationMapper = Function7[
     DeclarationMapper.Resolved,
     Settings,
     TypeMapper.Resolved,
     FieldMapper,
     Declaration,
+    DeclarationMapper.Context,
     PrintStream,
     Option[Unit]
   ]
@@ -695,7 +954,9 @@ private[scalats] object Emitter {
 
   /* See `TypeScriptPrinter` */
   type Printer =
-    Function4[Settings, Declaration.Kind, String, ListSet[TypeRef], PrintStream]
+    Function5[Settings, Declaration.Kind, ListSet[
+      Declaration.Kind
+    ], String, ListSet[TypeRef], PrintStream]
 
   // ---
 
@@ -803,14 +1064,9 @@ private[scalats] object Emitter {
     case TupleRef(params) =>
       params.map(tr).mkString("[", ", ", "]")
 
-    case tpe: TaggedRef =>
+    case tpe @ (TaggedRef(_, _) | CustomTypeRef(_, Nil) |
+        SingletonTypeRef(_, _)) =>
       typeNaming(tpe)
-
-    case custom @ CustomTypeRef(_, Nil) =>
-      typeNaming(custom)
-
-    case singleton @ SingletonTypeRef(_, _) =>
-      typeNaming(singleton)
 
     case custom @ CustomTypeRef(_, params) =>
       s"${typeNaming(custom)}<${params.map(tr).mkString(", ")}>"
@@ -833,7 +1089,7 @@ private[scalats] object Emitter {
       possibilities.map(tr).mkString("(", " | ", ")")
 
     case MapType(keyType, valueType) =>
-      s"Readonly<Partial<Record<${tr(keyType)}, ${tr(valueType)}>>>"
+      s"Readonly<Map<${tr(keyType)}, ${tr(valueType)}>>"
 
   }
 }

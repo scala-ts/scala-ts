@@ -68,7 +68,7 @@ object Compiler extends AutoPlugin {
           "-Wextra-implicit",
           "-Wmacros:after",
           "-Wunused",
-          "-Wconf:msg=.*JavaConverters.*:s"
+          "-Wconf:msg=.*(JavaConverters|higherKinds).*:s"
         )
       } else {
         Seq(

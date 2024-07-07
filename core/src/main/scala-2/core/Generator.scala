@@ -37,7 +37,7 @@ object Generator {
       universe: U
     )(settings: Settings,
       types: List[(universe.Type, universe.Tree)],
-      symtab: Map[String, (universe.Type, universe.Tree)],
+      symtab: Map[String, ListSet[(universe.Type, universe.Tree)]],
       logger: Logger,
       importResolver: ImportResolver,
       declMapper: DeclarationMapper,
@@ -50,14 +50,11 @@ object Generator {
       cu: CompileUniverse[universe.type]
     ): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser[universe.type](universe, compiled, logger)
-    val transpiler = new Transpiler(settings)
-
+    val transpiler = new Transpiler(settings, logger)
     val parseResult =
       scalaParser.parseTypes(types, symtab, examined, acceptsType)
 
     import parseResult.{ parsed => scalaTypes }
-
-    // println(s"scalaTypes = ${scalaTypes.map(_.identifier)}")
 
     val typeScriptTypes = transpiler(scalaTypes)
     val emiter = new Emitter(

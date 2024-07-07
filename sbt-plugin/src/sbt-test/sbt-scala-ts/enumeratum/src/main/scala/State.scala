@@ -9,4 +9,8 @@ object State extends Enum[State] {
 
   case object Alabama extends State("AL")
   case object Alaska extends State("AK")
+
+  val cities = Map[State, Set[String]](
+    Alaska -> Set("Juneau", "Anchorage"),
+    Alabama -> Set("Birmingham"))
 }

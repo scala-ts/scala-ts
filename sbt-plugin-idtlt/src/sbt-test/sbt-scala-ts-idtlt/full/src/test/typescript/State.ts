@@ -76,7 +76,7 @@ describe('State', () => {
 
   it('should expose the known literal values', () => {
     const knownValues: ReadonlySet<nsState.State> =
-      nsState.idtltStateKnownValues
+      nsState.idtltStateUnionKnownValues
 
     expect(knownValues).toEqual(new Set([ 'AL', 'AK' ]))
 

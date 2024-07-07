@@ -27,7 +27,7 @@ val fullCrossScalaVersions = Def.setting {
     "2.11.12",
     scalaVersion.value,
     scala213Version,
-    "3.4.1"
+    "3.4.2"
   )
 }
 

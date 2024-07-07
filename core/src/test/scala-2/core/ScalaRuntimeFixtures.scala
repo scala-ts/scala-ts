@@ -15,6 +15,9 @@ object ScalaRuntimeFixtures {
     valueClassNs = List("ScalaRuntimeFixtures")
   )
 
+  def objectClass(nme: String): String =
+    s"${ScalaRuntimeFixtures.getClass.getName stripSuffix "$"}.$nme"
+
   private implicit def cl: ClassLoader = getClass.getClassLoader
 
   private[core] val scalaParser = new ScalaParser[runtimeUniverse.type](
@@ -25,8 +28,8 @@ object ScalaRuntimeFixtures {
 
   def parseTypes(
       types: List[(Type, Tree)],
-      symtab: Map[String, (Type, Tree)] = Map.empty
-    ): List[TypeDef] = scalaParser
+      symtab: Map[String, ListSet[(Type, Tree)]] = Map.empty
+    ): List[(String, ListSet[TypeDef])] = scalaParser
     .parseTypes(
       types,
       symtab,
@@ -35,6 +38,13 @@ object ScalaRuntimeFixtures {
     )
     .parsed
     .toList
+
+  @inline def parseType(
+      tpe: (Type, Tree),
+      symtab: ScalaParser.StringMap[(Type, Tree)],
+      examined: ListSet[ScalaParser.TypeFullId],
+      acceptsType: scalaParser.universe.Symbol => Boolean
+    ) = scalaParser.parseType(tpe, symtab, examined, acceptsType)
 
   def fullName(sym: runtimeUniverse.Symbol): String = sym.fullName
 
@@ -217,6 +227,8 @@ object ScalaRuntimeFixtures {
     def concatList = List("foo") ++ list
 
     val mergedSet = set ++ Set(3)
+
+    object Nested1
   }
 
   val TestObject2Type = typeOf[TestObject2.type]
@@ -241,6 +253,8 @@ object ScalaRuntimeFixtures {
       def concatList = List("foo") ++ list
 
       val mergedSet = set ++ Set(3)
+
+      object Nested1
     }""").children.drop(1).head
 
   sealed trait Family {

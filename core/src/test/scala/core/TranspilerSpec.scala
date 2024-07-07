@@ -14,94 +14,130 @@ final class TranspilerSpec
   "Transpiler".title
 
   import TranspilerResults._
+  import ScalaModel.QualifiedIdentifier
 
   "Transpiler" should {
     "transpile a case class with one primitive member" in {
-      val result = defaultTranspiler(ListSet(caseClass1))
+      val result = defaultTranspiler(
+        Map(caseClass1.identifier.name -> ListSet(caseClass1))
+      )
 
       result must have size 1 and {
-        result must contain(interface1)
+        result must contain(caseClass1.identifier.name -> ListSet(interface1))
       }
     }
 
     "transpile a generic class with one member" in {
-      val result = defaultTranspiler(ListSet(caseClass2))
+      val result = defaultTranspiler(
+        Map(caseClass2.identifier.name -> ListSet(caseClass2))
+      )
 
       result must have size 1 and {
-        result must contain(interface2)
+        result must contain(caseClass2.identifier.name -> ListSet(interface2))
       }
     }
 
     "transpile a generic case class with one member list of type parameter" in {
-      val result = defaultTranspiler(ListSet(caseClass3))
+      val result = defaultTranspiler(
+        Map(caseClass3.identifier.name -> ListSet(caseClass3))
+      )
 
       result must have size 1 and {
-        result must contain(interface3)
+        result must contain(caseClass3.identifier.name -> ListSet(interface3))
       }
     }
 
     "transpile a generic case class with one optional member" in {
-      val result = defaultTranspiler(ListSet(caseClass5))
+      val result = defaultTranspiler(
+        Map(caseClass5.identifier.name -> ListSet(caseClass5))
+      )
 
       result must have size 1 and {
-        result must contain(interface5)
+        result must contain(caseClass5.identifier.name -> ListSet(interface5))
       }
     }
 
     "transpile disjunction types" in {
-      val result = defaultTranspiler(ListSet(caseClass7))
+      val result = defaultTranspiler(
+        Map(caseClass7.identifier.name -> ListSet(caseClass7))
+      )
 
       result must have size 1 and {
-        result must contain(interface7)
+        result must contain(caseClass7.identifier.name -> ListSet(interface7))
       }
     }
 
     "transpile a tagged type" >> {
       "as tagged declaration" in {
-        val result = defaultTranspiler(ListSet(tagged1))
+        val result =
+          defaultTranspiler(Map(tagged1.identifier.name -> ListSet(tagged1)))
 
         result must have size 1 and {
-          result must contain(taggedDeclaration1)
+          result must contain(
+            tagged1.identifier.name -> ListSet(taggedDeclaration1)
+          )
         }
       }
 
       "interface member" in {
-        val result = defaultTranspiler(ListSet(caseClass8))
+        val result = defaultTranspiler(
+          Map(caseClass8.identifier.name -> ListSet(caseClass8))
+        )
 
         result must have size 1 and {
-          result must contain(interface8)
+          result must contain(caseClass8.identifier.name -> ListSet(interface8))
         }
       }
     }
 
     "transpile Tuple types" in {
-      val result = defaultTranspiler(ListSet(caseClass10))
+      val result = defaultTranspiler(
+        Map(caseClass10.identifier.name -> ListSet(caseClass10))
+      )
 
       result must have size 1 and {
-        result must contain(interface10)
+        result must contain(caseClass10.identifier.name -> ListSet(interface10))
       }
     }
 
     "transpile enumeration" in {
-      val result = defaultTranspiler(ListSet(testEnumeration))
+      val result = defaultTranspiler(
+        Map(testEnumeration.identifier.name -> ListSet(testEnumeration))
+      )
 
       result must have size 1 and {
-        result must contain(enum1)
+        result must contain(testEnumeration.identifier.name -> ListSet(enum1))
       }
     }
 
     "transpile case object" in {
-      val result = defaultTranspiler(ListSet(caseObject1))
+      val result = defaultTranspiler(
+        Map(caseObject1.identifier.name -> ListSet(caseObject1))
+      )
 
       result must have size 1 and {
-        result must contain(singleton1)
+        result must contain(caseObject1.identifier.name -> ListSet(singleton1))
       }
     }
 
     "transpile object" >> {
       "with complex invariants" in {
         val result = defaultTranspiler(
-          ListSet(caseObject2),
+          Map(
+            caseObject2.identifier.name -> ListSet(caseObject2),
+            "Nested1" -> ListSet(
+              ScalaModel.CaseObject(
+                ScalaModel.QualifiedIdentifier("Nested1", Nil),
+                ListSet(
+                  ScalaModel.LiteralInvariant(
+                    "name",
+                    ScalaModel.StringRef,
+                    "\"Foo \\\"bar\\\"\""
+                  )
+                )
+              )
+            )
+          ),
           Some(
             InterfaceDeclaration(
               "SupI",
@@ -113,8 +149,12 @@ final class TranspilerSpec
           )
         )
 
-        result must have size 1 and {
-          result must contain(singleton2)
+        result must have size 2 and {
+          result must contain(
+            caseObject2.identifier.name -> ListSet(singleton2)
+          )
+        } and {
+          result.exists(_._1 == "Nested1") must beTrue
         }
       }
 
@@ -122,12 +162,12 @@ final class TranspilerSpec
         import ScalaRuntimeFixtures.results.{ valueClassNs => vcns }
 
         val taggedRef = ScalaModel.TaggedRef(
-          identifier = ScalaModel.QualifiedIdentifier("AnyValChild", vcns),
+          identifier = QualifiedIdentifier("AnyValChild", vcns),
           tagged = ScalaModel.StringRef
         )
 
         val obj = ScalaModel.CaseObject(
-          ScalaModel.QualifiedIdentifier("TestObject3", vcns),
+          QualifiedIdentifier("TestObject3", vcns),
           ListSet(
             ScalaModel.LiteralInvariant("name", taggedRef, "\"Foo\""),
             ScalaModel.DictionaryInvariant(
@@ -159,10 +199,10 @@ final class TranspilerSpec
           )
         )
 
-        val result = defaultTranspiler(ListSet(obj))
+        val result = defaultTranspiler(Map(obj.identifier.name -> ListSet(obj)))
 
         result must have size 1 and {
-          result must contain(singleton3)
+          result must contain(obj.identifier.name -> ListSet(singleton3))
         }
       }
 
@@ -195,21 +235,132 @@ final class TranspilerSpec
           )
         )
 
-        val result = defaultTranspiler(ListSet(obj))
+        val result = defaultTranspiler(Map(obj.identifier.name -> ListSet(obj)))
 
         result must have size 1 and {
-          result must contain(singleton4)
+          result must contain(obj.identifier.name -> ListSet(singleton4))
+        }
+      }
+
+      "with reference to another empty object" >> {
+        val referencedId = QualifiedIdentifier("Referenced", Nil)
+        val referencing = ScalaModel.CaseObject(
+          QualifiedIdentifier("Referencing", Nil),
+          ListSet(
+            ScalaModel
+              .LiteralInvariant("name", ScalaModel.StringRef, "\"Foo\""),
+            ScalaModel.ObjectInvariant(
+              "foo",
+              ScalaModel.CaseObjectRef(referencedId)
+            )
+          )
+        )
+
+        def spec(tps: Map[String, ListSet[ScalaModel.TypeDef]], sz: Int) = {
+          val result = defaultTranspiler(tps)
+
+          result must have size sz and {
+            result must contain(
+              referencing.identifier.name -> ListSet(
+                SingletonDeclaration(
+                  "Referencing",
+                  ListSet(LiteralValue("name", StringRef, "\"Foo\"") /* SingletonValue not transpile as CaseObjectRef do not resolve */ ),
+                  None
+                )
+              )
+            )
+          }
+        }
+
+        "skip unresolved object invariant" in {
+          spec(
+            Map(
+              referencing.identifier.name -> ListSet(referencing),
+              referencedId.name -> ListSet.empty[ScalaModel.TypeDef]
+            ),
+            sz = 1
+          )
+        }
+
+        "skip object invariant resolved to not singleton type" in {
+          spec(
+            Map(
+              referencing.identifier.name -> ListSet(referencing),
+              referencedId.name -> ListSet(
+                ScalaModel.CaseClass(
+                  identifier = referencedId,
+                  fields = ListSet.empty,
+                  values = ListSet.empty,
+                  typeArgs = List.empty
+                )
+              )
+            ),
+            sz = 2
+          )
+        }
+
+        "skip object invariant resolved to empty singleton" in {
+          spec(
+            Map(
+              referencing.identifier.name -> ListSet(referencing),
+              referencedId.name -> ListSet(
+                ScalaModel.CaseObject(referencedId, ListSet.empty),
+                ScalaModel.CaseClass(
+                  identifier = referencedId,
+                  fields = ListSet.empty,
+                  values = ListSet.empty,
+                  typeArgs = List.empty
+                )
+              )
+            ),
+            sz = 2
+          )
+        }
+
+        "not skip object invariant resolved to empty singleton" in {
+          // When is the only type for the name
+
+          val result = defaultTranspiler(
+            Map(
+              referencing.identifier.name -> ListSet(referencing),
+              referencedId.name -> ListSet(
+                ScalaModel.CaseObject(referencedId, ListSet.empty)
+              )
+            )
+          )
+
+          result must have size 2 and {
+            result must contain(
+              referencing.identifier.name -> ListSet(
+                SingletonDeclaration(
+                  "Referencing",
+                  ListSet(
+                    LiteralValue("name", StringRef, "\"Foo\""),
+                    SingletonValue(
+                      "foo",
+                      SingletonTypeRef(referencedId.name, ListSet.empty)
+                    )
+                  ),
+                  None
+                )
+              )
+            )
+          }
         }
       }
     }
 
     "transpile sealed trait as union" in {
-      val result = defaultTranspiler(ListSet(sealedFamily1))
+      val result = defaultTranspiler(
+        Map(sealedFamily1.identifier.name -> ListSet(sealedFamily1))
+      )
 
       result must have size 4 and {
-        result must contain(union1)
+        result must contain(sealedFamily1.identifier.name -> ListSet(union1))
       } and {
-        result must contain(unionMember2Singleton)
+        result must contain(
+          unionMember2Singleton.name -> ListSet(unionMember2Singleton)
+        )
       } and {
 
         val member1Interface = InterfaceDeclaration(
@@ -220,13 +371,15 @@ final class TranspilerSpec
           false
         )
 
-        result must contain(member1Interface)
+        result must contain(member1Interface.name -> ListSet(member1Interface))
       } and {
         result must contain(
-          SingletonDeclaration(
-            s"${ns}FamilyMember3",
-            ListSet(LiteralValue("foo", StringRef, "\"lorem\"")),
-            Some(unionIface)
+          s"${ns}FamilyMember3" -> ListSet(
+            SingletonDeclaration(
+              s"${ns}FamilyMember3",
+              ListSet(LiteralValue("foo", StringRef, "\"lorem\"")),
+              Some(unionIface)
+            )
           )
         )
       }
@@ -235,17 +388,22 @@ final class TranspilerSpec
 }
 
 object TranspilerResults {
-  private val defaultt = new Transpiler(Settings())
+
+  private val defaultt = new Transpiler(
+    Settings(),
+    Logger(org.slf4j.LoggerFactory getLogger getClass)
+  )
 
   def defaultTranspiler(
-      in: ListSet[ScalaModel.TypeDef]
-    ): List[Declaration] =
+      in: Map[String, ListSet[ScalaModel.TypeDef]]
+    ): List[(String, ListSet[Declaration])] =
     defaultt.apply(in).toList
 
   def defaultTranspiler(
-      scalaTypes: ListSet[ScalaModel.TypeDef],
+      scalaTypes: Map[String, ListSet[ScalaModel.TypeDef]],
       superInterface: Option[InterfaceDeclaration]
-    ): List[Declaration] = defaultt(scalaTypes, superInterface).toList
+    ): List[(String, ListSet[Declaration])] =
+    defaultt(scalaTypes, superInterface).toList
 
   val interface1 = InterfaceDeclaration(
     s"${ns}TestClass1",
@@ -500,6 +658,13 @@ object TranspilerResults {
             valueTypeRef = NumberRef.int,
             elements = Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))
           )
+        )
+      ),
+      SingletonValue(
+        name = "Nested1",
+        typeRef = SingletonTypeRef(
+          name = s"${ns}TestObject2Nested1",
+          values = ListSet.empty
         )
       )
     ),

@@ -1,6 +1,6 @@
 package io.github.scalats.core
 
-import io.github.scalats.{ scala => ScalaModel }
+import io.github.scalats.{ scala => ScalaModel, UtilCompat }
 import io.github.scalats.ast._
 
 import Internals.ListSet
@@ -8,54 +8,158 @@ import Internals.ListSet
 /**
  * Created by Milosz on 09.06.2016.
  */
-final class Transpiler(config: Settings) {
+final class Transpiler(config: Settings, logger: Logger) {
   // TODO: (low priority) Remove the transpiler phase?
 
   @inline def apply(
-      scalaTypes: ListSet[ScalaModel.TypeDef]
-    ): ListSet[Declaration] = apply(scalaTypes, superInterface = None)
+      scalaTypes: Map[String, ListSet[ScalaModel.TypeDef]]
+    ): Map[String, ListSet[Declaration]] =
+    apply(scalaTypes, superInterface = None)
 
   def apply(
-      scalaTypes: ListSet[ScalaModel.TypeDef],
+      scalaTypes: Map[String, ListSet[ScalaModel.TypeDef]],
       superInterface: Option[InterfaceDeclaration]
-    ): ListSet[Declaration] =
-    scalaTypes.flatMap {
-      case scalaClass: ScalaModel.CaseClass =>
-        ListSet[Declaration](transpileInterface(scalaClass, superInterface))
+    ): Map[String, ListSet[Declaration]] = scalaTypes.headOption match {
+    case Some((name, tps)) if tps.nonEmpty =>
+      transpile(
+        name,
+        superInterface,
+        tps,
+        UtilCompat.mapValues(scalaTypes.tail)(superInterface -> _).toMap,
+        ListSet(),
+        Map.empty
+      )
 
-      case valueClass: ScalaModel.ValueClass =>
-        ListSet[Declaration](transpileValueClass(valueClass))
+    case _ =>
+      Map.empty
+  }
 
-      case ScalaModel.EnumerationDef(id, possibilities, vs) => {
-        val values = vs.map(transpileTypeInvariant)
+  private def transpile(
+      name: String,
+      superInterface: Option[InterfaceDeclaration],
+      tps: ListSet[ScalaModel.TypeDef],
+      scalaTypes: Map[
+        String,
+        (Option[InterfaceDeclaration], ListSet[ScalaModel.TypeDef])
+      ],
+      decls: ListSet[Declaration],
+      out: Map[String, ListSet[Declaration]]
+    ): Map[String, ListSet[Declaration]] = tps.headOption match {
+    case Some(scalaClass: ScalaModel.CaseClass) =>
+      transpile(
+        name,
+        superInterface,
+        tps.tail,
+        scalaTypes,
+        decls + transpileInterface(scalaClass, superInterface),
+        out
+      )
 
-        ListSet[Declaration](
-          EnumDeclaration(idToString(id), possibilities, values)
+    case Some(valueClass: ScalaModel.ValueClass) =>
+      transpile(
+        name,
+        superInterface,
+        tps.tail,
+        scalaTypes,
+        decls + transpileValueClass(valueClass),
+        out
+      )
+
+    case Some(ScalaModel.EnumerationDef(id, possibilities, vs)) => {
+      val values = vs.map(transpileTypeInvariant)
+
+      transpile(
+        name,
+        superInterface,
+        tps.tail,
+        scalaTypes,
+        decls + EnumDeclaration(idToString(id), possibilities, values),
+        out
+      )
+    }
+
+    case Some(ScalaModel.CaseObject(id, members)) => {
+      val values = members.filter {
+        case ScalaModel.ObjectInvariant(
+              _,
+              ScalaModel.CaseObjectRef(oid)
+            ) =>
+          scalaTypes.get(oid.name).exists {
+            case (_, rtps) =>
+              rtps.exists {
+                case ScalaModel.CaseObject(_, vs) =>
+                  // Not empty or a companion only object
+                  vs.nonEmpty || rtps.tail.isEmpty
+
+                case _ => false
+              }
+          }
+
+        case _ =>
+          true
+      }.map(transpileTypeInvariant)
+
+      transpile(
+        name,
+        superInterface,
+        tps.tail,
+        scalaTypes,
+        decls + SingletonDeclaration(idToString(id), values, superInterface),
+        out
+      )
+    }
+
+    case Some(ScalaModel.SealedUnion(id, fields, possibilities)) => {
+      // TODO: Make sure scala type for referenced as possibilities there are not transpiled before, otherwise, the superInterface won't be properly set for them
+
+      val ifaceFields = fields.map { scalaMember =>
+        Member(
+          scalaMember.name,
+          transpileTypeRef(scalaMember.typeRef, false)
         )
       }
 
-      case ScalaModel.CaseObject(id, members) => {
-        val values = members.map(transpileTypeInvariant)
+      val unionRef = InterfaceDeclaration(
+        idToString(id),
+        ifaceFields,
+        List.empty[String],
+        superInterface,
+        union = true
+      )
 
-        ListSet[Declaration](
-          SingletonDeclaration(idToString(id), values, superInterface)
-        )
-      }
+      val updTypes = possibilities
+        .filterNot(_.identifier.name == name)
+        .foldLeft(scalaTypes) { (acc, p) =>
+          val pn = idToString(p.identifier)
 
-      case ScalaModel.SealedUnion(id, fields, possibilities) => {
-        val ifaceFields = fields.map { scalaMember =>
-          Member(scalaMember.name, transpileTypeRef(scalaMember.typeRef, false))
+          if (acc contains pn) {
+            acc.transform {
+              case (`pn`, ((s @ Some(`unionRef`)), ts)) =>
+                s -> (ts + p)
+
+              case (`pn`, (None, ts)) =>
+                Some(unionRef) -> (ts + p)
+
+              case (`pn`, ((s @ Some(_)), ts)) => {
+                logger.warning(s"Unexpected super interface: $s != $unionRef")
+
+                s -> ts
+              }
+
+              case (_, (s, ts)) =>
+                s -> ts
+            }
+          } else {
+            acc + (pn -> (Some(unionRef) -> ListSet(p)))
+          }
         }
 
-        val unionRef = InterfaceDeclaration(
-          idToString(id),
-          ifaceFields,
-          List.empty[String],
-          superInterface,
-          union = true
-        )
-
-        apply(possibilities, Some(unionRef)) + UnionDeclaration(
+      transpile(
+        name,
+        superInterface,
+        tps.tail,
+        updTypes,
+        decls + UnionDeclaration(
           idToString(id),
           ifaceFields,
           possibilities.map {
@@ -66,15 +170,46 @@ final class Transpiler(config: Settings) {
               )
 
             case ScalaModel.CaseClass(pid, _, _, tpeArgs) =>
-              CustomTypeRef(idToString(pid), tpeArgs.map { SimpleTypeRef(_) })
+              CustomTypeRef(
+                idToString(pid),
+                tpeArgs.map { SimpleTypeRef(_) }
+              )
 
             case m =>
               CustomTypeRef(idToString(m.identifier), List.empty)
           },
           superInterface
-        )
+        ),
+        out
+      )
+    }
+
+    case None => {
+      val newOut = out.get(name) match {
+        case Some(ds) =>
+          out.updated(name, ds ++ decls)
+
+        case None =>
+          out + (name -> decls)
+      }
+
+      scalaTypes.headOption match {
+        case Some((newName, (newSuper, newTps))) if newTps.nonEmpty => {
+          transpile(
+            newName,
+            newSuper,
+            newTps,
+            scalaTypes.tail,
+            ListSet(),
+            newOut
+          )
+        }
+
+        case _ =>
+          newOut
       }
     }
+  }
 
   private def transpileSimpleInvariant(
       invariant: ScalaModel.TypeInvariant
@@ -141,6 +276,9 @@ final class Transpiler(config: Settings) {
         valueTypeRef = transpileTypeRef(valueTpe, false),
         children = children.map(transpileTypeInvariant)
       )
+
+    case ScalaModel.ObjectInvariant(name, objTpe) =>
+      SingletonValue(name = name, typeRef = transpileTypeRef(objTpe, false))
 
     case _ =>
       transpileSimpleInvariant(invariant)

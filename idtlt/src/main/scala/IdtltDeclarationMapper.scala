@@ -20,6 +20,7 @@ final class IdtltDeclarationMapper extends DeclarationMapper {
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
       declaration: Declaration,
+      context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit] = {
     import settings.{ lineSeparator => lineSep, indent }
@@ -43,9 +44,10 @@ final class IdtltDeclarationMapper extends DeclarationMapper {
     def valueRightHand(owner: SingletonDeclaration, v: Value): Unit = {
       val vd = ValueBodyDeclaration(ValueMemberDeclaration(owner, v), v)
 
-      apply(parent, settings, typeMapper, fieldMapper, vd, out).getOrElse(
-        parent(vd, out)
-      )
+      apply(parent, settings, typeMapper, fieldMapper, vd, context, out)
+        .getOrElse(
+          parent(vd, context, out)
+        )
     }
 
     def deriving = s"""// Deriving TypeScript type from ${tpeName} validator
@@ -112,6 +114,141 @@ export function is${tpeName}(v: any): boolean {
 ${indent}return v && false${lineSep}
 }""")
 
+        }
+
+      case CompositeDeclaration(name, members) =>
+        Some {
+          val ms = members.filter {
+            case SingletonDeclaration(_, values, _) =>
+              values.nonEmpty
+
+            case _ => true
+          }
+
+          if (ms.tail.isEmpty) {
+            // Excluding empty singleton, only a single type
+            ms.headOption.foreach(d => parent(d, context, out))
+          } else {
+            val ps = members.toList.sortBy(_.name).flatMap { m =>
+              val res = m match {
+                case member: InterfaceDeclaration => {
+                  val iface = member.copy(name = s"I${member.name}")
+
+                  parent(iface, context, out)
+
+                  Some(iface)
+                }
+
+                case member: SingletonDeclaration => {
+                  val single = member.copy(name = s"${member.name}Singleton")
+
+                  parent(single, context + ("noSingletonAlias" -> "true"), out)
+
+                  out.println(
+                    s"""
+export const ${m.name}Inhabitant = ${m.name}SingletonInhabitant${lineSep}"""
+                  )
+
+                  if (members.size == 1) {
+                    // Singleton is not a companion object
+                    Some(single)
+                  } else {
+                    None
+                  }
+                }
+
+                case member: EnumDeclaration => {
+                  val enu = member.copy(name = s"${member.name}Enum")
+
+                  parent(enu, context, out)
+
+                  Some(enu)
+                }
+
+                case member: UnionDeclaration => {
+                  val union = member.copy(name = s"${member.name}Union")
+
+                  parent(
+                    union,
+                    context + ("idtltUnionAliasing" -> tpeName),
+                    out
+                  )
+
+                  Some(union)
+                }
+
+                case member: TaggedDeclaration => {
+                  val tagged = member.copy(name = s"${member.name}Tagged")
+
+                  parent(tagged, context, out)
+
+                  Some(tagged)
+                }
+
+                case member => {
+                  parent(member, context, out)
+
+                  Option.empty[Declaration]
+                }
+              }
+
+              out.println()
+
+              res
+            }
+
+            out.print(s"""
+// Validator for CompositeDeclaration ${name}
+export const idtlt${tpeName} = """)
+
+            ps.headOption.foreach { pt =>
+              if (ps.tail.isEmpty) {
+                // With singleton excluded, only a single type
+
+                val n = typeNaming(pt.reference)
+
+                out.print(s"""idtlt${n}${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return is${n}(v)${lineSep}
+}""")
+              } else {
+                out.println(s"""idtlt.intersection(""")
+
+                val pst = ps.map(d => typeNaming(d.reference))
+
+                out.print(pst.map { n =>
+                  s"${indent}idtltDiscriminated${n}"
+                } mkString ",\n")
+
+                out.println(s""")${lineSep}
+
+export function is${tpeName}(v: any): v is ${tpeName} {
+${indent}return (""")
+
+                out.print(
+                  pst.map(n => s"${indent}${indent}is${n}(v)") mkString " &&\n"
+                )
+
+                out.print(s"""
+${indent})${lineSep}
+}""")
+              }
+            }
+
+            out.println(s"""
+
+$deriving
+$discrimitedDecl
+
+// Workaround for local type references in the same module
+type private${tpeName} = ${tpeName}$lineSep
+
+namespace ns${tpeName} {
+${indent}export type $tpeName = private${tpeName}$lineSep
+}""")
+
+          }
         }
 
       case UnionDeclaration(_, fields, possibilities, None) =>
@@ -184,6 +321,17 @@ export const ${tpeName}Values = {
 
 export type ${tpeName}ValuesKey = keyof typeof ${tpeName}Values${lineSep}""")
 
+          val aliasing = context.get("idtltUnionAliasing")
+
+          aliasing.foreach { base =>
+            out.println(s"""
+// Aliases for the Union utilities
+export const ${base}Values = ${tpeName}Values${lineSep}
+
+export type ${base}ValuesKey = ${tpeName}ValuesKey${lineSep}""")
+
+          }
+
           if (singletons.nonEmpty) {
             out.print(s"""
 export function map${tpeName}Values<T>(f: (_k: ${tpeName}ValuesKey) => T): Readonly<Record<${tpeName}ValuesKey, T>> {
@@ -227,6 +375,13 @@ ${indent}return {
 ${indent}}
 }""")
 
+            aliasing.foreach { base =>
+              out.println(s"""
+export function map${base}Values<T>(f: (_k: ${base}ValuesKey) => T): Readonly<Record<${base}ValuesKey, T>> {
+${indent}return map${tpeName}Values<T>(f)${lineSep}
+}""")
+
+            }
           }
 
           out.print(s"""
@@ -278,6 +433,14 @@ ${indent}return (""")
           out.println(s"""
 ${indent})${lineSep}
 }""")
+
+          aliasing.foreach { base =>
+            out.println(s"""
+export const idtlt${base}KnownValues: ReadonlySet<${base}> =
+  idtlt${tpeName}KnownValues${lineSep}
+
+export const ${base} = ${tpeName}${lineSep}""")
+          }
         }
 
       case _: UnionDeclaration =>
@@ -350,7 +513,7 @@ class ${tpeName}Extra {""")
                   out.println()
                 }
 
-                parent(ValueMemberDeclaration(sd, v), out)
+                parent(ValueMemberDeclaration(sd, v), context, out)
             }
 
             out.println(s"""}
@@ -433,11 +596,19 @@ export const ${tpeName}Inhabitant: ${tpeName} = """)
 export function is${tpeName}(v: any): v is ${tpeName} {
 ${indent}return idtlt${tpeName}.validate(v).ok${lineSep}
 }""")
+
+          if (!context.contains("noSingletonAlias")) {
+            // For compatiblity with Composite integration
+
+            out.print(s"""
+
+export type ${tpeName}Singleton = ${tpeName}${lineSep}""")
+          }
         }
 
       case decl: SingletonDeclaration =>
         Some {
-          parent(decl, out)
+          parent(decl, context + ("noSingletonAlias" -> "true"), out)
 
           out.print(s"""
 export const idtlt${tpeName} =

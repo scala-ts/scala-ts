@@ -9,6 +9,8 @@ sealed trait Declaration {
   def name: String
 
   def reference: TypeRef = CustomTypeRef(name, List.empty)
+
+  def kind: Declaration.Kind
 }
 
 object Declaration {
@@ -16,13 +18,13 @@ object Declaration {
 
   case object Interface extends Kind
 
-  case object Class extends Kind
-
   case object Singleton extends Kind
 
   case object Enum extends Kind
 
   case object Union extends Kind
+
+  case object Composite extends Kind
 
   case object Tagged extends Kind
 
@@ -32,10 +34,10 @@ object Declaration {
 
     def unapply(repr: String): Option[Kind] = repr match {
       case "interface" => Some(Interface)
-      case "class"     => Some(Class)
       case "singleton" => Some(Singleton)
       case "enum"      => Some(Enum)
       case "union"     => Some(Union)
+      case "composite" => Some(Composite)
       case "tagged"    => Some(Tagged)
       case "value"     => Some(Value)
       case _           => None
@@ -69,6 +71,8 @@ final class InterfaceDeclaration private (
 
   override def reference: TypeRef =
     CustomTypeRef(name, typeParams.map(CustomTypeRef(_)))
+
+  val kind = Declaration.Interface
 
   private lazy val tupled =
     Tuple5(name, fields.toList, typeParams, superInterface, union)
@@ -126,6 +130,8 @@ case class TaggedDeclaration(
     field: Member)
     extends Declaration {
   override def reference: TypeRef = CustomTypeRef(name, List.empty)
+
+  val kind = Declaration.Tagged
 }
 
 final class ValueMemberDeclaration private[scalats] (
@@ -135,6 +141,8 @@ final class ValueMemberDeclaration private[scalats] (
 
   @inline def name = value.name
   @inline override def reference = value.reference
+
+  val kind = Declaration.Value
 
   private val tupled = owner -> value
 
@@ -173,6 +181,8 @@ final class ValueBodyDeclaration private[scalats] (
   @inline def name = value.name
   @inline override def reference = value.reference
   @inline def owner = member.owner
+
+  val kind = Declaration.Value
 
   private val tupled = member -> value
 
@@ -213,6 +223,8 @@ final class SingletonDeclaration private (
     extends Declaration {
   override def reference: TypeRef = SingletonTypeRef(name, values)
 
+  val kind = Declaration.Singleton
+
   private lazy val tupled = Tuple3(name, values.toList, superInterface)
 
   override def toString: String = s"SingletonDeclaration${tupled.toString}"
@@ -226,6 +238,14 @@ final class SingletonDeclaration private (
     case _ =>
       false
   }
+
+  @SuppressWarnings(Array("VariableShadowing"))
+  def copy(
+      name: String = this.name,
+      values: ListSet[Value] = this.values,
+      superInterface: Option[InterfaceDeclaration] = this.superInterface
+    ): SingletonDeclaration =
+    new SingletonDeclaration(name, values, superInterface)
 
   private[scalats] def noSuperInterface: SingletonDeclaration =
     superInterface.fold(this)(_ =>
@@ -258,11 +278,22 @@ case class EnumDeclaration(
     name: String,
     possibilities: ListSet[String],
     values: ListSet[Value])
-    extends Declaration
+    extends Declaration {
+  val kind = Declaration.Enum
+}
 
 case class UnionDeclaration(
     name: String,
     fields: ListSet[Member],
     possibilities: ListSet[TypeRef with UnionMemberRef],
     superInterface: Option[InterfaceDeclaration])
-    extends Declaration
+    extends Declaration {
+  val kind = Declaration.Union
+}
+
+case class CompositeDeclaration(
+    name: String,
+    members: ListSet[Declaration])
+    extends Declaration {
+  val kind = Declaration.Composite
+}

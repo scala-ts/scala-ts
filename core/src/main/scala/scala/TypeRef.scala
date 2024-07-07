@@ -66,3 +66,5 @@ case object DateTimeRef extends TypeRef
 case object TimeRef extends TypeRef
 
 private[scalats] case object ThisTypeRef extends TypeRef
+
+// TODO: Regex

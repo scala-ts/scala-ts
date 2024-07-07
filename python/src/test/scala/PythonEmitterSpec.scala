@@ -28,15 +28,17 @@ final class PythonEmitterSpec extends org.specs2.mutable.Specification {
         union = false
       )
 
-      emit(ListSet(empty)) must beTypedEqualTo("""# Declare interface Empty
+      emit(Map("Empty" -> ListSet(empty))) must beTypedEqualTo(
+        """# Declare interface Empty
 @dataclass
 class Empty:
   pass
-""")
+"""
+      )
     }
 
     "emit interface for a class with one primitive member" in {
-      emit(ListSet(interface1)) must beTypedEqualTo(
+      emit(Map(interface1.name -> ListSet(interface1))) must beTypedEqualTo(
         s"""# Declare interface ${ns}TestClass1
 @dataclass
 class ${ns}TestClass1:
@@ -46,7 +48,7 @@ class ${ns}TestClass1:
     }
 
     "emit interface for a class with generic member" in {
-      emit(ListSet(interface2)) must beTypedEqualTo(
+      emit(Map(interface2.name -> ListSet(interface2))) must beTypedEqualTo(
         s"""# Declare interface ${ns}TestClass2
 
 T = typing.TypeVar('T')
@@ -60,7 +62,7 @@ class ${ns}TestClass2(typing.Generic[T]):
     }
 
     "emit interface for a class with generic array" in {
-      emit(ListSet(interface3)) must beTypedEqualTo(
+      emit(Map(interface3.name -> ListSet(interface3))) must beTypedEqualTo(
         s"""# Declare interface ${ns}TestClass3
 
 T = typing.TypeVar('T')
@@ -74,7 +76,7 @@ class ${ns}TestClass3(typing.Generic[T]):
     }
 
     "emit interface for a generic case class with a optional member" in {
-      emit(ListSet(interface5)) must beTypedEqualTo(
+      emit(Map(interface5.name -> ListSet(interface5))) must beTypedEqualTo(
         s"""# Declare interface ${ns}TestClass5
 
 T = typing.TypeVar('T')
@@ -91,7 +93,7 @@ class ${ns}TestClass5(typing.Generic[T]):
 
     "emit interface for a generic case class with disjunction" in {
       // TODO: Add example to documentation
-      emit(ListSet(interface7)) must beTypedEqualTo(
+      emit(Map(interface7.name -> ListSet(interface7))) must beTypedEqualTo(
         s"""# Declare interface ${ns}TestClass7
 
 T = typing.TypeVar('T')
@@ -106,7 +108,9 @@ class ${ns}TestClass7(typing.Generic[T]):
 
     "emit tagged type" in {
       "as NewType" in {
-        emit(ListSet(taggedDeclaration1)) must beTypedEqualTo(
+        emit(
+          Map(taggedDeclaration1.name -> ListSet(taggedDeclaration1))
+        ) must beTypedEqualTo(
           s"""# Declare tagged type ${valueClassNs}AnyValChild
 ${valueClassNs}AnyValChild = typing.NewType('${valueClassNs}AnyValChild', str)
 """
@@ -114,7 +118,7 @@ ${valueClassNs}AnyValChild = typing.NewType('${valueClassNs}AnyValChild', str)
       }
 
       "as member" in {
-        emit(ListSet(interface8)) must beTypedEqualTo(
+        emit(Map(interface8.name -> ListSet(interface8))) must beTypedEqualTo(
           s"""# Declare interface ${valueClassNs}TestClass8
 @dataclass
 class ${valueClassNs}TestClass8:
@@ -134,7 +138,7 @@ class ${valueClassNs}TestClass8:
             superInterface = Some(interface1)
           )
 
-          emit(ListSet(singleton)) must beTypedEqualTo(
+          emit(Map(singleton.name -> ListSet(singleton))) must beTypedEqualTo(
             s"""# Declare singleton ${ns}TestObject1
 ${ns}TestObject1 = typing.Literal['${ns}TestObject1']
 ${ns}TestObject1Inhabitant: ${ns}TestObject1 = '${ns}TestObject1'
@@ -153,7 +157,7 @@ ${ns}TestObject1Inhabitant: ${ns}TestObject1 = '${ns}TestObject1'
             superInterface = Some(interface1)
           )
 
-          emit(ListSet(singleton)) must beTypedEqualTo(
+          emit(Map(singleton.name -> ListSet(singleton))) must beTypedEqualTo(
             s"""# Declare singleton ${ns}TestObject1
 ${ns}TestObject1 = typing.Literal["Foo"]
 ${ns}TestObject1Inhabitant: ${ns}TestObject1 = "Foo"
@@ -193,7 +197,9 @@ ${ns}TestObject1Invariants = I${ns}TestObject1Invariants(
           singleton1.superInterface must beNone and {
             singleton1.values must beEmpty
           } and {
-            emit(ListSet(singleton1)) must beTypedEqualTo(
+            emit(
+              Map(singleton1.name -> ListSet(singleton1))
+            ) must beTypedEqualTo(
               s"""# Declare singleton ${ns}TestObject1
 """
             )
@@ -206,7 +212,7 @@ ${ns}TestObject1Invariants = I${ns}TestObject1Invariants(
 
           // SCALATS1: No implements SupI
           emit(
-            ListSet(singleton2)
+            Map(singleton2.name -> ListSet(singleton2))
           ) must_=== s"""# Declare singleton ${ns}TestObject2
 ${ns}TestObject2 = typing.Literal["Foo \\"bar\\""]
 ${ns}TestObject2Inhabitant: ${ns}TestObject2 = "Foo \\"bar\\""
@@ -257,6 +263,10 @@ class ${ns}TestObject2InvariantsFactory:
   def mergedSet(self) -> typing.List[int]:
     return self.set().union({3})
 
+  @classmethod
+  def Nested1(self) -> ${ns}TestObject2Nested1:
+    return ${ns.toLowerCase}testobject2nested1.${ns}TestObject2Nested1Inhabitant
+
 
 @dataclass
 class I${ns}TestObject2Invariants:
@@ -271,6 +281,7 @@ class I${ns}TestObject2Invariants:
   concatSeq: typing.List[str]
   concatList: typing.List[str]
   mergedSet: typing.List[int]
+  Nested1: ${ns}TestObject2Nested1
 
 
 ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
@@ -285,6 +296,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
   concatSeq=${ns}TestObject2InvariantsFactory.concatSeq(),
   concatList=${ns}TestObject2InvariantsFactory.concatList(),
   mergedSet=${ns}TestObject2InvariantsFactory.mergedSet(),
+  Nested1=${ns}TestObject2InvariantsFactory.Nested1(),
 )
 """
         }
@@ -459,7 +471,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
           )
 
           emit(
-            ListSet(singleton),
+            Map(singleton.name -> ListSet(singleton)),
             config = Settings(
               typeNaming = CustomTypeNaming,
               fieldMapper = CustomFieldMapper
@@ -559,7 +571,7 @@ TSSingletonInvariants = ITSSingletonInvariants(
           )
 
           emit(
-            ListSet(singleton2WithTagged)
+            Map(singleton2WithTagged.name -> ListSet(singleton2WithTagged))
           ) must_=== s"""# Declare singleton ${valueClassNs}TestObject2
 class ${valueClassNs}TestObject2InvariantsFactory:
   @classmethod
@@ -599,7 +611,7 @@ ${valueClassNs}TestObject2Invariants = I${valueClassNs}TestObject2Invariants(
 
       "emit class #3" in {
         emit(
-          ListSet(unionMember2Singleton)
+          Map(unionMember2Singleton.name -> ListSet(unionMember2Singleton))
         ) must_=== s"""# Declare singleton ${ns}FamilyMember2
 ${ns}FamilyMember2 = typing.Literal["bar"]
 ${ns}FamilyMember2Inhabitant: ${ns}FamilyMember2 = "bar"
@@ -637,7 +649,9 @@ ${ns}FamilyMember2Invariants = I${ns}FamilyMember2Invariants(
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """# Declare singleton Foo
+          emit(
+            Map(obj.name -> ListSet(obj))
+          ) must_=== """# Declare singleton Foo
 """
         }
 
@@ -648,7 +662,9 @@ ${ns}FamilyMember2Invariants = I${ns}FamilyMember2Invariants(
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """# Declare singleton Foo
+          emit(
+            Map(obj.name -> ListSet(obj))
+          ) must_=== """# Declare singleton Foo
 class FooInvariantsFactory:
   @classmethod
   def bar(self) -> str:
@@ -680,7 +696,9 @@ FooInvariants = IFooInvariants(
             superInterface = Option.empty
           )
 
-          emit(ListSet(obj)) must_=== """# Declare singleton Foo
+          emit(
+            Map(obj.name -> ListSet(obj))
+          ) must_=== """# Declare singleton Foo
 class FooInvariantsFactory:
   @classmethod
   def bar(self) -> str:
@@ -708,7 +726,7 @@ FooInvariants = IFooInvariants(
 
     "emit union" in {
       emit(
-        ListSet(union1)
+        Map(union1.name -> ListSet(union1))
       ) must_=== s"""# Declare union ${ns}Family
 ${ns}Family = typing.Union[${ns}FamilyMember1, ${ns}FamilyMember2, ${ns}FamilyMember3]
 
@@ -733,7 +751,7 @@ ${ns}FamilyKnownValues: typing.List[${ns}Family] = [
     }
 
     "emit enumeration as union" in {
-      emit(ListSet(enum1)) must beTypedEqualTo(
+      emit(Map(enum1.name -> ListSet(enum1))) must beTypedEqualTo(
         s"""# Declare enum ${ns}TestEnumeration
 from enum import Enum
 
@@ -745,6 +763,142 @@ class ${ns}TestEnumeration(Enum):
 """
       )
     }
+
+    "emit composite" >> {
+      "with empty object" in {
+        emit(
+          Map("Test" -> ListSet(interface1, singleton1))
+        ) must_=== s"""# Declare interface ${ns}TestClass1
+@dataclass
+class ${ns}TestClass1:
+  name: str
+"""
+      }
+
+      "with non-empty object" in {
+        val singleton = SingletonDeclaration(
+          name = singleton1.name,
+          values = ListSet(
+            LiteralValue("name", StringRef, "\"Foo\""),
+            LiteralValue("i", NumberRef.int, "3"),
+            LiteralValue("d", NumberRef.double, "4.56")
+          ),
+          superInterface = None
+        )
+
+        emit(
+          Map("Test" -> ListSet(interface1, singleton))
+        ) must_=== s"""# Declare composite type Test
+
+# Declare interface I${ns}TestClass1
+@dataclass
+class I${ns}TestClass1:
+  name: str
+
+
+# Declare singleton ${ns}TestObject1Singleton
+class ${ns}TestObject1SingletonInvariantsFactory:
+  @classmethod
+  def name(self) -> str:
+    return "Foo"
+
+  @classmethod
+  def i(self) -> int:
+    return 3
+
+  @classmethod
+  def d(self) -> float:
+    return 4.56
+
+
+@dataclass
+class I${ns}TestObject1SingletonInvariants:
+  name: str
+  i: int
+  d: float
+
+
+${ns}TestObject1SingletonInvariants = I${ns}TestObject1SingletonInvariants(
+  name=${ns}TestObject1SingletonInvariantsFactory.name(),
+  i=${ns}TestObject1SingletonInvariantsFactory.i(),
+  d=${ns}TestObject1SingletonInvariantsFactory.d(),
+)
+
+Test = I${ns}TestClass1
+"""
+      }
+
+      "with union" in {
+        val singleton = SingletonDeclaration(
+          name = singleton1.name,
+          values = ListSet(
+            LiteralValue("name", StringRef, "\"Foo\""),
+            LiteralValue("i", NumberRef.int, "3"),
+            LiteralValue("d", NumberRef.double, "4.56")
+          ),
+          superInterface = None
+        )
+
+        emit(
+          Map("Test" -> ListSet(singleton, union1))
+        ) must_=== s"""# Declare composite type Test
+
+# Declare union ${ns}FamilyUnion
+${ns}FamilyUnion = typing.Union[${ns}FamilyMember1, ${ns}FamilyMember2, ${ns}FamilyMember3]
+
+
+class ${ns}FamilyUnionCompanion:
+  @classmethod
+  def ${ns}FamilyMember2(self) -> ${ns}FamilyUnion:
+    return ${ns.toLowerCase}familymember2.${ns}FamilyMember2Inhabitant
+
+  @classmethod
+  def ${ns}FamilyMember3(self) -> ${ns}FamilyUnion:
+    return ${ns.toLowerCase}familymember3.${ns}FamilyMember3Inhabitant
+
+
+${ns}FamilyUnionKnownValues: typing.List[${ns}FamilyUnion] = [
+  ${ns}FamilyUnionCompanion.${ns}FamilyMember2(),
+  ${ns}FamilyUnionCompanion.${ns}FamilyMember3(),
+]
+
+# Fields are ignored: foo
+
+
+# Declare singleton ${ns}TestObject1Singleton
+class ${ns}TestObject1SingletonInvariantsFactory:
+  @classmethod
+  def name(self) -> str:
+    return "Foo"
+
+  @classmethod
+  def i(self) -> int:
+    return 3
+
+  @classmethod
+  def d(self) -> float:
+    return 4.56
+
+
+@dataclass
+class I${ns}TestObject1SingletonInvariants:
+  name: str
+  i: int
+  d: float
+
+
+${ns}TestObject1SingletonInvariants = I${ns}TestObject1SingletonInvariants(
+  name=${ns}TestObject1SingletonInvariantsFactory.name(),
+  i=${ns}TestObject1SingletonInvariantsFactory.i(),
+  d=${ns}TestObject1SingletonInvariantsFactory.d(),
+)
+
+Test = ${ns}FamilyUnion
+TestCompanion = TestUnionCompanion
+TestKnownValues: typing.List[Test] = TestUnionKnownValues
+"""
+      }
+    }
   }
 
   // ---
@@ -754,7 +908,7 @@ class ${ns}TestEnumeration(Enum):
   private val pyTypeMapper = new PythonTypeMapper
 
   def emit(
-      decls: ListSet[Declaration],
+      decls: Map[String, ListSet[Declaration]],
       config: Settings = Settings(),
       declMapper: DeclarationMapper = pyDeclMapper,
       importResolver: ImportResolver = ImportResolver.Defaults,
@@ -765,7 +919,7 @@ class ${ns}TestEnumeration(Enum):
 
     val emiter = new Emitter(
       config,
-      (_, _, _, _) => out,
+      (_, _, _, _, _) => out,
       importResolver,
       declMapper,
       typeMapper

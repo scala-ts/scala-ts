@@ -12,6 +12,7 @@ final class CustomPrinter(outDir: File) extends BasePrinter {
   def apply(
       conf: io.github.scalats.core.Settings,
       kind: Declaration.Kind,
+      others: ListSet[Declaration.Kind],
       name: String,
       requires: ListSet[TypeRef]
     ): PrintStream = {

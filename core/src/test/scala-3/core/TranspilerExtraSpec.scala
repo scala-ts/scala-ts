@@ -6,12 +6,18 @@ private[core] trait TranspilerExtraSpec { self: TranspilerSpec =>
   import TranspilerResults.defaultTranspiler
 
   "Scala3 support" should {
-    "transpile enum with extra invariant" in {
-      val result = defaultTranspiler(ListSet(ScalaRuntimeFixtures.color))
+    import TranspilerExtraSpec.colorDecl
 
-      result must have size 1 and {
-        result must contain(TranspilerExtraSpec.colorDecl)
-      }
+    "transpile enum with extra invariant" in {
+      val result = defaultTranspiler(
+        Map(
+          ScalaRuntimeFixtures.color.identifier.name -> ListSet(
+            ScalaRuntimeFixtures.color
+          )
+        )
+      )
+
+      result must_=== List("Color" -> ListSet(colorDecl))
     }
   }
 }
