@@ -1,6 +1,7 @@
 import * as nsBar from '../Bar'
 import * as nsFoo from '../Foo'
 import * as nsName from '../Name'
+import * as nsTransport from '../Transport'
 
 import * as testTransport from './Transport'
 
@@ -13,7 +14,7 @@ const bar1: nsBar.Bar = {
   aliases: [],
   age: 2,
   amount: 456,
-  transports: [],
+  transports: new Set<nsTransport.Transport>([]),
   updated: new Date(date2),
   created: new Date(date1),
   time: '12:34'
@@ -23,7 +24,7 @@ const bar2: nsBar.Bar = {
   name: nsName.Name('Two'),
   aliases: [nsName.Name('2'), nsName.Name('deux')],
   age: 3,
-  transports: [],
+  transports: new Set<nsTransport.Transport>([]),
   updated: new Date(date2),
   created: new Date(date1),
   time: '12:34'
@@ -34,11 +35,11 @@ const bar3: nsBar.Bar = {
   aliases: [],
   age: 4,
   amount: 6789,
-  transports: [
+  transports: new Set([
     testTransport.transport1,
     testTransport.transport2,
     testTransport.transport3,
-  ],
+  ]),
   updated: new Date(date2),
   created: new Date(date1),
   time: '12:34'
@@ -78,7 +79,7 @@ describe('Bar', () => {
       aliases: [],
       age: 2,
       amount: 456,
-      transports: [],
+      transports: new Set<nsTransport.Transport>([]),
       updated: new Date(date2),
       created: new Date(date1),
       time: '12:34'
@@ -123,7 +124,7 @@ describe('Bar', () => {
       name: 'Two',
       aliases: ['2', 'deux'],
       age: 3,
-      transports: [],
+      transports: new Set<nsTransport.Transport>([]),
       updated: new Date(date2),
       created: new Date(date1),
       time: '12:34'
@@ -174,11 +175,11 @@ describe('Bar', () => {
       aliases: [],
       age: 4,
       amount: 6789,
-      transports: [
+      transports: new Set([
         testTransport.transport1,
         testTransport.transport2,
         testTransport.transport3,
-      ],
+      ]),
       updated: new Date(date2),
       created: new Date(date1),
       time: '12:34'

@@ -20,7 +20,7 @@ export const idtltBar = idtlt.object({
   aliases: idtlt.readonlyArray(nsName.idtltName),
   age: idtlt.number,
   amount: idtlt.number.optional(),
-  transports: idtlt.readonlyArray(nsTransport.idtltTransport),
+  transports: idtlt.arrayAsSet(nsTransport.idtltTransport).map(set => { type extractGeneric<Type> = Type extends Set<infer X> ? X : never; type extracted = extractGeneric<typeof set>; return set as ReadonlySet<extracted> }),
   updated: idtlt.isoDate,
   created: idtlt.isoDate,
   time: idtlt.string,
@@ -47,7 +47,7 @@ export function isBar(v: any): v is Bar {
     (Array.isArray(v['aliases']) && v['aliases'].every(elmt => elmt && nsName.isName(elmt))) &&
     ((typeof v['age']) === 'number') &&
     (!v['amount'] || ((typeof v['amount']) === 'number')) &&
-    (Array.isArray(v['transports']) && v['transports'].every(elmt => elmt && nsTransport.isTransport(elmt))) &&
+    ((v['transports'] instanceof Set) && Array.from(v['transports']).every(elmt => elmt && nsTransport.isTransport(elmt))) &&
     (v['updated'] && (v['updated'] instanceof Date)) &&
     (v['created'] && (v['created'] instanceof Date)) &&
     ((typeof v['time']) === 'string')

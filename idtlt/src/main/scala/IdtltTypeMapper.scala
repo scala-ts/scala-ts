@@ -42,7 +42,7 @@ final class IdtltTypeMapper extends TypeMapper {
           s"idtlt.readonlyArray(${tr(innerType)})"
 
         case SetRef(innerType) =>
-          s"idtlt.arrayAsSet(${tr(innerType)}).map(set => { function _dummy() { return set.values().next().value }; return set as ReadonlySet<ReturnType<typeof _dummy>> })"
+          s"idtlt.arrayAsSet(${tr(innerType)}).map(set => { type extractGeneric<Type> = Type extends Set<infer X> ? X : never; type extracted = extractGeneric<typeof set>; return set as ReadonlySet<extracted> })"
 
         case TupleRef(innerTypes) =>
           s"idtlt.tuple(${innerTypes.map(tr) mkString ", "})"
