@@ -9,7 +9,7 @@ case class Bar(
     aliases: Seq[Name],
     age: Int,
     amount: Option[BigInt],
-    transports: Seq[Transport],
+    transports: Set[Transport],
     updated: LocalDate,
     created: LocalDate,
     time: java.time.OffsetTime)
