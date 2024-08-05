@@ -13,7 +13,8 @@ object Publish extends AutoPlugin {
     licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT")),
     publishMavenStyle := true,
     Test / publishArtifact := false,
-    publishTo := Some(repoUrl).map(repoName at _),
+    pomIncludeRepository := { _ => false },
+    publishTo := Option(repoName).map(_ at repoUrl),
     credentials += Credentials(
       repoName,
       env("PUBLISH_REPO_ID"),

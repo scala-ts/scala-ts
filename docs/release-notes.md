@@ -6,7 +6,11 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
-[*Version 0.5.19*](https://github.com/scala-ts/scala-ts/compare/0.5.19..0.5.19) - Update idtlt
+[*Version 0.7.0*](https://github.com/scala-ts/scala-ts/compare/0.6.0..0.7.0) - Support composite type aka different kinds of type with same name (e.g. Scala class and its companion object); `Map` Typescript mapping updated from `Partial<Record<K, V>>` to `Readonly<Map<K, V>>` to support non-literal type as keys.
+
+[*Version 0.6.0*](https://github.com/scala-ts/scala-ts/compare/0.5.19..0.6.0) - Improve IDTLT enum declaration mappier
+
+[*Version 0.5.19*](https://github.com/scala-ts/scala-ts/compare/0.5.18..0.5.19) - Update idtlt
 
 [*Version 0.5.18*](https://github.com/scala-ts/scala-ts/compare/0.5.17..0.5.18) - Improve TypeScript mappings (`Record`).
 
