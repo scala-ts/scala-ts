@@ -278,3 +278,37 @@ object DictionaryInvariant {
     ): DictionaryInvariant =
     new DictionaryInvariant(name, keyTypeRef, valueTypeRef, entries)
 }
+
+final class ObjectInvariant(
+    name: String,
+    typeRef: TypeRef)
+    extends TypeInvariant(name, typeRef)
+    with SimpleInvariant {
+
+  private lazy val tupled = name -> typeRef
+
+  override def toString = s"ObjectInvariant${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: ObjectInvariant =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+}
+
+object ObjectInvariant {
+
+  @inline def apply(
+      name: String,
+      typeRef: TypeRef
+    ): ObjectInvariant = new ObjectInvariant(name, typeRef)
+
+  def unapply(
+      inv: ObjectInvariant
+    ): Option[(String, TypeRef)] = Some(inv.tupled)
+
+}

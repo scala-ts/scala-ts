@@ -365,8 +365,18 @@ final class ScalaParserResults(
             values = Set(LiteralInvariant("mergedSet[1][0]", IntRef, "3"))
           )
         )
+      ),
+      ObjectInvariant(
+        name = "Nested1",
+        typeRef =
+          CaseObjectRef(QualifiedIdentifier("Nested1", ns :+ "TestObject2"))
       )
     )
+  )
+
+  val nestedObj1 = CaseObject(
+    QualifiedIdentifier("Nested1", ns :+ "TestObject2"),
+    ListSet.empty
   )
 
   val sealedFamily1 = {

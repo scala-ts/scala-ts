@@ -5,6 +5,8 @@ import io.github.scalats.core.Internals.ListSet
 
 import org.specs2.specification.core.Fragments
 
+import TranspilerCompat.ns
+
 final class ImportResolverSpec extends org.specs2.mutable.Specification {
   "Import resolver".title
 
@@ -47,6 +49,10 @@ final class ImportResolverSpec extends org.specs2.mutable.Specification {
 
         singleton2.name in {
           defaultResolver(singleton2) must_=== ListSet(
+            SingletonTypeRef(
+              s"${ns}TestObject2Nested1",
+              ListSet.empty
+            ),
             CustomTypeRef("SupI", List.empty)
           )
         }

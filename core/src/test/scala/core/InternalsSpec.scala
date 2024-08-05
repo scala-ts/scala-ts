@@ -17,5 +17,9 @@ final class InternalsSpec extends org.specs2.mutable.Specification {
 
       res.result() must_=== Seq("zoo", "alpha", "charlie", "beta")
     }
+
+    "be preserving uniqueness constraint" in {
+      ListSet("foo", "bar").map(_ => 1).toList must_=== List(1)
+    }
   }
 }

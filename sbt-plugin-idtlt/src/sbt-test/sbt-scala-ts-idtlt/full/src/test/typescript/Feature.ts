@@ -4,7 +4,7 @@ import * as nsFooLure from '../FooLure'
 
 describe('Feature', () => {
   it('should expose the known literal values', () => {
-    const knownValues: ReadonlySet<nsFeature.Feature> = nsFeature.idtltFeatureKnownValues
+    const knownValues: ReadonlySet<nsFeature.Feature> = nsFeature.idtltFeatureUnionKnownValues
 
     expect(knownValues).toEqual(new Set([ 'BarNum', 'FooLure' ]))
   })

@@ -2,10 +2,11 @@ package io.github.scalats.core
 
 import scala.collection.immutable.ListSet
 
+import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.core.Symbols.Symbol
 import dotty.tools.dotc.core.Types.Type
+
 import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.core.Contexts.Context
 
 object Generator:
   import tpd._
@@ -29,7 +30,7 @@ object Generator:
   def generate(
       settings: Settings,
       types: List[(Type, Tree)],
-      symtab: Map[String, (Type, Tree)],
+      symtab: Map[String, ListSet[(Type, Tree)]],
       logger: Logger,
       importResolver: ImportResolver,
       declMapper: DeclarationMapper,
@@ -42,9 +43,7 @@ object Generator:
       Context
     ): ListSet[ScalaParser.TypeFullId] = {
     val scalaParser = new ScalaParser(compiled, logger)
-
-    val transpiler = new Transpiler(settings)
-
+    val transpiler = new Transpiler(settings, logger)
     val parseResult =
       scalaParser.parseTypes(types, symtab, examined, acceptsType)
 

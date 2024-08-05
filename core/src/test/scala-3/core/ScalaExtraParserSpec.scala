@@ -1,12 +1,13 @@
 package io.github.scalats.core
 
 private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
-  import ScalaRuntimeFixtures._
+  import ScalaRuntimeFixtures._, results._
+  import Internals.ListSet
 
   "Scala3 support" should {
     "handle opaque type alias" in {
       parseTypes(List(LogOpaqueAliasType -> LogOpaqueAliasTree)) must_=== List(
-        logOpaqueAlias
+        logOpaqueAlias.identifier.name -> ListSet(logOpaqueAlias)
       )
     }
 
@@ -17,23 +18,29 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
           Map(
             fullName(
               FamilyMember1Type.typeSymbol
-            ) -> (FamilyMember1Type -> FamilyMember1Tree),
+            ) -> ListSet(FamilyMember1Type -> FamilyMember1Tree),
             fullName(
               FamilyMember2Type.typeSymbol
-            ) -> (FamilyMember2Type -> FamilyMember2Tree),
+            ) -> ListSet(FamilyMember2Type -> FamilyMember2Tree),
             fullName(
               FamilyMember3Type.typeSymbol
-            ) -> (FamilyMember3Type -> FamilyMember3Tree)
+            ) -> ListSet(FamilyMember3Type -> FamilyMember3Tree)
           )
-        ) must_=== List(unionType1)
+        ) must_=== List(
+          unionType1.identifier.name -> ListSet(unionType1)
+        )
       }
 
       "as case class field" in {
-        parseTypes(List(LoremType -> LoremTree)) must_=== List(lorem)
+        parseTypes(List(LoremType -> LoremTree)) must_=== List(
+          lorem.identifier.name -> ListSet(lorem)
+        )
       }
 
       "as invariants" in {
-        parseTypes(List(IpsumType -> IpsumTree)) must_=== List(ipsum)
+        parseTypes(List(IpsumType -> IpsumTree)) must_=== List(
+          ipsum.identifier.name -> ListSet(ipsum)
+        )
       }
     }
 
@@ -41,17 +48,30 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
       val colorTpe = ColorType -> ColorTree
 
       "declaration" in {
-        parseTypes(List(colorTpe)) must_=== List(color)
+        parseTypes(List(colorTpe)) must_=== List(
+          color.identifier.name -> ListSet(color)
+        )
       }
 
       "as case class field" in {
         parseTypes(
           List(StyleType -> StyleTree),
           Map(
-            fullName(ColorType.typeSymbol) -> colorTpe
+            fullName(ColorType.typeSymbol) -> ListSet(colorTpe)
           )
-        ) must_=== List(style)
+        ) must_=== List(style.identifier.name -> ListSet(style))
       }
+    }
+
+    "handle from companion object" in {
+      val res =
+        parseTypes(List(TestClass1CompanionType -> TestClass1CompanionTree))
+
+      res must_=== List(
+        caseClass1.identifier.name -> ListSet(
+          caseObject1.copy(identifier = caseClass1.identifier)
+        )
+      )
     }
   }
 }

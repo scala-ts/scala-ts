@@ -23,7 +23,8 @@ final class CustomDeclarationMapper extends DeclarationMapper {
       settings: Settings,
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
-      declaration: Declaration,
+    declaration: Declaration,
+    context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit] = declaration match {
     case decl @ UnionDeclaration(name, fields, possibilities, superInterface) =>
@@ -54,7 +55,7 @@ export function is${tpeName}(v: any): v is ${tpeName} {
       }
 
     case decl: InterfaceDeclaration =>
-      Some(parent(decl, out))
+      Some(parent(decl, context, out))
 
     case _ =>
       None

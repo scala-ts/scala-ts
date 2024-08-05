@@ -1,5 +1,7 @@
 ThisBuild / dynverVTagPrefix := false
 
+ThisBuild / version := "0.7.0-SNAPSHOT"
+/* TODO
 ThisBuild / version := {
   val Stable = """([0-9]+)\.([0-9]+)\.([0-9]+)""".r
 
@@ -33,3 +35,4 @@ ThisBuild / version := {
       sys.error("Fails to resolve Git information")
   }
 }
+ */

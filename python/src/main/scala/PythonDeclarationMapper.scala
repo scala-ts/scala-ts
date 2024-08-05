@@ -19,6 +19,7 @@ final class PythonDeclarationMapper extends DeclarationMapper {
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
       declaration: Declaration,
+      context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit] = {
     import settings.indent
@@ -31,9 +32,10 @@ final class PythonDeclarationMapper extends DeclarationMapper {
     def valueRightHand(owner: SingletonDeclaration, v: Value): Unit = {
       val vd = ValueBodyDeclaration(ValueMemberDeclaration(owner, v), v)
 
-      apply(parent, settings, typeMapper, fieldMapper, vd, out).getOrElse(
-        parent(vd, out)
-      )
+      apply(parent, settings, typeMapper, fieldMapper, vd, context, out)
+        .getOrElse(
+          parent(vd, context, out)
+        )
     }
 
     declaration match {
@@ -140,6 +142,100 @@ ${tpeName}KnownValues: typing.List[${tpeName}] = [""")
           out.println(s"# Not supported: UnionDeclaration '${name}'")
         }
 
+      case CompositeDeclaration(_, members) =>
+        Some {
+          val ms = members.filter {
+            case SingletonDeclaration(_, values, _) =>
+              values.nonEmpty
+
+            case _ => true
+          }
+
+          if (ms.tail.isEmpty) {
+            // Excluding empty singleton, only a single type
+            ms.headOption.foreach(d => parent(d, context, out))
+          } else {
+            out.println(s"""# Declare composite type ${tpeName}
+""")
+
+            val ordered = members.toList.sortBy(_.name).zipWithIndex.flatMap {
+              case (m, i) =>
+                if (i > 0) {
+                  out.println()
+                }
+
+                val res = m match {
+                  case member: InterfaceDeclaration => {
+                    val iface = member.copy(name = s"I${member.name}")
+
+                    parent(iface, context, out)
+
+                    Some(iface)
+                  }
+
+                  case member: SingletonDeclaration => {
+                    val single = member.copy(name = s"${member.name}Singleton")
+
+                    parent(single, context, out)
+
+                    Option.empty[Declaration]
+                  }
+
+                  case member: EnumDeclaration => {
+                    val enu = member.copy(name = s"${member.name}Enum")
+
+                    parent(enu, context, out)
+
+                    Some(enu)
+                  }
+
+                  case member: UnionDeclaration => {
+                    val union = member.copy(name = s"${member.name}Union")
+
+                    parent(union, context, out)
+
+                    Some(union)
+                  }
+
+                  case member: TaggedDeclaration => {
+                    val tagged = member.copy(name = s"${member.name}Tagged")
+
+                    parent(tagged, context, out)
+
+                    Some(tagged)
+                  }
+
+                  case member => {
+                    parent(member, context, out)
+
+                    Option.empty[Declaration]
+                  }
+                }
+
+                out.println()
+
+                res
+            }
+
+            ordered.headOption.foreach { member =>
+              if (ordered.tail.isEmpty) {
+                // With singleton excluded, only a single type
+
+                out.println(s"${tpeName} = ${typeNaming(member.reference)}")
+              } else {
+                out.println(
+                  s"# Intersection ${tpeName} is not supported: ${ordered.map(_.name) mkString ", "}"
+                )
+              }
+            }
+
+            if (ordered.exists(_.kind == Declaration.Union)) {
+              out.println(s"""${tpeName}Companion = ${tpeName}UnionCompanion
+${tpeName}KnownValues: typing.List[${tpeName}] = ${tpeName}UnionKnownValues""")
+            }
+          }
+        }
+
       case decl @ TaggedDeclaration(id, field) =>
         Some {
           val member = Field(field.name)
@@ -176,7 +272,7 @@ class ${tpeName}Invariants:""")
                   out.println()
                 }
 
-                parent(ValueMemberDeclaration(sd, v), out)
+                parent(ValueMemberDeclaration(sd, v), context, out)
             }
           }
         }
@@ -387,6 +483,12 @@ ${tpeName}Invariants = I${tpeName}Invariants(""")
               }
 
               out.print("}")
+            }
+
+            case SingletonValue(_, ref) => {
+              val nme = tmapper(ref)
+
+              out.print(s"${nme.toLowerCase}.${nme}Inhabitant")
             }
           }
 

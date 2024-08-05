@@ -1,5 +1,9 @@
 package io.github.scalats.core
 
+import io.github.scalats.core.Internals.ListSet
+import io.github.scalats.scala.TypeDef
+
+// TODO: Multiple output
 final class ScalaParserSpec
     extends org.specs2.mutable.Specification
     with ScalaExtraParserSpec {
@@ -14,9 +18,7 @@ final class ScalaParserSpec
         List(TestClass1Type -> TestClass1Tree)
       )
 
-      res must contain(caseClass1) and {
-        res must have size 1
-      }
+      res must_=== List(caseClass1.identifier.name -> ListSet(caseClass1))
     }
 
     "handle generic case class with one member" in {
@@ -24,9 +26,7 @@ final class ScalaParserSpec
         List(TestClass2Type -> TestClass2Tree)
       )
 
-      res must contain(caseClass2) and {
-        res must have size 1
-      }
+      res must_=== List(caseClass2.identifier.name -> ListSet(caseClass2))
     }
 
     "handle generic case class with one member list of type parameter" in {
@@ -34,9 +34,7 @@ final class ScalaParserSpec
         List(TestClass3Type -> TestClass3Tree)
       )
 
-      res must contain(caseClass3) and {
-        res must have size 1
-      }
+      res must_=== List(caseClass3.identifier.name -> ListSet(caseClass3))
     }
 
     "handle generic case class with one optional member" in {
@@ -44,9 +42,7 @@ final class ScalaParserSpec
         List(TestClass5Type -> TestClass5Tree)
       )
 
-      res must contain(caseClass5) and {
-        res must have size 1
-      }
+      res must_=== List(caseClass5.identifier.name -> ListSet(caseClass5))
     }
 
     "detect involved types and skipped already examined types" in {
@@ -60,25 +56,26 @@ final class ScalaParserSpec
         Map(
           fullName(
             TestClass3Type.typeSymbol // 'age' in 6
-          ) -> (TestClass3Type -> TestClass3Tree),
+          ) -> ListSet(TestClass3Type -> TestClass3Tree),
           fullName(
             TestClass5Type.typeSymbol // 'age' in 6
-          ) -> (TestClass5Type -> TestClass5Tree)
+          ) -> ListSet(TestClass5Type -> TestClass5Tree)
         )
       )
 
-      res must contain(caseClass1) and {
-        res must contain(caseClass2)
+      res must have size 6 and {
+        res must contain(caseClass1.identifier.name -> ListSet(caseClass1))
       } and {
-        res must contain(caseClass3)
+        res must contain(caseClass2.identifier.name -> ListSet(caseClass2))
       } and {
-        res must contain(caseClass4)
+        res must contain(caseClass3.identifier.name -> ListSet(caseClass3))
       } and {
-        res must contain(caseClass6)
+        res must contain(caseClass4.identifier.name -> ListSet(caseClass4))
       } and {
-        res must contain(caseClass5) // as required for a caseClass6 property
+        res must contain(caseClass6.identifier.name -> ListSet(caseClass6))
       } and {
-        res must have size 6
+        // as required for a caseClass6 property
+        res must contain(caseClass5.identifier.name -> ListSet(caseClass5))
       }
     }
 
@@ -88,19 +85,19 @@ final class ScalaParserSpec
         Map(
           fullName(
             TestClass1Type.typeSymbol // 'name' in 7
-          ) -> (TestClass1Type -> TestClass1Tree),
+          ) -> ListSet(TestClass1Type -> TestClass1Tree),
           fullName(
             TestClass1BType.typeSymbol // 'name' in 7
-          ) -> (TestClass1BType -> TestClass1BTree)
+          ) -> ListSet(TestClass1BType -> TestClass1BTree)
         )
       )
 
-      res must contain(caseClass7) and {
-        res must contain(caseClass1)
+      res must have size 3 and {
+        res must contain(caseClass7.identifier.name -> ListSet(caseClass7))
       } and {
-        res must contain(caseClass1B)
+        res must contain(caseClass1.identifier.name -> ListSet(caseClass1))
       } and {
-        res must have size 3
+        res must contain(caseClass1B.identifier.name -> ListSet(caseClass1B))
       }
     }
 
@@ -110,7 +107,7 @@ final class ScalaParserSpec
           List(AnyValChildType -> AnyValChildTree)
         )
 
-        res must_=== List(tagged1)
+        res must_=== List(tagged1.identifier.name -> ListSet(tagged1))
       }
 
       "as member" in {
@@ -118,10 +115,10 @@ final class ScalaParserSpec
           List(TestClass8Type -> TestClass8Tree)
         )
 
-        res must contain(caseClass8) and {
-          res must contain(tagged1)
+        res must have size 2 and {
+          res must contain(caseClass8.identifier.name -> ListSet(caseClass8))
         } and {
-          res must have size 2
+          res must contain(tagged1.identifier.name -> ListSet(tagged1))
         }
       }
     }
@@ -132,9 +129,9 @@ final class ScalaParserSpec
           List(TestEnumerationType -> TestEnumerationTree)
         )
 
-        res must contain(testEnumeration) and {
-          res must have size 1
-        }
+        res must_=== List(
+          testEnumeration.identifier.name -> ListSet(testEnumeration)
+        )
       }
 
       "as member in class" in {
@@ -142,8 +139,12 @@ final class ScalaParserSpec
           List(TestClass9Type -> TestClass9Tree)
         )
 
-        res must contain(caseClass9) and {
-          res must contain(testEnumeration)
+        res must contain(
+          caseClass9.identifier.name -> ListSet(caseClass9)
+        ) and {
+          res must contain(
+            testEnumeration.identifier.name -> ListSet(testEnumeration)
+          )
         } and {
           res must have size 2
         }
@@ -155,28 +156,37 @@ final class ScalaParserSpec
         List(TestClass10Type -> TestClass10Tree)
       )
 
-      res must contain(caseClass10) and {
-        res must have size 1
-      }
+      res must_=== List(
+        caseClass10.identifier.name -> ListSet(caseClass10)
+      )
     }
 
     "handle object" >> {
       "from case object" in {
-        val res = parseTypes(
-          List(ScalaRuntimeFixtures.TestObject1Type -> EmptyTree)
+        // TODO: Now empty object is filtered out but...
+        val tpe = ScalaRuntimeFixtures.TestObject1Type -> EmptyTree
+        val expected =
+          List(caseObject1.identifier.name -> ListSet[TypeDef](caseObject1))
+
+        val res1 = parseType(
+          tpe,
+          symtab = Map.empty,
+          examined = ListSet.empty,
+          acceptsType = _ => true
         )
 
-        res must contain(caseObject1) and {
-          res must have size 1
+        res1.parsed.toList must_=== expected and {
+          // Make sure only the object is marked as examined
+          // (not its associated types; e.g. class)
+
+          res1.examined must_=== ListSet(
+            ScalaRuntimeFixtures.objectClass("TestObject1") + '#'
+          )
+        } and {
+          val res2 = parseTypes(List(tpe))
+
+          res2 must_=== expected
         }
-      }
-
-      "skip when companion object" in {
-        val res = parseTypes(
-          List(TestClass1CompanionType -> TestClass1CompanionTree)
-        )
-
-        res must beEmpty
       }
 
       "from plain object with values" in {
@@ -184,9 +194,10 @@ final class ScalaParserSpec
           List(TestObject2Type -> TestObject2Tree)
         )
 
-        res must contain(caseObject2) and {
-          res must have size 1
-        }
+        res must_=== List(
+          caseObject2.identifier.name -> ListSet(caseObject2),
+          nestedObj1.identifier.name -> ListSet(nestedObj1)
+        )
       }
     }
 
@@ -196,19 +207,17 @@ final class ScalaParserSpec
         Map(
           fullName(
             FamilyMember1Type.typeSymbol
-          ) -> (FamilyMember1Type -> FamilyMember1Tree),
+          ) -> ListSet(FamilyMember1Type -> FamilyMember1Tree),
           fullName(
             FamilyMember2Type.typeSymbol
-          ) -> (FamilyMember2Type -> FamilyMember2Tree),
+          ) -> ListSet(FamilyMember2Type -> FamilyMember2Tree),
           fullName(
             FamilyMember3Type.typeSymbol
-          ) -> (FamilyMember3Type -> FamilyMember3Tree)
+          ) -> ListSet(FamilyMember3Type -> FamilyMember3Tree)
         )
       )
 
-      res must contain(sealedFamily1) and {
-        res must have size 1
-      }
+      res must_=== List(sealedFamily1.identifier.name -> ListSet(sealedFamily1))
     }
 
     "resolve data type" >> {

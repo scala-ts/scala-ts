@@ -153,6 +153,9 @@ object ImportResolver {
       case ValueMemberDeclaration(LiteralValue(_, ref, _)) =>
         ref.requires
 
+      case ValueMemberDeclaration(SingletonValue(_, ref)) =>
+        ref.requires
+
       case _ =>
         ListSet.empty
     }

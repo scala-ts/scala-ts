@@ -7,9 +7,9 @@ import dotty.tools.dotc.core.{ Contexts, Symbols, Types }
 import dotty.tools.dotc.ast.Trees
 import dotty.tools.dotc.ast.tpd.Tree
 
-import dotty.tools.repl.{ ReplDriver, ReplCompiler, State }
+import io.github.scalats.scala as ScalaModel
 
-import io.github.scalats.{ scala => ScalaModel }
+import dotty.tools.repl.{ ReplCompiler, ReplDriver, State }
 
 // Value class workaround (see bellow)
 case class AnyValChild(value: String) extends AnyVal
@@ -21,6 +21,9 @@ object ScalaRuntimeFixtures {
     ns = List(f"$$wrapper", "expr"),
     valueClassNs = List.empty
   )
+
+  def objectClass(nme: String): String =
+    f"$$wrapper._$$" + nme + '$'
 
   val logOpaqueAlias = ScalaModel.ValueClass(
     ScalaModel.QualifiedIdentifier("Log", results.ns :+ "Aliases"),
@@ -203,9 +206,9 @@ object ScalaRuntimeFixtures {
   @annotation.tailrec
   def parseTypes(
       types: List[(Types.Type, Tree)],
-      symtab: Map[String, (Types.Type, Tree)] = Map.empty,
+      symtab: Map[String, ListSet[(Types.Type, Tree)]] = Map.empty,
       retries: Int = 3
-    ): List[ScalaModel.TypeDef] =
+    ): List[(String, ListSet[ScalaModel.TypeDef])] =
     try {
       scalaParser
         .parseTypes(
@@ -220,6 +223,21 @@ object ScalaRuntimeFixtures {
       case _: dotty.tools.dotc.core.CyclicReference if retries > 0 =>
         Thread.sleep(200)
         parseTypes(types, symtab, retries - 1)
+    }
+
+  @inline def parseType(
+      tpe: (Types.Type, Tree),
+      symtab: ScalaParser.StringMap[(Types.Type, Tree)],
+      examined: ListSet[ScalaParser.TypeFullId],
+      acceptsType: Symbols.Symbol => Boolean,
+      retries: Int = 3
+    ): ScalaParser.Result[ScalaParser.StringMap, ScalaParser.TypeFullId] =
+    try {
+      scalaParser.parseType(tpe, symtab, examined, acceptsType)
+    } catch {
+      case _: dotty.tools.dotc.core.CyclicReference if retries > 0 =>
+        Thread.sleep(200)
+        parseType(tpe, symtab, examined, acceptsType, retries - 1)
     }
 
   def fullName(sym: Symbols.Symbol): String =
@@ -317,6 +335,8 @@ object TestObject2 extends Foo("Foo \"bar\"") {
   def concatList = List("foo") ++ list
 
   val mergedSet = set ++ Set(3)
+
+  object Nested1
 }
 
 class Foo(val name: String)

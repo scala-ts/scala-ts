@@ -12,18 +12,21 @@ final class IdtltTypeMapper extends TypeMapper {
       member: Field,
       tpe: TypeRef
     ): Option[String] = ownerType match {
-    case SingletonDeclaration(_, _, None) =>
+    case SingletonDeclaration(_, _, None) => {
       // IDTLT_TYPE_MAPPER_1
       // Do not generate such singleton as generator
+
       Some(valueType(tpe, settings.typeNaming(settings, _: TypeRef)))
+    }
 
     case _ => {
-      val typeNaming = settings.typeNaming(settings, _: TypeRef)
       val tr: TypeRef => String = { ref =>
         apply(parent, settings, ownerType, member, ref).getOrElse(
           parent(settings, ownerType, member, ref)
         )
       }
+
+      val typeNaming = settings.typeNaming(settings, _: TypeRef)
 
       val tsType = tpe match {
         case TimeRef | StringRef =>
@@ -47,13 +50,8 @@ final class IdtltTypeMapper extends TypeMapper {
         case TupleRef(innerTypes) =>
           s"idtlt.tuple(${innerTypes.map(tr) mkString ", "})"
 
-        case tpe: TaggedRef => {
+        case tpe @ (TaggedRef(_, _) | CustomTypeRef(_, Nil)) => {
           val n = typeNaming(tpe)
-          s"ns${n}.idtlt${n}"
-        }
-
-        case custom @ CustomTypeRef(_, Nil) => {
-          val n = typeNaming(custom)
           s"ns${n}.idtlt${n}"
         }
 
@@ -71,8 +69,8 @@ final class IdtltTypeMapper extends TypeMapper {
         case UnionType(possibilities) =>
           s"idtlt.union(${possibilities.map(tr) mkString ", "})"
 
-        case MapType(keyType, valueType) =>
-          s"idtlt.dictionary(${tr(keyType)}, ${tr(valueType)}.optional())"
+        case MapType(kt, vt) =>
+          s"idtlt.dictionary(${tr(kt)}, ${tr(vt)}.optional())"
 
         case _ =>
           s"idtlt.${typeNaming(tpe)}"
@@ -93,18 +91,13 @@ final class IdtltTypeMapper extends TypeMapper {
         args.map(tr).mkString("[", ", ", "]")
 
       case NullableType(inner) =>
-        s"undefined | ${valueType(inner, typeNaming)}"
+        s"undefined | ${tr(inner)}"
 
       case UnionType(possibilities) =>
         possibilities.map(tr).mkString(" | ")
 
-      case custom @ (TaggedRef(_, _) | SingletonTypeRef(_, _)) => {
-        val n = typeNaming(custom)
-
-        s"ns${n}.${n}"
-      }
-
-      case custom @ CustomTypeRef(_, Nil) => {
+      case custom @ (TaggedRef(_, _) | SingletonTypeRef(_, _) |
+          CustomTypeRef(_, Nil)) => {
         val n = typeNaming(custom)
 
         s"ns${n}.${n}"
@@ -116,14 +109,18 @@ final class IdtltTypeMapper extends TypeMapper {
         s"""ns${n}.${n}${args.map(tr).mkString("<", ", ", ">")}"""
       }
 
+      case SetRef(innerType) =>
+        s"ReadonlySet<${tr(innerType)}>"
+
       case ArrayRef(tpe) =>
         s"ReadonlyArray<${tr(tpe)}>"
 
       case MapType(kt, vt) =>
-        s"Readonly<Partial<Record<${tr(kt)}, ${tr(vt)}>>>"
+        s"Readonly<Map<${tr(kt)}, ${tr(vt)}>>"
 
-      case _ =>
-        typeNaming(vtpe)
+      case tpe: SimpleTypeRef =>
+        typeNaming(tpe)
+
     }
   }
 }

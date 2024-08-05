@@ -23,6 +23,7 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
   def apply(
       conf: Settings,
       kind: Declaration.Kind,
+      others: ListSet[Declaration.Kind],
       name: String,
       requires: ListSet[TypeRef]
     ): PrintStream = {
@@ -42,6 +43,7 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
 
     val stream = new PrintStream(new FileOutputStream(f, append))
 
+    // For module compatibility & self reference
     if (!append) {
       printPrelude(stream)
 
@@ -50,7 +52,6 @@ final class SingleFilePrinter(outDir: File) extends BasePrinter {
       stream.println()
     }
 
-    // self module ref for compatibility
     stream.println(s"export const ns${name} = exports${lineSep}\r\n")
 
     stream

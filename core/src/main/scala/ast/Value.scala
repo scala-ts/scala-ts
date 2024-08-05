@@ -126,3 +126,8 @@ case class MergedSetsValue(
   val typeRef = ArrayRef(valueTypeRef) // TODO: SetRef
   override def reference: TypeRef = valueTypeRef
 }
+
+case class SingletonValue(
+    name: String,
+    typeRef: TypeRef)
+    extends Value

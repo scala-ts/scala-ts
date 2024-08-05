@@ -13,10 +13,11 @@ final class PythonFilePrinter(outDir: File) extends BasePrinter {
   private lazy val baseModule: Option[String] =
     sys.props.get("scala-ts.printer.python-base-module").filter(_.nonEmpty)
 
-  @com.github.ghik.silencer.silent(".*kind.*never used.*")
+  @com.github.ghik.silencer.silent(".*(kind|others).*never used.*")
   def apply(
       conf: Settings,
       kind: Declaration.Kind,
+      others: ListSet[Declaration.Kind],
       name: String,
       requires: ListSet[TypeRef]
     ): PrintStream = {
@@ -35,9 +36,13 @@ final class PythonFilePrinter(outDir: File) extends BasePrinter {
 
     printPrelude(stream)
 
-    if (kind == Declaration.Interface) {
+    if (
+      kind == Declaration.Interface || others.contains(Declaration.Interface)
+    ) {
       stream.println("from dataclasses import dataclass")
-    } else if (kind == Declaration.Singleton) {
+    } else if (
+      kind == Declaration.Singleton || others.contains(Declaration.Singleton)
+    ) {
       stream.println("from dataclasses import dataclass  # noqa: F401")
     }
 
@@ -76,20 +81,20 @@ import time  # noqa: F401
     )(importModule: String => String
     ): Unit = {
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
-    val requiredTypes = requires.toList.sortBy(_.name)
-
-    requiredTypes.foreach { tpe =>
+    val requiredImports = requires.map { tpe =>
       val tpeName = typeNaming(tpe)
       val mod = tpeName.toLowerCase
 
       tpe match {
         case _: SingletonTypeRef if (kind != Declaration.Union) =>
-          out.println(s"${importModule(mod)}  # Singleton")
+          s"${importModule(mod)}  # Singleton"
 
         case _ =>
-          out.println(s"""${importModule(mod)}  # noqa: F401
-from ${tpePrefix}${mod} import ${tpeName}""")
+          s"""${importModule(mod)}  # noqa: F401
+from ${tpePrefix}${mod} import ${tpeName}"""
       }
     }
+
+    requiredImports.toList.sorted.foreach(out.println)
   }
 }

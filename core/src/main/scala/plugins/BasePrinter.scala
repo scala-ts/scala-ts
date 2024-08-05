@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.PrintStream
 
-import io.github.scalats.ast.TypeRef
+import io.github.scalats.ast.{ SingletonTypeRef, TypeRef }
 import io.github.scalats.core.{ Printer, Settings }
 import io.github.scalats.core.Internals.ListSet
 
@@ -10,28 +10,30 @@ abstract class BasePrinter extends Printer {
   private lazy val preludeUrl = sys.props.get("scala-ts.printer.prelude-url")
 
   /**
-   * If the system property `scala-ts.printer.prelude-url` is defined,
-   * then print the content from the URL as prelude to the given stream.
+   * If the system property `scala-ts.printer.import-pattern`, it's used to format.
    */
   protected def printPrelude(out: PrintStream): Unit =
     preludeUrl.foreach { url =>
       out.println(scala.io.Source.fromURL(url).mkString)
     }
 
-  private lazy val preformatImport: (String, String) => String =
+  private lazy val preformatImport: (String, Boolean, String) => String =
     sys.props.get("scala-ts.printer.import-pattern") match {
-      case Some(pattern) =>
-        pattern.format(_: String, _: String)
+      case Some(pattern) => {
+        (tpeName: String, _: Boolean, importPath: String) =>
+          pattern.format(tpeName, importPath)
+      }
 
-      case _ => { (tpeName: String, importPath: String) =>
-        s"import * as ns${tpeName} from '${importPath}';\nimport type { ${tpeName} } from '${importPath}'"
+      case _ => { (tpeName: String, singleton: Boolean, importPath: String) =>
+        if (singleton) {
+          s"import * as ns${tpeName} from '${importPath}'"
+        } else {
+          s"import * as ns${tpeName} from '${importPath}';\nimport type { ${tpeName} } from '${importPath}'"
+        }
       }
     }
 
   /**
-   * Prints TypeScript imports from the required types.
-   * If the system property `scala-ts.printer.import-pattern`
-   *
    * @param importPath the function applied to each required type to determine the import path
    */
   protected def printImports(
@@ -43,13 +45,22 @@ abstract class BasePrinter extends Printer {
     import settings.{ lineSeparator => sep }
 
     val typeNaming = settings.typeNaming(settings, _: TypeRef)
-    val requiredTypes = requires.toList.sortBy(_.name)
 
-    requiredTypes.foreach { tpe =>
+    val requiredImports = requires.map { tpe =>
+      // Required can contain different types with same name but not same kind
+      // (e.g. class and its companion object), which must be merge as single import there
+
       val tpeName = typeNaming(tpe)
-      val preformatted = preformatImport(tpeName, importPath(tpe))
+      val singleton = tpe match {
+        case SingletonTypeRef(_, _) => true
+        case _                      => false
+      }
 
-      out.println(s"${preformatted}${sep}")
+      val preformatted = preformatImport(tpeName, singleton, importPath(tpe))
+
+      s"${preformatted}${sep}"
     }
+
+    requiredImports.toList.sorted.foreach(out.println)
   }
 }

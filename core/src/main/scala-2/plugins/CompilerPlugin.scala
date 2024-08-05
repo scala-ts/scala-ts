@@ -195,62 +195,61 @@ final class CompilerPlugin(val global: Global)
           acc: Acc,
           _examined: List[Type] = List.empty
         )(f: ((Type, Tree), Acc) => Acc
-        ): Acc =
-        trees.headOption match {
-          case Some(tree) => {
-            import tree.{ symbol => sym }
+        ): Acc = trees.headOption match {
+        case Some(tree) => {
+          import tree.{ symbol => sym }
 
-            if (
-              sym != null && !(sym.fullName.startsWith("java.") ||
-                sym.fullName.startsWith("scala.")) &&
-              ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)
-            ) {
-              val tpe = sym.typeSignature
-              lazy val kind: String = if (sym.isModule) "object" else "class"
+          if (
+            sym != null && !(sym.fullName.startsWith("java.") ||
+              sym.fullName.startsWith("scala.")) &&
+            ((sym.isModule && !sym.hasPackageFlag) || sym.isClass)
+          ) {
+            val tpe = sym.typeSignature
+            lazy val kind: String = if (sym.isModule) "object" else "class"
 
-              val b = Seq.newBuilder[Tree]
+            val b = Seq.newBuilder[Tree]
 
-              tree.filter(_ != tree).foreach { b += _ }
+            tree.filter(_ != tree).foreach { b += _ }
 
-              val newTrees: Seq[Tree] = b.result() ++: trees.tail
+            val newTrees: Seq[Tree] = b.result() ++: trees.tail
 
-              val accepted = (ClassDefTag.unapply(tree).nonEmpty ||
-                ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
+            val accepted = (ClassDefTag.unapply(tree).nonEmpty ||
+              ModuleDefTag.unapply(tree).nonEmpty) && acceptsType(sym)
 
-              val add = !_examined.contains(tpe) && accepted
+            val add = !_examined.contains(tpe) && accepted
 
-              val newAcc = {
-                if (add) {
-                  if (plugin.debug) {
-                    global.inform(
-                      s"${plugin.name}.debug: Handling $kind ${sym.fullName}"
-                    )
-                  }
-
-                  f(tpe -> tree, acc)
-                } else {
-                  if (!accepted && plugin.debug) {
-                    global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
-                  }
-
-                  acc
+            val newAcc = {
+              if (add) {
+                if (plugin.debug) {
+                  global.inform(
+                    s"${plugin.name}.debug: Handling $kind ${sym.fullName}"
+                  )
                 }
-              }
 
-              val newEx = {
-                if (add) tpe :: _examined
-                else _examined
-              }
+                f(tpe -> tree, acc)
+              } else {
+                if (!accepted && plugin.debug) {
+                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                }
 
-              traverse(newTrees, newAcc, newEx)(f)
-            } else {
-              traverse(trees.tail, acc, _examined)(f)
+                acc
+              }
             }
-          }
 
-          case _ =>
-            acc
+            val newEx = {
+              if (add) tpe :: _examined
+              else _examined
+            }
+
+            traverse(newTrees, newAcc, newEx)(f)
+          } else {
+            traverse(trees.tail, acc, _examined)(f)
+          }
         }
+
+        case _ =>
+          acc
+      }
 
       val typeBuf = List.newBuilder[(Type, Tree)]
 
@@ -259,7 +258,9 @@ final class CompilerPlugin(val global: Global)
           case (ref @ (_, tree), acc) =>
             typeBuf += ref
             tree.symbol.fullName -> ref :: acc
-        }).toMap
+        }).groupBy(_._1).map {
+          case (k, ls) => k -> (ListSet.empty ++ ls.map(_._2))
+        }
 
       val scalaTypes = typeBuf.result()
 

@@ -10,7 +10,7 @@ $ exists target/scala-ts/src_managed/generated.ts
 # Check the generated files is as expected
 $ must-mirror target/scala-ts/src_managed/generated.ts src/test/resources/generated.ts
 
-## Scala 3.2
+## Scala 3.x
 
 > ;++3.4 ;clean
 $ absent target/scala-ts/src_managed/generated.ts
