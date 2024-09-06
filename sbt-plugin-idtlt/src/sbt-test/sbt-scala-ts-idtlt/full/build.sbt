@@ -8,7 +8,7 @@ enablePlugins(ScalatsIdtltPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.14"
 
-crossScalaVersions := Seq("2.12.19", scalaVersion.value)
+crossScalaVersions := Seq("2.12.20", scalaVersion.value)
 
 // ---
 
