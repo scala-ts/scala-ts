@@ -27,7 +27,7 @@
     "@rollup/plugin-commonjs": "28.0.0",
     "@rollup/plugin-html": "1.0.3",
     "@rollup/plugin-node-resolve": "15.2.3",
-    "@rollup/plugin-replace": "5.0.7",
+    "@rollup/plugin-replace": "6.0.1",
     "@rollup/plugin-typescript": "12.1.0",
     "@types/estree": "1.0.6",
     "@types/expect": "24.3.0",
