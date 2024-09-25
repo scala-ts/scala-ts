@@ -320,10 +320,10 @@
     magic-string "^0.30.3"
     picomatch "^2.3.1"
 
-"@rollup/plugin-html@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.3.tgz#9802e94bbca1d9acdca1066e9f919b7bc2516bf3"
-  integrity sha512-bbjQciNXitHX+Bgk0xsW3/0wFWih/356/r7/kvmdz4wzWhAU/a0zYBWTczihrlzz/6Qpw/kZ0yXqOJwsETgg7A==
+"@rollup/plugin-html@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.4.tgz#ab4050935c2f4cd2e860e6bf5f0ddcaac1a539f0"
+  integrity sha512-dbxJ8JAuelwdiW7nqeRbe564XPwxX234lsBHrmgVJ+yTL9Nt5zFbZIRcgIIlcTtNNp6M9spK5M+spjcnSExj1w==
 
 "@rollup/plugin-node-resolve@15.3.0":
   version "15.3.0"
