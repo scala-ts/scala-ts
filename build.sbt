@@ -20,7 +20,7 @@ lazy val shaded = project
     publishTo := None
   )
 
-val scala213Version = "2.13.14"
+val scala213Version = "2.13.15"
 
 val fullCrossScalaVersions = Def.setting {
   Seq(

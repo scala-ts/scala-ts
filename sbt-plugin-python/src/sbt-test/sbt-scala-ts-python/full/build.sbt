@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.14"
+scalaVersion := "2.13.15"
 
 crossScalaVersions := Seq("2.12.19", scalaVersion.value)
 
