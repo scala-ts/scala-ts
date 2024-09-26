@@ -866,7 +866,7 @@ chalk@~5.3.0:
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.3.0.tgz#67c20a7ebef70e7f3970a01f90fa210cb6860385"
   integrity sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==
 
-chokidar@^3.4.1, chokidar@^3.5.0, chokidar@^3.5.3:
+chokidar@^3.5.0, chokidar@^3.5.3:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.6.0.tgz#197c6cc669ef2a8dc5e7b4d97ee4e092c3eb0d5b"
   integrity sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==
@@ -881,10 +881,10 @@ chokidar@^3.4.1, chokidar@^3.5.0, chokidar@^3.5.3:
   optionalDependencies:
     fsevents "~2.3.2"
 
-chokidar@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-4.0.0.tgz#4d603963e5dd762dc5c7bb1cb5664e53a3002225"
-  integrity sha512-mxIojEAQcuEvT/lyXq+jf/3cO/KoA6z4CeNDGGevTybECPOMFCnQy3OPahluUkbqgPNGw5Bi78UC7Po6Lhy+NA==
+chokidar@^4.0.0, chokidar@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-4.0.1.tgz#4a6dff66798fb0f72a94f616abbd7e1a19f31d41"
+  integrity sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==
   dependencies:
     readdirp "^4.0.1"
 
@@ -2870,13 +2870,13 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svelte-check@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.0.2.tgz#782977b23afb9d1c2b0c7ea271003de9dd17ed3a"
-  integrity sha512-w2yqcG9ELJe2RJCnAvB7v0OgkHhL3czzz/tVoxGFfO6y4mOrF6QHCDhXijeXzsU7LVKEwWS3Qd9tza4JBuDxqA==
+svelte-check@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.0.3.tgz#5674af0698b9cf4eee470c6f823b6eae22148cbe"
+  integrity sha512-V2eqOEuNrPi1jGf307opR1JZ+ITP6/7R8ALKSw4Uw3NWp6GfA+fe7tYtEvZc7QHCavYKBizCK4JFwYjbuPCeXQ==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.25"
-    chokidar "^3.4.1"
+    chokidar "^4.0.1"
     fdir "^6.2.0"
     picocolors "^1.0.0"
     sade "^1.7.4"
