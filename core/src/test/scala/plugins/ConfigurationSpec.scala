@@ -1,6 +1,6 @@
 package io.github.scalats.plugins
 
-import java.net.URL
+import java.net.URI
 
 import scala.collection.immutable.Set
 
@@ -124,7 +124,10 @@ settings {
       )
 
       val cfg = Configuration(additionalClasspath =
-        Seq(new URL("file:///tmp/foo1"), new URL("file:///tmp/foo2"))
+        Seq(
+          new URI("file:///tmp/foo1").toURL,
+          new URI("file:///tmp/foo2").toURL
+        )
       )
 
       "be loaded with additional classpath" in {
