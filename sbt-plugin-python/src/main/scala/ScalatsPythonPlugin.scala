@@ -30,7 +30,7 @@ object ScalatsPythonPlugin extends AutoPlugin {
       Manifest.groupId %% "scala-ts-python" % Manifest.version
     ) ++ Seq(
       scalatsPythonBaseModule := Option.empty[String],
-      scalacOptions in Compile += {
+      Compile / scalacOptions += {
         val baseMod = scalatsPythonBaseModule.value.mkString
 
         s"-P:scalats:sys.scala-ts.printer.python-base-module=${baseMod}"
