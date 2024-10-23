@@ -44,7 +44,7 @@ export const _externalDependencyModules = [idtlt];"""
         // Custom declaration mapper (before type mapper)
         classOf[IdtltDeclarationMapper]
       ),
-      scalacOptions in Compile ++= Seq(
+      Compile / scalacOptions ++= Seq(
         "-P:scalats:sys.scala-ts.printer.import-pattern=import * as ns%1$s from '%2$s'"
       ),
       scalatsImportResolvers ++= Seq(
