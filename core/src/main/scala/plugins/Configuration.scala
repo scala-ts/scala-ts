@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.File
 
-import java.net.URL
+import java.net.{URI, URL}
 
 import scala.util.control.NonFatal
 
@@ -126,7 +126,7 @@ object Configuration {
     val additionalClasspath: Seq[URL] =
       strs("additionalClasspath").flatMap { n =>
         try {
-          Option(new URL(n))
+          Option(new URI(n).toURL)
         } catch {
           case NonFatal(_) =>
             logger.warning(s"Invalid URL in additional classpath: ${n}")
