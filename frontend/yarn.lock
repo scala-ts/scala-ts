@@ -589,10 +589,10 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
-"@types/expect@24.3.0":
-  version "24.3.0"
-  resolved "https://registry.yarnpkg.com/@types/expect/-/expect-24.3.0.tgz#d7cab8b3c10c2d92a0cbb31981feceb81d3486f1"
-  integrity sha512-aq5Z+YFBz5o2b6Sp1jigx5nsmoZMK5Ceurjwy6PZmRv7dEi1jLtkARfvB1ME+OXJUG+7TZUDcv3WoCr/aor6dQ==
+"@types/expect@24.3.2":
+  version "24.3.2"
+  resolved "https://registry.yarnpkg.com/@types/expect/-/expect-24.3.2.tgz#0c5aa8cb9aaa29e43c9d2b377c02cbbab5d1a599"
+  integrity sha512-5ev4tL5eBuX9wyC/SFHku1Sizyerg457LiwMgde3sq61TMHbnKjikzwsBLxLpFMflvKuWXfWVW0w3hZg4qml9w==
   dependencies:
     expect "*"
 
