@@ -266,11 +266,11 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     scalatsDebug := false,
     autoCompilerPlugins := true,
     addCompilerPlugin(groupId %% coreArtifactId % version),
-    sourceManaged in scalatsOnCompile := {
+    scalatsOnCompile / sourceManaged := {
       target.value / "scala-ts" / "src_managed"
     },
     scalatsCompilerPluginConf := {
-      (target in Compile).value / "scala-ts.conf"
+      (Compile / target).value / "scala-ts.conf"
     },
     scalatsAdditionalClasspath := {
       val sbtScalaVer: String = {
@@ -356,7 +356,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
         // Printer
         val printer = {
-          val outDir = (sourceManaged in scalatsOnCompile).value
+          val outDir = (scalatsOnCompile / sourceManaged).value
 
           outDir.mkdirs()
 
@@ -471,13 +471,13 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
         }
       }
     },
-    scalacOptions in Compile ++= {
+    Compile / scalacOptions ++= {
       if (!scalatsOnCompile.value || !scalatsPrepare.value) {
         Seq.empty[String]
       } else {
         val opts = Seq.newBuilder[String]
 
-        val printDir = (sourceManaged in scalatsOnCompile).value.getAbsolutePath
+        val printDir = (scalatsOnCompile / sourceManaged).value.getAbsolutePath
 
         opts ++= Seq(
           s"-P:scalats:configuration=${scalatsCompilerPluginConf.value.getAbsolutePath}",
