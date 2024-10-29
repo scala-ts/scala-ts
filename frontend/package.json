@@ -32,7 +32,7 @@
     "@types/estree": "1.0.6",
     "@types/expect": "24.3.2",
     "@types/mocha": "10.0.9",
-    "@types/node": "22.8.1",
+    "@types/node": "22.8.4",
     "concurrently": "9.0.1",
     "cross-env": "7.0.3",
     "dotenv": "16.4.5",
