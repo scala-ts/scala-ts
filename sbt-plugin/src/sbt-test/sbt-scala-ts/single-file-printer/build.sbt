@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-scalaVersion := "2.13.14"
+scalaVersion := "2.13.15"
 
 crossScalaVersions := Seq(scalaVersion.value, "3.4.3")
 

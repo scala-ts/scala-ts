@@ -92,7 +92,7 @@ object Compiler extends AutoPlugin {
 
       if (sv != "3") {
         val silencerVersion =
-          if (sv == "2.13" || sv == "2.12") "1.7.17" else "1.17.13"
+          if (sv == "2.13" || sv == "2.12") "1.7.19" else "1.17.13"
 
         Seq(
           compilerPlugin(
