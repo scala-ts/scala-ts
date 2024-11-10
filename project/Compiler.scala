@@ -12,7 +12,7 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override lazy val projectSettings = Seq(
-    scalaVersion := "2.12.19",
+    scalaVersion := "2.12.20",
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
     scalacOptions ++= Seq(
@@ -92,7 +92,7 @@ object Compiler extends AutoPlugin {
 
       if (sv != "3") {
         val silencerVersion =
-          if (sv == "2.13" || sv == "2.12") "1.7.17" else "1.17.13"
+          if (sv == "2.13" || sv == "2.12") "1.7.19" else "1.17.13"
 
         Seq(
           compilerPlugin(
