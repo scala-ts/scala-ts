@@ -41,7 +41,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "madge": "^8.0.0",
-    "mocha": "10.8.2",
+    "mocha": "11.0.1",
     "prettier": "2.8.8",
     "prettier-plugin-svelte": "2.10.1",
     "rimraf": "5.0.8",
