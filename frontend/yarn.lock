@@ -403,10 +403,10 @@
     magic-string "^0.30.3"
     picomatch "^4.0.2"
 
-"@rollup/plugin-html@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.0.4.tgz#ab4050935c2f4cd2e860e6bf5f0ddcaac1a539f0"
-  integrity sha512-dbxJ8JAuelwdiW7nqeRbe564XPwxX234lsBHrmgVJ+yTL9Nt5zFbZIRcgIIlcTtNNp6M9spK5M+spjcnSExj1w==
+"@rollup/plugin-html@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.1.0.tgz#3b6d0055e7c7feade9714e2cb7752bd7c4f5a3d7"
+  integrity sha512-MTJDgMp83fB0kFRU95wAUqboUTcl1O1oXg7KLZNjNXfgPKTV0crek1k2vBUgM6Nmuvl/koqea7OrnUzzQdWT7w==
 
 "@rollup/plugin-node-resolve@16.0.0":
   version "16.0.0"
