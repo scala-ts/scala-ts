@@ -33,7 +33,7 @@
     "@types/expect": "24.3.2",
     "@types/mocha": "10.0.10",
     "@types/node": "22.10.2",
-    "concurrently": "9.1.0",
+    "concurrently": "9.1.1",
     "cross-env": "7.0.3",
     "dotenv": "16.4.7",
     "esbuild": "0.24.2",
