@@ -12,5 +12,6 @@ object State extends Enum[State] {
 
   val cities = Map[State, Set[String]](
     Alaska -> Set("Juneau", "Anchorage"),
-    Alabama -> Set("Birmingham"))
+    Alabama -> Set("Birmingham")
+  )
 }
