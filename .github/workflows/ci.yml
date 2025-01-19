@@ -23,6 +23,9 @@ jobs:
       with:
         java-version: 1.8
 
+    - name: 'Set up SBT'
+      uses: actions/setup-sbt@v2
+
     - name: 'Coursier cache'
       uses: coursier/cache-action@v5
       with:
