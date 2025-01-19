@@ -19,9 +19,10 @@ abstract class BasePrinter extends Printer {
 
   private lazy val preformatImport: (String, Boolean, String) => String =
     sys.props.get("scala-ts.printer.import-pattern") match {
-      case Some(pattern) => {
-        (tpeName: String, _: Boolean, importPath: String) =>
-          pattern.format(tpeName, importPath)
+      case Some(
+            pattern
+          ) => { (tpeName: String, _: Boolean, importPath: String) =>
+        pattern.format(tpeName, importPath)
       }
 
       case _ => { (tpeName: String, singleton: Boolean, importPath: String) =>

@@ -834,7 +834,10 @@ final class ScalaParser[Uni <: Universe](
         ListSet.empty ++ vs.reverse
     }
 
-  private def parseObject(tpe: (Type, Tree), fid: TypeFullId): Result[Option, TypeFullId] = {
+  private def parseObject(
+      tpe: (Type, Tree),
+      fid: TypeFullId
+    ): Result[Option, TypeFullId] = {
     import tpe.{ _1 => scalaType }
 
     lazy val declNames: ListSet[String] =
@@ -1013,7 +1016,9 @@ final class ScalaParser[Uni <: Universe](
     }
   }
 
-  private def parseEnumeration(enumerationType: Type): Result[Option, TypeFullId] = {
+  private def parseEnumeration(
+      enumerationType: Type
+    ): Result[Option, TypeFullId] = {
     val enumerationObject = enumerationType.typeSymbol
     val identifier = buildQualifiedIdentifier(enumerationObject)
 

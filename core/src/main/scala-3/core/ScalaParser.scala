@@ -907,7 +907,10 @@ final class ScalaParser(
     }
   }
 
-  private def parseObject(tpe: (Type, Tree), fid: TypeFullId): Result[Option, TypeFullId] = {
+  private def parseObject(
+      tpe: (Type, Tree),
+      fid: TypeFullId
+    ): Result[Option, TypeFullId] = {
     import tpe.{ _1 => scalaType }
 
     lazy val memberNames: Set[Names.Name] =
@@ -1278,7 +1281,9 @@ final class ScalaParser(
     }
   }
 
-  private def parseEnumeration(enumerationType: Type): Result[Option, TypeFullId] = {
+  private def parseEnumeration(
+      enumerationType: Type
+    ): Result[Option, TypeFullId] = {
     val enumerationObject = enumerationType.typeSymbol
 
     val identifier = {
