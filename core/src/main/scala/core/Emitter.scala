@@ -811,7 +811,9 @@ ${indent}return (""")
     }
   }
 
-  private def emitEnumDeclaration(out: PrintStream): (EnumDeclaration, Context) => Unit = {
+  private def emitEnumDeclaration(
+      out: PrintStream
+    ): (EnumDeclaration, Context) => Unit = {
     val default: DeclarationMapper.Resolved = { (decl, context, o) =>
       decl match {
         case decl: ValueMemberDeclaration =>
