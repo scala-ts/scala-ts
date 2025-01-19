@@ -10,9 +10,8 @@ object Greeting {
 
   case class Whatever(word: String) extends Greeting
 
-  val aliases = Map[Greeting, Set[Greeting]](
-    Hello -> Set(Hi),
-   GoodBye -> Set(Bye))
+  val aliases =
+    Map[Greeting, Set[Greeting]](Hello -> Set(Hi), GoodBye -> Set(Bye))
 }
 
 object Words {

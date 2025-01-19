@@ -2,7 +2,7 @@ package io.github.scalats.plugins
 
 import java.io.File
 
-import java.net.{URI, URL}
+import java.net.{ URI, URL }
 
 import scala.util.control.NonFatal
 
