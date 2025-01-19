@@ -23,8 +23,8 @@ final class CustomDeclarationMapper extends DeclarationMapper {
       settings: Settings,
       typeMapper: TypeMapper.Resolved,
       fieldMapper: FieldMapper,
-    declaration: Declaration,
-    context: DeclarationMapper.Context,
+      declaration: Declaration,
+      context: DeclarationMapper.Context,
       out: PrintStream
     ): Option[Unit] = declaration match {
     case decl @ UnionDeclaration(name, fields, possibilities, superInterface) =>

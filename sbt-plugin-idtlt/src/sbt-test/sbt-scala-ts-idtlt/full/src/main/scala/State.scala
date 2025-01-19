@@ -8,5 +8,6 @@ object State {
 
   val cities = Map[State, Set[String]](
     Alaska -> Set("Anchorage", "Juneau"),
-    Alabama -> Set("Birmingham"))
+    Alabama -> Set("Birmingham")
+  )
 }

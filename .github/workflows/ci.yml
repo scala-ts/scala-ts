@@ -28,6 +28,9 @@ jobs:
     - name: Setup SBT launcher
       uses: sbt/setup-sbt@v1
 
+    - name: Setup sbt launcher
+      uses: sbt/setup-sbt@v1
+
     - name: 'Coursier cache'
       uses: coursier/cache-action@v5
       with:
