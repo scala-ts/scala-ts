@@ -408,10 +408,10 @@
     magic-string "^0.30.3"
     picomatch "^4.0.2"
 
-"@rollup/plugin-html@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-1.1.0.tgz#3b6d0055e7c7feade9714e2cb7752bd7c4f5a3d7"
-  integrity sha512-MTJDgMp83fB0kFRU95wAUqboUTcl1O1oXg7KLZNjNXfgPKTV0crek1k2vBUgM6Nmuvl/koqea7OrnUzzQdWT7w==
+"@rollup/plugin-html@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-html/-/plugin-html-2.0.0.tgz#828d6b22948dcb9e603e25cbcd39f1c5669730e1"
+  integrity sha512-6S0ezKfDRw5FvHk3xm1T/eXP9IlLf82zmV+z2V1/yQL5hXwIUL/Gl2RrNMMIe2rt85rk6+0smvSAtjfTLGylDQ==
 
 "@rollup/plugin-node-resolve@16.0.0":
   version "16.0.0"
