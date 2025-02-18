@@ -2767,10 +2767,10 @@ signal-exit@^4.0.1, signal-exit@^4.1.0:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-4.1.0.tgz#952188c1cbd546070e2dd20d0f41c0ae0530cb04"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
 
-sirv-cli@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/sirv-cli/-/sirv-cli-3.0.0.tgz#b397c6c0db0ba9661a46693dd05e51f20da3934f"
-  integrity sha512-p88yHl8DmTOUJroRiW2o9ezJc/YRLxphBydX2NGQc3naKBA09B3EM4Q/yaN8FYF0e50fRSZP7dyatr72b1u5Jw==
+sirv-cli@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/sirv-cli/-/sirv-cli-3.0.1.tgz#9a53e4fa85fdc08d54a76fd76a7c866cd4c3988b"
+  integrity sha512-ICXaF2u6IQhLZ0EXF6nqUF4YODfSQSt+mGykt4qqO5rY+oIiwdg7B8w2PVDBJlQulaS2a3J8666CUoDoAuCGvg==
   dependencies:
     console-clear "^1.1.0"
     get-port "^5.1.1"
