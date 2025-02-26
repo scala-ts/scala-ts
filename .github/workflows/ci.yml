@@ -55,7 +55,7 @@ jobs:
         sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12 ;^scripted'
 
     - name: 'Persist generated data'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tmp-generated
         path: /tmp/sbt-scala-ts/
@@ -71,7 +71,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: tmp-generated
         path: /tmp/sbt-scala-ts
@@ -108,7 +108,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: tmp-generated
         path: /tmp/sbt-scala-ts
