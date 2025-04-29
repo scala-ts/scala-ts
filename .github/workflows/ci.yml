@@ -17,15 +17,16 @@ jobs:
         fetch-depth: 0
 
     - name: 'Set up JDK 1.8'
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v2
       with:
-        java-version: 1.8
+        java-version: '8'
+        distribution: 'adopt'
 
     - name: Setup SBT launcher
       uses: sbt/setup-sbt@v1
 
     - name: 'Coursier cache'
-      uses: coursier/cache-action@v5
+      uses: coursier/cache-action@v6
       with:
         extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
@@ -37,7 +38,7 @@ jobs:
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
     - name: 'Set up Node'
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
 
