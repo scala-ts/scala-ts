@@ -43,7 +43,7 @@
     "mocha": "11.2.2",
     "@types/mocha": "10.0.10",
     "prettier": "3.5.3",
-    "prettier-plugin-svelte": "3.3.3",
+    "prettier-plugin-svelte": "3.4.0",
     "rimraf": "6.0.1",
     "rollup": "4.40.2",
     "rollup-plugin-copy": "3.5.0",
