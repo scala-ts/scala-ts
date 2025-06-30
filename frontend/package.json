@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "disable-warning",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "scripts": {
     "clean-dist": "rimraf ./dist",
@@ -39,7 +39,7 @@
     "esbuild": "0.25.5",
     "expect": "30.0.3",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
+    "lint-staged": "^16.1.2",
     "madge": "^8.0.0",
     "mocha": "11.7.1",
     "prettier": "2.8.8",
