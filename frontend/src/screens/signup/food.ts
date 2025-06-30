@@ -7,7 +7,7 @@ import { discriminatedOtherFood } from "@_generated/OtherFood";
 
 import { accountStore } from "./signup";
 
-type PizzaSushi = JapaneseSushi | Pizza;
+export type PizzaSushi = JapaneseSushi | Pizza;
 
 export const pizzaOrSushi = writable<PizzaSushi | undefined>(undefined);
 
@@ -22,7 +22,7 @@ function isSelectable(f: any): f is PizzaSushi {
 
 export const canSelectFood: Readable<boolean> = derived(
   availableFoods,
-  ($availableFoods) => $availableFoods.length > 0
+  ($availableFoods) => $availableFoods.length > 0,
 );
 
 export const selectFood = (food: PizzaSushi | undefined) => {
@@ -74,7 +74,7 @@ export const canAddFood: Readable<boolean> = derived(
     const favFoods = account.favoriteFoods.map((f) => f.toString());
 
     return favFoods.indexOf($otherFood) == -1;
-  }
+  },
 );
 
 export const addFood = () => {

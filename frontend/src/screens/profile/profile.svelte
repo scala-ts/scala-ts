@@ -1,17 +1,24 @@
 <script lang="ts">
   import * as idtlt from "idonttrustlikethat";
-  import { onMount } from "svelte";
   import { fade } from "svelte/transition";
+  import { onMount, onDestroy } from "svelte";
   import { idtltOtherFood } from "@_generated/OtherFood";
+  import { Account } from "@_generated/Account";
   import { account, load, modalStore, pending, signOut } from "./profile";
+  import * as ModalModule from "@components/modal/modal.svelte";
+  const Modal = ModalModule.default;
+  import type { ModalProps } from "@components/modal/modal";
 
   export let token: string;
   const name = token.substring(0, token.indexOf(":"));
 
   onMount(async () => load(token));
 
-  $: a = $account;
-  $: contact = a ? a.contact : undefined;
+  // Explicit store subscriptions for Svelte 5
+  let a: Account | undefined;
+  const unsubAccount = account.subscribe(value => a = value);
+  
+  $: contact = a?.contact;
   $: usage = a ? a.usage : undefined;
   $: foods = a
     ? a.favoriteFoods.map((f) => {
@@ -19,31 +26,44 @@
       })
     : [];
 
-  // Modal
-  import Modal from "@components/modal/modal.svelte";
+  // Modal subscription
+  let modal: ModalProps | undefined;
+  const unsubModal = modalStore.subscribe(value => modal = value);
 
-  $: modal = $modalStore;
+  // Pending subscription
+  let isPending = false;
+  const unsubPending = pending.subscribe(value => {
+    // Ensure primitive boolean
+    isPending = value === true;
+  });
 
   const hideModal = () => modalStore.set(undefined);
+  
+  // Cleanup subscriptions
+  onDestroy(() => {
+    unsubAccount();
+    unsubModal();
+    unsubPending();
+  });
 </script>
 
-<div in:fade={{ duration: 120 }} class="container-fluid">
+<div transition:fade={{ duration: 120 }} class="container-fluid">
   {#if modal}
     <Modal state={modal} hide={hideModal} />
   {/if}
 
-  {#if $pending}
+  {#if isPending}
     <div
       class="modal-backdrop"
       id="pending-backdrop"
       style="background-color:rgba(0, 0, 0, 0.5)"
-      in:fade={{ duration: 120 }}
+      transition:fade={{ duration: 120 }}
     >
       <div
         class="container-fluid text-center position-relative"
         style="top:49%"
       >
-        <div class="spinner-border text-white align-middle" role="status" />
+        <div class="spinner-border text-white align-middle" role="status"></div>
       </div>
     </div>
   {/if}
@@ -57,7 +77,7 @@
             class="btn btn-secondary btn-sm"
             href="#signout"
             on:click|preventDefault={signOut}
-            ><i class="bi bi-arrow-left-circle-fill" />
+            ><i class="bi bi-arrow-left-circle-fill"></i>
             Sign out</a
           >
         </div>
@@ -116,7 +136,7 @@
             </div>
 
             <div class="p-2">
-              <i class="bi bi-github" />
+              <i class="bi bi-github"></i>
               <small>
                 <a
                   href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"

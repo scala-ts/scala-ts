@@ -1,24 +1,24 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-import childProcess from 'child_process'
+import path from "path";
+import { fileURLToPath } from "url";
+import childProcess from "child_process";
 
-import type { RollupOptions } from 'rollup'
-import svelte from 'rollup-plugin-svelte'
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import replace from '@rollup/plugin-replace'
-import alias from '@rollup/plugin-alias'
-import copy from 'rollup-plugin-copy'
-import esbuild from 'rollup-plugin-esbuild'
+import type { RollupOptions } from "rollup";
+import svelte from "rollup-plugin-svelte";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import replace from "@rollup/plugin-replace";
+import alias from "@rollup/plugin-alias";
+import copy from "rollup-plugin-copy";
+import esbuild from "rollup-plugin-esbuild";
 
 // @ts-ignore
-import css from 'rollup-plugin-css-asset'
+import css from "rollup-plugin-css-asset";
 // @ts-ignore
-import html from '@rollup/plugin-html'
+import html from "@rollup/plugin-html";
 // @ts-ignore
-import livereload from 'rollup-plugin-livereload'
+import livereload from "rollup-plugin-livereload";
 
-import preprocess from 'svelte-preprocess'
+import preprocess from "svelte-preprocess";
 
 import { config } from "dotenv";
 import { envValidator } from "./envValidator";
@@ -26,7 +26,7 @@ import { errorDebugString } from "idonttrustlikethat";
 import { indexTemplate } from "./indexTemplate";
 
 const __filename = fileURLToPath(import.meta.url);
-const buildDirectory = path.dirname(__filename)
+const buildDirectory = path.dirname(__filename);
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -41,8 +41,8 @@ const appEnv = envValidator.validate({
 if (!appEnv.ok)
   throw new Error(
     `The app was given the wrong env variables: \n${errorDebugString(
-      appEnv.errors
-    )}`
+      appEnv.errors,
+    )}`,
   );
 
 const options: RollupOptions = {
@@ -72,7 +72,7 @@ const options: RollupOptions = {
     // Skip certain warnings
     if (
       new Set(["THIS_IS_UNDEFINED", "NON_EXISTENT_EXPORT"]).has(
-        warning?.code || ""
+        warning?.code || "",
       )
     )
       return;
@@ -85,11 +85,13 @@ const options: RollupOptions = {
   plugins: [
     replace({
       values: {
-        "process.env.NODE_ENV": JSON.stringify(production ? "production" : "dev"),
+        "process.env.NODE_ENV": JSON.stringify(
+          production ? "production" : "dev",
+        ),
         appEnv: JSON.stringify(appEnv.value),
       },
-      delimiters: ['', ''],
-      preventAssignment: true
+      delimiters: ["", ""],
+      preventAssignment: true,
     }),
 
     resolve({ browser: true, extensions: [".js", ".ts", ".json", ".svelte"] }),
@@ -103,8 +105,8 @@ const options: RollupOptions = {
           scss: {
             includePaths: ["./src/theme"],
             prependData: '@import "util.scss";',
-          }
-        })
+          },
+        }),
       ],
       compilerOptions: {
         // This is a better default.
@@ -132,7 +134,7 @@ const options: RollupOptions = {
           find: "@shared",
           replacement: path.resolve(
             buildDirectory,
-            "../../common/target/scala-ts/src_managed"
+            "../../common/target/scala-ts/src_managed",
           ),
         },
         {
@@ -150,7 +152,8 @@ const options: RollupOptions = {
 
         const css = (files.css || [])
           .map(
-            ({ fileName }: any) => `<link rel='stylesheet' href='/${fileName}'>`
+            ({ fileName }: any) =>
+              `<link rel='stylesheet' href='/${fileName}'>`,
           )
           .join("\n");
 
@@ -172,29 +175,29 @@ const options: RollupOptions = {
 };
 
 function devServer() {
-  let started = false
+  let started = false;
 
   return {
     writeBundle() {
-      if (started) return
+      if (started) return;
 
-      started = true
+      started = true;
 
-      const sirvPort = '5000'
+      const sirvPort = "5000";
 
       // sirv's --quiet mode is all or nothing so let's print our own message to know about the port.
-      console.log(`Your application is ready at localhost:${sirvPort}`)
+      console.log(`Your application is ready at localhost:${sirvPort}`);
 
       childProcess.spawn(
-        'yarn',
-        ['sirv', 'dist', '--dev', '--quiet', '--single', '--port', sirvPort],
+        "yarn",
+        ["sirv", "dist", "--dev", "--quiet", "--single", "--port", sirvPort],
         {
-          stdio: ['ignore', 'inherit', 'inherit'],
+          stdio: ["ignore", "inherit", "inherit"],
           shell: true,
-        }
-      )
+        },
+      );
     },
-  }
+  };
 }
 
 export default options;

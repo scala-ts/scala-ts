@@ -1,8 +1,12 @@
 <script lang="ts">
   import { currentRoute } from "@components/router";
+  import { onDestroy } from "svelte";
   import SignUp from "@screens/signup/signup.svelte";
   import SignIn from "@screens/signin/signin.svelte";
   import Profile from "@screens/profile/profile.svelte";
+
+  // Define type at the top level
+  type AppRoute = { name: string };
 
   let token: string | null = null;
 
@@ -11,7 +15,14 @@
     return !!token;
   };
 
-  $: route = $currentRoute;
+  // Store subscription
+  let route: AppRoute;
+  const unsubRoute = currentRoute.subscribe(value => route = value);
+  
+  // Cleanup subscriptions
+  onDestroy(() => {
+    unsubRoute();
+  });
 </script>
 
 <div id="app" class="container-fluid">
