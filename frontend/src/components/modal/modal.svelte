@@ -11,7 +11,7 @@
 <div
   class="modal-backdrop"
   style="background-color:rgba(0, 0, 0, 0.75)"
-  in:fade={{ duration: 120 }}
+  transition:fade={{ duration: 120 }}
   on:click={hide}
 >
   <div

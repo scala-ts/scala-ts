@@ -7,7 +7,7 @@ export const router = Router(
     signin: Route("/signin"),
     profile: Route("/profile"),
   },
-  { onNotFound: (reason) => console.error(reason) }
+  { onNotFound: (reason) => console.error(reason) },
 );
 
 export type AppRouter = typeof router;

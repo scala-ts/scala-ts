@@ -6,7 +6,7 @@ import type { ModalProps } from "@components/modal/modal";
 import { Error, isError } from "@utils/error";
 
 // Overall store
-const initialAccount: () => Account = () => ({
+export const initialAccount: () => Account = () => ({
   userName: UserName(""),
   password: "",
   usage: "Personal",
@@ -21,7 +21,7 @@ export const valid: Readable<boolean> = derived(
     return (
       $accountStore.userName.length > 0 && $accountStore.password.length > 0
     );
-  }
+  },
 );
 
 // Contact name
@@ -43,12 +43,12 @@ const contactName: Readable<ContactName | undefined> = derived(
     } else {
       return undefined;
     }
-  }
+  },
 );
 
 export const hasContact: Readable<boolean> = derived(
   contactName,
-  ($contactName) => !!$contactName
+  ($contactName) => !!$contactName,
 );
 
 // Save
