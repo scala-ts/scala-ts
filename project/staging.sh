@@ -4,7 +4,6 @@ set -e
 
 export PUBLISH_REPO_NAME="OSSRH Staging API Service"
 export PUBLISH_REPO_ID="ossrh-staging-api.central.sonatype.com"
-#export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"
 export PUBLISH_REPO_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
 
 if [ -z "$PUBLISH_USER" ]; then
