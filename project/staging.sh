@@ -1,8 +1,10 @@
 #! /bin/sh
 
-export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
-export PUBLISH_REPO_ID="oss.sonatype.org"
-export PUBLISH_REPO_URL="https://oss.sonatype.org/service/local/staging/deploy/maven2"
+set -e
+
+export PUBLISH_REPO_NAME="OSSRH Staging API Service"
+export PUBLISH_REPO_ID="ossrh-staging-api.central.sonatype.com"
+export PUBLISH_REPO_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
 
 if [ -z "$PUBLISH_USER" ]; then
   echo "User: "
@@ -12,6 +14,10 @@ fi
 if [ -z "$PUBLISH_PASS" ]; then
   echo "Password: "
   read PUBLISH_PASS
+  echo
 fi
 
-sbt
+export PUBLISH_USER
+export PUBLISH_PASS
+
+exec sbt "$@"
