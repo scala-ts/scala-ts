@@ -7,7 +7,7 @@
     "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "scala-ts",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.3.0",
