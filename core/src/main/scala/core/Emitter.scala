@@ -390,7 +390,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
     )
   }
 
-  private val emitValueBody: (
+  private[core] val emitValueBody: (
       ValueBodyDeclaration,
       Context,
       PrintStream
@@ -471,7 +471,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
               case SetValue(_, _, _, elements) => {
                 o.print("new Set([ ")
 
-                elements.zipWithIndex.foreach {
+                elements.toList.zipWithIndex.foreach {
                   case (e, i) =>
                     if (i > 0) {
                       o.print(", ")
@@ -486,7 +486,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
               case MergedSetsValue(_, _, children) => {
                 o.print("new Set([ ...")
 
-                children.zipWithIndex.foreach {
+                children.toList.zipWithIndex.foreach {
                   case (c, i) =>
                     if (i > 0) {
                       o.print(", ...")
@@ -508,7 +508,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
                   o.print("new Map([ ")
 
                   // All keys are literal string
-                  entries.zipWithIndex.foreach {
+                  entries.toList.zipWithIndex.foreach {
                     case ((key, v), i) =>
                       if (i > 0) {
                         o.print(", ")

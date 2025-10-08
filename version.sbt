@@ -1,6 +1,6 @@
 ThisBuild / dynverVTagPrefix := false
 
-ThisBuild / previousStableVersion := Some("0.7.0")
+ThisBuild / previousStableVersion := Some("0.7.1")
 
 ThisBuild / version := {
   val Stable = """([0-9]+)\.([0-9]+)\.([0-9]+)""".r

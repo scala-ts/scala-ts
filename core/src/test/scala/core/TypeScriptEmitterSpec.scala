@@ -653,10 +653,68 @@ export function isWords(v: any): v is Words {
 }"""
       }
     }
+
+    "emit value body" >> {
+      "when Set" in {
+        val (emitter, ps, buf) = TypeScriptEmitterSpec.emitter()
+        val setValue = SetValue(
+          name = "foo",
+          typeRef = SetRef(StringRef),
+          valueTypeRef = StringRef,
+          elements = Set(
+            LiteralValue("foo[0]", StringRef, "\"lorem\""),
+            LiteralValue("foo[1]", StringRef, "\"bar\""),
+            LiteralValue("foo[2]", StringRef, "\"alpha\""),
+            LiteralValue("foo[3]", StringRef, "\"dolor\""),
+            LiteralValue("foo[4]", StringRef, "\"huit\"")
+          )
+        )
+
+        val memberDecl = new ValueMemberDeclaration(
+          SingletonDeclaration("Test", ListSet.empty, None),
+          setValue
+        )
+
+        emitter.emitValueBody(
+          new ValueBodyDeclaration(memberDecl, setValue),
+          Map.empty,
+          ps
+        )
+
+        val ls = setValue.elements.toList.collect {
+          case LiteralValue(_, _, v) => v
+        }.mkString(", ")
+
+        buf.toString must_=== s"""new Set([ ${ls} ])"""
+      }
+    }
   }
 }
 
 private[core] object TypeScriptEmitterSpec {
+  import java.io.{ ByteArrayOutputStream, PrintStream }
+
+  def emitter(
+      config: Settings = Settings(),
+      declMapper: DeclarationMapper = DeclarationMapper.Defaults,
+      importResolver: ImportResolver = ImportResolver.Defaults,
+      typeMapper: TypeMapper = TypeMapper.Defaults
+    ): (Emitter, PrintStream, ByteArrayOutputStream) = {
+    val buf = new ByteArrayOutputStream()
+    lazy val out = new PrintStream(buf)
+
+    Tuple3(
+      new Emitter(
+        config,
+        (_, _, _, _, _) => out,
+        importResolver,
+        declMapper,
+        typeMapper
+      ),
+      out,
+      buf
+    )
+  }
 
   def emit(
       decls: Map[String, ListSet[Declaration]],
@@ -665,19 +723,11 @@ private[core] object TypeScriptEmitterSpec {
       importResolver: ImportResolver = ImportResolver.Defaults,
       typeMapper: TypeMapper = TypeMapper.Defaults
     ): String = {
-    val buf = new java.io.ByteArrayOutputStream()
-    lazy val out = new java.io.PrintStream(buf)
-
-    val emiter = new Emitter(
-      config,
-      (_, _, _, _, _) => out,
-      importResolver,
-      declMapper,
-      typeMapper
-    )
+    val (em, out, buf) =
+      emitter(config, declMapper, importResolver, typeMapper)
 
     try {
-      emiter.emit(decls)
+      em.emit(decls)
       out.flush()
       buf.toString
     } finally {
