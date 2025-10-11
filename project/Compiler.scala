@@ -84,6 +84,13 @@ object Compiler extends AutoPlugin {
         )
       }
     },
+    Test / scalacOptions ++= {
+      if (scalaBinaryVersion.value == "2.13") {
+        Seq("-Wconf:msg=.*inferred\\ .*Any.*:s")
+      } else {
+        Seq.empty
+      }
+    },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     highlightActivation := HLEnabledBySysProp("highlight"),
