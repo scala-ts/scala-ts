@@ -752,6 +752,59 @@ final class ScalaParser(
           None
       }
 
+    case app @ ArrowedTuple(a, b) => {
+      val elements = List(a, b).zipWithIndex.collect(
+        Function.unlift[(Tree, Int), TypeInvariant] {
+          case (e, i) =>
+            typeInvariant(s"_${i + 1}", e, e, None)
+        }
+      )
+
+      if (elements.nonEmpty && elements.size == 2) {
+        val elmTpe = scalaTypeRef(app.tpe, Set.empty)
+
+        Some(
+          ScalaModel.TupleInvariant(
+            name = k,
+            typeRef = elmTpe,
+            values = elements
+          )
+        )
+      } else {
+        logger.warning(s"Skip list with non-stable value: $k")
+
+        None
+      }
+    }
+
+    case WithTypeArgs(app @ Apply(a, args), x)
+        if (app.tpe.typeSymbol.fullName.toString startsWith "scala.Tuple") => {
+      // Tuple factory
+
+      val values = args.zipWithIndex.collect(
+        Function.unlift[(Tree, Int), TypeInvariant] {
+          case (e, i) =>
+            typeInvariant(s"_${i + 1}", e, e, None)
+        }
+      )
+
+      if (values.nonEmpty && values.size == args.size) {
+        val tplTpe = scalaTypeRef(app.tpe, Set.empty)
+
+        Some(
+          ScalaModel.TupleInvariant(
+            name = k,
+            typeRef = tplTpe,
+            values = values
+          )
+        )
+      } else {
+        logger.warning(s"Skip list with non-stable value: $k")
+
+        None
+      }
+    }
+
     case _ => {
       val unionType: Option[ScalaTypeRef] = owner match {
         case tr: ValOrDefDef =>
@@ -786,7 +839,17 @@ final class ScalaParser(
         val k = tr.name.toString.trim
 
         if (declNames contains k) {
-          typeInvariant(k, tr, tr.rhs, None) match {
+          val hint = Some(scalaTypeRef(tr.tpt.tpe, Set.empty)).filter {
+            case ScalaModel.UnknownTypeRef(_) => false
+            case _                            => true
+          }
+
+          typeInvariant(
+            k,
+            tr,
+            tr.rhs,
+            hint
+          ) match {
             case Some(single) =>
               typeInvariants(
                 owner,

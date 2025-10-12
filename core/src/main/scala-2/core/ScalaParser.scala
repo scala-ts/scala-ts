@@ -509,6 +509,51 @@ final class ScalaParser[Uni <: Universe](
       }
 
     case ApplyTag(a)
+        if (a.tpe.typeSymbol.toString.indexOf(
+          "Tuple"
+        ) != -1 && a.symbol.name.toString == "apply" && a.args.nonEmpty) => {
+      scalaTypeRef(a.tpe, Set.empty) match {
+        case tplTpe @ TupleRef(_) => {
+          val elements = a.args.zipWithIndex.collect(
+            Function.unlift[(Tree, Int), TypeInvariant] {
+              case (e, i) =>
+                typeInvariant(s"_${i + 1}", e, e, None)
+            }
+          )
+
+          Some(
+            TupleInvariant(name = k, typeRef = tplTpe, values = elements)
+          )
+        }
+
+        case _ =>
+          None
+      }
+    }
+
+    case ApplyTag(entry) if (entry.tpe.typeSymbol.fullName == "scala.Tuple2") =>
+      ArrowedTuple.unapply(rhs).flatMap {
+        case (a, b) =>
+          scalaTypeRef(rhs.tpe, Set.empty) match {
+            case tplTpe @ TupleRef(_) => {
+              val elements = List(a, b).zipWithIndex.collect(
+                Function.unlift[(Tree, Int), TypeInvariant] {
+                  case (e, i) =>
+                    typeInvariant(s"_${i + 1}", e, e, None)
+                }
+              )
+
+              Some(
+                TupleInvariant(name = k, typeRef = tplTpe, values = elements)
+              )
+            }
+
+            case _ =>
+              None
+          }
+      }
+
+    case ApplyTag(a)
         if (a.tpe <:< SeqType && a.symbol.name.toString == "apply" && a.args.nonEmpty) => {
       // Seq/List factory
 

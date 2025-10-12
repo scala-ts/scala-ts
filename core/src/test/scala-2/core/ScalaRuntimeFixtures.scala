@@ -228,6 +228,11 @@ object ScalaRuntimeFixtures {
 
     val mergedSet = set ++ Set(3)
 
+    val tuple1 = Tuple3("foo", 2, 3D)
+    def tuple2 = "bar" -> 2
+    def tuple3 = tuple1
+    val tuple4 = ("lorem", 10, 20)
+
     object Nested1
   }
 
@@ -253,6 +258,11 @@ object ScalaRuntimeFixtures {
       def concatList = List("foo") ++ list
 
       val mergedSet = set ++ Set(3)
+
+      val tuple1 = Tuple3("foo", 2, 3D)
+      def tuple2 = "bar" -> 2
+      def tuple3 = tuple1
+      val tuple4 = ("lorem", 10, 20)
 
       object Nested1
     }""").children.drop(1).head

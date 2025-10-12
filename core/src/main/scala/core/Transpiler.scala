@@ -236,6 +236,13 @@ final class Transpiler(config: Settings, logger: Logger) {
   private def transpileTypeInvariant(
       invariant: ScalaModel.TypeInvariant
     ): Value = invariant match {
+    case tpl: ScalaModel.TupleInvariant =>
+      TupleValue(
+        name = tpl.name,
+        typeRef = transpileTypeRef(tpl.typeRef, false),
+        values = tpl.values.map(transpileTypeInvariant)
+      )
+
     case list: ScalaModel.ListInvariant =>
       ListValue(
         name = list.name,

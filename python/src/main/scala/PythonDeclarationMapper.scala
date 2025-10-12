@@ -413,6 +413,21 @@ ${tpeName}Invariants = I${tpeName}Invariants(""")
               out.print(s"${qualTpeNme}.${termNme}()")
             }
 
+            case TupleValue(_, _, values) => {
+              out.print("(")
+
+              values.zipWithIndex.foreach {
+                case (v, i) =>
+                  if (i > 0) {
+                    out.print(", ")
+                  }
+
+                  nestedEmit(ValueBodyDeclaration(vb.member, v))
+              }
+
+              out.print(")")
+            }
+
             case ListValue(_, _, _, elements) => {
               out.print("[")
 

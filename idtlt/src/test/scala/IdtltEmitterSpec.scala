@@ -258,6 +258,10 @@ export const idtlt${ns}TestObject2 = idtlt.object({
   /* Unsupported 'MergedListsValue': concatSeq */
   /* Unsupported 'MergedListsValue': concatList */
   /* Unsupported 'MergedSetsValue': mergedSet */
+  /* Unsupported 'TupleValue': tuple1 */
+  /* Unsupported 'TupleValue': tuple2 */
+  /* Unsupported 'SelectValue': tuple3 */
+  /* Unsupported 'TupleValue': tuple4 */
   /* Unsupported 'SingletonValue': Nested1 */
 });
 
@@ -279,6 +283,10 @@ export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = {
   concatSeq: [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]],
   concatList: [ ...[ "foo" ], ...this.list],
   mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ]),
+  tuple1: [ "foo", 2, 3.0 ],
+  tuple2: [ "bar", 2 ],
+  tuple3: this.tuple1,
+  tuple4: [ "lorem", 10, 20 ],
   Nested1: ns${ns}TestObject2Nested1.${ns}TestObject2Nested1Inhabitant
 };
 

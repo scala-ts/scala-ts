@@ -366,6 +366,70 @@ final class ScalaParserResults(
           )
         )
       ),
+      TupleInvariant(
+        name = "tuple1",
+        typeRef = TupleRef(List(StringRef, IntRef, DoubleRef)),
+        values = List(
+          LiteralInvariant(
+            name = "_1",
+            typeRef = StringRef,
+            value = "\"foo\""
+          ),
+          LiteralInvariant(
+            name = "_2",
+            typeRef = IntRef,
+            value = "2"
+          ),
+          LiteralInvariant(
+            name = "_3",
+            typeRef = DoubleRef,
+            value = "3.0"
+          )
+        )
+      ),
+      TupleInvariant(
+        name = "tuple2",
+        typeRef = TupleRef(List(StringRef, IntRef)),
+        values = List(
+          LiteralInvariant(
+            name = "_1",
+            typeRef = StringRef,
+            value = "\"bar\""
+          ),
+          LiteralInvariant(
+            name = "_2",
+            typeRef = IntRef,
+            value = "2"
+          )
+        )
+      ),
+      SelectInvariant(
+        "tuple3",
+        TupleRef(List(StringRef, IntRef, DoubleRef)),
+        ThisTypeRef,
+        "tuple1"
+      ),
+      TupleInvariant(
+        name = "tuple4",
+        typeRef = TupleRef(List(StringRef, IntRef, IntRef)),
+        values = List(
+          LiteralInvariant(
+            name = "_1",
+            typeRef = StringRef,
+            value = "\"lorem\""
+          ),
+          LiteralInvariant(
+            name = "_2",
+            typeRef = IntRef,
+            value = "10"
+          ),
+          LiteralInvariant(
+            name = "_3",
+            typeRef = IntRef,
+            value = "20"
+          )
+        )
+      ),
       ObjectInvariant(
         name = "Nested1",
         typeRef =
