@@ -264,6 +264,22 @@ class ${ns}TestObject2InvariantsFactory:
     return self.set().union({3})
 
   @classmethod
+  def tuple1(self) -> typing.Tuple[str, int, float]:
+    return ("foo", 2, 3.0)
+
+  @classmethod
+  def tuple2(self) -> typing.Tuple[str, int]:
+    return ("bar", 2)
+
+  @classmethod
+  def tuple3(self) -> typing.Tuple[str, int, float]:
+    return self.tuple1()
+
+  @classmethod
+  def tuple4(self) -> typing.Tuple[str, int, int]:
+    return ("lorem", 10, 20)
+
+  @classmethod
   def Nested1(self) -> ${ns}TestObject2Nested1:
     return ${ns.toLowerCase}testobject2nested1.${ns}TestObject2Nested1Inhabitant
 
@@ -281,6 +297,10 @@ class I${ns}TestObject2Invariants:
   concatSeq: typing.List[str]
   concatList: typing.List[str]
   mergedSet: typing.List[int]
+  tuple1: typing.Tuple[str, int, float]
+  tuple2: typing.Tuple[str, int]
+  tuple3: typing.Tuple[str, int, float]
+  tuple4: typing.Tuple[str, int, int]
   Nested1: ${ns}TestObject2Nested1
 
 
@@ -296,6 +316,10 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
   concatSeq=${ns}TestObject2InvariantsFactory.concatSeq(),
   concatList=${ns}TestObject2InvariantsFactory.concatList(),
   mergedSet=${ns}TestObject2InvariantsFactory.mergedSet(),
+  tuple1=${ns}TestObject2InvariantsFactory.tuple1(),
+  tuple2=${ns}TestObject2InvariantsFactory.tuple2(),
+  tuple3=${ns}TestObject2InvariantsFactory.tuple3(),
+  tuple4=${ns}TestObject2InvariantsFactory.tuple4(),
   Nested1=${ns}TestObject2InvariantsFactory.Nested1(),
 )
 """

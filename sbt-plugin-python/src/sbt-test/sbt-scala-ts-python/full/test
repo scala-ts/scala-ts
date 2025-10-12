@@ -38,7 +38,7 @@ $ absent target/scala-ts/generated/namedfeature.py
 > compile
 
 # Check the generated files is as expected
-$ exists target/scala-ts.conf
+$ exists target/scala-ts-py.conf
 
 $ exists target/scala-ts/generated/name.py
 $ must-mirror target/scala-ts/generated/name.py src/test/resources/name.py

@@ -438,6 +438,21 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.print(s"${qualTpeNme}.${termNme}")
               }
 
+              case TupleValue(_, _, elements) => {
+                o.print("[ ")
+
+                elements.zipWithIndex.foreach {
+                  case (e, i) =>
+                    if (i > 0) {
+                      o.print(", ")
+                    }
+
+                    nestedEmit(ValueBodyDeclaration(vb.member, e))
+                }
+
+                o.print(" ]")
+              }
+
               case ListValue(_, _, _, elements) => {
                 o.print("[ ")
 
@@ -587,6 +602,20 @@ ${indent}return ${simpleCheck}${lineSeparator}
               fieldMapper(settings, vd.owner.name, vd.name, vd.reference).name
 
             vd.value match {
+              case t @ TupleValue(_, _, _) => {
+                val tpe = t.values
+                  .map(v => tpeMapper(v.typeRef))
+                  .mkString("[", ", ", "]")
+
+                o.print(
+                  s"${indent}public readonly $nme: Readonly<${tpe}> = "
+                )
+
+                emitValueBody(ValueBodyDeclaration(vd, t), context, o)
+
+                o.println(lineSeparator)
+              }
+
               case l @ ListValue(_, _, tpe, _) => {
                 o.print(
                   s"${indent}public readonly $nme: ReadonlyArray<${tpeMapper(tpe)}> = "

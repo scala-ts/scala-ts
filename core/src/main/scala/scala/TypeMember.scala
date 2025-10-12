@@ -102,6 +102,39 @@ object SelectInvariant {
 /**
  * @param valueTypeRef the elements type
  */
+final class TupleInvariant(
+    name: String,
+    typeRef: TypeRef, // TODO: Refactor out of ctor
+    val values: List[TypeInvariant])
+    extends TypeInvariant(name, typeRef) {
+
+  private lazy val tupled = Tuple3(name, typeRef, values)
+
+  override def toString = s"TupleInvariant${tupled.toString}"
+
+  override def hashCode: Int = tupled.hashCode
+
+  override def equals(that: Any): Boolean = that match {
+    case other: TupleInvariant =>
+      this.tupled == other.tupled
+
+    case _ =>
+      false
+  }
+}
+
+object TupleInvariant {
+
+  @inline def apply(
+      name: String,
+      typeRef: TypeRef,
+      values: List[TypeInvariant]
+    ): TupleInvariant = new TupleInvariant(name, typeRef, values)
+}
+
+/**
+ * @param valueTypeRef the elements type
+ */
 final class ListInvariant(
     name: String,
     typeRef: TypeRef, // TODO: Refactor out of ctor

@@ -206,6 +206,14 @@ export type ${ns}TestObject1Singleton = ${ns}TestObject1;
 
   public readonly mergedSet: ReadonlySet<number> = new Set([ ...this.set, ...new Set([ 3 ]) ]);
 
+  public readonly tuple1: Readonly<[string, number, number]> = [ "foo", 2, 3.0 ];
+
+  public readonly tuple2: Readonly<[string, number]> = [ "bar", 2 ];
+
+  public readonly tuple3: [string, number, number] = this.tuple1;
+
+  public readonly tuple4: Readonly<[string, number, number]> = [ "lorem", 10, 20 ];
+
   public readonly Nested1: ns${ns}TestObject2Nested1.${ns}TestObject2Nested1Singleton = ns${ns}TestObject2Nested1.${ns}TestObject2Nested1Inhabitant;
 
   private static instance: ${ns}TestObject2;

@@ -46,6 +46,20 @@ case class SelectValue(
     with SimpleValue
 
 /**
+ * A tuple [[Value]].
+ *
+ * @param name the member name
+ * @param elements the list elements
+ */
+case class TupleValue(
+    name: String,
+    typeRef: TypeRef, // TODO: Refactor
+    values: List[Value])
+    extends Value {
+  override def reference: TypeRef = typeRef
+}
+
+/**
  * A dictionary [[Value]].
  *
  * @param name the member name

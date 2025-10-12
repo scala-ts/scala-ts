@@ -29,6 +29,12 @@ object ScalatsPythonPlugin extends AutoPlugin {
     scalatsAddScalatsDependency(
       Manifest.groupId %% "scala-ts-python" % Manifest.version
     ) ++ Seq(
+      scalatsOnCompile / sourceManaged := {
+        target.value / "scala-ts-py" / "src_managed"
+      },
+      scalatsCompilerPluginConf := {
+        (Compile / target).value / "scala-ts-py.conf"
+      },
       scalatsPythonBaseModule := Option.empty[String],
       Compile / scalacOptions += {
         val baseMod = scalatsPythonBaseModule.value.mkString

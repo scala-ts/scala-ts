@@ -660,6 +660,38 @@ object TranspilerResults {
           )
         )
       ),
+      TupleValue(
+        name = "tuple1",
+        typeRef = TupleRef(List(StringRef, NumberRef.int, NumberRef.double)),
+        values = List(
+          LiteralValue("_1", StringRef, "\"foo\""),
+          LiteralValue("_2", NumberRef.int, "2"),
+          LiteralValue("_3", NumberRef.double, "3.0")
+        )
+      ),
+      TupleValue(
+        name = "tuple2",
+        typeRef = TupleRef(List(StringRef, NumberRef.int)),
+        values = List(
+          LiteralValue("_1", StringRef, "\"bar\""),
+          LiteralValue("_2", NumberRef.int, "2")
+        )
+      ),
+      SelectValue(
+        "tuple3",
+        TupleRef(List(StringRef, NumberRef.int, NumberRef.double)),
+        ThisTypeRef,
+        "tuple1"
+      ),
+      TupleValue(
+        name = "tuple4",
+        typeRef = TupleRef(List(StringRef, NumberRef.int, NumberRef.int)),
+        values = List(
+          LiteralValue("_1", StringRef, "\"lorem\""),
+          LiteralValue("_2", NumberRef.int, "10"),
+          LiteralValue("_3", NumberRef.int, "20")
+        )
+      ),
       SingletonValue(
         name = "Nested1",
         typeRef = SingletonTypeRef(
