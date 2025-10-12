@@ -2,6 +2,6 @@ theme: jekyll-theme-minimal
 title: Scala-TS
 description: Simple tool to transpile Scala datamodel
 show_downloads: false
-latest_release: 0.5.19
+latest_release: 0.8.0
 scala_major_version: 2.13
 logo: assets/img/logo.png
