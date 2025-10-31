@@ -44,7 +44,7 @@
     "mocha": "11.7.4",
     "prettier": "2.8.8",
     "prettier-plugin-svelte": "2.10.1",
-    "rimraf": "5.0.8",
+    "rimraf": "6.1.0",
     "rollup": "4.52.5",
     "rollup-plugin-copy": "3.5.0",
     "rollup-plugin-css-asset": "1.0.2",
