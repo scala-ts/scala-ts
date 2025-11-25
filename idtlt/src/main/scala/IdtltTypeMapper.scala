@@ -41,8 +41,11 @@ final class IdtltTypeMapper extends TypeMapper {
         case DateRef | DateTimeRef =>
           "idtlt.isoDate"
 
-        case ArrayRef(innerType) =>
+        case ArrayRef(innerType, false) =>
           s"idtlt.readonlyArray(${tr(innerType)})"
+
+        case ArrayRef(innerType, true) =>
+          s"idtlt.readonlyArray(${tr(innerType)}).and(arr => (arr.length > 0) ? [arr[0], arr.shift()])"
 
         case SetRef(innerType) =>
           s"idtlt.arrayAsSet(${tr(innerType)}).map(set => { type extractGeneric<Type> = Type extends Set<infer X> ? X : never; type extracted = extractGeneric<typeof set>; return set as ReadonlySet<extracted> })"
@@ -112,8 +115,13 @@ final class IdtltTypeMapper extends TypeMapper {
       case SetRef(innerType) =>
         s"ReadonlySet<${tr(innerType)}>"
 
-      case ArrayRef(tpe) =>
+      case ArrayRef(tpe, false) =>
         s"ReadonlyArray<${tr(tpe)}>"
+
+      case ArrayRef(tpe, true) => {
+        val elmTpe = tr(tpe)
+        s"readonly [$elmTpe, ...ReadonlyArray<${elmTpe}>]"
+      }
 
       case MapType(kt, vt) =>
         s"Readonly<Map<${tr(kt)}, ${tr(vt)}>>"

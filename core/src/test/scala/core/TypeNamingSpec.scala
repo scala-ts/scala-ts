@@ -15,7 +15,7 @@ final class TypeScriptTypeNamingSpec extends org.specs2.mutable.Specification {
     }
 
     "be applied on Array" in {
-      naming(ArrayRef(NumberRef.int)) must_=== "Array"
+      naming(ArrayRef(NumberRef.int, false)) must_=== "Array"
     }
   }
 }

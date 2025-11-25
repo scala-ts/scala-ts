@@ -84,8 +84,14 @@ object TypeMapper {
         member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case ast.ArrayRef(innerType) =>
+      case ast.ArrayRef(innerType, false) =>
         Some(s"Array<${parent(settings, ownerType, member, innerType)}>")
+
+      case ast.ArrayRef(innerType, true) => {
+        val elmTpe = parent(settings, ownerType, member, innerType)
+
+        Some(s"[${elmTpe}, ...Array<$elmTpe>]")
+      }
 
       case _ => None
     }
@@ -103,8 +109,14 @@ object TypeMapper {
         member: Field,
         tpe: TypeRef
       ): Option[String] = tpe match {
-      case ast.ArrayRef(innerType) =>
+      case ast.ArrayRef(innerType, false) =>
         Some(s"${parent(settings, ownerType, member, innerType)}[]")
+
+      case ast.ArrayRef(innerType, true) => {
+        val elmTpe = parent(settings, ownerType, member, innerType)
+
+        Some(s"[${elmTpe}, ...${elmTpe}[]]")
+      }
 
       case _ => None
     }

@@ -310,7 +310,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
               SelectValue("foo", taggedRef, ThisTypeRef, "name"),
               ListValue(
                 name = "list",
-                typeRef = ArrayRef(StringRef),
+                typeRef = ArrayRef(StringRef, true),
                 valueTypeRef = StringRef,
                 elements = List(
                   LiteralValue("list[0]", taggedRef, "\"first\""),
@@ -319,7 +319,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef.int),
+                typeRef = ArrayRef(NumberRef.int, false),
                 valueTypeRef = NumberRef.int,
                 elements = Set(
                   SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
@@ -351,7 +351,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
               DictionaryValue(
                 name = "dictOfList",
                 keyTypeRef = StringRef,
-                valueTypeRef = ArrayRef(taggedRef),
+                valueTypeRef = ArrayRef(taggedRef, false),
                 entries = Map(
                   LiteralValue(
                     "dictOfList.0",
@@ -359,7 +359,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
                     "\"excludes\""
                   ) -> ListValue(
                     name = "dictOfList[0]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
@@ -380,7 +380,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
                     "\"includes\""
                   ) -> ListValue(
                     name = "dictOfList[1]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
@@ -408,13 +408,13 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
                 children = List(
                   SelectValue(
                     name = "concatSeq[0]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     qualifier = ThisTypeRef,
                     term = "list"
                   ),
                   ListValue(
                     name = "concatSeq[1]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue("concatSeq[1][0]", taggedRef, "\"foo\""),
@@ -423,7 +423,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
                   ),
                   ListValue(
                     name = "concatSeq[2]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue("concatSeq[2][0]", taggedRef, "\"lorem\"")
@@ -437,13 +437,13 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
                 children = List(
                   SelectValue(
                     name = "mergedSet[0]",
-                    typeRef = ArrayRef(NumberRef.int),
+                    typeRef = ArrayRef(NumberRef.int, false),
                     qualifier = ThisTypeRef,
                     term = "set"
                   ),
                   SetValue(
                     name = "mergedSet[1]",
-                    typeRef = ArrayRef(NumberRef.int),
+                    typeRef = ArrayRef(NumberRef.int, false),
                     valueTypeRef = NumberRef.int,
                     elements =
                       Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))

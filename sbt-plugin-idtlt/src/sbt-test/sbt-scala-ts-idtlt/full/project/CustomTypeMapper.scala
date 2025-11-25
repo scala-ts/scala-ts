@@ -33,7 +33,7 @@ final class CustomTypeMapper extends TypeMapper {
       case DateRef | DateTimeRef =>
         "idtlt.isoDate"
 
-      case ArrayRef(innerType) =>
+      case ArrayRef(innerType, _) =>
         s"idtlt.array(${tr(innerType)})"
 
       case TupleRef(params) =>

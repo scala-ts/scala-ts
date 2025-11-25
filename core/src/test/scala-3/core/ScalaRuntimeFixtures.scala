@@ -19,7 +19,8 @@ object ScalaRuntimeFixtures {
 
   lazy val results = new ScalaParserResults(
     ns = List(f"$$wrapper", "expr"),
-    valueClassNs = List.empty
+    valueClassNs = List.empty,
+    nonEmptySelectedListInvariant = true
   )
 
   def objectClass(nme: String): String =
@@ -107,7 +108,7 @@ object ScalaRuntimeFixtures {
     values = ListSet(
       ScalaModel.ListInvariant(
         "purple",
-        ScalaModel.ListRef(colorRef),
+        ScalaModel.ListRef(colorRef, false),
         colorRef,
         List(
           ScalaModel.SelectInvariant(
@@ -282,7 +283,7 @@ case class TestClass1B(foo: String)
 
 case class TestClass2[T](name: T)
 
-case class TestClass3[T](name: List[T])
+case class TestClass3[T](name: ::[T])
 
 case class TestClass4[T](name: TestClass3[T])
 
@@ -323,7 +324,7 @@ object TestObject2 extends Foo("Foo \"bar\"") {
   val const = new String("value")
   def foo = name
 
-  val list = Seq("first", name)
+  val list = ::("first", List(name))
   def set: Set[Int] = Set(code, 2)
   val mapping = Map("foo" -> "bar", (new String("lorem")) -> name)
 

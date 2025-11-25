@@ -84,7 +84,7 @@ case class SingletonTypeRef(
  *
  * @param innerType the element type (e.g. `string` for `Array<string>`)
  */
-case class ArrayRef(innerType: TypeRef) extends TypeRef {
+case class ArrayRef(innerType: TypeRef, nonEmpty: Boolean) extends TypeRef {
   @inline def requires = innerType.requires
 
   lazy val name = "Array"

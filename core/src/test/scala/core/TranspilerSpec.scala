@@ -220,7 +220,7 @@ final class TranspilerSpec
           values = ListSet(
             ListInvariant(
               name = "start",
-              typeRef = ListRef(greetingTypeRef),
+              typeRef = ListRef(greetingTypeRef, false),
               valueTypeRef = greetingTypeRef,
               values = List(
                 SelectInvariant(
@@ -423,7 +423,7 @@ object TranspilerResults {
 
   val interface3 = InterfaceDeclaration(
     s"${ns}TestClass3",
-    ListSet(Member("name", ArrayRef(SimpleTypeRef("T")))),
+    ListSet(Member("name", ArrayRef(SimpleTypeRef("T"), true))),
     typeParams = List("T"),
     superInterface = Option.empty,
     union = false
@@ -470,7 +470,7 @@ object TranspilerResults {
       Member("name", TaggedRef(s"${valueClassNs}AnyValChild", StringRef)),
       Member(
         "aliases",
-        ArrayRef(TaggedRef(s"${valueClassNs}AnyValChild", StringRef))
+        ArrayRef(TaggedRef(s"${valueClassNs}AnyValChild", StringRef), false)
       )
     ),
     typeParams = List.empty,
@@ -507,7 +507,7 @@ object TranspilerResults {
       SelectValue("foo", StringRef, ThisTypeRef, "name"),
       ListValue(
         name = "list",
-        typeRef = ArrayRef(StringRef),
+        typeRef = ArrayRef(StringRef, true),
         valueTypeRef = StringRef,
         elements = List(
           LiteralValue("list[0]", StringRef, "\"first\""),
@@ -544,7 +544,7 @@ object TranspilerResults {
       DictionaryValue(
         name = "dictOfList",
         keyTypeRef = StringRef,
-        valueTypeRef = ArrayRef(StringRef),
+        valueTypeRef = ArrayRef(StringRef, false),
         entries = Map(
           LiteralValue(
             "dictOfList.0",
@@ -552,7 +552,7 @@ object TranspilerResults {
             "\"excludes\""
           ) -> ListValue(
             name = "dictOfList[0]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, false),
             valueTypeRef = StringRef,
             elements = List(
               LiteralValue(
@@ -573,7 +573,7 @@ object TranspilerResults {
             "\"includes\""
           ) -> ListValue(
             name = "dictOfList[1]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, false),
             valueTypeRef = StringRef,
             elements = List(
               LiteralValue(
@@ -601,13 +601,13 @@ object TranspilerResults {
         children = List(
           SelectValue(
             name = "concatSeq[0]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, nonEmptySelectedListInvariant),
             qualifier = ThisTypeRef,
             term = "list"
           ),
           ListValue(
             name = "concatSeq[1]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, false),
             valueTypeRef = StringRef,
             elements = List(
               LiteralValue("concatSeq[1][0]", StringRef, "\"foo\""),
@@ -616,7 +616,7 @@ object TranspilerResults {
           ),
           ListValue(
             name = "concatSeq[2]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, false),
             valueTypeRef = StringRef,
             elements =
               List(LiteralValue("concatSeq[2][0]", StringRef, "\"lorem\""))
@@ -629,14 +629,14 @@ object TranspilerResults {
         children = List(
           ListValue(
             name = "concatList[0]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, false),
             valueTypeRef = StringRef,
             elements =
               List(LiteralValue("concatList[0][0]", StringRef, "\"foo\""))
           ),
           SelectValue(
             name = "concatList[1]",
-            typeRef = ArrayRef(StringRef),
+            typeRef = ArrayRef(StringRef, true),
             qualifier = ThisTypeRef,
             term = "list"
           )
@@ -760,7 +760,7 @@ object TranspilerResults {
       values = ListSet(
         ListValue(
           name = "start",
-          typeRef = ArrayRef(greetingTypeRef),
+          typeRef = ArrayRef(greetingTypeRef, false),
           valueTypeRef = greetingTypeRef,
           elements = List(
             SelectValue(

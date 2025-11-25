@@ -517,7 +517,15 @@ final class ScalaParser(
           scalaTypeRef(q.tpe.dealias, Set.empty)
       }
 
-      val tpeRef = scalaTypeRef(s.tpe.dealias, Set.empty) match {
+      val tpe = s.tpe.dealias match {
+        case tr: Types.TermRef =>
+          tr.underlying
+
+        case unaliased =>
+          unaliased
+      }
+
+      val tpeRef = scalaTypeRef(tpe, Set.empty) match {
         case unknown @ ScalaModel.UnknownTypeRef(_) =>
           hint.getOrElse(unknown)
 
@@ -617,6 +625,42 @@ final class ScalaParser(
     }
 
     case WithTypeArgs(
+          app @ Apply(
+            a,
+            head :: WithTypeArgs(
+              Apply(_, Typed(SeqLiteral(tail, _), _) :: Nil),
+              _
+            ) :: Nil
+          ),
+          vtpe :: Nil
+        )
+        if (a.symbol.owner.name.toString == f"::$$" && app.tpe <:< SeqType
+          .appliedTo(vtpe)) => {
+      val elements = (head :: tail).zipWithIndex.collect(
+        Function.unlift[(Tree, Int), TypeInvariant] {
+          case (e, i) => typeInvariant(s"${k}[${i}]", e, e, None)
+        }
+      )
+
+      if (elements.nonEmpty && elements.size == (tail.size + 1)) {
+        val elmTpe = scalaTypeRef(vtpe, Set.empty)
+
+        Some(
+          ScalaModel.ListInvariant(
+            name = k,
+            typeRef = ScalaModel.ListRef(elmTpe, true),
+            valueTypeRef = elmTpe,
+            values = elements
+          )
+        )
+      } else {
+        logger.warning(s"Skip list with non-stable value: $k")
+
+        None
+      }
+    }
+
+    case WithTypeArgs(
           app @ Apply(a, Typed(SeqLiteral(args, _), _) :: Nil),
           vtpe :: Nil
         ) if (app.tpe <:< SeqType.appliedTo(vtpe)) => {
@@ -634,7 +678,7 @@ final class ScalaParser(
         Some(
           ScalaModel.ListInvariant(
             name = k,
-            typeRef = ScalaModel.ListRef(elmTpe),
+            typeRef = ScalaModel.ListRef(elmTpe, false),
             valueTypeRef = elmTpe,
             values = elements
           )
@@ -650,7 +694,7 @@ final class ScalaParser(
         if (app.tpe <:< SeqType.appliedTo(vtpe) &&
           a.symbol.name.toString == "++") =>
       scalaTypeRef(app.tpe, Set.empty) match {
-        case colTpe @ ScalaModel.ListRef(valueTpe) => {
+        case colTpe @ ScalaModel.ListRef(valueTpe, _) => {
           val terms = appliedOp(plusplus, List.empty, List(app), List.empty)
 
           val elements = terms.zipWithIndex
@@ -1520,6 +1564,9 @@ final class ScalaParser(
   private lazy val IterableType: Type =
     Symbols.requiredClass("scala.collection.Iterable").typeRef
 
+  private lazy val ConsType: Type =
+    Symbols.requiredClass(f"scala.collection.immutable.$$colon$$colon").typeRef
+
   private lazy val OptionType: Type =
     Symbols.requiredClass("scala.Option").typeRef
 
@@ -1677,9 +1724,15 @@ final class ScalaParser(
 
             case innerType :: _
                 if (
+                  scalaType <:< ConsType.appliedTo(innerType)
+                ) =>
+              ScalaModel.ListRef(scalaTypeRef(innerType, typeParams), true)
+
+            case innerType :: _
+                if (
                   scalaType <:< IterableType.appliedTo(innerType)
                 ) =>
-              ScalaModel.ListRef(scalaTypeRef(innerType, typeParams))
+              ScalaModel.ListRef(scalaTypeRef(innerType, typeParams), false)
 
             case innerType :: _
                 if (scalaType <:< Tuple1Type.appliedTo(innerType)) =>

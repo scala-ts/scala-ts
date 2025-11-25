@@ -353,8 +353,8 @@ final class Transpiler(config: Settings, logger: Logger) {
     case ScalaModel.SetRef(innerType) =>
       SetRef(transpileTypeRef(innerType, inInterfaceContext))
 
-    case ScalaModel.ListRef(innerType) =>
-      ArrayRef(transpileTypeRef(innerType, inInterfaceContext))
+    case ScalaModel.ListRef(innerType, nonEmpty) =>
+      ArrayRef(transpileTypeRef(innerType, inInterfaceContext), nonEmpty)
 
     case ScalaModel.EnumerationRef(id) =>
       CustomTypeRef(idToString(id))
