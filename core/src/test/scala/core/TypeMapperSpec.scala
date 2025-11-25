@@ -30,7 +30,7 @@ final class TypeMapperSpec extends org.specs2.mutable.Specification {
           settings,
           owner,
           member,
-          ArrayRef(NumberRef.int)
+          ArrayRef(NumberRef.int, false)
         ).aka("TypeScript type") must beSome("Array<_tpe_>")
       }
 
@@ -40,7 +40,7 @@ final class TypeMapperSpec extends org.specs2.mutable.Specification {
           settings,
           owner,
           member,
-          ArrayRef(NumberRef.int)
+          ArrayRef(NumberRef.int, false)
         ).aka("TypeScript type") must beSome("_tpe_[]")
       }
     }

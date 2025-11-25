@@ -105,7 +105,7 @@ case class MergedListsValue(
     valueTypeRef: TypeRef,
     children: List[Value])
     extends Value {
-  val typeRef = ArrayRef(valueTypeRef)
+  val typeRef = ArrayRef(valueTypeRef, false)
   override def reference: TypeRef = valueTypeRef
 }
 
@@ -137,7 +137,7 @@ case class MergedSetsValue(
     valueTypeRef: TypeRef,
     children: List[Value])
     extends Value {
-  val typeRef = ArrayRef(valueTypeRef) // TODO: SetRef
+  val typeRef = ArrayRef(valueTypeRef, false) // TODO: SetRef
   override def reference: TypeRef = valueTypeRef
 }
 

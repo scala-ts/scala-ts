@@ -338,7 +338,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
               SelectValue("foo", taggedRef, ThisTypeRef, "name"),
               ListValue(
                 name = "list",
-                typeRef = ArrayRef(StringRef),
+                typeRef = ArrayRef(StringRef, true),
                 valueTypeRef = StringRef,
                 elements = List(
                   LiteralValue("list[0]", taggedRef, "\"first\""),
@@ -347,7 +347,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef.int),
+                typeRef = ArrayRef(NumberRef.int, false),
                 valueTypeRef = NumberRef.int,
                 elements = Set(
                   SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
@@ -379,7 +379,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
               DictionaryValue(
                 name = "dictOfList",
                 keyTypeRef = StringRef,
-                valueTypeRef = ArrayRef(taggedRef),
+                valueTypeRef = ArrayRef(taggedRef, false),
                 entries = Map(
                   LiteralValue(
                     "dictOfList.0",
@@ -387,7 +387,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
                     "\"excludes\""
                   ) -> ListValue(
                     name = "dictOfList[0]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
@@ -408,7 +408,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
                     "\"includes\""
                   ) -> ListValue(
                     name = "dictOfList[1]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue(
@@ -436,13 +436,13 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
                 children = List(
                   SelectValue(
                     name = "concatSeq[0]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     qualifier = ThisTypeRef,
                     term = "list"
                   ),
                   ListValue(
                     name = "concatSeq[1]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue("concatSeq[1][0]", taggedRef, "\"foo\""),
@@ -451,7 +451,7 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
                   ),
                   ListValue(
                     name = "concatSeq[2]",
-                    typeRef = ArrayRef(taggedRef),
+                    typeRef = ArrayRef(taggedRef, false),
                     valueTypeRef = taggedRef,
                     elements = List(
                       LiteralValue("concatSeq[2][0]", taggedRef, "\"lorem\"")
@@ -465,13 +465,13 @@ ${ns}TestObject2Invariants = I${ns}TestObject2Invariants(
                 children = List(
                   SelectValue(
                     name = "mergedSet[0]",
-                    typeRef = ArrayRef(NumberRef.int),
+                    typeRef = ArrayRef(NumberRef.int, false),
                     qualifier = ThisTypeRef,
                     term = "set"
                   ),
                   SetValue(
                     name = "mergedSet[1]",
-                    typeRef = ArrayRef(NumberRef.int),
+                    typeRef = ArrayRef(NumberRef.int, false),
                     valueTypeRef = NumberRef.int,
                     elements =
                       Set(LiteralValue("mergedSet[1][0]", NumberRef.int, "3"))

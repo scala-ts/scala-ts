@@ -79,7 +79,7 @@ final class ImportResolverSpec extends org.specs2.mutable.Specification {
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef.int), // TODO: SetRef
+                typeRef = ArrayRef(NumberRef.int, false), // TODO: SetRef
                 valueTypeRef = NumberRef.int,
                 elements = Set(
                   SelectValue(
@@ -162,7 +162,7 @@ final class ImportResolverSpec extends org.specs2.mutable.Specification {
               values = ListSet(
                 ListValue(
                   name = "start",
-                  typeRef = ArrayRef(greetingTypeRef),
+                  typeRef = ArrayRef(greetingTypeRef, false),
                   valueTypeRef = greetingTypeRef,
                   elements = List(
                     SelectValue(

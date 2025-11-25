@@ -53,7 +53,7 @@ final class PythonTypeMapper extends TypeMapper {
         typeNaming(tpe)
       }
 
-      case ArrayRef(innerType) =>
+      case ArrayRef(innerType, _) =>
         s"typing.List[${tr(innerType)}]"
 
       case SetRef(innerType) =>

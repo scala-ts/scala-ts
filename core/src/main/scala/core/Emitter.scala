@@ -1041,8 +1041,11 @@ private[scalats] object Emitter {
           TaggedRef(_, _)) =>
         s"${name} && ${guardNaming(t)}(${name})"
 
-      case ArrayRef(t) =>
+      case ArrayRef(t, false) =>
         s"Array.isArray(${name}) && ${name}.every(elmt => ${valueCheck("elmt", t, guardNaming)})"
+
+      case ArrayRef(t, true) =>
+        s"Array.isArray(${name}) && ${name}.length > 0 && ${valueCheck(name + "[0]", t, guardNaming)} && (${name}.length > 1 || Array.isArray(${name}[1]) && ${name}[1].every(elmt => ${valueCheck("elmt", t, guardNaming)}))"
 
       case SetRef(t) =>
         s"(${name} instanceof Set) && Array.from(${name}).every(elmt => ${valueCheck("elmt", t, guardNaming)})"
@@ -1086,8 +1089,14 @@ private[scalats] object Emitter {
 
     case DateRef | DateTimeRef => "Date"
 
-    case ArrayRef(innerType) =>
+    case ArrayRef(innerType, false) =>
       s"ReadonlyArray<${tr(innerType)}>"
+
+    case ArrayRef(innerType, true) => {
+      val elmTpe = tr(innerType)
+
+      s"readonly [${elmTpe}, ...ReadonlyArray<${elmTpe}>]"
+    }
 
     case SetRef(innerType) =>
       s"ReadonlySet<${tr(innerType)}>"

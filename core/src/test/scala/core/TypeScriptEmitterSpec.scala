@@ -67,7 +67,7 @@ export function is${ns}TestClass1(v: any): v is ${ns}TestClass1 {
     "emit interface for a class with generic array" in {
       emit(Map(interface3.name -> ListSet(interface3))) must beTypedEqualTo(
         s"""export interface ${ns}TestClass3<T> {
-  name: ReadonlyArray<T>;
+  name: readonly [T, ...ReadonlyArray<T>];
 }
 
 // No valid type guard for generic interface ${ns}TestClass3
@@ -289,7 +289,7 @@ export type ${valueClassNs}TestObject3Singleton = ${valueClassNs}TestObject3;
               LiteralValue("code", NumberRef.int, "1"),
               ListValue(
                 name = "list",
-                typeRef = ArrayRef(taggedRef),
+                typeRef = ArrayRef(taggedRef, false),
                 valueTypeRef = taggedRef,
                 elements = List(
                   LiteralValue("list[0]", taggedRef, "\"first\"")

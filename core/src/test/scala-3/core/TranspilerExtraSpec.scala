@@ -35,7 +35,7 @@ private[core] object TranspilerExtraSpec {
     values = ListSet(
       ListValue(
         "purple",
-        ArrayRef(colorTpeRef),
+        ArrayRef(colorTpeRef, false),
         colorTpeRef,
         List(
           SelectValue("purple[0]", colorTpeRef, colorObjRef, "Red"),

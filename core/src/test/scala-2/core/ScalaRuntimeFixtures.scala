@@ -12,7 +12,8 @@ object ScalaRuntimeFixtures {
 
   lazy val results = new ScalaParserResults(
     ns = List("ScalaRuntimeFixtures"),
-    valueClassNs = List("ScalaRuntimeFixtures")
+    valueClassNs = List("ScalaRuntimeFixtures"),
+    nonEmptySelectedListInvariant = false
   )
 
   def objectClass(nme: String): String =
@@ -105,12 +106,12 @@ object ScalaRuntimeFixtures {
     q"case class TestClass2[T](name: T)"
   )
 
-  case class TestClass3[T](name: List[T])
+  case class TestClass3[T](name: ::[T])
 
   val TestClass3Type = typeOf[TestClass3[_]]
 
   lazy val TestClass3Tree: Tree = typecheck(
-    q"case class TestClass3[T](name: List[T])"
+    q"case class TestClass3[T](name: ::[T])"
   )
 
   case class TestClass4[T](name: TestClass3[T])
@@ -214,7 +215,7 @@ object ScalaRuntimeFixtures {
     val const = new String("value")
     def foo = name
 
-    val list = Seq("first", name)
+    val list = ::("first", List(name))
     def set: Set[Int] = Set(code, 2)
     val mapping = Map("foo" -> "bar", (new String("lorem")) -> name)
 
@@ -246,7 +247,7 @@ object ScalaRuntimeFixtures {
       val const = new String("value")
       def foo = name
 
-      val list = Seq("first", name)
+      val list = ::("first", List(name))
       def set: Set[Int] = Set(code, 2)
       val mapping = Map("foo" -> "bar", (new String("lorem")) -> name)
 

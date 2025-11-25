@@ -5,7 +5,8 @@ import io.github.scalats.scala._
 
 final class ScalaParserResults(
     val ns: List[String],
-    val valueClassNs: List[String]) {
+    val valueClassNs: List[String],
+    val nonEmptySelectedListInvariant: Boolean) {
 
   val caseClass1 = CaseClass(
     identifier = QualifiedIdentifier("TestClass1", ns),
@@ -30,7 +31,7 @@ final class ScalaParserResults(
 
   val caseClass3 = CaseClass(
     identifier = QualifiedIdentifier("TestClass3", ns),
-    fields = ListSet(TypeMember("name", ListRef(TypeParamRef("T")))),
+    fields = ListSet(TypeMember("name", ListRef(TypeParamRef("T"), true))),
     values = ListSet.empty,
     typeArgs = List("T")
   )
@@ -79,7 +80,8 @@ final class ScalaParserResults(
                     ),
                     typeArgs = List(StringRef)
                   )
-                )
+                ),
+                false
               )
             )
           )
@@ -154,7 +156,8 @@ final class ScalaParserResults(
           TaggedRef(
             identifier = QualifiedIdentifier("AnyValChild", valueClassNs),
             tagged = StringRef
-          )
+          ),
+          false
         )
       )
     ),
@@ -209,7 +212,7 @@ final class ScalaParserResults(
       SelectInvariant("foo", StringRef, ThisTypeRef, "name"),
       ListInvariant(
         name = "list",
-        typeRef = ListRef(StringRef),
+        typeRef = ListRef(StringRef, true),
         valueTypeRef = StringRef,
         values = List(
           LiteralInvariant("list[0]", StringRef, "\"first\""),
@@ -250,7 +253,7 @@ final class ScalaParserResults(
       DictionaryInvariant(
         name = "dictOfList",
         keyTypeRef = StringRef,
-        valueTypeRef = ListRef(StringRef),
+        valueTypeRef = ListRef(StringRef, false),
         entries = Map(
           LiteralInvariant(
             "dictOfList.0",
@@ -258,7 +261,7 @@ final class ScalaParserResults(
             "\"excludes\""
           ) -> ListInvariant(
             "dictOfList[0]",
-            ListRef(StringRef),
+            ListRef(StringRef, false),
             StringRef,
             List(
               LiteralInvariant(
@@ -279,7 +282,7 @@ final class ScalaParserResults(
             "\"includes\""
           ) -> ListInvariant(
             "dictOfList[1]",
-            ListRef(StringRef),
+            ListRef(StringRef, false),
             StringRef,
             List(
               LiteralInvariant(
@@ -307,13 +310,13 @@ final class ScalaParserResults(
         children = List(
           SelectInvariant(
             name = "concatSeq[0]",
-            typeRef = ListRef(StringRef),
+            typeRef = ListRef(StringRef, nonEmptySelectedListInvariant),
             qualifier = ThisTypeRef,
             term = "list"
           ),
           ListInvariant(
             name = "concatSeq[1]",
-            typeRef = ListRef(StringRef),
+            typeRef = ListRef(StringRef, false),
             valueTypeRef = StringRef,
             values = List(
               LiteralInvariant("concatSeq[1][0]", StringRef, "\"foo\""),
@@ -322,7 +325,7 @@ final class ScalaParserResults(
           ),
           ListInvariant(
             name = "concatSeq[2]",
-            typeRef = ListRef(StringRef),
+            typeRef = ListRef(StringRef, false),
             valueTypeRef = StringRef,
             values =
               List(LiteralInvariant("concatSeq[2][0]", StringRef, "\"lorem\""))
@@ -335,14 +338,14 @@ final class ScalaParserResults(
         children = List(
           ListInvariant(
             name = "concatList[0]",
-            typeRef = ListRef(StringRef),
+            typeRef = ListRef(StringRef, false),
             valueTypeRef = StringRef,
             values =
               List(LiteralInvariant("concatList[0][0]", StringRef, "\"foo\""))
           ),
           SelectInvariant(
             name = "concatList[1]",
-            typeRef = ListRef(StringRef),
+            typeRef = ListRef(StringRef, true),
             qualifier = ThisTypeRef,
             term = "list"
           )

@@ -174,7 +174,7 @@ final class MergedListsInvariant(
     name: String,
     val valueTypeRef: TypeRef,
     val children: List[TypeInvariant])
-    extends TypeInvariant(name, ListRef(valueTypeRef)) {
+    extends TypeInvariant(name, ListRef(valueTypeRef, false)) {
 
   private lazy val tupled = Tuple3(name, valueTypeRef, children)
 
