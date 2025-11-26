@@ -616,9 +616,9 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.println(lineSeparator)
               }
 
-              case l @ ListValue(_, _, tpe, _) => {
+              case l @ ListValue(_, tpe, _, _) => {
                 o.print(
-                  s"${indent}public readonly $nme: ReadonlyArray<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ${tpeMapper(tpe)} = "
                 )
 
                 emitValueBody(ValueBodyDeclaration(vd, l), context, o)
@@ -636,9 +636,9 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.println(lineSeparator)
               }
 
-              case s @ SetValue(_, _, tpe, _) => {
+              case s @ SetValue(_, tpe, _, _) => {
                 o.print(
-                  s"${indent}public readonly $nme: ReadonlySet<${tpeMapper(tpe)}> = "
+                  s"${indent}public readonly $nme: ${tpeMapper(tpe)} = "
                 )
 
                 emitValueBody(ValueBodyDeclaration(vd, s), context, o)
@@ -1045,7 +1045,7 @@ private[scalats] object Emitter {
         s"Array.isArray(${name}) && ${name}.every(elmt => ${valueCheck("elmt", t, guardNaming)})"
 
       case ArrayRef(t, true) =>
-        s"Array.isArray(${name}) && ${name}.length > 0 && ${valueCheck(name + "[0]", t, guardNaming)} && (${name}.length > 1 || Array.isArray(${name}[1]) && ${name}[1].every(elmt => ${valueCheck("elmt", t, guardNaming)}))"
+        s"Array.isArray(${name}) && ${name}.length > 0 && ${name}.every(elmt => ${valueCheck("elmt", t, guardNaming)})"
 
       case SetRef(t) =>
         s"(${name} instanceof Set) && Array.from(${name}).every(elmt => ${valueCheck("elmt", t, guardNaming)})"

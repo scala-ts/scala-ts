@@ -15,5 +15,5 @@ object Greeting {
 }
 
 object Words {
-  val start = List[Greeting](Greeting.Hello, Greeting.Hi)
+  val start = ::[Greeting](Greeting.Hello, List(Greeting.Hi))
 }

@@ -13,7 +13,7 @@ export const dependencyModules = [
 ];
 
 export class Words {
-  public readonly start: ReadonlyArray<nsGreeting.Greeting> = [ nsGreeting.Greeting.Hello, nsGreeting.Greeting.Hi ];
+  public readonly start: readonly [nsGreeting.Greeting, ...ReadonlyArray<nsGreeting.Greeting>] = [ nsGreeting.Greeting.Hello, nsGreeting.Greeting.Hi ];
 
   private static instance: Words;
 
