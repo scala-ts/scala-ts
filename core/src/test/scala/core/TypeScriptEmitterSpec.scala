@@ -192,7 +192,7 @@ export type ${ns}TestObject1Singleton = ${ns}TestObject1;
 
   public readonly foo: string = this.name;
 
-  public readonly list: ReadonlyArray<string> = [ "first", this.name ];
+  public readonly list: readonly [string, ...ReadonlyArray<string>] = [ "first", this.name ];
 
   public readonly set: ReadonlySet<number> = new Set([ this.code, 2 ]);
 

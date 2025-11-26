@@ -1,6 +1,7 @@
 package io.github.scalats.idtlt
 
 import io.github.scalats.ast.{
+  ArrayRef,
   InterfaceDeclaration,
   Member,
   NumberRef,
@@ -18,6 +19,12 @@ final class IdtltTypeMapperSpec extends org.specs2.mutable.Specification {
     "support tuple" in {
       mapType(TupleRef(List(StringRef, NumberRef.int))) must beSome(
         "idtlt.tuple(idtlt.string, idtlt.number)"
+      )
+    }
+
+    "support non empty array" in {
+      mapType(ArrayRef(StringRef, true)) must beSome(
+        "idtlt.readonlyArray(idtlt.string).and(([head, ...tail]) => (head !== undefined) ? idtlt.Ok([head, ...tail] as const) : idtlt.Err('Invalid non empty array'))"
       )
     }
   }

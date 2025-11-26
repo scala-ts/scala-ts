@@ -319,7 +319,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
               ),
               SetValue(
                 name = "set",
-                typeRef = ArrayRef(NumberRef.int, false),
+                typeRef = SetRef(NumberRef.int),
                 valueTypeRef = NumberRef.int,
                 elements = Set(
                   SelectValue("set[0]", NumberRef.int, ThisTypeRef, "code"),
@@ -481,7 +481,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
 
   public readonly _foo: nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild = this._name;
 
-  public readonly _list: ReadonlyArray<TSstring> = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
+  public readonly _list: readonly [TSstring, ...ReadonlyArray<TSstring>] = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
 
   public readonly _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
 
