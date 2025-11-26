@@ -24,7 +24,7 @@ final class IdtltTypeMapperSpec extends org.specs2.mutable.Specification {
 
     "support non empty array" in {
       mapType(ArrayRef(StringRef, true)) must beSome(
-        "(() => { const av = idtlt.readonlyArray(idtlt.string); av.meta.minLength = 1; av.and(([head, ...tail]) => (head !== undefined) ? idtlt.Ok([head, ...tail] as const) : idtlt.Err('Invalid non empty array')) })()"
+        "idtlt.readonlyArray(idtlt.string).and(([head, ...tail]) => (head !== undefined) ? idtlt.Ok([head, ...tail] as const) : idtlt.Err('Invalid non empty array'))"
       )
     }
   }
