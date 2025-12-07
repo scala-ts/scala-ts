@@ -25,7 +25,7 @@ export class Constants {
 
   public readonly list: ReadonlyArray<number> = [ this.code, 2 ];
 
-  public readonly dict: Readonly<Map<string, ReadonlyArray<nsName.Name>>> = new Map([ ["specific", [ this.UnknownName, this.defaultName, nsName.Name("*") ]], ["invalid", [ nsName.Name("failed") ]] ]);
+  public readonly dict: Readonly<Map<string, ReadonlyArray<nsName.Name>>> = new Map<string, ReadonlyArray<nsName.Name>>([ ["specific", [ this.UnknownName, this.defaultName, nsName.Name("*") ]], ["invalid", [ nsName.Name("failed") ]] ]);
 
   public readonly excluded: ReadonlyArray<string> = [ "foo", "bar" ];
 
@@ -33,7 +33,7 @@ export class Constants {
 
   public readonly names: ReadonlyArray<nsName.Name> = [ ...[ this.UnknownName, this.defaultName ], ...[ nsName.Name("test") ]];
 
-  public readonly mapping: Readonly<Map<string, Readonly<Map<string, Readonly<Map<nsState.State, nsCategory.Category>>>>>> = new Map([ ["Foo", new Map([ ["Lorem", (() => { const __buf707341971: Map<nsState.State, nsCategory.Category> = new Map(); __buf707341971.set(nsState.State.Alabama, nsCategory.Category.Lorem); __buf707341971.set(nsState.State.Alaska, nsCategory.Category.Ipsum); return __buf707341971 })()] ])] ]);
+  public readonly mapping: Readonly<Map<string, Readonly<Map<string, Readonly<Map<nsState.State, nsCategory.Category>>>>>> = new Map<string, Readonly<Map<string, Readonly<Map<nsState.State, nsCategory.Category>>>>>([ ["Foo", new Map<string, Readonly<Map<nsState.State, nsCategory.Category>>>([ ["Lorem", (() => { const __buf707341971: Map<nsState.State, nsCategory.Category> = new Map<nsState.State, nsCategory.Category>(); __buf707341971.set(nsState.State.Alabama, nsCategory.Category.Lorem); __buf707341971.set(nsState.State.Alaska, nsCategory.Category.Ipsum); return __buf707341971 })()] ])] ]);
 
   private static instance: Constants;
 

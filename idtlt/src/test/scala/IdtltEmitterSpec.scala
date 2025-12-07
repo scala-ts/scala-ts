@@ -277,12 +277,12 @@ export const ${ns}TestObject2Inhabitant: ${ns}TestObject2 = {
   const: "value",
   foo: this.name,
   list: [ "first", this.name ],
-  set: new Set([ this.code, 2 ]),
-  mapping: new Map([ ["foo", "bar"], ["lorem", this.name] ]),
-  dictOfList: new Map([ ["excludes", [ "*.txt", ".gitignore" ]], ["includes", [ "images/**", "*.jpg", "*.png" ]] ]),
+  set: new Set<number>([ this.code, 2 ]),
+  mapping: new Map<string, string>([ ["foo", "bar"], ["lorem", this.name] ]),
+  dictOfList: new Map<string, ReadonlyArray<string>>([ ["excludes", [ "*.txt", ".gitignore" ]], ["includes", [ "images/**", "*.jpg", "*.png" ]] ]),
   concatSeq: [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]],
   concatList: [ ...[ "foo" ], ...this.list],
-  mergedSet: new Set([ ...this.set, ...new Set([ 3 ]) ]),
+  mergedSet: new Set<number>([ ...this.set, ...new Set<number>([ 3 ]) ]),
   tuple1: [ "foo", 2, 3.0 ],
   tuple2: [ "bar", 2 ],
   tuple3: this.tuple1,
@@ -483,17 +483,17 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;"""
 
   public readonly _list: readonly [TSstring, ...ReadonlyArray<TSstring>] = [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("first"), this._name ];
 
-  public readonly _set: ReadonlySet<TSnumber> = new Set([ this._code, 2 ]);
+  public readonly _set: ReadonlySet<TSnumber> = new Set<TSnumber>([ this._code, 2 ]);
 
-  public readonly _mapping: Readonly<Map<TSstring, TSstring>> = new Map([ ["foo", nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")], ["lorem", this._name] ]);
+  public readonly _mapping: Readonly<Map<TSstring, TSstring>> = new Map<TSstring, TSstring>([ ["foo", nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")], ["lorem", this._name] ]);
 
-  public readonly _dictOfList: Readonly<Map<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>> = new Map([ ["excludes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ]], ["includes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ]] ]);
+  public readonly _dictOfList: Readonly<Map<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>> = new Map<TSstring, ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild>>([ ["excludes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.txt"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild(".gitignore") ]], ["includes", [ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("images/**"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.jpg"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("*.png") ]] ]);
 
   public readonly _concatSeq: ReadonlyArray<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild> = [ ...this._list, ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar") ], ...[ nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("lorem") ]];
 
-  public readonly _mergedSet: ReadonlySet<TSnumber> = new Set([ ...this._set, ...new Set([ 3 ]) ]);
+  public readonly _mergedSet: ReadonlySet<TSnumber> = new Set<TSnumber>([ ...this._set, ...new Set<TSnumber>([ 3 ]) ]);
 
-  public readonly _taggedDict: Readonly<Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>> = (() => { const __buf1519690942: Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring> = new Map(); __buf1519690942.set(nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")); return __buf1519690942 })();
+  public readonly _taggedDict: Readonly<Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>> = (() => { const __buf1519690942: Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring> = new Map<nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild, TSstring>(); __buf1519690942.set(nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("foo"), nsTS${valueClassNs}AnyValChild.TS${valueClassNs}AnyValChild("bar")); return __buf1519690942 })();
 
   private static instance: TSSingleton;
 

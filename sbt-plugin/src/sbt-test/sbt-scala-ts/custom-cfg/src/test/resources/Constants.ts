@@ -14,7 +14,7 @@ export class TSConstants {
 
   public readonly _list: ReadonlyArray<TSName> = [ ...[ this._DefaultName ], ...[ nsTSName.TSName("test") ]];
 
-  public readonly _seqOfMap: ReadonlyArray<Readonly<Map<TSName, string>>> = [ (() => { const __buf1628682018: Map<TSName, string> = new Map(); __buf1628682018.set(nsTSName.TSName("lorem"), "lorem"); __buf1628682018.set(this._DefaultName, "ipsum"); return __buf1628682018 })(), (() => { const __buf1628682049: Map<TSName, string> = new Map(); __buf1628682049.set(nsTSName.TSName("dolor"), "value"); return __buf1628682049 })() ];
+  public readonly _seqOfMap: ReadonlyArray<Readonly<Map<TSName, string>>> = [ (() => { const __buf1628682018: Map<TSName, string> = new Map<TSName, string>(); __buf1628682018.set(nsTSName.TSName("lorem"), "lorem"); __buf1628682018.set(this._DefaultName, "ipsum"); return __buf1628682018 })(), (() => { const __buf1628682049: Map<TSName, string> = new Map<TSName, string>(); __buf1628682049.set(nsTSName.TSName("dolor"), "value"); return __buf1628682049 })() ];
 
   private static instance: TSConstants;
 

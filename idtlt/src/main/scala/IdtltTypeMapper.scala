@@ -45,7 +45,7 @@ final class IdtltTypeMapper extends TypeMapper {
           s"idtlt.readonlyArray(${tr(innerType)})"
 
         case ArrayRef(innerType, true) =>
-          s"idtlt.readonlyArray(${tr(innerType)}).and(([head, ...tail]) => (head !== undefined) ? idtlt.Ok([head, ...tail] as const) : idtlt.Err('Invalid non empty array'))"
+          s"(() => { const v = idtlt.readonlyArray(${tr(innerType)}); v.meta.minLength = 1; return v })().and(([head, ...tail]) => (head !== undefined) ? idtlt.Ok([head, ...tail] as const) : idtlt.Err('Invalid non empty array'))"
 
         case SetRef(innerType) =>
           s"idtlt.arrayAsSet(${tr(innerType)}).map(set => { type extractGeneric<Type> = Type extends Set<infer X> ? X : never; type extracted = extractGeneric<typeof set>; return set as ReadonlySet<extracted> })"

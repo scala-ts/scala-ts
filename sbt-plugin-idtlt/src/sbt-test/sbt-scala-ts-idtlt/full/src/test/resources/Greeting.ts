@@ -106,7 +106,7 @@ export class GreetingSingleton {
 
   public readonly Bye: nsBye.ByeSingleton = nsBye.ByeInhabitant;
 
-  public readonly aliases: Readonly<Map<nsGreeting.Greeting, ReadonlySet<nsGreeting.Greeting>>> = (() => { const __buf914534658: Map<nsGreeting.Greeting, ReadonlySet<nsGreeting.Greeting>> = new Map(); __buf914534658.set(this.Hello, new Set([ this.Hi ])); __buf914534658.set(this.GoodBye, new Set([ this.Bye ])); return __buf914534658 })();
+  public readonly aliases: Readonly<Map<nsGreeting.Greeting, ReadonlySet<nsGreeting.Greeting>>> = (() => { const __buf914534658: Map<nsGreeting.Greeting, ReadonlySet<nsGreeting.Greeting>> = new Map<nsGreeting.Greeting, ReadonlySet<nsGreeting.Greeting>>(); __buf914534658.set(this.Hello, new Set<nsGreeting.Greeting>([ this.Hi ])); __buf914534658.set(this.GoodBye, new Set<nsGreeting.Greeting>([ this.Bye ])); return __buf914534658 })();
 
   private static instance: GreetingSingleton;
 
