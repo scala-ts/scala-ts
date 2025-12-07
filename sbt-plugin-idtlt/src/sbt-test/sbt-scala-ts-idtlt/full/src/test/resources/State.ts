@@ -84,7 +84,7 @@ export class StateSingleton {
 
   public readonly Alaska: nsAlaska.AlaskaSingleton = nsAlaska.AlaskaInhabitant;
 
-  public readonly cities: Readonly<Map<nsState.State, ReadonlySet<string>>> = (() => { const __buf1360151735: Map<nsState.State, ReadonlySet<string>> = new Map(); __buf1360151735.set(this.Alaska, new Set([ "Anchorage", "Juneau" ])); __buf1360151735.set(this.Alabama, new Set([ "Birmingham" ])); return __buf1360151735 })();
+  public readonly cities: Readonly<Map<nsState.State, ReadonlySet<string>>> = (() => { const __buf1360151735: Map<nsState.State, ReadonlySet<string>> = new Map<nsState.State, ReadonlySet<string>>(); __buf1360151735.set(this.Alaska, new Set<string>([ "Anchorage", "Juneau" ])); __buf1360151735.set(this.Alabama, new Set<string>([ "Birmingham" ])); return __buf1360151735 })();
 
   private static instance: StateSingleton;
 

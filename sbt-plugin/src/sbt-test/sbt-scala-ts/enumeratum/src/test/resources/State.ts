@@ -37,7 +37,7 @@ export function isStateSingleton(v: any): v is StateSingleton {
 class StateSingletonValuesClass {
   public readonly Alabama: nsAlabama.AlabamaSingleton = nsAlabama.AlabamaInhabitant;
   public readonly Alaska: nsAlaska.AlaskaSingleton = nsAlaska.AlaskaInhabitant;
-  public readonly cities: Readonly<Map<State, ReadonlySet<string>>> = (() => { const __buf1360151735: Map<State, ReadonlySet<string>> = new Map(); __buf1360151735.set(this.Alaska, new Set([ "Juneau", "Anchorage" ])); __buf1360151735.set(this.Alabama, new Set([ "Birmingham" ])); return __buf1360151735 })();
+  public readonly cities: Readonly<Map<State, ReadonlySet<string>>> = (() => { const __buf1360151735: Map<State, ReadonlySet<string>> = new Map<State, ReadonlySet<string>>(); __buf1360151735.set(this.Alaska, new Set<string>([ "Juneau", "Anchorage" ])); __buf1360151735.set(this.Alabama, new Set<string>([ "Birmingham" ])); return __buf1360151735 })();
 }
 
 export const StateSingletonValues = new StateSingletonValuesClass();

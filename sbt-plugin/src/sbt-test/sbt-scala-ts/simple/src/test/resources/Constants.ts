@@ -20,11 +20,11 @@ export class Constants {
 
   public readonly list: ReadonlyArray<Grade> = [ this.LowerGrade ];
 
-  public readonly set: ReadonlySet<string> = new Set([ "lorem", "ipsum" ]);
+  public readonly set: ReadonlySet<string> = new Set<string>([ "lorem", "ipsum" ]);
 
-  public readonly dict: Readonly<Map<string, string>> = new Map([ ["A", "value #1"], ["B", this.name] ]);
+  public readonly dict: Readonly<Map<string, string>> = new Map<string, string>([ ["A", "value #1"], ["B", this.name] ]);
 
-  public readonly listOfDict: ReadonlyArray<Readonly<Map<string, string>>> = [ new Map([ ["title", "Foo"], ["description", "..."] ]), new Map([ ["title", "Bar"], ["description", "..."] ]) ];
+  public readonly listOfDict: ReadonlyArray<Readonly<Map<string, string>>> = [ new Map<string, string>([ ["title", "Foo"], ["description", "..."] ]), new Map<string, string>([ ["title", "Bar"], ["description", "..."] ]) ];
 
   private static instance: Constants;
 

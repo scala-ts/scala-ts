@@ -483,8 +483,8 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.print("]")
               }
 
-              case SetValue(_, _, _, elements) => {
-                o.print("new Set([ ")
+              case SetValue(_, _, v, elements) => {
+                o.print(s"new Set<${tpeMapper(v)}>([ ")
 
                 elements.toList.zipWithIndex.foreach {
                   case (e, i) =>
@@ -498,8 +498,8 @@ ${indent}return ${simpleCheck}${lineSeparator}
                 o.print(" ])")
               }
 
-              case MergedSetsValue(_, _, children) => {
-                o.print("new Set([ ...")
+              case MergedSetsValue(_, v, children) => {
+                o.print(s"new Set<${tpeMapper(v)}>([ ...")
 
                 children.toList.zipWithIndex.foreach {
                   case (c, i) =>
@@ -514,13 +514,16 @@ ${indent}return ${simpleCheck}${lineSeparator}
               }
 
               case d @ DictionaryValue(nme, _, _, entries) => {
+                val kt = tpeMapper(d.keyTypeRef)
+                val vt = tpeMapper(d.valueTypeRef)
+
                 if (
                   entries.forall {
                     case (LiteralValue(_, StringRef, _), _) => true
                     case _                                  => false
                   }
                 ) {
-                  o.print("new Map([ ")
+                  o.print(s"new Map<$kt, $vt>([ ")
 
                   // All keys are literal string
                   entries.toList.zipWithIndex.foreach {
@@ -549,7 +552,7 @@ ${indent}return ${simpleCheck}${lineSeparator}
                     }
                   }
 
-                  o.print(s"(() => { const ${bufNme}: ${bufTpe} = new Map(); ")
+                  o.print(s"(() => { const ${bufNme}: ${bufTpe} = new Map<$kt, $vt>(); ")
 
                   entries.foreach {
                     case (key, v) =>

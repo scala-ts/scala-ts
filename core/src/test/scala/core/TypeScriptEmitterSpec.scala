@@ -194,17 +194,17 @@ export type ${ns}TestObject1Singleton = ${ns}TestObject1;
 
   public readonly list: readonly [string, ...ReadonlyArray<string>] = [ "first", this.name ];
 
-  public readonly set: ReadonlySet<number> = new Set([ this.code, 2 ]);
+  public readonly set: ReadonlySet<number> = new Set<number>([ this.code, 2 ]);
 
-  public readonly mapping: Readonly<Map<string, string>> = new Map([ ["foo", "bar"], ["lorem", this.name] ]);
+  public readonly mapping: Readonly<Map<string, string>> = new Map<string, string>([ ["foo", "bar"], ["lorem", this.name] ]);
 
-  public readonly dictOfList: Readonly<Map<string, ReadonlyArray<string>>> = new Map([ ["excludes", [ "*.txt", ".gitignore" ]], ["includes", [ "images/**", "*.jpg", "*.png" ]] ]);
+  public readonly dictOfList: Readonly<Map<string, ReadonlyArray<string>>> = new Map<string, ReadonlyArray<string>>([ ["excludes", [ "*.txt", ".gitignore" ]], ["includes", [ "images/**", "*.jpg", "*.png" ]] ]);
 
   public readonly concatSeq: ReadonlyArray<string> = [ ...this.list, ...[ "foo", "bar" ], ...[ "lorem" ]];
 
   public readonly concatList: ReadonlyArray<string> = [ ...[ "foo" ], ...this.list];
 
-  public readonly mergedSet: ReadonlySet<number> = new Set([ ...this.set, ...new Set([ 3 ]) ]);
+  public readonly mergedSet: ReadonlySet<number> = new Set<number>([ ...this.set, ...new Set<number>([ 3 ]) ]);
 
   public readonly tuple1: Readonly<[string, number, number]> = [ "foo", 2, 3.0 ];
 
@@ -246,7 +246,7 @@ export type ${ns}TestObject2Singleton = ${ns}TestObject2;
           ) must_=== s"""export class ${valueClassNs}TestObject3 {
   public readonly name: ${valueClassNs}AnyValChild & "Foo" = ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("Foo");
 
-  public readonly mapping: Readonly<Map<${valueClassNs}AnyValChild, string>> = (() => { const __buf837556430: Map<${valueClassNs}AnyValChild, string> = new Map(); __buf837556430.set(ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo"), "bar"); __buf837556430.set(this.name, "lorem"); return __buf837556430 })();
+  public readonly mapping: Readonly<Map<${valueClassNs}AnyValChild, string>> = (() => { const __buf837556430: Map<${valueClassNs}AnyValChild, string> = new Map<${valueClassNs}AnyValChild, string>(); __buf837556430.set(ns${valueClassNs}AnyValChild.${valueClassNs}AnyValChild("foo"), "bar"); __buf837556430.set(this.name, "lorem"); return __buf837556430 })();
 
   private static instance: ${valueClassNs}TestObject3;
 
@@ -693,7 +693,7 @@ export function isWords(v: any): v is Words {
           case LiteralValue(_, _, v) => v
         }.mkString(", ")
 
-        buf.toString must_=== s"""new Set([ ${ls} ])"""
+        buf.toString must_=== s"""new Set<string>([ ${ls} ])"""
       }
     }
   }

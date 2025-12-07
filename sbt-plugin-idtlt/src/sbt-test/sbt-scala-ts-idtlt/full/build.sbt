@@ -10,6 +10,8 @@ scalaVersion := "2.13.18"
 
 crossScalaVersions := Seq("2.12.20", scalaVersion.value)
 
+resolvers += "Sonatype Snapshots" at "https://central.sonatype.com/repository/maven-snapshots/"
+
 // ---
 
 // Distribute src/test/typescript as ts-test
