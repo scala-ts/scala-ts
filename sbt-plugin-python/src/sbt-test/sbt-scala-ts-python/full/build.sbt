@@ -8,7 +8,7 @@ enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.18"
 
-crossScalaVersions := Seq("2.12.20", scalaVersion.value)
+crossScalaVersions := Seq("2.12.21", scalaVersion.value)
 
 scalatsPythonBaseModule := Some("generated")
 
