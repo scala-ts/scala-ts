@@ -43,7 +43,7 @@
     "madge": "^8.0.0",
     "mocha": "11.7.5",
     "prettier": "3.8.1",
-    "prettier-plugin-svelte": "3.4.1",
+    "prettier-plugin-svelte": "3.5.0",
     "rimraf": "6.1.3",
     "rollup": "4.58.0",
     "rollup-plugin-copy": "3.5.0",
