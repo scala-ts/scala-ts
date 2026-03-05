@@ -151,9 +151,9 @@ jobs:
     - name: 'Publish snapshot (master)'
       if: ${{ github.ref == 'refs/heads/master' }}
       env:
-        PUBLISH_REPO_ID: "oss.sonatype.org"
-        PUBLISH_REPO_URL: "https://oss.sonatype.org/content/repositories/snapshots"
         PUBLISH_REPO_NAME: "Sonatype Nexus Repository Manager"
+        PUBLISH_REPO_ID: "central.sonatype.com"
+        PUBLISH_REPO_URL: "https://central.sonatype.com/repository/maven-snapshots/"
         PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
         PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
       run: sbt ';error ;+core/publish ;idtlt/publish ;^sbt-plugin/publish ;^sbt-plugin-idtlt/publish'
