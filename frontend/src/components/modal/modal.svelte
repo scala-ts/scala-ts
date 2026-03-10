@@ -2,10 +2,9 @@
   import { fade } from "svelte/transition";
   import type { ModalProps } from "./modal";
 
-  export let state: ModalProps;
-  export let hide: () => void;
+  let { state, hide }: { state: ModalProps; hide: () => void } = $props();
 
-  const extraBtn = state.extraBtn;
+  const extraBtn = $derived(state.extraBtn);
 </script>
 
 <div

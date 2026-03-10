@@ -1,14 +1,27 @@
-import { writable, derived, get } from "svelte/store";
+import { toStore } from "svelte/store";
 import type { Credentials } from "@shared/Credentials";
 import type { ModalProps } from "@components/modal/modal";
 import { isError } from "@utils/error";
 
-export const userName = writable<string | undefined>(undefined);
+let userNameValue = $state<string | undefined>(undefined);
+export const userName = toStore(
+  () => userNameValue,
+  (value) => {
+    userNameValue = value;
+  }
+);
 
-export const password = writable<string | undefined>(undefined);
+let passwordValue = $state<string | undefined>(undefined);
+export const password = toStore(
+  () => passwordValue,
+  (value) => {
+    passwordValue = value;
+  }
+);
 
-const credentials = derived([userName, password], ($values) => {
-  const [u, p] = $values;
+const credentialsValue = $derived.by(() => {
+  const u = userNameValue;
+  const p = passwordValue;
 
   const c: Credentials | undefined =
     u && u.length > 0 && p && p.length > 0
@@ -18,30 +31,49 @@ const credentials = derived([userName, password], ($values) => {
   return c;
 });
 
-export const valid = derived(credentials, ($credentials) => !!$credentials);
+export const valid = toStore(() => !!credentialsValue);
 
 // Log in
-export const pending = writable<boolean>(false);
+let pendingValue = $state(false);
+export const pending = toStore(
+  () => pendingValue,
+  (value) => {
+    pendingValue = value;
+  }
+);
 
-export const modalStore = writable<ModalProps | undefined>(undefined);
+let modalValue = $state<ModalProps | undefined>(undefined);
+export const modalStore = toStore(
+  () => modalValue,
+  (value) => {
+    modalValue = value;
+  }
+);
 
-export const loginMessage = writable<
+type LoginMessage =
   | {
       level: "warning" | "success";
       text: string;
     }
-  | undefined
->(undefined);
+  | undefined;
+
+let loginMessageValue = $state<LoginMessage>(undefined);
+export const loginMessage = toStore(
+  () => loginMessageValue,
+  (value) => {
+    loginMessageValue = value;
+  }
+);
 
 export async function login() {
-  pending.set(true);
+  pendingValue = true;
 
   const resp: Error | any = await fetch(`${appEnv.backendUrl}/signin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(get(credentials)),
+    body: JSON.stringify(credentialsValue),
   })
     .then((resp) => resp.json())
     .catch((err) => {
@@ -60,34 +92,34 @@ export async function login() {
       };
     });
 
-  pending.set(false);
+  pendingValue = false;
 
   if (isError(resp)) {
     if (resp.error != "forbidden") {
-      modalStore.set({
+      modalValue = {
         id: "error-modal",
         title: "Error",
         message: `${resp.error}: ${JSON.stringify(resp.details)}`,
         headerClass: "bg-danger",
         bodyClass: "text-danger",
         closeBtnClass: "btn-danger",
-      });
+      };
     } else {
-      loginMessage.set({
+      loginMessageValue = {
         level: "warning",
         text:
           typeof resp.details == "string"
             ? resp.details
             : JSON.stringify(resp.details),
-      });
+      };
     }
   } else {
     localStorage.setItem("scala-ts-demo.token", resp.toString());
 
-    loginMessage.set({
+    loginMessageValue = {
       level: "success",
       text: "OK",
-    });
+    };
 
     location.href = "/profile";
   }

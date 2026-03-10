@@ -1,22 +1,29 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { fade } from "svelte/transition";
-  import { account, load, modalStore, pending, signOut } from "./profile";
+  import {
+    account,
+    load,
+    modalStore,
+    pending,
+    signOut,
+  } from "./profile.svelte.ts";
 
-  export let token: string;
-  const name = token.substring(0, token.indexOf(":"));
+  let { token }: { token: string } = $props();
+  const name = $derived(token.substring(0, token.indexOf(":")));
 
-  onMount(async () => load(token));
+  $effect(() => {
+    void load(token);
+  });
 
-  $: a = $account;
-  $: contact = a ? a.contact : undefined;
-  $: usage = a ? a.usage : undefined;
-  $: foods = a ? a.favoriteFoods : [];
+  const a = $derived($account);
+  const contact = $derived(a ? a.contact : undefined);
+  const usage = $derived(a ? a.usage : undefined);
+  const foods = $derived(a ? a.favoriteFoods : []);
 
   // Modal
   import Modal from "@components/modal/modal.svelte";
 
-  $: modal = $modalStore;
+  const modal = $derived($modalStore);
 
   const hideModal = () => modalStore.set(undefined);
 </script>

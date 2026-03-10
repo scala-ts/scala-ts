@@ -11,7 +11,7 @@
     pizzaOrSushi,
     selectFood,
     unselectFood,
-  } from "./food";
+  } from "./food.svelte.ts";
 
   import {
     accountStore,
@@ -23,11 +23,11 @@
     submitSignUp,
     modalStore,
     pending,
-  } from "./signup";
+  } from "./signup.svelte.ts";
 
   import Modal from "@components/modal/modal.svelte";
 
-  $: modal = $modalStore;
+  const modal = $derived($modalStore);
 
   const hideModal = () => modalStore.set(undefined);
 </script>
@@ -108,6 +108,8 @@
             type="text"
             class="form-control"
             id="userName"
+            name="userName"
+            autocomplete="username"
             bind:value={$accountStore.userName} />
         </div>
 
@@ -117,6 +119,8 @@
             type="password"
             class="form-control"
             id="password"
+            name="password"
+            autocomplete="new-password"
             bind:value={$accountStore.password} />
         </div>
 
@@ -136,6 +140,8 @@
                 type="text"
                 class="form-control"
                 id="firstName"
+                name="firstName"
+                autocomplete="given-name"
                 bind:value={$firstName} />
             </div>
 
@@ -145,6 +151,8 @@
                 type="text"
                 class="form-control"
                 id="lastName"
+                name="lastName"
+                autocomplete="family-name"
                 bind:value={$lastName} />
             </div>
 
@@ -155,6 +163,8 @@
                 min="0"
                 class="form-control"
                 id="age"
+                name="age"
+                autocomplete="off"
                 bind:value={$age} />
             </div>
           </div>
@@ -165,6 +175,7 @@
           <select
             class="form-select"
             id="usage"
+            name="usage"
             bind:value={$accountStore.usage}>
             {#each Usage.values as usage}
               <option value={usage}>{usage}</option>
@@ -176,7 +187,11 @@
           <div class="card-body">
             <label for="food" class="form-label card-title">Favorite food</label>
             <div class="input-group">
-              <select class="form-select" id="food" bind:value={$pizzaOrSushi}>
+              <select
+                class="form-select"
+                id="food"
+                name="food"
+                bind:value={$pizzaOrSushi}>
                 {#each $availableFoods as food}
                   <option value={food}>{food}</option>
                 {/each}
@@ -196,6 +211,8 @@
               <input
                 type="text"
                 class="form-control"
+                name="otherFood"
+                autocomplete="off"
                 bind:value={$otherFood}
                 placeholder="... or something else" />
               <button

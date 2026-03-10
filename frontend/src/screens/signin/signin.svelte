@@ -8,12 +8,12 @@
     loginMessage,
     modalStore,
     pending,
-  } from "./signin";
+  } from "./signin.svelte.ts";
 
   import Modal from "@components/modal/modal.svelte";
 
-  $: modal = $modalStore;
-  $: msg = $loginMessage;
+  const modal = $derived($modalStore);
+  const msg = $derived($loginMessage);
 
   const hideModal = () => modalStore.set(undefined);
 
@@ -67,6 +67,8 @@
         <input
           type="text"
           id="userName"
+          name="userName"
+          autocomplete="username"
           class="form-control mb-3"
           placeholder="Username"
           use:init
@@ -75,6 +77,8 @@
         <input
           type="password"
           id="password"
+          name="password"
+          autocomplete="current-password"
           class="form-control mb-3"
           placeholder="Password"
           bind:value={$password} />

@@ -4,21 +4,19 @@
   import SignIn from "@screens/signin/signin.svelte";
   import Profile from "@screens/profile/profile.svelte";
 
-  let token: string | null = null;
+  const route = $derived($currentRoute);
 
-  const checkToken = () => {
-    token = localStorage.getItem("scala-ts-demo.token");
-    return !!token;
-  };
-
-  $: route = $currentRoute;
+  const token = $derived.by(() => {
+    route;
+    return localStorage.getItem("scala-ts-demo.token");
+  });
 </script>
 
 <div id="app" class="container-fluid">
   <main>
     {#if route.name === 'signin'}
       <SignIn />
-    {:else if route.name === 'profile' && checkToken() && token}
+    {:else if route.name === 'profile' && token}
       <Profile {token} />
     {:else}
       <SignUp />

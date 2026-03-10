@@ -1,16 +1,24 @@
 <script lang="ts">
   import { router } from "@components/router";
+  import type { Snippet } from "svelte";
   import type { AppRouter } from "@components/router";
   import type { RouteAndParams } from "typescript-router";
 
-  export let ref: string | undefined = undefined;
+  let {
+    ref = undefined,
+    route,
+    replace = false,
+    children,
+  }: {
+    ref?: string;
+    route: RouteAndParams<AppRouter>;
+    replace?: boolean;
+    children?: Snippet;
+  } = $props();
 
-  export let route: RouteAndParams<AppRouter>;
-  export let replace: boolean = false;
+  const href = $derived(router.link(route[0], route[1]));
 
-  $: href = router.link(route[0], route[1]);
-
-  let preventClickDefault = false;
+  let preventClickDefault = $state(false);
 
   function onMouseDown(evt: MouseEvent) {
     const currentTarget = evt.currentTarget as HTMLAnchorElement | null;
@@ -48,5 +56,5 @@
 </script>
 
 <a data-ref={ref} {href} onmousedown={onMouseDown} onclick={onClick}>
-  <slot />
+  {@render children?.()}
 </a>
