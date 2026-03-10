@@ -1,6 +1,8 @@
 import { writable } from "svelte/store";
-import { Account, isAccount } from "@shared/Account";
+import { isAccount } from "@shared/Account";
+import type { Account } from "@shared/Account";
 import type { ModalProps } from "@components/modal/modal";
+import type { Error as ApiError } from "@utils/error";
 import { isError } from "@utils/error";
 
 export const account = writable<Account | undefined>(undefined);
@@ -10,17 +12,17 @@ export const signOut = () => {
   location.href = "/signin";
 };
 
-export const pending = writable<Boolean>(false);
+export const pending = writable<boolean>(false);
 
 export const modalStore = writable<ModalProps | undefined>(undefined);
 
-export async function load(token: String) {
+export async function load(token: string) {
   pending.set(true);
 
-  const resp: Error | any = await fetch(`${appEnv.backendUrl}/user/profile`, {
+  const resp: ApiError | any = await fetch(`${appEnv.backendUrl}/user/profile`, {
     method: "GET",
     headers: {
-      Authorization: `Basic ${btoa(token.toString())}`,
+      Authorization: `Basic ${btoa(token)}`,
     },
   })
     .then((resp) => resp.json())

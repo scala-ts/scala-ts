@@ -31,6 +31,4 @@ yarn dev
 
 ## Deploy
 
-On Heroku *(see [heroku.yml](./heroku.yml) & [Dockerfile](./Dockerfile))*
-
-    git push heroku demo/akka-http-svlete:master
+See [Dockerfile](./Dockerfile)

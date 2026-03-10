@@ -1,4 +1,5 @@
-import { get, writable, derived, Readable } from "svelte/store";
+import { get, writable, derived } from "svelte/store";
+import type { Readable } from "svelte/store";
 
 import type { Food } from "@shared/Food";
 import type { JapaneseSushi } from "@shared/JapaneseSushi";

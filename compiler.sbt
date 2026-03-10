@@ -1,6 +1,8 @@
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.18"
 
-ThisBuild / crossScalaVersions := Seq((ThisBuild / scalaVersion).value, "3.1.3")
+val scala3Lts = "3.3.7"
+
+ThisBuild / crossScalaVersions := Seq((ThisBuild / scalaVersion).value, scala3Lts)
 
 ThisBuild / scalacOptions ++= Seq(
   "-encoding",
@@ -42,10 +44,16 @@ Test / console / scalacOptions ~= {
 
 // Silencer
 ThisBuild / libraryDependencies ++= {
-  if (scalaBinaryVersion.value == "3") {
-    Seq.empty
-  } else {
-    val silencerVersion = "1.7.9"
+  val v = scalaBinaryVersion.value
+
+  if (!v.startsWith("3")) {
+    val silencerVersion: String = {
+      if (v == "2.11") {
+        "1.17.13"
+      } else {
+        "1.7.19"
+      }
+    }
 
     Seq(
       compilerPlugin(
@@ -55,5 +63,5 @@ ThisBuild / libraryDependencies ++= {
       ("com.github.ghik" %% "silencer-lib" % silencerVersion % Provided)
         .cross(CrossVersion.full)
     )
-  }
+  } else Seq.empty
 }

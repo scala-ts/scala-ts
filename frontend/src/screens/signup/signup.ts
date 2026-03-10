@@ -1,8 +1,10 @@
-import { writable, derived, get, Readable } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
+import type { Readable } from "svelte/store";
 import type { Account } from "@shared/Account";
 import type { ContactName } from "@shared/ContactName";
 import type { ModalProps } from "@components/modal/modal";
-import { Error, isError } from "@utils/error";
+import type { Error as ApiError } from "@utils/error";
+import { isError } from "@utils/error";
 
 // Overall store
 const initialAccount: () => Account = () => ({
@@ -58,7 +60,7 @@ export const modalStore = writable<ModalProps | undefined>(undefined);
 export async function submitSignUp(account: Account) {
   pending.set(true);
 
-  const resp: Error | any = await fetch(`${appEnv.backendUrl}/user/signup`, {
+  const resp: ApiError | any = await fetch(`${appEnv.backendUrl}/user/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

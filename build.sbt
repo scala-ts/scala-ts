@@ -5,13 +5,17 @@ scalafmtOnCompile := true
 
 inThisBuild(
   List(
-    resolvers ++= Resolver.sonatypeOssRepos("staging"),
+    resolvers += Resolver.sonatypeCentralSnapshots,
     // scalaVersion := "2.13.3",
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
-    scalafixDependencies ++= Seq(
-      "com.github.liancheng" %% "organize-imports" % "0.6.0"
-    ),
+    scalafixDependencies ++= {
+      if (scalaBinaryVersion.value == "3") {
+        Seq.empty
+      } else {
+        Seq("com.github.liancheng" %% "organize-imports" % "0.6.0")
+      }
+    },
     Compile / scalacOptions += "-Ywarn-unused"
   )
 )

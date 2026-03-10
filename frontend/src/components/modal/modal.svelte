@@ -12,7 +12,23 @@
   class="modal-backdrop"
   style="background-color:rgba(0, 0, 0, 0.75)"
   in:fade={{ duration: 120 }}
-  on:click={hide}>
+  onclick={(event) => {
+    if (event.target === event.currentTarget) {
+      hide();
+    }
+  }}
+  onkeydown={(event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      hide();
+    }
+  }}
+  role="button"
+  tabindex="0"
+  aria-label="Close modal">
   <div
     class="modal"
     tabindex="-1"
@@ -32,13 +48,17 @@
             type="button"
             class="btn {state.closeBtnClass}"
             data-dismiss="modal"
-            on:click|preventDefault={hide}>Close</button>
+            onclick={(event) => {
+              event.preventDefault();
+              hide();
+            }}>Close</button>
 
           {#if extraBtn}
             <button
               type="button"
               class="btn {extraBtn.classname}"
-              on:click|preventDefault={() => {
+              onclick={(event) => {
+                event.preventDefault();
                 hide();
                 extraBtn.onclick();
               }}>{extraBtn.label}</button>

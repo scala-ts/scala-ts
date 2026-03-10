@@ -12,14 +12,20 @@
 
   let preventClickDefault = false;
 
-  function onMouseDown(evt: DOM.MouseEvent<HTMLAnchorElement>) {
+  function onMouseDown(evt: MouseEvent) {
+    const currentTarget = evt.currentTarget as HTMLAnchorElement | null;
+
+    if (!currentTarget) {
+      return;
+    }
+
     const isModifiedEvent = Boolean(
       evt.metaKey || evt.altKey || evt.ctrlKey || evt.shiftKey
     );
     const isSelfTarget =
       !evt.target ||
-      !evt.currentTarget.target ||
-      evt.currentTarget.target === "_self";
+      !currentTarget.target ||
+      currentTarget.target === "_self";
 
     if (
       isSelfTarget && // Ignore everything but links with target self
@@ -33,7 +39,7 @@
     }
   }
 
-  function onClick(evt: DOM.MouseEvent<HTMLAnchorElement>) {
+  function onClick(evt: MouseEvent) {
     if (preventClickDefault) {
       preventClickDefault = false;
       evt.preventDefault();
@@ -41,6 +47,6 @@
   }
 </script>
 
-<a data-ref={ref} {href} on:mousedown={onMouseDown} on:click={onClick}>
+<a data-ref={ref} {href} onmousedown={onMouseDown} onclick={onClick}>
   <slot />
 </a>

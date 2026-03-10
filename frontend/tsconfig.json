@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["svelte", "mocha"],
+    "types": ["svelte", "vite/client", "mocha"],
     "strict": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
@@ -11,7 +11,7 @@
     "removeComments": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "pretty": true,
     "allowJs": false,
@@ -19,7 +19,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": false,
+    "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
@@ -29,7 +29,7 @@
   },
   "include": [
     "src/**/*",
-    "build/**/*",
+    "build/envValidator.ts",
     "../common/target/scala-ts/src_managed/"
   ],
   "exclude": ["node_modules"]

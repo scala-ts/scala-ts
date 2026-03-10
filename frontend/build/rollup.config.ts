@@ -102,7 +102,7 @@ const options: RollupOptions = {
         preprocess({
           scss: {
             includePaths: ["./src/theme"],
-            prependData: '@import "util.scss";',
+            prependData: '@use "util.scss" as *;',
           }
         })
       ],
@@ -180,14 +180,14 @@ function devServer() {
 
       started = true
 
-      const sirvPort = '5000'
+      const sirvPort = process.env.FRONTEND_PORT || '5173'
 
       // sirv's --quiet mode is all or nothing so let's print our own message to know about the port.
       console.log(`Your application is ready at localhost:${sirvPort}`)
 
       childProcess.spawn(
         'yarn',
-        ['sirv', 'dist', '--dev', '--quiet', '--single', '--port', sirvPort],
+        ['sirv', 'dist', '--dev', '--quiet', '--single', '--host', '0.0.0.0', '--port', sirvPort],
         {
           stdio: ['ignore', 'inherit', 'inherit'],
           shell: true,

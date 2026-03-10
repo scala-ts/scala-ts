@@ -40,14 +40,18 @@
       <div
         class="container-fluid text-center position-relative"
         style="top:49%">
-        <div class="spinner-border text-white align-middle" role="status" />
+        <div class="spinner-border text-white align-middle" role="status"></div>
       </div>
     </div>
   {/if}
 
   <div class="row justify-content-md-center">
     <div class="col col-md-5 col-lg-3">
-      <form on:submit|preventDefault={login}>
+      <form
+        onsubmit={(event) => {
+          event.preventDefault();
+          login();
+        }}>
         <div class="text-center mt-4">
           <img
             class="mb-4"

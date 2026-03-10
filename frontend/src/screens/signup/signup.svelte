@@ -74,7 +74,7 @@
       <div
         class="container-fluid text-center position-relative"
         style="top:49%">
-        <div class="spinner-border text-white align-middle" role="status" />
+        <div class="spinner-border text-white align-middle" role="status"></div>
       </div>
     </div>
   {/if}
@@ -97,7 +97,11 @@
 
   <div class="row justify-content-md-center">
     <div class="col col-md-8 col-lg-6">
-      <form on:submit|preventDefault={() => submitSignUp($accountStore)}>
+      <form
+        onsubmit={(event) => {
+          event.preventDefault();
+          submitSignUp($accountStore);
+        }}>
         <div class="mb-3">
           <label for="userName" class="form-label">Username</label>
           <input
@@ -122,8 +126,8 @@
               <span>Contact</span>
 
               {#if $hasContact}
-                <i class="bi bi-check-square text-primary fw-light" />
-              {:else}<i class="bi bi-square text-muted fw-light" />{/if}
+                <i class="bi bi-check-square text-primary fw-light"></i>
+              {:else}<i class="bi bi-square text-muted fw-light"></i>{/if}
             </div>
 
             <div>
@@ -180,8 +184,11 @@
               <button
                 class="btn btn-secondary"
                 disabled={!$canSelectFood}
-                on:click|preventDefault={() => selectFood($pizzaOrSushi)}>
-                <i class="bi bi-plus-circle" />
+                onclick={(event) => {
+                  event.preventDefault();
+                  selectFood($pizzaOrSushi);
+                }}>
+                <i class="bi bi-plus-circle"></i>
                 Add</button>
             </div>
 
@@ -193,9 +200,12 @@
                 placeholder="... or something else" />
               <button
                 class="btn btn-secondary"
-                on:click|preventDefault={() => addFood()}
+                onclick={(event) => {
+                  event.preventDefault();
+                  addFood();
+                }}
                 disabled={!$canAddFood}>
-                <i class="bi bi-plus-circle" />
+                <i class="bi bi-plus-circle"></i>
                 Add</button>
             </div>
 
@@ -207,8 +217,12 @@
                   <li class="list-group-item">
                     <a
                       href="#otherFood"
-                      on:click|preventDefault={() => unselectFood(food)}>
-                      <i class="bi bi-dash-circle" /></a>
+                      aria-label="Remove favorite food"
+                      onclick={(event) => {
+                        event.preventDefault();
+                        unselectFood(food);
+                      }}>
+                      <i class="bi bi-dash-circle"></i></a>
                     <span>
                       {#if food == 'pizza' || food == 'sushi'}
                         {food}
@@ -245,7 +259,7 @@
               </div>
 
               <div class="p-2">
-                <i class="bi bi-github" />
+                <i class="bi bi-github"></i>
                 <small>
                   <a
                     href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"

@@ -49,7 +49,7 @@
       <div
         class="container-fluid text-center position-relative"
         style="top:49%">
-        <div class="spinner-border text-white align-middle" role="status" />
+        <div class="spinner-border text-white align-middle" role="status"></div>
       </div>
     </div>
   {/if}
@@ -62,8 +62,11 @@
           <a
             class="btn btn-secondary btn-sm"
             href="#signout"
-            on:click|preventDefault={signOut}><i
-              class="bi bi-arrow-left-circle-fill" />
+            onclick={(event) => {
+              event.preventDefault();
+              signOut();
+            }}><i
+              class="bi bi-arrow-left-circle-fill"></i>
             Sign out</a>
         </div>
 
@@ -120,7 +123,7 @@
             </div>
 
             <div class="p-2">
-              <i class="bi bi-github" />
+              <i class="bi bi-github"></i>
               <small>
                 <a
                   href="https://github.com/scala-ts/scala-ts/tree/demo/akka-http-svlete"

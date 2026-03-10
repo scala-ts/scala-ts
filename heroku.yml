@@ -1,5 +1,0 @@
-build:
-  config:
-    BACKEND_URL: https://scala-ts-demo.herokuapp.com
-  docker:
-    web: Dockerfile
