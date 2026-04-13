@@ -12,7 +12,9 @@
   class="modal-backdrop"
   style="background-color:rgba(0, 0, 0, 0.75)"
   transition:fade={{ duration: 120 }}
+  role="presentation"
   on:click={hide}
+  on:keydown={(e) => e.key === "Escape" && hide()}
 >
   <div
     class="modal"
