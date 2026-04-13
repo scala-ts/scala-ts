@@ -22,7 +22,6 @@
     "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true,
-    "baseUrl": ".",
     "paths": {
       "@shared/*": ["../common/target/scala-ts/src_managed/*"],
       "@*": ["./src/*"]
