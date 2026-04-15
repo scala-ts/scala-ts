@@ -132,9 +132,6 @@ export const idtltDiscriminatedState = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedState validator
 export type DiscriminatedState = typeof idtltDiscriminatedState.T;
 
-// Workaround for local type references in the same module
-type privateState = State;
-
 namespace nsState {
-  export type State = privateState;
+  export type State = StateUnion;
 }

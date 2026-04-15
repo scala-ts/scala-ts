@@ -154,9 +154,6 @@ export const idtltDiscriminatedGreeting = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedGreeting validator
 export type DiscriminatedGreeting = typeof idtltDiscriminatedGreeting.T;
 
-// Workaround for local type references in the same module
-type privateGreeting = Greeting;
-
 namespace nsGreeting {
-  export type Greeting = privateGreeting;
+  export type Greeting = GreetingUnion;
 }

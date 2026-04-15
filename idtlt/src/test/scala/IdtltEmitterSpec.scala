@@ -900,11 +900,8 @@ export const idtltDiscriminated${ns}Family = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminated${ns}Family validator
 export type Discriminated${ns}Family = typeof idtltDiscriminated${ns}Family.T;
 
-// Workaround for local type references in the same module
-type private${ns}Family = ${ns}Family;
-
 namespace ns${ns}Family {
-  export type ${ns}Family = private${ns}Family;
+  export type ${ns}Family = ${ns}FamilyUnion;
 }
 """
       }

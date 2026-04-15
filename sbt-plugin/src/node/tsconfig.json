@@ -2,8 +2,11 @@
   "compilerOptions": {
     "target": "ES2015",
     "module": "commonjs",
+    "lib": ["es2017", "dom"],
     "declaration": true,
     "outDir": "lib",
+    "rootDir": ".",
+    "types": ["jest", "node"],
     "strict": true,
     "removeComments": true,
     "noUnusedLocals": true,
@@ -11,8 +14,15 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": false,
-    "noUncheckedIndexedAccess": true,
-    "allowJs": false
+    "declarationMap": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
   },
   "include": [
     "**/target/**/*.ts"
