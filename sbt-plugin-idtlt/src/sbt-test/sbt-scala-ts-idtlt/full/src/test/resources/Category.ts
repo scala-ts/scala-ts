@@ -130,9 +130,6 @@ export const idtltDiscriminatedCategory = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedCategory validator
 export type DiscriminatedCategory = typeof idtltDiscriminatedCategory.T;
 
-// Workaround for local type references in the same module
-type privateCategory = Category;
-
 namespace nsCategory {
-  export type Category = privateCategory;
+  export type Category = CategoryUnion;
 }

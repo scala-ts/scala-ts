@@ -130,9 +130,6 @@ export const idtltDiscriminatedFeature = idtlt.intersection(
 // Deriving TypeScript type from idtltDiscriminatedFeature validator
 export type DiscriminatedFeature = typeof idtltDiscriminatedFeature.T;
 
-// Workaround for local type references in the same module
-type privateFeature = Feature;
-
 namespace nsFeature {
-  export type Feature = privateFeature;
+  export type Feature = FeatureUnion;
 }

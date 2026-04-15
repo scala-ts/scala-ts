@@ -241,11 +241,8 @@ ${indent})${lineSep}
 $deriving
 $discrimitedDecl
 
-// Workaround for local type references in the same module
-type private${tpeName} = ${tpeName}$lineSep
-
 namespace ns${tpeName} {
-${indent}export type $tpeName = private${tpeName}$lineSep
+${indent}export type $tpeName = ${tpeName}Union$lineSep
 }""")
 
           }
