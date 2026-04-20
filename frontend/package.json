@@ -42,7 +42,7 @@
     "svelte-check": "^4.4.6",
     "svelte-preprocess": "6.0.3",
     "ts-node": "10.9.2",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "vite": "^7.3.1"
   },
   "husky": {
