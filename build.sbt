@@ -22,6 +22,14 @@ lazy val shaded = project
 
 val scala213Version = "2.13.18"
 
+ThisBuild / libraryDependencySchemes ++= {
+  if (scalaBinaryVersion.value == "2.12") {
+    Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
+  } else {
+    Seq.empty
+  }
+}
+
 val fullCrossScalaVersions = Def.setting {
   Seq(
     "2.11.12",
@@ -76,10 +84,11 @@ lazy val core = project
       )
     },
     dependencyOverrides ++= {
-      if (scalaBinaryVersion.value == "2.13") {
-        Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
-      } else {
-        Seq.empty
+      scalaBinaryVersion.value match {
+        case "2.13" =>
+          Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+        case _ =>
+          Seq.empty
       }
     },
     assembly / assemblyExcludedJars := {
