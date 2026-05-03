@@ -77,7 +77,7 @@ lazy val core = project
     },
     dependencyOverrides ++= {
       if (scalaBinaryVersion.value == "2.13") {
-        Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+        Seq("org.scala-lang.modules" %% "scala-xml" % "2.4.0")
       } else {
         Seq.empty
       }
