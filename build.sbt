@@ -10,7 +10,7 @@ lazy val shaded = project
     name := "scala-ts-shaded",
     crossPaths := false,
     autoScalaLibrary := false,
-    libraryDependencies += "com.typesafe" % "config" % "1.4.6",
+    libraryDependencies += "com.typesafe" % "config" % "1.4.7",
     assembly / assemblyShadeRules := Seq(
       ShadeRule
         .rename("com.typesafe.config.**" -> "io.github.scalats.tsconfig.@1")
@@ -21,6 +21,14 @@ lazy val shaded = project
   )
 
 val scala213Version = "2.13.18"
+
+ThisBuild / libraryDependencySchemes ++= {
+  if (scalaBinaryVersion.value == "2.12") {
+    Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
+  } else {
+    Seq.empty
+  }
+}
 
 val fullCrossScalaVersions = Def.setting {
   Seq(
@@ -74,6 +82,14 @@ lazy val core = project
         ("org.specs2" %% s"specs2-${n}" % specsVer)
           .cross(CrossVersion.for3Use2_13) % Test
       )
+    },
+    dependencyOverrides ++= {
+      scalaBinaryVersion.value match {
+        case "2.13" =>
+          Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+        case _ =>
+          Seq.empty
+      }
     },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
