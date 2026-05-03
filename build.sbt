@@ -4,7 +4,7 @@ name := "scala-ts"
 
 ThisBuild / organization := "io.github.scala-ts"
 
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
+ThisBuild / dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.3.1"
 
 lazy val shaded = project
   .in(file("shaded"))
