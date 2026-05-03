@@ -75,6 +75,13 @@ lazy val core = project
           .cross(CrossVersion.for3Use2_13) % Test
       )
     },
+    dependencyOverrides ++= {
+      if (scalaBinaryVersion.value == "2.13") {
+        Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+      } else {
+        Seq.empty
+      }
+    },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
         _.data.getName startsWith "scala-ts-shaded"
