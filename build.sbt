@@ -4,8 +4,6 @@ name := "scala-ts"
 
 ThisBuild / organization := "io.github.scala-ts"
 
-ThisBuild / dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.3.1"
-
 lazy val shaded = project
   .in(file("shaded"))
   .settings(
@@ -76,6 +74,12 @@ lazy val core = project
         ("org.specs2" %% s"specs2-${n}" % specsVer)
           .cross(CrossVersion.for3Use2_13) % Test
       )
+    },
+    dependencyOverrides ++= {
+      if (scalaBinaryVersion.value == "2.13")
+        Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+      else
+        Seq.empty
     },
     assembly / assemblyExcludedJars := {
       (assembly / fullClasspath).value.filterNot {
