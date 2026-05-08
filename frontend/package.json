@@ -36,7 +36,7 @@
     "cross-env": "10.1.0",
     "dotenv": "17.4.2",
     "esbuild": "0.28.0",
-    "expect": "30.3.0",
+    "expect": "30.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.3",
     "madge": "^8.0.0",
