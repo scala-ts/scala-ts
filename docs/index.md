@@ -47,6 +47,7 @@ const incident: Incident = {
 
 - [How to share data model between Akka HTTP API and TypeScript Svelte frontend](./articles/demo-akka-http-svelte.html)
   - Similar [demo with idonttrustlikethat](./articles/demo-idtlt.html)
+- [AI setup skill contract (shared core)](./ai/scala-ts-setup-core.md)
 
 ### SBT plugin
 
