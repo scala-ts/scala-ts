@@ -2972,10 +2972,10 @@ svelte-check@4.4.8:
     picocolors "^1.0.0"
     sade "^1.7.4"
 
-svelte-preprocess@6.0.3:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-6.0.3.tgz#fdc1f9dc41b6f22bf8b1f059e9f21eaaae181eeb"
-  integrity sha512-PLG2k05qHdhmRG7zR/dyo5qKvakhm8IJ+hD2eFRQmMLHp7X3eJnjeupUtvuRpbNiF31RjVw45W+abDwHEmP5OA==
+svelte-preprocess@6.0.5:
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-6.0.5.tgz#2b8eb20c4ec85aa6ea4c0b193765f4c511054685"
+  integrity sha512-sgwew5yV/2eMeQobIWgAxCNarKwiTUDIc3siAUbq3sp0G6ONtzk0W+wJihMdqjbYb3iGU3ubpGv0usnnuXT3qg==
 
 svelte@5.55.9:
   version "5.55.9"
