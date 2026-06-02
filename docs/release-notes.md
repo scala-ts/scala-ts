@@ -6,7 +6,9 @@ layout: default
 
 [![Maven](https://img.shields.io/maven-central/v/io.github.scala-ts/scala-ts-core_{{site.scala_major_version}}.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scala-ts-core_{{site.scala_major_version}}%22)
 
-[*Version 0.8.1*]https://github.com/scala-ts/scala-ts/compare/0.8.0..0.8.1) - Improve `Map` & `Set` support for better inference in generated TypeScript.
+[*Version 0.8.2*](https://github.com/scala-ts/scala-ts/compare/0.8.1..0.8.2) - Update dependencies
+
+[*Version 0.8.1*](https://github.com/scala-ts/scala-ts/compare/0.8.0..0.8.1) - Improve `Map` & `Set` support for better inference in generated TypeScript.
 
 [*Version 0.8.0*](https://github.com/scala-ts/scala-ts/compare/0.7.1..0.8.0) - Support tuples as invariants, and fix for aggregate build.
 
