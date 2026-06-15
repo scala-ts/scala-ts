@@ -27,7 +27,7 @@
     "@types/expect": "24.3.2",
     "@types/mocha": "10.0.10",
     "@types/node": "25.9.3",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "expect": "30.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
