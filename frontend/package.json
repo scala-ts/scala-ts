@@ -35,7 +35,7 @@
     "concurrently": "10.0.3",
     "cross-env": "10.1.0",
     "dotenv": "17.4.2",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "expect": "30.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
