@@ -33,7 +33,7 @@
     "lint-staged": "^17.0.8",
     "madge": "^8.0.0",
     "mocha": "11.7.6",
-    "prettier": "3.8.4",
+    "prettier": "3.8.5",
     "prettier-plugin-svelte": "4.1.1",
     "rimraf": "6.1.3",
     "sass": "1.101.0",
