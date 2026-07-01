@@ -919,16 +919,20 @@ final class ScalaParser[Uni <: Universe](
           None
       }
 
-    def hasMemberName(name: String): Boolean = {
+    def isStablePublicMember(symbol: Symbol): Boolean =
+      symbol != universe.NoSymbol &&
+      symbol.isPublic &&
+      !symbol.isSynthetic &&
+      (symbol.isTerm || (symbol.isMethod &&
+        symbol.asMethod.paramLists.forall(_.isEmpty)))
+
+    def hasStableMemberName(name: String): Boolean = {
       declNames.contains(name) || {
         try {
-          val symbol = scalaType.member(TermName(name))
-
-          symbol != universe.NoSymbol &&
-          symbol.isPublic &&
-          !symbol.isSynthetic &&
-          (symbol.isTerm || (symbol.isMethod &&
-            symbol.asMethod.paramLists.forall(_.isEmpty)))
+          // Avoid traversing inherited members eagerly, which can trigger
+          // Scala 2 reflection failures on Object while keeping ctor-backed
+          // inherited fields like `name` visible.
+          isStablePublicMember(scalaType.member(TermName(name)))
         } catch {
           case NonFatal(_) =>
             false
@@ -952,7 +956,7 @@ final class ScalaParser[Uni <: Universe](
                 false
             } && m.symbol.isConstructor) => {
           ((m.symbol.info.paramLists.flatten zip m.args).collectFirst {
-            case (s, a) if hasMemberName(s.name.toString) =>
+            case (s, a) if hasStableMemberName(s.name.toString) =>
               s -> a
           }) match {
             case Some((s, a)) => {
