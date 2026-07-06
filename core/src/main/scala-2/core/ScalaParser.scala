@@ -27,6 +27,7 @@ final class ScalaParser[Uni <: Universe](
     ModuleSymbolTag,
     NullaryMethodTypeTag,
     Symbol,
+    TermName,
     symbolOf,
     RefinedTypeTag,
     TermSymbolTag,
@@ -105,7 +106,7 @@ final class ScalaParser[Uni <: Universe](
             .zip(typeArgs)
             .toMap
 
-        val memberTypes = scalaType.members.collect {
+        val memberTypes = scalaType.decls.collect {
           case MethodSymbolTag(m) if m.isCaseAccessor => {
             val mt = m.typeSignature match {
               case universe.NullaryMethodType(resultType) => // for `=> T`
@@ -918,10 +919,26 @@ final class ScalaParser[Uni <: Universe](
           None
       }
 
-    lazy val memberNames: Set[String] = scalaType.members.collect {
-      case Field(MethodSymbolTag(m))        => m.name.toString
-      case NestedObject(ModuleSymbolTag(m)) => m.name.toString
-    }.toSet
+    def isStablePublicMember(symbol: Symbol): Boolean =
+      symbol != universe.NoSymbol &&
+      symbol.isPublic &&
+      !symbol.isSynthetic &&
+      (symbol.isTerm || (symbol.isMethod &&
+        symbol.asMethod.paramLists.forall(_.isEmpty)))
+
+    def hasStableMemberName(name: String): Boolean = {
+      declNames.contains(name) || {
+        try {
+          // Avoid traversing inherited members eagerly, which can trigger
+          // Scala 2 reflection failures on Object while keeping ctor-backed
+          // inherited fields like `name` visible.
+          isStablePublicMember(scalaType.member(TermName(name)))
+        } catch {
+          case NonFatal(_) =>
+            false
+        }
+      }
+    }
 
     @annotation.tailrec
     @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
@@ -939,7 +956,7 @@ final class ScalaParser[Uni <: Universe](
                 false
             } && m.symbol.isConstructor) => {
           ((m.symbol.info.paramLists.flatten zip m.args).collectFirst {
-            case (s, a) if (memberNames contains s.name.toString) =>
+            case (s, a) if hasStableMemberName(s.name.toString) =>
               s -> a
           }) match {
             case Some((s, a)) => {
