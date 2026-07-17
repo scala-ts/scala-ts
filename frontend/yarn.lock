@@ -2811,10 +2811,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svelte-check@^4.7.2:
-  version "4.7.2"
-  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.2.tgz#d051d4859cfba28d03b06d39ec2ff0f6fad29a5d"
-  integrity sha512-GoS4XJdGswlq0rIT1vtFLzJY1bvHtY37McY9H9Gkm1Ggw/ICdZYn8J/Z8Yi0BEL0i3R4+jtaWVePjyppMlij/A==
+svelte-check@^4.7.3:
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.3.tgz#f54475407f678948097a497a3ceeedb7753d2fbb"
+  integrity sha512-DHdTCGX62R0fCxBEaT+USdASAnoaRBaaNczkRJl0K7o3WyoCeVUbVxo6fKqpOll/B+WMWCsiFK0eFrJSNBKZIg==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.25"
     "@sveltejs/load-config" "^0.2.0"
