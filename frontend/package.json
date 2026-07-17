@@ -57,7 +57,7 @@
     "svelte-check": "4.7.3",
     "svelte-preprocess": "6.0.5",
     "ts-node": "10.9.2",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "husky": {
     "hooks": {
