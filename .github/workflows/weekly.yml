@@ -2,14 +2,17 @@ on:
   schedule:
     - cron: '0 12 * * 0'
 name: weekly
+
 permissions:
-  workflows: write
+  contents: write
+  pull-requests: write
+
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
-    name: 'Launch Scala Steward'
+    name: Scala Steward
     steps:
-      - name: 'Launch Scala Steward'
+      - name: Scala Steward
         uses: scala-steward-org/scala-steward-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
