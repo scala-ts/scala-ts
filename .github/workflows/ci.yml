@@ -43,13 +43,12 @@ jobs:
       run: 'sbt +core/testOnly || sbt +core/testOnly' # single retry
       # TODO: core/target/test-reports/TEST-*.xml
 
-    - name: 'Run idtl tests'
-      run: 'sbt +idtlt/testOnly'
-      # TODO: core/target/test-reports/TEST-*.xml
+    - parallel:
+        - name: 'Run idtl tests'
+          run: 'sbt +idtlt/testOnly'
 
-    - name: 'Run python tests'
-      run: 'sbt +python/testOnly'
-      # TODO: core/target/test-reports/TEST-*.xml
+        - name: 'Run python tests'
+          run: 'sbt +python/testOnly'
 
     - name: 'Run SBT plugin tests'
       run: |
