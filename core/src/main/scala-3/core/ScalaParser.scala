@@ -20,7 +20,7 @@ import io.github.scalats.scala as ScalaModel
 import dotty.tools.dotc.util.NoSourcePosition
 
 import Symbols.Symbol
-import Types.{ Type, MethodType }
+import Types.{ MethodType, Type }
 
 // TODO: More common with Scala 2 parser
 final class ScalaParser(

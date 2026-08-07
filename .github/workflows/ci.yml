@@ -40,19 +40,19 @@ jobs:
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
     - name: 'Run core tests'
-      run: 'sbt +core/testOnly || sbt +core/testOnly' # single retry
+      run: 'sbt -J-Dscalafix.disable=true +core/testOnly || sbt +core/testOnly' # single retry
       # TODO: core/target/test-reports/TEST-*.xml
 
     - parallel:
         - name: 'Run idtl tests'
-          run: 'sbt +idtlt/testOnly'
+          run: 'sbt -J-Dscalafix.disable=true +idtlt/testOnly'
 
         - name: 'Run python tests'
-          run: 'sbt +python/testOnly'
+          run: 'sbt -J-Dscalafix.disable=true +python/testOnly'
 
     - name: 'Run SBT plugin tests'
       run: |
-        sbt -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12 ;^scripted'
+        sbt -J-Dscalafix.disable=true -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12 ;^scripted'
 
     - name: 'Persist generated data'
       uses: actions/upload-artifact@v7
@@ -166,4 +166,4 @@ jobs:
         PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
         PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
       run: |
-        sbt ';error ;+core/publish ;idtlt/publish ;^sbt-plugin/publish ;^sbt-plugin-idtlt/publish'
+        sbt -J-Dscalafix.disable=true ';error ;+core/publish ;idtlt/publish ;^sbt-plugin/publish ;^sbt-plugin-idtlt/publish'
