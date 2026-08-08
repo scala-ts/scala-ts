@@ -40,7 +40,7 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
 
   destdir.mkdirs()
 
-  logger.info(s"Copying directory ${target.value} to ${destdir} ...")
+  logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
 
-  IO.copyDirectory(target.value, destdir)
+  IO.copyDirectory(baseDirectory.value / "target", destdir)
 }

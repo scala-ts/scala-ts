@@ -31,7 +31,9 @@ final class CompilerPlugin extends StandardPlugin:
   val name = ScalaTSPhase.name
   val description = "Scala compiler plugin for TypeScript (scalats)"
 
-  def init(options: List[String]): List[PluginPhase] =
+  // 3.5+ deprecates init (use initialize); still required override on 3.8+
+  // and remains the entry point on 3.4 LTS.
+  override def init(options: List[String]): List[PluginPhase] =
     (new ScalaTSPhase(ScalaTSPhase initer options)) :: Nil
 
   override val optionsHelp: Option[String] =

@@ -1,39 +1,30 @@
 > clean
 
-$ absent target/scala-ts/generated/name.py
-$ absent target/scala-ts/generated/bar.py
-$ absent target/scala-ts/generated/foo.py
-$ absent target/scala-ts/generated/constants.py
-
-$ absent target/scala-ts/generated/transport.py
-$ absent target/scala-ts/generated/busline.py
-$ absent target/scala-ts/generated/trainline.py
-
-$ absent target/scala-ts/generated/weekday.py
-
-$ absent target/scala-ts/generated/state.py
 $ absent target/scala-ts/generated/alabama.py
 $ absent target/scala-ts/generated/alaska.py
-
-$ absent target/scala-ts/generated/greeting.py
-$ absent target/scala-ts/generated/words.py
+$ absent target/scala-ts/generated/bar.py
+$ absent target/scala-ts/generated/busline.py
 $ absent target/scala-ts/generated/bye.py
-$ absent target/scala-ts/generated/goodbye.py
-$ absent target/scala-ts/generated/hello.py
-$ absent target/scala-ts/generated/hi.py
-$ absent target/scala-ts/generated/whatever.py
-
-$ absent target/scala-ts/generated/notsupportedclassastypeargs.py
-$ absent target/scala-ts/generated/notsupportedasnotsupportedfield.py
-
+$ absent target/scala-ts/generated/category.py
+$ absent target/scala-ts/generated/constants.py
 $ absent target/scala-ts/generated/feature.py
 $ absent target/scala-ts/generated/foo.py
-$ absent target/scala-ts/generated/name.py
-$ absent target/scala-ts/generated/bar.py
-$ absent target/scala-ts/generated/category.py
-$ absent target/scala-ts/generated/lorem.py
+$ absent target/scala-ts/generated/goodbye.py
+$ absent target/scala-ts/generated/greeting.py
+$ absent target/scala-ts/generated/hello.py
+$ absent target/scala-ts/generated/hi.py
 $ absent target/scala-ts/generated/ipsum.py
+$ absent target/scala-ts/generated/lorem.py
+$ absent target/scala-ts/generated/name.py
 $ absent target/scala-ts/generated/namedfeature.py
+$ absent target/scala-ts/generated/notsupportedasnotsupportedfield.py
+$ absent target/scala-ts/generated/notsupportedclassastypeargs.py
+$ absent target/scala-ts/generated/state.py
+$ absent target/scala-ts/generated/trainline.py
+$ absent target/scala-ts/generated/transport.py
+$ absent target/scala-ts/generated/weekday.py
+$ absent target/scala-ts/generated/whatever.py
+$ absent target/scala-ts/generated/words.py
 
 # Simple generation from Scala case class
 > compile

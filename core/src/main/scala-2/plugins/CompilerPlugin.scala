@@ -125,7 +125,7 @@ final class CompilerPlugin(val global: Global)
 
           handle(unit, acceptsType)
         } else if (plugin.debug) {
-          global.inform(s"${plugin.name}.debug: Skip excluded ${compiledFile.getAbsolutePath}")
+          global.inform(s"${plugin.name}.debug: Skip excluded file ${compiledFile.getAbsolutePath}")
         }
       }
 
@@ -229,7 +229,7 @@ final class CompilerPlugin(val global: Global)
                 f(tpe -> tree, acc)
               } else {
                 if (!accepted && plugin.debug) {
-                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}'")
+                  global.inform(s"${plugin.name}.debug: Skip excluded '$kind:${sym.fullName}' ? ${ClassDefTag.unapply(tree).nonEmpty} / ${ModuleDefTag.unapply(tree).nonEmpty} / ${acceptsType(sym)}")
                 }
 
                 acc

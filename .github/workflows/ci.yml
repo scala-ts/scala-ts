@@ -18,7 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: 'Set up JDK 1.8'
+    - name: 'Set up JDK 25'
       uses: actions/setup-java@v5
       with:
         distribution: temurin
@@ -30,17 +30,21 @@ jobs:
     - name: 'Coursier cache'
       uses: coursier/cache-action@v7
       with:
-        extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+        extraKey: coursier-${{ runner.os }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Compile'
-      run: 'sbt -J-Dscalafix.disable=true test:compile'
+      run: 'sbt -J-Dscalafix.disable=true Test/compile'
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
         sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
-    - name: 'Run core tests'
-      run: 'sbt -J-Dscalafix.disable=true +core/testOnly || sbt +core/testOnly' # single retry
+    - name: 'Run core tests' # single retry
+      run: |
+        sbt -J-Dscalafix.disable=true +core/testOnly || (
+          sleep 2s
+          sbt -J-Dscalafix.disable=true +core/testOnly
+        )
       # TODO: core/target/test-reports/TEST-*.xml
 
     - parallel:
@@ -50,9 +54,19 @@ jobs:
         - name: 'Run python tests'
           run: 'sbt -J-Dscalafix.disable=true +python/testOnly'
 
-    - name: 'Run SBT plugin tests'
-      run: |
-        sbt -J-Dscalafix.disable=true -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ ';error ;+publishLocal ;++2.12 ;^scripted'
+    - name: 'Publish local'
+      run: 'sbt -J-Dscalafix.disable=true +publishLocal'
+
+    - parallel:
+        - name: 'Run SBT plugin tests (Scala 2.x)'
+          run: |
+              sbt -J-Dscalafix.disable=true -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ \
+                ';error ;++2.12 ;scripted'
+
+        - name: 'Run SBT plugin tests (Scala 3.x)'
+          run: |
+              sbt -J-Dscalafix.disable=true -J-Dscala-ts.sbt-test-temp=/tmp/sbt-scala-ts/ \
+                ';error ;++3.8 ;scripted'
 
     - name: 'Persist generated data'
       uses: actions/upload-artifact@v7
@@ -120,6 +134,7 @@ jobs:
     - name: 'Check Python generated from SBT scripted tests'
       run: |
         export TD=/tmp/sbt-scala-ts/sbt-plugin-test-python-full/target/scala-ts
+        ls "$TD"
         cp sbt-plugin-python/src/sbt-test/Pipfile "$TD/Pipfile"
         cp sbt-plugin-python/src/sbt-test/sbt-scala-ts-python/full/src/test/resources/setup.py "$TD/setup.py"
         cd "$TD"
@@ -148,7 +163,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: 'Set up JDK 1.8'
+    - name: 'Set up JDK 25'
       uses: actions/setup-java@v5
       with:
         distribution: temurin
@@ -166,4 +181,4 @@ jobs:
         PUBLISH_USER: ${{ secrets.SONATYPE_USER }}
         PUBLISH_PASS: ${{ secrets.SONATYPE_PASSWORD }}
       run: |
-        sbt -J-Dscalafix.disable=true ';error ;+core/publish ;idtlt/publish ;^sbt-plugin/publish ;^sbt-plugin-idtlt/publish'
+        sbt -J-Dscalafix.disable=true +publish
