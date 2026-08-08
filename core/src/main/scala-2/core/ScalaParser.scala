@@ -921,10 +921,10 @@ final class ScalaParser[Uni <: Universe](
 
     def isStablePublicMember(symbol: Symbol): Boolean =
       symbol != universe.NoSymbol &&
-      symbol.isPublic &&
-      !symbol.isSynthetic &&
-      (symbol.isTerm || (symbol.isMethod &&
-        symbol.asMethod.paramLists.forall(_.isEmpty)))
+        symbol.isPublic &&
+        !symbol.isSynthetic &&
+        (symbol.isTerm || (symbol.isMethod &&
+          symbol.asMethod.paramLists.forall(_.isEmpty)))
 
     def hasStableMemberName(name: String): Boolean = {
       declNames.contains(name) || {
