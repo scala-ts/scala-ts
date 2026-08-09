@@ -1,8 +1,11 @@
 ThisBuild / scalaVersion := "2.13.18"
 
-val scala3Lts = "3.3.7"
+val scala3Lts = "3.3.8"
 
-ThisBuild / crossScalaVersions := Seq((ThisBuild / scalaVersion).value, scala3Lts)
+ThisBuild / crossScalaVersions := Seq(
+  (ThisBuild / scalaVersion).value,
+  scala3Lts
+)
 
 ThisBuild / scalacOptions ++= Seq(
   "-encoding",
