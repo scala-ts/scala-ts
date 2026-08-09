@@ -86,7 +86,7 @@ lazy val core = project
     dependencyOverrides ++= {
       scalaBinaryVersion.value match {
         case "2.13" =>
-          Seq("org.scala-lang.modules" %% "scala-xml" % "1.3.1")
+          Seq("org.scala-lang.modules" %% "scala-xml" % "2.4.0")
         case _ =>
           Seq.empty
       }
