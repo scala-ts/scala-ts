@@ -16,17 +16,17 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: 'Set up JDK 1.8'
-      uses: actions/setup-java@v2
+    - name: 'Set up JDK 25'
+      uses: actions/setup-java@v5
       with:
-        java-version: '8'
-        distribution: 'adopt'
+        distribution: temurin
+        java-version: 25
 
     - name: Setup SBT launcher
       uses: sbt/setup-sbt@v1
 
     - name: 'Coursier cache'
-      uses: coursier/cache-action@v6
+      uses: coursier/cache-action@v7
       with:
         extraKey: ${{ runner.os }}-coursier-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
