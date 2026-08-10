@@ -20,17 +20,6 @@ scalatsOnCompile / sourceManaged := {
 
 // ---
 
-// Distribute src/test/typescript as ts-test
-Compile / compile := {
-  val res = (Compile / compile).value
-  val src = (Test / sourceDirectory).value / "typescript"
-  val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
-
-  sbt.io.IO.copyDirectory(src, dest, overwrite = true)
-
-  res
-}
-
 TaskKey[Unit]("preserveGeneratedPython") := {
   import sbt.io.IO
   val logger = streams.value.log

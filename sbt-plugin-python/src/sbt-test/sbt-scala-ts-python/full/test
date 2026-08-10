@@ -1,4 +1,5 @@
 > clean
+
 $ absent target/scala-ts/generated/name.py
 $ absent target/scala-ts/generated/bar.py
 $ absent target/scala-ts/generated/foo.py
