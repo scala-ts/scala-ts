@@ -13,6 +13,6 @@ addSbtPlugin(
     .exclude("org.scala-lang.modules", "*")
 )
 
-val scalaTSVer = "0.8.1"
+val scalaTSVer = "0.8.2"
 
 addSbtPlugin("io.github.scala-ts" % "sbt-scala-ts" % scalaTSVer)
