@@ -5,6 +5,7 @@ import sbt.Keys._
 
 import _root_.io.github.scalats.idtlt._
 import _root_.io.github.scalats.sbt.ScalatsGeneratorPlugin
+import sbtcompat.PluginCompat._
 
 object ScalatsIdtltPlugin extends AutoPlugin {
   override def requires = ScalatsGeneratorPlugin
@@ -50,8 +51,9 @@ export const _externalDependencyModules = [idtlt];"""
       scalatsImportResolvers ++= Seq(
         scalatsUnionWithLiteralSingletonImportResolvers
       ),
-      scalatsAdditionalClasspath ++= {
-        classOf[IdtltDeclarationMapper].getClassLoader match {
+      scalatsAdditionalClasspath ++= Def.uncached {
+        implicit val conv: xsbti.FileConverter = fileConverter.value
+        val files = classOf[IdtltDeclarationMapper].getClassLoader match {
           case cls: java.net.URLClassLoader =>
             cls.getURLs.toSeq.flatMap { url =>
               val repr = url.toString
@@ -69,6 +71,7 @@ export const _externalDependencyModules = [idtlt];"""
           case _ =>
             Seq.empty[File]
         }
+        toAttributedFiles(files)
       }
     )
 }

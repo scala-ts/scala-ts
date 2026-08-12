@@ -7,5 +7,5 @@ resolvers += "Sonatype Snapshots" at "https://central.sonatype.com/repository/ma
 addSbtPlugin("io.github.scala-ts" %% "sbt-scala-ts" % pluginVer)
 
 addSbtPlugin(
-  "io.github.scala-ts" %% "sbt-scala-ts-idtlt" % pluginVer changing ()
+  ("io.github.scala-ts" %% "sbt-scala-ts-idtlt" % pluginVer).changing()
 )

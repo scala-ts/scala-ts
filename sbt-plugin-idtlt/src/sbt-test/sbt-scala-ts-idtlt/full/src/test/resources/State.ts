@@ -19,6 +19,8 @@ export const idtltStateUnion = idtlt.union(
   nsAlabama.idtltDiscriminatedAlabama,
   nsAlaska.idtltDiscriminatedAlaska);
 
+// Fields are ignored: entryName
+
 // Deriving TypeScript type from StateUnion validator
 export type StateUnion = typeof idtltStateUnion.T;
 

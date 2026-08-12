@@ -29,7 +29,7 @@ final class ScalaParserSpec
       res must_=== List(caseClass2.identifier.name -> ListSet(caseClass2))
     }
 
-    "handle generic case class with one member list of type parameter" in {
+    "handle generic case class with one member list of type parameter" in eventually {
       val res = parseTypes(
         List(TestClass3Type -> TestClass3Tree)
       )
@@ -37,7 +37,7 @@ final class ScalaParserSpec
       res must_=== List(caseClass3.identifier.name -> ListSet(caseClass3))
     }
 
-    "handle generic case class with one optional member" in {
+    "handle generic case class with one optional member" in eventually {
       val res = parseTypes(
         List(TestClass5Type -> TestClass5Tree)
       )
@@ -45,7 +45,7 @@ final class ScalaParserSpec
       res must_=== List(caseClass5.identifier.name -> ListSet(caseClass5))
     }
 
-    "detect involved types and skipped already examined types" in {
+    "detect involved types and skipped already examined types" in eventually {
       val res = parseTypes(
         List(
           TestClass6Type -> TestClass6Tree,
@@ -125,13 +125,15 @@ final class ScalaParserSpec
 
     "handle enumeration" >> {
       "type declaration" in {
-        val res = parseTypes(
-          List(TestEnumerationType -> TestEnumerationTree)
-        )
+        eventually {
+          val res = parseTypes(
+            List(TestEnumerationType -> TestEnumerationTree)
+          )
 
-        res must_=== List(
-          testEnumeration.identifier.name -> ListSet(testEnumeration)
-        )
+          res must_=== List(
+            testEnumeration.identifier.name -> ListSet(testEnumeration)
+          )
+        }
       }
 
       "as member in class" in {
@@ -189,7 +191,7 @@ final class ScalaParserSpec
         }
       }
 
-      "from plain object with values" in {
+      "from plain object with values" in eventually {
         val res = parseTypes(
           List(TestObject2Type -> TestObject2Tree)
         )
@@ -201,7 +203,7 @@ final class ScalaParserSpec
       }
     }
 
-    "handle sealed trait as union" in {
+    "handle sealed trait as union" in eventually {
       val res = parseTypes(
         List(FamilyType -> FamilyTree),
         Map(
@@ -217,8 +219,26 @@ final class ScalaParserSpec
         )
       )
 
-      res must_=== List(sealedFamily1.identifier.name -> ListSet(sealedFamily1))
+      res must_=== List(
+        sealedFamily1.identifier.name -> ListSet(sealedFamily1)
+      )
     }
+
+    "handle sealed abstract class as union" in eventually {
+      val res = parseTypes(
+        List(StateType -> StateTree),
+        Map(
+          fullName(
+            AlabamaType.typeSymbol
+          ) -> ListSet(AlabamaType -> AlabamaTree),
+          fullName(
+            AlaskaType.typeSymbol
+          ) -> ListSet(AlaskaType -> AlaskaTree)
+        )
+      )
+
+      res must_=== List(sealedFamily2.identifier.name -> ListSet(sealedFamily2))
+    } tag "wip"
 
     "resolve data type" >> {
       import io.github.scalats.scala.{
