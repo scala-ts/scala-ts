@@ -13,7 +13,7 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override lazy val projectSettings = Seq(
-    scalaVersion := "2.12.20",
+    scalaVersion := "2.12.21",
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
     scalacOptions ++= Seq(
@@ -120,11 +120,10 @@ object Compiler extends AutoPlugin {
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
-    // TODO:highlightActivation := HLEnabledBySysProp("highlight"),
     libraryDependencies ++= {
       val sv = scalaBinaryVersion.value
 
-      if (sv != "3" && scalaVersion.value != "2.12.21") {
+      if (sv != "3" && sv != "2.12") {
         val silencerVersion =
           if (sv == "2.13" || sv == "2.12") "1.7.19" else "1.17.13"
 

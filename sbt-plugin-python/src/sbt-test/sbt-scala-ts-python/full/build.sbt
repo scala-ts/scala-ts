@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.18" //"3.4.3"
+scalaVersion := "2.13.18"
 
 scalatsPythonBaseModule := Some("generated")
 

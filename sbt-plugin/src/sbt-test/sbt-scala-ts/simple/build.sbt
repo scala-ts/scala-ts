@@ -4,8 +4,7 @@ name := "sbt-plugin-test-simple"
 
 version := "1.0-SNAPSHOT"
 
-// 3.8.4 matches core_3 published with the sbt 2 plugin (shared _3 artifact)
-crossScalaVersions := Seq("2.12.20", "2.13.18", "3.8.4")
+crossScalaVersions := Seq("2.12.21", "2.13.18", "3.4.3")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
