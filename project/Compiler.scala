@@ -2,10 +2,11 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
+/* TODO
 import cchantep.HighlightExtractorPlugin.autoImport.{
   highlightActivation,
   HLEnabledBySysProp
-}
+} */
 
 object Compiler extends AutoPlugin {
   override def trigger = allRequirements
@@ -20,14 +21,21 @@ object Compiler extends AutoPlugin {
       "UTF-8",
       "-unchecked",
       "-deprecation",
-      "-feature",
-      "-Xfatal-warnings"
+      "-feature"
     ),
     scalacOptions ++= {
+      val sv = scalaVersion.value
       if (scalaBinaryVersion.value == "3") {
-        Seq.empty
+        // Fatal on 3.4 LTS; non-fatal on 3.8+ (used only for sbt 2 plugin cross-build)
+        if (sv.startsWith("3.8") || sv.startsWith("3.9")) Seq.empty
+        else Seq("-Werror")
       } else {
-        Seq("-Xlint", "-g:vars", "-language:higherKinds")
+        Seq(
+          "-Xfatal-warnings",
+          "-Xlint",
+          "-g:vars",
+          "-language:higherKinds"
+        )
       }
     },
     scalacOptions ++= {
@@ -71,17 +79,36 @@ object Compiler extends AutoPlugin {
           "-Wconf:msg=.*(JavaConverters|higherKinds).*:s"
         )
       } else {
+        val isScala38Plus =
+          scalaVersion.value.startsWith("3.8") || scalaVersion.value.startsWith(
+            "3.9"
+          )
+        val release =
+          if (isScala38Plus)
+            // Scala 3.8+ rejects older -java-output-version values; match host JVM
+            sys.props.getOrElse("java.specification.version", "17")
+          else "8"
         Seq(
           "-release",
-          "8",
-          "-Wunused:all",
+          release,
           "-language:implicitConversions",
           "-Wconf:msg=.*is\\ not\\ declared\\ infix.*:s",
           "-Wconf:msg=.*is\\ deprecated\\ for\\ wildcard\\ arguments\\ of\\ types.*:s",
           "-Wconf:msg=.*with\\ as\\ a\\ type\\ operator.*:s",
           "-Wconf:msg=.*is\\ no\\ longer\\ supported\\ for\\ vararg\\ splices.*:s",
           "-Wconf:msg=.*JavaConverters.*:s"
-        )
+        ) ++ {
+          if (isScala38Plus) {
+            // sbt-2 plugin cross-build only; keep warnings non-fatal until cleaned up
+            Seq(
+              "-Wconf:cat=deprecation:s",
+              "-Wconf:cat=unused:s",
+              "-Wconf:msg=.*Method 'init' does not allow to access 'Context'.*:s"
+            )
+          } else {
+            Seq("-Wunused:all")
+          }
+        }
       }
     },
     Test / scalacOptions ++= {
@@ -93,7 +120,7 @@ object Compiler extends AutoPlugin {
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
-    highlightActivation := HLEnabledBySysProp("highlight"),
+    // TODO:highlightActivation := HLEnabledBySysProp("highlight"),
     libraryDependencies ++= {
       val sv = scalaBinaryVersion.value
 

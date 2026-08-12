@@ -10,6 +10,8 @@ import io.github.scalats.scala._
 object ScalaRuntimeFixtures {
   import runtimeUniverse.{ Type, Tree }
 
+  val compilerMaxRetries = 0
+
   lazy val results = new ScalaParserResults(
     ns = List("ScalaRuntimeFixtures"),
     valueClassNs = List("ScalaRuntimeFixtures"),
@@ -324,5 +326,29 @@ object ScalaRuntimeFixtures {
 
   lazy val RefinementTree: Tree = typecheck(
     q"""${tb untypecheck FamilyTree}; type RefinementFoo = Product with Serializable with Family {}"""
+  )
+
+  sealed abstract class State(val entryName: String)
+
+  val StateType = typeOf[State]
+
+  lazy val StateTree: Tree = typecheck(
+    q"""abstract class State(val entryName: String)"""
+  )
+
+  case object Alabama extends State("AL")
+
+  val AlabamaType = typeOf[Alabama.type]
+
+  lazy val AlabamaTree: Tree = typecheck(
+    q"""${tb untypecheck StateTree}; object Alabama extends State("AL")"""
+  )
+
+  case object Alaska extends State("AK")
+
+  val AlaskaType = typeOf[Alaska.type]
+
+  lazy val AlaskaTree: Tree = typecheck(
+    q"""${tb untypecheck StateTree}; case object Alaska extends State("AK")"""
   )
 }

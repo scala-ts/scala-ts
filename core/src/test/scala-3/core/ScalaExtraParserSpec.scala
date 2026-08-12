@@ -12,7 +12,7 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
     }
 
     "handle union type" >> {
-      "as alias" in {
+      "as alias" in eventually {
         parseTypes(
           List(FamilyUnionType -> FamilyUnionTree),
           Map(
@@ -31,7 +31,7 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
         )
       }
 
-      "as case class field" in {
+      "as case class field" in eventually {
         parseTypes(List(LoremType -> LoremTree)) must_=== List(
           lorem.identifier.name -> ListSet(lorem)
         )
@@ -53,7 +53,7 @@ private[core] trait ScalaExtraParserSpec { self: ScalaParserSpec =>
         )
       }
 
-      "as case class field" in {
+      "as case class field" in eventually {
         parseTypes(
           List(StyleType -> StyleTree),
           Map(

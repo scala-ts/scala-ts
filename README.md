@@ -25,7 +25,7 @@ The core library and compiler plugin can be built using [SBT](https://www.scala-
 
 The SBT plugin can also be built:
 
-    sbt '^ sbt-plugin/publishLocal'
+    sbt '+sbt-plugin/publishLocal'
 
 *Running tests:* [![CI](https://github.com/scala-ts/scala-ts/workflows/CI/badge.svg)](https://github.com/scala-ts/scala-ts/actions/workflows/ci.yml)
 
@@ -35,7 +35,7 @@ The tests for the core library and compiler plugin can be executed.
 
 The [scripted tests](https://www.scala-sbt.org/1.x/docs/Testing-sbt-plugins.html) for the SBT plugins can also be executed.
 
-    sbt ';^ sbt-plugin/testOnly ;^ sbt-plugin/scripted'
+    sbt ';+sbt-plugin/testOnly ;+sbt-plugin/scripted'
 
 Considering a single scripted tests (e.g. `simple`), it can be executed interactively for development purpose.
 
@@ -54,11 +54,11 @@ Publish on Sonatype:
 ./project/staging.sh
 
 project sbt-plugin
-^publishSigned
++publishSigned
 project sbt-plugin-idtlt
-^publishSigned
++publishSigned
 project sbt-plugin-python
-^publishSigned
++publishSigned
 project python
 +publishSigned
 project idtlt

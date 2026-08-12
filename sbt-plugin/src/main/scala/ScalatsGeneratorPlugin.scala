@@ -31,6 +31,8 @@ import _root_.io.github.scalats.tsconfig.{
   ConfigFactory,
   ConfigRenderOptions
 }
+import sbtcompat.PluginCompat
+import sbtcompat.PluginCompat._
 
 object ScalatsGeneratorPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
@@ -196,7 +198,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
       )(implicit
         ct: ClassTag[C]
       ): PrinterSetting =
-      ct.runtimeClass.asInstanceOf[Class[C]] -> Map(props: _*)
+      ct.runtimeClass.asInstanceOf[Class[C]] -> Map(props.toSeq: _*)
 
     /** Print one file per type */
     lazy val scalatsFilePrinter: PrinterSetting =
@@ -216,8 +218,6 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     @inline def scalatsPrinterUrlPrelude(source: URL): Option[PrinterPrelude] =
       Some(Right(source))
 
-    private val moduleIdKey = AttributeKey[ModuleID]("moduleID")
-
     def scalatsAddScalatsDependency(
         dependency: ModuleID
       ): Seq[Def.Setting[_]] = {
@@ -225,33 +225,32 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
       Seq(
         libraryDependencies += m,
-        scalatsAdditionalClasspath ++= {
+        scalatsAdditionalClasspath ++= Def.uncached {
           val log = streams.value.log
           val v = scalaBinaryVersion.value
+          implicit val conv: xsbti.FileConverter = fileConverter.value
 
-          val jars = Classpaths.managedJars(
+          val jars = ClasspathsCompat.managedJars(
             sbt.librarymanagement.Configurations.CompilerPlugin,
             Set("jar"),
             update.value
           )
 
-          jars.find(jm =>
-            jm.get(moduleIdKey).exists { ji =>
-              ji.organization == m.organization && (ji.name == m.name || ji.name
-                .startsWith(s"${m.name}_${v}"))
-            }
-          ) match {
-            case Some(jar) => {
-              log.debug(s"Resolve library dependency '${name}': ${jar.data}")
+          jars.find { jm =>
+            jm.get(PluginCompat.moduleIDStr)
+              .map(PluginCompat.parseModuleIDStrAttribute)
+              .exists { ji =>
+                ji.organization == m.organization && (ji.name == m.name || ji.name
+                  .startsWith(s"${m.name}_${v}"))
+              }
+          } match {
+            case Some(found) =>
+              log.debug(s"Resolve library dependency '${name}': ${found.data}")
+              Seq(found)
 
-              Seq(jar)
-            }
-
-            case _ => {
+            case None =>
               log.error(s"Fails to resolve library dependency: $name")
-
               Seq.empty
-            }
           }
         }
       )
@@ -266,20 +265,27 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     scalatsDebug := false,
     autoCompilerPlugins := true,
     addCompilerPlugin(groupId %% coreArtifactId % version),
+    // Use baseDirectory/target (not target.value) so default outputs stay stable under
+    // sbt 2's nested target/out/jvm/scala-*/… layout and match sbt 1 paths.
     scalatsOnCompile / sourceManaged := {
-      target.value / "scala-ts" / "src_managed"
+      baseDirectory.value / "target" / "scala-ts" / "src_managed"
     },
     scalatsCompilerPluginConf := {
-      (Compile / target).value / "scala-ts.conf"
+      baseDirectory.value / "target" / "scala-ts.conf"
     },
-    scalatsAdditionalClasspath := {
+    cleanFiles ++= Seq(
+      (scalatsOnCompile / sourceManaged).value,
+      scalatsCompilerPluginConf.value,
+      baseDirectory.value / "target" / "scala-ts-prelude.tmp"
+    ),
+    scalatsAdditionalClasspath := Def.uncached {
       val sbtScalaVer: String = {
         val props = new java.util.Properties
-        props.load(getClass getResourceAsStream "/library.properties")
+        props.load(getClass.getResourceAsStream("/library.properties"))
 
         val Major = "^([0-9]+\\.[0-9]+).*$".r
 
-        Option(props getProperty "version.number").collect {
+        Option(props.getProperty("version.number")).collect {
           case Major(v) => v
         }.getOrElse {
           println("Fails to resolve SBT scala version; Defaults to 2.12")
@@ -288,26 +294,63 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
         }
       }
 
-      val sbtMajorVer: String = {
-        if (sbtBinaryVersion.value == "0.13") "0.13"
-        else "1.0"
+      // sbt 1.x => "1.0"; sbt 2.x reports binary version as "2" (not "2.0")
+      // TODO: Use src/main/sbt-{x} compat?
+      val sbtMajorVer: String = sbtBinaryVersion.value match {
+        case "0.13"                              => "0.13"
+        case v if v == "2" || v.startsWith("2.") => "2.0"
+        case _                                   => "1.0"
       }
 
-      Seq(
-        Attributed.blank(
-          baseDirectory.value / "project" / "target" / s"scala-${sbtScalaVer}" / s"sbt-${sbtMajorVer}" / "classes"
-        )
-      )
+      implicit val conv: xsbti.FileConverter = fileConverter.value
+      // Meta sources live at the build root (not per-subproject baseDirectory).
+      val buildBase = (LocalRootProject / baseDirectory).value
+
+      // sbt 1.x: project/target/scala-2.12/sbt-1.0/classes
+      val sbt1Primary =
+        buildBase / "project" / "target" / s"scala-${sbtScalaVer}" / s"sbt-${sbtMajorVer}" / "classes"
+
+      val sbt1Fallback = for {
+        scalaDir <- Option(
+          (buildBase / "project" / "target").listFiles
+        ).toSeq.flatten
+        if scalaDir.isDirectory && scalaDir.getName.startsWith("scala-")
+        sbtDir <- Option(scalaDir.listFiles).toSeq.flatten
+        if sbtDir.isDirectory && sbtDir.getName.startsWith("sbt-")
+        classes = sbtDir / "classes"
+        if classes.exists
+      } yield classes
+
+      // sbt 2.x: target/out/jvm/scala-3.8.4/<id>-build/classes
+      val sbt2Candidates = for {
+        scalaDir <- Option(
+          (buildBase / "target" / "out" / "jvm").listFiles
+        ).toSeq.flatten
+        if scalaDir.isDirectory && scalaDir.getName.startsWith("scala-")
+        projDir <- Option(scalaDir.listFiles).toSeq.flatten
+        if projDir.isDirectory && projDir.getName.endsWith("-build")
+        classes = projDir / "classes"
+        if classes.exists
+      } yield classes
+
+      val metaClasses =
+        sbt2Candidates.headOption
+          .orElse(if (sbt1Primary.exists) Some(sbt1Primary) else None)
+          .orElse(sbt1Fallback.headOption)
+          .getOrElse(sbt1Primary)
+
+      Seq(Attributed.blank(toFileRef(metaClasses)))
     },
-    scalatsPrepare := {
+    scalatsPrepare := Def.uncached {
       val logger = streams.value.log
       import Settings.EmitCodecs
 
       var out: PrintWriter = null
 
       try {
-        val additionalClasspath = scalatsAdditionalClasspath.value.map {
-          _.data.toURI.toURL
+        implicit val conv: xsbti.FileConverter = fileConverter.value
+        val additionalClasspath = scalatsAdditionalClasspath.value.map { af =>
+          toFile(af.data).toURI.toURL
         }
 
         val typeNaming: TypeNaming = {
@@ -376,7 +419,10 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
         scalatsPrinterPrelude.value match {
           case Some(Left(content)) =>
-            io.IO.writeLines(target.value / "scala-ts-prelude.tmp", content)
+            io.IO.writeLines(
+              baseDirectory.value / "target" / "scala-ts-prelude.tmp",
+              content
+            )
 
           case _ =>
             ()
@@ -498,7 +544,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
             opts += s"-P:scalats:sys.scala-ts.printer.prelude-url=${url.toString}"
 
           case Some(_) => {
-            val f = target.value / "scala-ts-prelude.tmp"
+            val f = baseDirectory.value / "target" / "scala-ts-prelude.tmp"
             // `f` will be written with content in `scalatsPrepare`
 
             opts += s"-P:scalats:sys.scala-ts.printer.prelude-url=${f.toURI.toString}"
@@ -557,7 +603,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
     repr.put(
       "additionalClasspath",
-      Arrays.asList(additionalClasspath.map(_.toString): _*)
+      Arrays.asList(additionalClasspath.map(_.toString).toArray: _*)
     )
 
     if (printer != Printer.StandardOutput.getClass) {
@@ -567,7 +613,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     if (importResolvers.nonEmpty) {
       repr.put(
         "importResolvers",
-        Arrays.asList(importResolvers.map(_.getName): _*)
+        Arrays.asList(importResolvers.map(_.getName).toArray: _*)
       )
 
     }
@@ -575,7 +621,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     if (declarationMappers.nonEmpty) {
       repr.put(
         "declarationMappers",
-        Arrays.asList(declarationMappers.map(_.getName): _*)
+        Arrays.asList(declarationMappers.map(_.getName).toArray: _*)
       )
 
     }
@@ -583,7 +629,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     if (typeMappers.nonEmpty) {
       repr.put(
         "typeMappers",
-        Arrays.asList(typeMappers.map(_.getName): _*)
+        Arrays.asList(typeMappers.map(_.getName).toArray: _*)
       )
 
     }

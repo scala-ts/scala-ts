@@ -9,6 +9,7 @@ import _root_.io.github.scalats.python.{
   PythonTypeMapper
 }
 import _root_.io.github.scalats.sbt.ScalatsGeneratorPlugin
+import sbtcompat.PluginCompat._
 
 object ScalatsPythonPlugin extends AutoPlugin {
   override def requires = ScalatsGeneratorPlugin
@@ -30,10 +31,10 @@ object ScalatsPythonPlugin extends AutoPlugin {
       Manifest.groupId %% "scala-ts-python" % Manifest.version
     ) ++ Seq(
       scalatsOnCompile / sourceManaged := {
-        target.value / "scala-ts-py" / "src_managed"
+        baseDirectory.value / "target" / "scala-ts-py" / "src_managed"
       },
       scalatsCompilerPluginConf := {
-        (Compile / target).value / "scala-ts-py.conf"
+        baseDirectory.value / "target" / "scala-ts-py.conf"
       },
       scalatsPythonBaseModule := Option.empty[String],
       Compile / scalacOptions += {
@@ -56,8 +57,9 @@ object ScalatsPythonPlugin extends AutoPlugin {
         // Custom declaration mapper (before type mapper)
         classOf[PythonDeclarationMapper]
       ),
-      scalatsAdditionalClasspath ++= {
-        classOf[PythonDeclarationMapper].getClassLoader match {
+      scalatsAdditionalClasspath ++= Def.uncached {
+        implicit val conv: xsbti.FileConverter = fileConverter.value
+        val files = classOf[PythonDeclarationMapper].getClassLoader match {
           case cls: java.net.URLClassLoader =>
             cls.getURLs.toSeq.flatMap { url =>
               val repr = url.toString
@@ -75,6 +77,7 @@ object ScalatsPythonPlugin extends AutoPlugin {
           case _ =>
             Seq.empty[File]
         }
+        toAttributedFiles(files)
       }
     )
 }

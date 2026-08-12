@@ -279,7 +279,7 @@ final class ScalaParser(
 
         ifNotExamined(classSym.fullName.toString) {
           if (
-            classSym.is(Flags.Trait) &&
+            (classSym.is(Flags.Abstract) || classSym.is(Flags.Trait)) &&
             classSym.is(Flags.Sealed) &&
             scalaType.typeParams.isEmpty
           ) {
@@ -1853,7 +1853,10 @@ final class ScalaParser(
   private def directKnownSubclasses(tpe: Type): List[Type] = {
     val tpeSym = tpe.typeSymbol.asClass
 
-    if (tpeSym.is(Flags.Sealed) && tpeSym.is(Flags.Trait)) {
+    if (
+      tpeSym.is(Flags.Sealed) && (tpeSym
+        .is(Flags.Abstract) || tpeSym.is(Flags.Trait))
+    ) {
       tpeSym.sealedStrictDescendants.map(_.info)
     } else List.empty
   }

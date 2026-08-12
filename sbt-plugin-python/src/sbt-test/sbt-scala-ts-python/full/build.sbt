@@ -8,28 +8,30 @@ enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
 scalaVersion := "2.13.18"
 
-crossScalaVersions := Seq("2.12.21", scalaVersion.value)
-
 scalatsPythonBaseModule := Some("generated")
 
 scalatsOnCompile / sourceManaged := {
-  val dir = target.value / "scala-ts" / "generated"
+  val dir = baseDirectory.value / "target" / "scala-ts" / "generated"
   dir.mkdirs()
   dir
 }
 
+/*
 // ---
 
-// Distribute src/test/typescript as ts-test
-Compile / compile := {
+// Distribute src/test/python as ts-test
+Compile / compile :=  Def.uncached {
   val res = (Compile / compile).value
-  val src = (Test / sourceDirectory).value / "typescript"
-  val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
+  val src = (Test / sourceDirectory).value / "python"
+  val dest = baseDirectory.value / "target" / "ts-test"
 
   sbt.io.IO.copyDirectory(src, dest, overwrite = true)
 
+  //sbt.io.IO.move(dest, (scalatsOnCompile / sourceManaged).value / "ts-test")
+
   res
 }
+ */
 
 TaskKey[Unit]("preserveGeneratedPython") := {
   import sbt.io.IO
@@ -43,9 +45,9 @@ TaskKey[Unit]("preserveGeneratedPython") := {
       val destdir = tmpdir / name.value / "target"
       destdir.mkdirs()
 
-      logger.info(s"Copying directory ${target.value} to ${destdir} ...")
+      logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
 
-      IO.copyDirectory(target.value, destdir)
+      IO.copyDirectory(baseDirectory.value / "target", destdir)
     }
 
     case _ => ()

@@ -32,6 +32,8 @@ StateUnionKnownValues: typing.List[StateUnion] = [
     StateUnionCompanion.Alaska(),
 ]
 
+# Fields are ignored: entryName
+
 
 # Declare singleton StateSingleton
 class StateSingletonInvariantsFactory:
