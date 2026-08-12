@@ -31,7 +31,7 @@ Test / console / scalacOptions ~= {
 
 // Silencer
 ThisBuild / libraryDependencies ++= {
-  val silencerVersion = "1.7.9"
+  val silencerVersion = "1.7.19"
 
   Seq(
     compilerPlugin(
