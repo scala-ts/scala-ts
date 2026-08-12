@@ -120,11 +120,10 @@ object Compiler extends AutoPlugin {
     },
     Compile / console / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
     Compile / doc / scalacOptions ~= { _.filterNot(excludeScalacOpts) },
-    // TODO:highlightActivation := HLEnabledBySysProp("highlight"),
     libraryDependencies ++= {
       val sv = scalaBinaryVersion.value
 
-      if (sv != "3" && scalaVersion.value != "2.12.21") {
+      if (sv != "3" && sv != "2.12") {
         val silencerVersion =
           if (sv == "2.13" || sv == "2.12") "1.7.19" else "1.17.13"
 

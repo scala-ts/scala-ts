@@ -45,7 +45,6 @@ jobs:
           sleep 2s
           sbt -J-Dscalafix.disable=true +core/testOnly
         )
-      # TODO: core/target/test-reports/TEST-*.xml
 
     - parallel:
         - name: 'Run idtl tests'
