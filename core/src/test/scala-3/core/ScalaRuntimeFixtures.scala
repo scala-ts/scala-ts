@@ -1,30 +1,32 @@
 package io.github.scalats.core
 
+import java.net.URI
+
 import scala.collection.immutable.ListSet
 
-import dotty.tools.dotc.core.{ Contexts, Symbols, Types }
+import dotty.tools.dotc.core.{ Flags, Symbols, Types }
+import dotty.tools.dotc.core.Contexts.Context
 
-import dotty.tools.dotc.ast.Trees
+import dotty.tools.dotc.ast.{ tpd, Trees }
 import dotty.tools.dotc.ast.tpd.Tree
 
 import io.github.scalats.scala as ScalaModel
 
-import dotty.tools.repl.{ ReplCompiler, ReplDriver, State }
-
-// Value class workaround (see bellow)
-case class AnyValChild(value: String) extends AnyVal
-case class TestClass8(name: AnyValChild, aliases: Seq[AnyValChild])
+import dotty.tools.dotc.interactive.InteractiveDriver
+import dotty.tools.dotc.reporting.Diagnostic
+import dotty.tools.dotc.util.SourceFile
 
 object ScalaRuntimeFixtures {
+  val compilerMaxRetries = 3
 
   lazy val results = new ScalaParserResults(
-    ns = List(f"$$wrapper", "expr"),
+    ns = List.empty,
     valueClassNs = List.empty,
     nonEmptySelectedListInvariant = true
   )
 
   def objectClass(nme: String): String =
-    f"$$wrapper._$$" + nme + '$'
+    nme + '$'
 
   val logOpaqueAlias = ScalaModel.ValueClass(
     ScalaModel.QualifiedIdentifier("Log", results.ns :+ "Aliases"),
@@ -143,10 +145,10 @@ object ScalaRuntimeFixtures {
     List.empty
   )
 
-  private val initialState: State = {
+  private val classpath: String = {
     import java.io.File.pathSeparator
 
-    val classpath = getClass.getClassLoader match {
+    val fromLoader = getClass.getClassLoader match {
       case cls: java.net.URLClassLoader =>
         cls.getURLs.toSeq.collect {
           case url if url.getProtocol == "file" =>
@@ -157,89 +159,143 @@ object ScalaRuntimeFixtures {
         ""
     }
 
-    val replDriver = new ReplDriver(
-      Array(
-        "-d",
-        sys.props("java.io.tmpdir"),
-        "-classpath",
-        classpath,
-        "-Ydebug"
-      )
+    if (fromLoader.nonEmpty) fromLoader
+    else sys.props.getOrElse("java.class.path", "")
+  }
+
+  private val driverSettings: List[String] =
+    List(
+      "-d",
+      sys.props("java.io.tmpdir"),
+      "-classpath",
+      classpath
     )
 
-    replDriver.initialState
-  }
+  // Prefer an explicit classpath only (no -usejavacp) to avoid double-loading
+  // stdlib symbols ("already has a symbol") under sbt's test classloader.
+  private val driver = new InteractiveDriver(driverSettings)
 
-  private lazy val replCompiler = new ReplCompiler
+  // Frozen after the fixture unit is compiled. Do not run further compiles on
+  // `driver` or denotations from the fixture trees become invalid.
+  private var fixtureCtx: Context = driver.currentCtx
 
-  private val state: State = {
-    def newRun(state: State): State = {
-      val run = replCompiler.newRun(state.context.fresh, state)
-      state.copy(context = run.runContext)
+  implicit def defaultCtx: Context = fixtureCtx
+
+  private def compileOn(
+      drv: InteractiveDriver,
+      name: String,
+      source: String
+    ): (Context, Tree) = {
+    // URI path cannot contain '<'/'>'; keep virtual source name as-is for compiled set
+    val uri = new URI(
+      "memory:///" + name.replace("<", "").replace(">", "")
+    )
+    val src = SourceFile.virtual(name, source)
+    val diagnostics = drv.run(uri, src)
+    val ctx = drv.currentCtx
+
+    val errors = diagnostics.collect { case e: Diagnostic.Error => e }
+    if (errors.nonEmpty) {
+      throw new Exception(errors.map(_.message).mkString("; "))
     }
 
-    newRun(initialState)
-  }
+    drv.compilationUnits.get(uri) match {
+      case Some(unit) =>
+        ctx -> unit.tpdTree.asInstanceOf[Tree]
 
-  val typecheck = { (input: String) =>
-    replCompiler.typeCheck(input)(using state) match {
-      case Right((_, valDef)) =>
-        valDef.unforcedRhs match {
-          case Trees.Block(d :: _, _) =>
-            d.asInstanceOf[Tree]
-
-          case invalid =>
-            throw new Exception(s"Invalid definition: $invalid")
-        }
-
-      case Left(errors) =>
-        throw new Exception(errors mkString "; ")
+      case None =>
+        throw new Exception(s"No compilation unit for $name")
     }
   }
 
-  implicit def defaultCtx: Contexts.Context = state.context
+  private def topLevelDefs(
+      tree: Tree
+    )(using
+      Context
+    ): List[tpd.TypeDef] = {
+    def go(t: Tree): List[tpd.TypeDef] = t match {
+      case pkg: tpd.PackageDef =>
+        pkg.stats.flatMap(go)
 
-  private[core] val scalaParser = new ScalaParser(
-    compiled = Set("<typecheck>" /*, "core/src/test/scala-3/core/ScalaRuntimeFixtures.scala" */ ),
-    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
-  )
+      case td: tpd.TypeDef =>
+        td :: Nil
 
-  @annotation.tailrec
-  def parseTypes(
-      types: List[(Types.Type, Tree)],
-      symtab: Map[String, ListSet[(Types.Type, Tree)]] = Map.empty,
-      retries: Int = 3
-    ): List[(String, ListSet[ScalaModel.TypeDef])] =
-    try {
-      scalaParser
-        .parseTypes(
-          types,
-          symtab,
-          ListSet.empty,
-          _ => true
+      case _ =>
+        Nil
+    }
+
+    go(tree)
+  }
+
+  private def simpleName(
+      td: tpd.TypeDef
+    )(using
+      Context
+    ): String =
+    td.name.toString.stripSuffix("$")
+
+  private def isModuleClass(
+      td: tpd.TypeDef
+    )(using
+      Context
+    ): Boolean =
+    td.symbol.is(Flags.ModuleClass) || td.symbol.is(Flags.Module)
+
+  private def findClass(
+      defs: List[tpd.TypeDef],
+      name: String
+    )(using
+      Context
+    ): Tree =
+    defs
+      .find(td => !isModuleClass(td) && simpleName(td) == name)
+      .getOrElse(
+        throw new Exception(
+          s"Class $name not found among ${defs.map(simpleName).mkString(", ")}"
         )
-        .parsed
-        .toList
-    } catch {
-      case _: dotty.tools.dotc.core.CyclicReference if retries > 0 =>
-        Thread.sleep(200)
-        parseTypes(types, symtab, retries - 1)
+      )
+
+  private def findModule(
+      defs: List[tpd.TypeDef],
+      name: String
+    )(using
+      Context
+    ): Tree =
+    defs
+      .find(td => isModuleClass(td) && simpleName(td) == name)
+      .getOrElse(
+        throw new Exception(
+          s"Module $name not found among ${defs
+              .map(d => s"${simpleName(d)}${if (isModuleClass(d)) "$" else ""}")
+              .mkString(", ")}"
+        )
+      )
+
+  private def nestedTypeDefs(
+      module: Tree
+    )(using
+      Context
+    ): List[tpd.TypeDef] =
+    module match {
+      case tpd.TypeDef(_, tpl: tpd.Template) =>
+        tpl.body.collect { case td: tpd.TypeDef => td }
+
+      case _ =>
+        Nil
     }
 
-  @inline def parseType(
-      tpe: (Types.Type, Tree),
-      symtab: ScalaParser.StringMap[(Types.Type, Tree)],
-      examined: ListSet[ScalaParser.TypeFullId],
-      acceptsType: Symbols.Symbol => Boolean,
-      retries: Int = 3
-    ): ScalaParser.Result[ScalaParser.StringMap, ScalaParser.TypeFullId] =
-    try {
-      scalaParser.parseType(tpe, symtab, examined, acceptsType)
-    } catch {
-      case _: dotty.tools.dotc.core.CyclicReference if retries > 0 =>
-        Thread.sleep(200)
-        parseType(tpe, symtab, examined, acceptsType, retries - 1)
+  // Separate driver so ad-hoc typecheck does not invalidate fixture denotations.
+  val typecheck = { (input: String) =>
+    val (ctx, tree) =
+      compileOn(new InteractiveDriver(driverSettings), "<typecheck>", input)
+    topLevelDefs(tree)(using ctx) match {
+      case head :: _ =>
+        head
+
+      case Nil =>
+        throw new Exception(s"Invalid definition: $tree")
     }
+  }
 
   def fullName(sym: Symbols.Symbol): String =
     sym.fullName.toString
@@ -248,33 +304,8 @@ object ScalaRuntimeFixtures {
 
   // ---
 
-  val Tuple2(
-    Tuple22(
-      testClass1Tree,
-      testClass1CompanionTree,
-      testClass1BTree,
-      testClass2Tree,
-      testClass3Tree,
-      testClass4Tree,
-      testClass5Tree,
-      testClass6Tree,
-      testClass7Tree,
-      anyValChildTree,
-      testClass8Tree,
-      testEnumerationTree,
-      testClass9Tree,
-      testClass10Tree,
-      testObject1Tree,
-      testObject2Tree,
-      familyTree,
-      familyMember1Tree,
-      familyMember2Tree,
-      familyMember3Tree,
-      logOpaqueAliasTree,
-      familyUnionTree
-    ),
-    Tuple5(loremTree, ipsumTree, colorTree, styleTree, refinementTree)
-  ) = replCompiler.typeCheck("""
+  private val fixtureSource =
+    """
 case class TestClass1(name: String)
 
 object TestClass1 {}
@@ -299,7 +330,7 @@ case class TestClass6[T](
 case class TestClass7[T](
     name: Either[TestClass1, TestClass1B])
 
-case class AnyValChild(value: String) // Cannot (workaround): extends AnyVal
+case class AnyValChild(value: String) extends AnyVal
 
 case class TestClass8(
     name: AnyValChild, aliases: Seq[AnyValChild])
@@ -392,64 +423,133 @@ object Color {
 case class Style(name: String, color: Color)
 
 type RefinementFoo = Product with Serializable with Family
-""")(using state) match {
-    case Right((_, valDef)) =>
-      valDef.unforcedRhs match {
-        case Trees.Block(
-              testClass1Tree :: _ :: testClass1CompanionTree :: testClass1BTree :: _ :: _ :: testClass2Tree :: _ :: _ :: testClass3Tree :: _ :: _ :: testClass4Tree :: _ :: _ :: testClass5Tree :: _ :: _ :: testClass6Tree :: _ :: _ :: testClass7Tree :: _ :: _ :: anyValChildTree :: _ :: _ :: testClass8Tree :: _ :: _ :: testEnumerationTree :: _ :: testClass9Tree :: _ :: _ :: testClass10Tree :: _ :: _ :: _ :: testObject1Tree :: _ :: testObject2Tree :: _ /*Foo*/ :: familyTree :: familyMember1Tree :: _ :: _ :: _ :: familyMember2Tree :: _ :: familyMember3Tree :: _ :: Trees
-                .TypeDef(
-                  _,
-                  Trees.Template(
-                    _,
-                    _,
-                    _,
-                    (logOpaqueAliasTree @ Trees
-                      .TypeDef(_, _)) :: familyUnionTree :: _
-                  )
-                ) :: loremTree :: _ :: _ :: _ :: ipsumTree :: _ :: _ :: colorTree :: styleTree :: _ :: _ :: refinementTree :: Nil,
-              _
-            ) =>
-          Tuple2(
-            Tuple22(
-              testClass1Tree.asInstanceOf[Tree],
-              testClass1CompanionTree.asInstanceOf[Tree],
-              testClass1BTree.asInstanceOf[Tree],
-              testClass2Tree.asInstanceOf[Tree],
-              testClass3Tree.asInstanceOf[Tree],
-              testClass4Tree.asInstanceOf[Tree],
-              testClass5Tree.asInstanceOf[Tree],
-              testClass6Tree.asInstanceOf[Tree],
-              testClass7Tree.asInstanceOf[Tree],
-              anyValChildTree.asInstanceOf[Tree],
-              testClass8Tree.asInstanceOf[Tree],
-              testEnumerationTree.asInstanceOf[Tree],
-              testClass9Tree.asInstanceOf[Tree],
-              testClass10Tree.asInstanceOf[Tree],
-              testObject1Tree.asInstanceOf[Tree],
-              testObject2Tree.asInstanceOf[Tree],
-              familyTree.asInstanceOf[Tree],
-              familyMember1Tree.asInstanceOf[Tree],
-              familyMember2Tree.asInstanceOf[Tree],
-              familyMember3Tree.asInstanceOf[Tree],
-              logOpaqueAliasTree.asInstanceOf[Tree],
-              familyUnionTree.asInstanceOf[Tree]
-            ),
-            Tuple5(
-              loremTree.asInstanceOf[Tree],
-              ipsumTree.asInstanceOf[Tree],
-              colorTree.asInstanceOf[Tree],
-              styleTree.asInstanceOf[Tree],
-              refinementTree.asInstanceOf[Tree]
-            )
-          )
 
-        case invalid =>
-          throw new Exception(s"Invalid definition: $invalid")
-      }
+sealed abstract class State(val entryName: String)
 
-    case Left(errors) =>
-      throw new Exception(errors mkString "; ")
+object Alabama extends State("AL")
+
+object Alaska extends State("AK")
+"""
+
+  private val (
+    testClass1Tree,
+    testClass1CompanionTree,
+    testClass1BTree,
+    testClass2Tree,
+    testClass3Tree,
+    testClass4Tree,
+    testClass5Tree,
+    testClass6Tree,
+    testClass7Tree,
+    anyValChildTree,
+    testClass8Tree,
+    testEnumerationTree,
+    testClass9Tree,
+    testClass10Tree,
+    testObject1Tree,
+    testObject2Tree,
+    familyTree,
+    familyMember1Tree,
+    familyMember2Tree,
+    familyMember3Tree,
+    logOpaqueAliasTree,
+    familyUnionTree,
+    loremTree,
+    ipsumTree,
+    colorTree,
+    styleTree,
+    refinementTree,
+    stateUnionTree,
+    alabamaTree,
+    alaskaTree
+  ) = {
+    val (ctx, unitTree) = compileOn(driver, "<typecheck>", fixtureSource)
+    fixtureCtx = ctx
+    given Context = fixtureCtx
+    val defs = topLevelDefs(unitTree)
+
+    val aliasesBody = nestedTypeDefs(findModule(defs, "Aliases"))
+    val logOpaque = aliasesBody
+      .find(td => simpleName(td) == "Log")
+      .getOrElse(throw new Exception("Aliases.Log not found"))
+    val familyUnion = aliasesBody
+      .find(td => simpleName(td) == "FamilyUnion")
+      .getOrElse(throw new Exception("Aliases.FamilyUnion not found"))
+
+    // Top-level type aliases are nested under the synthetic $package module
+    val packageBody = nestedTypeDefs(findModule(defs, "$package"))
+    val refinement = packageBody
+      .find(td => simpleName(td) == "RefinementFoo")
+      .getOrElse(
+        throw new Exception(
+          s"RefinementFoo not found among ${packageBody.map(simpleName).mkString(", ")}"
+        )
+      )
+
+    // Enum parsing walks the companion module (linkedClass is the enum)
+    val color = findModule(defs, "Color")
+
+    (
+      findClass(defs, "TestClass1"),
+      findModule(defs, "TestClass1"),
+      findClass(defs, "TestClass1B"),
+      findClass(defs, "TestClass2"),
+      findClass(defs, "TestClass3"),
+      findClass(defs, "TestClass4"),
+      findClass(defs, "TestClass5"),
+      findClass(defs, "TestClass6"),
+      findClass(defs, "TestClass7"),
+      findClass(defs, "AnyValChild"),
+      findClass(defs, "TestClass8"),
+      findModule(defs, "TestEnumeration"),
+      findClass(defs, "TestClass9"),
+      findClass(defs, "TestClass10"),
+      findModule(defs, "TestObject1"),
+      findModule(defs, "TestObject2"),
+      findClass(defs, "Family"),
+      findClass(defs, "FamilyMember1"),
+      findModule(defs, "FamilyMember2"),
+      findModule(defs, "FamilyMember3"),
+      logOpaque,
+      familyUnion,
+      findClass(defs, "Lorem"),
+      findModule(defs, "Ipsum"),
+      color,
+      findClass(defs, "Style"),
+      refinement,
+      findClass(defs, "State"),
+      findModule(defs, "Alabama"),
+      findModule(defs, "Alaska")
+    )
   }
+
+  // Constructed after fixture compile so it captures the frozen fixtureCtx.
+  private[core] val scalaParser = new ScalaParser(
+    compiled = Set("<typecheck>"),
+    logger = Logger(org.slf4j.LoggerFactory getLogger "ScalaParserSpec")
+  )
+
+  def parseTypes(
+      types: List[(Types.Type, Tree)],
+      symtab: Map[String, ListSet[(Types.Type, Tree)]] = Map.empty
+    ): List[(String, ListSet[ScalaModel.TypeDef])] =
+    scalaParser
+      .parseTypes(
+        types,
+        symtab,
+        ListSet.empty,
+        _ => true
+      )
+      .parsed
+      .toList
+
+  def parseType(
+      tpe: (Types.Type, Tree),
+      symtab: ScalaParser.StringMap[(Types.Type, Tree)],
+      examined: ListSet[ScalaParser.TypeFullId],
+      acceptsType: Symbols.Symbol => Boolean
+    ): ScalaParser.Result[ScalaParser.StringMap, ScalaParser.TypeFullId] =
+    scalaParser.parseType(tpe, symtab, examined, acceptsType)
 
   val TestClass1Tree: Tree = testClass1Tree
 
@@ -489,17 +589,11 @@ type RefinementFoo = Product with Serializable with Family
 
   val AnyValChildTree: Tree = anyValChildTree
 
-  // lazy val AnyValChildType = AnyValChildTree.tpe
-  // !! Workaround as cannot typeCheck Value classes
-  val AnyValChildType: Types.Type =
-    Symbols.requiredClassRef(classOf[AnyValChild].getName)
+  lazy val AnyValChildType = AnyValChildTree.tpe
 
   val TestClass8Tree: Tree = testClass8Tree
 
-  // lazy val TestClass8Type = TestClass8Tree.tpe
-  // !! Workaround as cannot typeCheck Value classes
-  val TestClass8Type: Types.Type =
-    Symbols.requiredClassRef(classOf[TestClass8].getName)
+  lazy val TestClass8Type = TestClass8Tree.tpe
 
   val TestEnumerationTree: Tree = testEnumerationTree
 
@@ -512,8 +606,6 @@ type RefinementFoo = Product with Serializable with Family
   val TestClass10Tree: Tree = testClass10Tree
 
   lazy val TestClass10Type = TestClass10Tree.tpe
-
-  // case object TestObject1
 
   val TestObject1Tree: Tree = testObject1Tree
 
@@ -538,6 +630,18 @@ type RefinementFoo = Product with Serializable with Family
   val FamilyMember3Tree: Tree = familyMember3Tree
 
   val FamilyMember3Type = FamilyMember3Tree.tpe
+
+  val StateTree: Tree = stateUnionTree
+
+  lazy val StateType = StateTree.tpe
+
+  val AlabamaTree: Tree = alabamaTree
+
+  lazy val AlabamaType = AlabamaTree.tpe
+
+  val AlaskaTree: Tree = alaskaTree
+
+  val AlaskaType = AlaskaTree.tpe
 
   val LogOpaqueAliasTree: Tree = logOpaqueAliasTree
 

@@ -289,7 +289,7 @@ final class ScalaParser[Uni <: Universe](
           // TODO: Not sealed trait like CaseClass
 
           if (
-            classSym.isAbstract /*isTrait*/ && classSym.isSealed &&
+            classSym.isAbstract && classSym.isSealed &&
             scalaType.typeParams.isEmpty
           ) {
             val res = parseSealedUnion(tpe, symtab, acceptsType)
@@ -904,15 +904,17 @@ final class ScalaParser[Uni <: Universe](
 
     @annotation.tailrec
     @SuppressWarnings(Array("UnsafeTraversableMethods" /*tail*/ ))
-    def findCtor(trees: Seq[Tree]): Option[Tree] =
+    def findCtor(rt: String, trees: Seq[Tree]): Option[Tree] =
       trees.headOption match {
         case Some(t) =>
           t.symbol match {
-            case MethodSymbolTag(ctor) if ctor.isConstructor =>
+            case MethodSymbolTag(ctor) if ({
+                  ctor.isConstructor && ctor.returnType.typeSymbol.name.toString == rt
+                }) =>
               Some(t)
 
             case _ =>
-              findCtor(t.children ++: trees.tail)
+              findCtor(rt, t.children ++: trees.tail)
           }
 
         case _ =>
@@ -985,13 +987,14 @@ final class ScalaParser[Uni <: Universe](
           decls -> (ListSet.empty[TypeInvariant] ++ values.reverse)
       }
 
-    val (decls, values) = findCtor(Seq(tpe._2)) match {
-      case Some(ctor) =>
-        invariants(ctor.children, declNames, List.empty)
+    val (decls, values) =
+      findCtor(scalaType.typeSymbol.name.toString, Seq(tpe._2)) match {
+        case Some(ctor) =>
+          invariants(ctor.children, declNames, List.empty)
 
-      case _ =>
-        declNames -> ListSet.empty[TypeInvariant]
-    }
+        case _ =>
+          declNames -> ListSet.empty[TypeInvariant]
+      }
 
     val identifier = buildQualifiedIdentifier(scalaType.typeSymbol)
 
@@ -1014,12 +1017,54 @@ final class ScalaParser[Uni <: Universe](
     // TODO: (low priority) Check & warn there is no type parameters for a union type
     import tpe.{ _1 => scalaType }
 
+    // Select private field on `<Type>.this.`
+    val objThis = s"${scalaType.typeSymbol.name}.this"
+
+    @annotation.tailrec
+    def implemented(
+        trees: Seq[Tree],
+        decls: Set[String],
+        impl: Set[String]
+      ): Set[String] =
+      trees.headOption match {
+        case Some(ValOrDefDefTag(tr)) =>
+          tr.symbol match {
+            case MethodSymbolTag(m)
+                if (m.isPublic && !m.isImplicit && m.paramLists.isEmpty &&
+                  tr.rhs.nonEmpty && s"${objThis}.${m.name}" != tr.rhs.toString &&
+                  decls.contains(m.name.toString)) => {
+              val n = m.name.toString
+              implemented(trees.tail, decls - n, impl + n)
+            }
+
+            case _ =>
+              implemented(tr.children ++: trees.tail, decls, impl)
+          }
+
+        case Some(t) =>
+          implemented(t.children ++: trees.tail, decls, impl)
+
+        case None =>
+          impl
+      }
+
     // Members
-    def members = scalaType.decls.collect {
-      case MethodSymbolTag(m)
-          if (m.isAbstract && m.isPublic && !m.isImplicit &&
-            !m.name.toString.endsWith("$")) =>
-        member(m, List.empty)
+    def members: Iterable[TypeMember] = {
+      val names = Set.newBuilder[String]
+
+      val ms = scalaType.decls.collect {
+        case MethodSymbolTag(m)
+            if (m.isPublic && m.paramLists.isEmpty /* no arg, not even `()` */ &&
+              !m.isImplicit && !m.name.toString.endsWith("$")) =>
+          names += m.name.toString
+          member(m, List.empty)
+      }
+
+      val i = implemented(tpe._2.children, names.result(), Set.empty)
+
+      // Exclude type member with RHS,
+      // as they will already/better be represented as type invariants
+      ms.filter(m => !i.contains(m.name))
     }
 
     directKnownSubclasses(scalaType) match {

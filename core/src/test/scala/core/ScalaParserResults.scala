@@ -474,4 +474,24 @@ final class ScalaParserResults(
       )
     )
   }
+
+  val sealedFamily2 = {
+    // Not 'bar', as not abstract
+    val entryNameMember = TypeMember("entryName", StringRef)
+
+    SealedUnion(
+      identifier = QualifiedIdentifier("State", ns),
+      fields = ListSet(entryNameMember),
+      possibilities = ListSet(
+        CaseObject(
+          QualifiedIdentifier("Alabama", ns),
+          ListSet(LiteralInvariant("entryName", StringRef, "\"AL\""))
+        ),
+        CaseObject(
+          QualifiedIdentifier("Alaska", ns),
+          ListSet(LiteralInvariant("entryName", StringRef, "\"AK\""))
+        )
+      )
+    )
+  }
 }

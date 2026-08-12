@@ -4,6 +4,9 @@ name := "sbt-plugin-test-custom-cfg"
 
 version := "1.0-SNAPSHOT"
 
+// 3.8.4 matches core_3 published with the sbt 2 plugin (shared _3 artifact)
+scalaVersion := "3.8.4"
+
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
 // Custom option transpiling
@@ -19,7 +22,7 @@ scalatsFieldMapper := classOf[scalats.CustomFieldMapper]
 
 // Overwrite the directory the printer is initialized with
 scalatsOnCompile / sourceManaged := {
-  val dir = target.value / "_custom"
+  val dir = baseDirectory.value / "target" / "_custom"
   dir.mkdirs()
   dir
 }
@@ -49,7 +52,7 @@ scalatsTypeMappers := Seq(
 )
 
 // Distribute src/test/typescript as ts-test
-Compile / compile := {
+Compile / compile :=  Def.uncached {
   val res = (Compile / compile).value
   val src = (Test / sourceDirectory).value / "typescript"
   val dest = (scalatsOnCompile / sourceManaged).value / "ts-test"
@@ -71,9 +74,9 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
       val destdir = tmpdir / name.value / "target"
       destdir.mkdirs()
 
-      logger.info(s"Copying directory ${target.value} to ${destdir} ...")
+      logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
 
-      IO.copyDirectory(target.value, destdir)
+      IO.copyDirectory(baseDirectory.value / "target", destdir)
     }
 
     case _ => ()

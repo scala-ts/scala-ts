@@ -1,4 +1,5 @@
 import sbt.Keys._
+import sbtcompat.PluginCompat._
 
 name := "scala-ts"
 
@@ -16,11 +17,20 @@ lazy val shaded = project
         .rename("com.typesafe.config.**" -> "io.github.scalats.tsconfig.@1")
         .inAll
     ),
+    exportJars := false,
     publish := ({}),
     publishTo := None
   )
 
 val scala213Version = "2.13.18"
+// LTS for libraries / user compiler-plugin artifacts
+val scala3Lts = "3.4.3"
+// sbt 2.0.6 is itself built with Scala 3.8.4 (TASTy 28.8); the sbt-plugin
+// must use a matching compiler to read sbt's classpath (3.4.x cannot).
+val scala3ForSbt2 = "3.8.4"
+val sbt1Version = "1.5.8"
+val sbt2Version = "2.0.6"
+val scriptedSbt1Version = "1.12.15"
 
 ThisBuild / libraryDependencySchemes ++= {
   if (scalaBinaryVersion.value == "2.12") {
@@ -32,11 +42,49 @@ ThisBuild / libraryDependencySchemes ++= {
 
 val fullCrossScalaVersions = Def.setting {
   Seq(
-    "2.11.12",
     scalaVersion.value,
     scala213Version,
-    "3.4.2"
+    scala3Lts,
+    // Needed so sbt-plugin can dependsOn(core) when cross-built for sbt 2
+    scala3ForSbt2
   )
+}
+
+// Dual-publish sbt plugins: sbt 1.x (Scala 2.12) + sbt 2.x (Scala 3.8.x)
+lazy val sbtPluginCrossSettings = Seq[Setting[?]](
+  addSbtPlugin("com.github.sbt" % "sbt2-compat" % "0.2.0"),
+  crossScalaVersions := Seq(
+    (LocalRootProject / scalaVersion).value,
+    scala3ForSbt2
+  ),
+  pluginCrossBuild / sbtVersion := {
+    (pluginCrossBuild / scalaBinaryVersion).value match {
+      case "3" => sbt2Version
+      case _   => sbt1Version
+    }
+  },
+  scriptedSbt := {
+    scalaBinaryVersion.value match {
+      case "3" => sbt2Version
+      case _   => scriptedSbt1Version
+    }
+  },
+  scalacOptions ++= {
+    if (scalaBinaryVersion.value == "3") {
+      // Keep shared plugin sources compiling with Setting[_] on Scala 3
+      Seq("-Wconf:msg=.*deprecated for wildcard arguments of types.*:s")
+    } else {
+      Seq("-Xsource:3")
+    }
+  }
+)
+
+val copyAssemblyJar: Def.Initialize[Task[Unit]] = Def.task {
+  import _root_.sbtcompat.PluginCompat.toFile
+
+  implicit val conv: xsbti.FileConverter = fileConverter.value
+
+  IO.copyFile(toFile(assembly.value), toFile((Compile / packageBin).value))
 }
 
 lazy val core = project
@@ -51,7 +99,7 @@ lazy val core = project
         Seq.empty
       }
     },
-    Compile / unmanagedJars += (shaded / assembly).value,
+    Compile / unmanagedJars += Def.uncached((shaded / assembly).value),
     Compile / unmanagedSourceDirectories += {
       val base = (Compile / sourceDirectory).value
 
@@ -91,11 +139,6 @@ lazy val core = project
           Seq.empty
       }
     },
-    assembly / assemblyExcludedJars := {
-      (assembly / fullClasspath).value.filterNot {
-        _.data.getName startsWith "scala-ts-shaded"
-      }
-    },
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
@@ -114,8 +157,18 @@ lazy val core = project
           Some(dep)
       }
     },
-    Compile / packageBin := crossTarget.value / (assembly / assemblyJarName).value,
-    makePom := makePom.dependsOn(assembly).value,
+    assembly / assemblyExcludedJars := {
+      implicit val conv: xsbti.FileConverter = fileConverter.value
+
+      val selfJar = toFile((Compile / packageBin).value).getName
+
+      (assembly / fullClasspath).value.filterNot { f =>
+        val nme = toFile(f).getName
+
+        nme == selfJar || nme.startsWith("scala-ts-shaded")
+      }
+    },
+    makePom := makePom.dependsOn(copyAssemblyJar).value,
     assembly / mainClass := Some("io.github.scalats.Main"),
     Compile / run / mainClass := (assembly / mainClass).value
   )
@@ -123,21 +176,16 @@ lazy val core = project
 lazy val `sbt-plugin` = project
   .in(file("sbt-plugin"))
   .enablePlugins(SbtPlugin)
+  .settings(sbtPluginCrossSettings)
   .settings(
     name := "sbt-scala-ts",
-    crossScalaVersions := Seq(scalaVersion.value),
-    pluginCrossBuild / sbtVersion := "1.3.13",
     sbtPlugin := true,
     scriptedLaunchOpts ++= Seq(
       "-Xmx1024M",
       s"-Dscala-ts.version=${version.value}",
       s"-Dscala-ts.sbt-test-temp=/tmp/${name.value}"
     ),
-    Compile / unmanagedJars += {
-      val jarName = (shaded / assembly / assemblyJarName).value
-
-      (shaded / target).value / jarName
-    },
+    Compile / unmanagedJars += Def.uncached((shaded / assembly).value),
     scripted := scripted.dependsOn(core / publishLocal).evaluated,
     scriptedBufferLog := false,
     Compile / sourceGenerators += Def.task {
@@ -170,7 +218,7 @@ lazy val idtlt = project
   .settings(
     name := "scala-ts-idtlt",
     crossScalaVersions := fullCrossScalaVersions.value,
-    Compile / unmanagedJars += (shaded / assembly).value,
+    Compile / unmanagedJars += Def.uncached((shaded / assembly).value),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
@@ -195,27 +243,29 @@ lazy val idtlt = project
 lazy val `sbt-plugin-idtlt` = project
   .in(file("sbt-plugin-idtlt"))
   .enablePlugins(SbtPlugin)
+  .settings(sbtPluginCrossSettings)
   .settings(
     name := "sbt-scala-ts-idtlt",
-    crossScalaVersions := Seq(scalaVersion.value),
-    pluginCrossBuild / sbtVersion := (`sbt-plugin` / pluginCrossBuild / sbtVersion).value,
     sbtPlugin := true,
-    scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
-    Compile / compile := (Compile / compile)
-      .dependsOn(`sbt-plugin` / Compile / compile)
-      .value,
-    Compile / unmanagedJars ++= {
-      val jarName = (shaded / assembly / assemblyJarName).value
+    scriptedLaunchOpts := (`sbt-plugin` / scriptedLaunchOpts).value,
+    Compile / compile := Def.uncached {
+      (Compile / compile).dependsOn(`sbt-plugin` / Compile / compile).value
+    },
+    Compile / unmanagedJars := Def.uncached {
+      implicit val conv: xsbti.FileConverter = fileConverter.value
 
-      Seq(
-        (`sbt-plugin` / Compile / packageBin).value,
-        (shaded / target).value / jarName
+      toAttributedFiles(
+        Seq(
+          toFile((`sbt-plugin` / Compile / packageBin).value),
+          (shaded / target).value / (shaded / assembly / assemblyJarName).value
+        )
       )
     },
     scripted := scripted
       .dependsOn(core / publishLocal)
       .dependsOn(idtlt / publishLocal)
       .dependsOn(`sbt-plugin` / publishLocal)
+      .dependsOn(publishLocal)
       .evaluated,
     Compile / sourceGenerators += Def.task {
       val groupId = organization.value
@@ -247,7 +297,7 @@ lazy val python = project
   .settings(
     name := "scala-ts-python",
     crossScalaVersions := fullCrossScalaVersions.value,
-    Compile / unmanagedJars += (shaded / assembly).value,
+    Compile / unmanagedJars += Def.uncached((shaded / assembly).value),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     pomPostProcess := XmlUtil.transformPomDependencies { dep =>
       (dep \ "groupId").headOption.map(_.text) match {
@@ -272,27 +322,29 @@ lazy val python = project
 lazy val `sbt-plugin-python` = project
   .in(file("sbt-plugin-python"))
   .enablePlugins(SbtPlugin)
+  .settings(sbtPluginCrossSettings)
   .settings(
     name := "sbt-scala-ts-python",
-    crossScalaVersions := Seq(scalaVersion.value),
-    pluginCrossBuild / sbtVersion := (`sbt-plugin` / pluginCrossBuild / sbtVersion).value,
     sbtPlugin := true,
-    scriptedLaunchOpts ++= (`sbt-plugin` / scriptedLaunchOpts).value,
-    Compile / compile := (Compile / compile)
-      .dependsOn(`sbt-plugin` / Compile / compile)
-      .value,
-    Compile / unmanagedJars ++= {
-      val jarName = (shaded / assembly / assemblyJarName).value
+    scriptedLaunchOpts := (`sbt-plugin` / scriptedLaunchOpts).value,
+    Compile / compile := Def.uncached {
+      (Compile / compile).dependsOn(`sbt-plugin` / Compile / compile).value
+    },
+    Compile / unmanagedJars := Def.uncached {
+      implicit val conv: xsbti.FileConverter = fileConverter.value
 
-      Seq(
-        (`sbt-plugin` / Compile / packageBin).value,
-        (shaded / target).value / jarName
+      toAttributedFiles(
+        Seq(
+          toFile((`sbt-plugin` / Compile / packageBin).value),
+          (shaded / target).value / (shaded / assembly / assemblyJarName).value
+        )
       )
     },
     scripted := scripted
       .dependsOn(core / publishLocal)
       .dependsOn(python / publishLocal)
       .dependsOn(`sbt-plugin` / publishLocal)
+      .dependsOn(publishLocal)
       .evaluated,
     Compile / sourceGenerators += Def.task {
       val groupId = organization.value

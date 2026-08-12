@@ -4,11 +4,10 @@ name := "sbt-plugin-test-single-file-printer"
 
 version := "1.0-SNAPSHOT"
 
-resolvers ++= Resolver.sonatypeOssRepos("snapshots")
-
 scalaVersion := "2.13.18"
 
-crossScalaVersions := Seq(scalaVersion.value, "3.4.3")
+// 3.8.4 matches core_3 published with the sbt 2 plugin (shared _3 artifact)
+crossScalaVersions := Seq(scalaVersion.value, "3.8.4")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
@@ -35,7 +34,7 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
 
   destdir.mkdirs()
 
-  logger.info(s"Copying directory ${target.value} to ${destdir} ...")
+  logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
 
-  IO.copyDirectory(target.value, destdir)
+  IO.copyDirectory(baseDirectory.value / "target", destdir)
 }
