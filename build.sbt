@@ -55,7 +55,7 @@ lazy val `http-api` = (project in file("http-api"))
         ("com.typesafe.akka" %% "akka-http" % akkaHttpVersion)
           .cross(CrossVersion.for3Use2_13),
         "ch.megard" %% "akka-http-cors" % "1.3.1",
-        "com.typesafe.play" %% "play-json" % "2.10.0-RC6",
+        "com.typesafe.play" %% "play-json" % "2.10.8",
         ("de.heikoseeberger" %% "akka-http-play-json" % "1.39.2")
           .exclude("com.typesafe.play", "*")
           .cross(CrossVersion.for3Use2_13),
