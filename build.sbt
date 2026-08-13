@@ -121,7 +121,7 @@ lazy val core = project
       }
     },
     libraryDependencies ++= {
-      val specsVer = "4.10.6"
+      val specsVer = "4.23.0"
 
       Seq(
         "org.slf4j" % "slf4j-api" % "1.7.36",
