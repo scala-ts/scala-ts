@@ -670,10 +670,10 @@
   resolved "https://registry.yarnpkg.com/@sveltejs/acorn-typescript/-/acorn-typescript-1.0.10.tgz#72376d9f46c04be82b714b1c33f0956911a7a6d6"
   integrity sha512-4WfKk68eTih+MiJD4fSbxN7E8kVBmTMPWHUPYjvl2N0rMs53YLTT8/YjKU5Dtnz5LqDjl7LEw4U7lXR2W3J5WA==
 
-"@sveltejs/load-config@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@sveltejs/load-config/-/load-config-0.2.2.tgz#86db1d02f6da84a5de2c1b7270667ad80b222844"
-  integrity sha512-K7dsJDQxBOF+f+epuhMactcjK2VP4MRkLKtwSykNtEI+cKVEyzrmmhQ1pmoxI800m4JKcyJ05L2M4yPwAGiBNw==
+"@sveltejs/load-config@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@sveltejs/load-config/-/load-config-0.2.3.tgz#5f54c7153d287a1b5f2e0a69fb7f10e91ba95d81"
+  integrity sha512-VT3qmUb8pRV2QrZjd8iAmtg8lf4W0TIjZbvXtz5MKei/q96teWZgGJyyidJzOjzZzvdq616eSRVeMYIQChUTAQ==
 
 "@sveltejs/vite-plugin-svelte-inspector@^5.0.0":
   version "5.0.2"
@@ -2652,13 +2652,13 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svelte-check@^4.7.5:
-  version "4.7.5"
-  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.5.tgz#0823b19682d268d95da9cd3e65e3b98c744ca69b"
-  integrity sha512-NnkHGCTPH6k4ka1E9IpTuNv40uLArHnX52kLEuaHSGqRlPYTnkbFs529jSWG+y+wDy+v+jA2PQ0soN1umVK+OA==
+svelte-check@^4.7.6:
+  version "4.7.6"
+  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.6.tgz#63cba2ab096d3c96b6b483575815f1f88acfe039"
+  integrity sha512-t2scM//ZuVbSY/T2w6FSBw1v9s2NEmh/g+sy1lqtosW5ylBV5AF4wFb1Ts9Kf3MbfPDUDJDZ9L436YT0SPTdvw==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.25"
-    "@sveltejs/load-config" "^0.2.2"
+    "@sveltejs/load-config" "^0.2.3"
     chokidar "^4.0.1"
     fdir "^6.2.0"
     picocolors "^1.0.0"
