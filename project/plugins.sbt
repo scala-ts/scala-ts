@@ -8,7 +8,7 @@ addSbtPlugin("com.github.sbt" % "sbt2-compat" % "0.2.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.6.2")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.4.1")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.4.2")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.7")
 
