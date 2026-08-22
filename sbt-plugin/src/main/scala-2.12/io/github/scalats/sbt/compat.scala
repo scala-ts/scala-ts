@@ -2,6 +2,7 @@ package io.github.scalats.sbt
 
 import sbt._
 import sbt.Keys.Classpath
+
 import xsbti.FileConverter
 
 private[sbt] object ClasspathsCompat {
@@ -10,9 +11,15 @@ private[sbt] object ClasspathsCompat {
       config: Configuration,
       types: Set[String],
       report: UpdateReport
-    )(using
+    )(implicit
       conv: FileConverter
-    ): Classpath =
-    Classpaths.managedJars(config, types, report, conv)
+    ): Classpath = {
+    // `conv` is part of the shared signature with the sbt 2 overload.
+    if (conv eq null) ()
+    Classpaths.managedJars(config, types, report)
+  }
+}
 
+private[sbt] object Compat {
+  def settings: Seq[Def.Setting[_]] = Seq.empty
 }
