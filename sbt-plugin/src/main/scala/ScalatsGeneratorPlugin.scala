@@ -260,6 +260,8 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
   import autoImport._
   import Manifest._
 
+  import sbt.util.CacheImplicits.given
+
   override lazy val projectSettings: Seq[Def.Setting[_]] = Seq(
     scalatsOnCompile := true,
     scalatsDebug := false,
@@ -270,6 +272,26 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     scalatsOnCompile / sourceManaged := {
       baseDirectory.value / "target" / "scala-ts" / "src_managed"
     },
+    Compile / compileIncremental := Def.cachedTask {
+      println("_Test6")
+
+      val res = (Compile / compileIncremental).value
+      val dir = (scalatsOnCompile / sourceManaged).value
+      // val f = fileConverter.value.toVirtualFile(dir.toPath)
+
+      val conv = fileConverter.value
+
+      Def.declareOutputDirectory(conv.toVirtualFile(dir.toPath))
+
+      dir.listFiles.foreach { x =>
+        println(s"-- $x")
+        Def.declareOutput(conv.toVirtualFile(x.toPath))
+      }
+
+      // Def.declareOutputDirectory(f)
+
+      res
+    }.value,
     scalatsCompilerPluginConf := {
       baseDirectory.value / "target" / "scala-ts.conf"
     },
