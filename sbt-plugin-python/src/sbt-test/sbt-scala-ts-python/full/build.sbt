@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(ScalatsPythonPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.18"
+scalaVersion := "3.9.0"
 
 scalatsPythonBaseModule := Some("generated")
 
@@ -45,7 +45,9 @@ TaskKey[Unit]("preserveGeneratedPython") := {
       val destdir = tmpdir / name.value / "target"
       destdir.mkdirs()
 
-      logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
+      logger.info(
+        s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ..."
+      )
 
       IO.copyDirectory(baseDirectory.value / "target", destdir)
     }

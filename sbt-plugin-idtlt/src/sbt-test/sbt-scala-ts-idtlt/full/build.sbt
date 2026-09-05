@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 enablePlugins(ScalatsIdtltPlugin) // Required as disabled by default
 
-scalaVersion := "2.13.18"
+scalaVersion := "3.9.0"
 
 crossScalaVersions := Seq("2.12.21", scalaVersion.value)
 
@@ -37,7 +37,9 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
       val destdir = tmpdir / name.value / "target"
       destdir.mkdirs()
 
-      logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
+      logger.info(
+        s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ..."
+      )
 
       IO.copyDirectory(baseDirectory.value / "target", destdir)
     }
