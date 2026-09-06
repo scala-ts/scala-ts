@@ -22,7 +22,7 @@ lazy val shaded = project
     publishTo := None
   )
 
-val scala213Version = "2.13.18"
+val scala213Version = "3.9.0"
 // LTS for libraries / user compiler-plugin artifacts
 val scala3Lts = "3.4.3"
 // sbt 2.0.6 is itself built with Scala 3.8.4 (TASTy 28.8); the sbt-plugin

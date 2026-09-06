@@ -4,7 +4,7 @@ name := "sbt-plugin-test-enumeratum"
 
 version := "1.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.12.21", "2.13.18")
+crossScalaVersions := Seq("2.12.21", "3.9.0")
 
 enablePlugins(ScalatsGeneratorPlugin) // Required as disabled by default
 
@@ -40,7 +40,9 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
 
   destdir.mkdirs()
 
-  logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
+  logger.info(
+    s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ..."
+  )
 
   IO.copyDirectory(baseDirectory.value / "target", destdir)
 }

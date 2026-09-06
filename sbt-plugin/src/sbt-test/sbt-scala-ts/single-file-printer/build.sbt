@@ -4,7 +4,7 @@ name := "sbt-plugin-test-single-file-printer"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.13.18"
+scalaVersion := "3.9.0"
 
 // 3.8.4 matches core_3 published with the sbt 2 plugin (shared _3 artifact)
 crossScalaVersions := Seq(scalaVersion.value, "3.8.4")
@@ -34,7 +34,9 @@ TaskKey[Unit]("preserveGeneratedTypescript") := {
 
   destdir.mkdirs()
 
-  logger.info(s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ...")
+  logger.info(
+    s"Copying directory ${baseDirectory.value / "target"} to ${destdir} ..."
+  )
 
   IO.copyDirectory(baseDirectory.value / "target", destdir)
 }
