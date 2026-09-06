@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.9.0"
 
 val scala3Lts = "3.3.7"
 
