@@ -27,7 +27,7 @@ val scala213Version = "2.13.18"
 val scala3Lts = "3.4.3"
 // sbt 2.0.6 is itself built with Scala 3.8.4 (TASTy 28.8); the sbt-plugin
 // must use a matching compiler to read sbt's classpath (3.4.x cannot).
-val scala3ForSbt2 = "3.8.4"
+val scala3ForSbt2 = "3.9.0"
 val sbt1Version = "1.5.8"
 val sbt2Version = "2.0.6"
 val scriptedSbt1Version = "1.12.15"
