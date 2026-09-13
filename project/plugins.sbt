@@ -2,7 +2,7 @@ resolvers += Resolver.sonatypeRepo("staging")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.6.2")
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.7")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.8")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
