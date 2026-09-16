@@ -288,7 +288,9 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
         Option(props.getProperty("version.number")).collect {
           case Major(v) => v
         }.getOrElse {
-          println("Fails to resolve SBT scala version; Defaults to 2.12")
+          streams.value.log(
+            "Fails to resolve SBT scala version; Defaults to 2.12"
+          )
 
           "2.12"
         }
@@ -315,8 +317,10 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
           (buildBase / "project" / "target").listFiles
         ).toSeq.flatten
         if scalaDir.isDirectory && scalaDir.getName.startsWith("scala-")
+
         sbtDir <- Option(scalaDir.listFiles).toSeq.flatten
         if sbtDir.isDirectory && sbtDir.getName.startsWith("sbt-")
+
         classes = sbtDir / "classes"
         if classes.exists
       } yield classes
@@ -327,8 +331,10 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
           (buildBase / "target" / "out" / "jvm").listFiles
         ).toSeq.flatten
         if scalaDir.isDirectory && scalaDir.getName.startsWith("scala-")
+
         projDir <- Option(scalaDir.listFiles).toSeq.flatten
         if projDir.isDirectory && projDir.getName.endsWith("-build")
+
         classes = projDir / "classes"
         if classes.exists
       } yield classes
@@ -349,6 +355,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
       try {
         implicit val conv: xsbti.FileConverter = fileConverter.value
+
         val additionalClasspath = scalatsAdditionalClasspath.value.map { af =>
           toFile(af.data).toURI.toURL
         }
@@ -575,7 +582,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     scalatsTypeNaming := TypeNaming.Identity.getClass,
     scalatsFieldMapper := FieldMapper.Identity.getClass,
     scalatsDiscriminator := Settings.DefaultDiscriminator.text
-  )
+  ) ++ Compat.settings
 
   @SuppressWarnings(Array("NullParameter"))
   private def compilerPluginConf(
