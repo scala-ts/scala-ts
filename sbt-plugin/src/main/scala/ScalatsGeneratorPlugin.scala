@@ -69,24 +69,15 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     val scalatsPrinterPrelude =
       settingKey[Option[PrinterPrelude]]("Prelude for printer supporting it (e.g. `scalatsFilePrinter` or `scalatsSingleFilePrinter`); Either an in-memory string (see `scalatsPrinterInMemoryPrelude`), or a source URL (see `scalatsPrinterUrlPrelude`)")
 
-    @deprecated("Use scalatsImportResolvers", "0.5.14")
-    @inline def scalatsTypeScriptImportResolvers = scalatsImportResolvers
-
     val scalatsImportResolvers =
       settingKey[Seq[Class[_ <: ImportResolver]]](
         "Class implementing 'ImportResolver' to customize the mapping (default: None)"
       )
 
-    @deprecated("Use scalatsDeclarationMappers", "0.5.14")
-    @inline def scalatsTypeScriptDeclarationMappers = scalatsDeclarationMappers
-
     val scalatsDeclarationMappers =
       settingKey[Seq[Class[_ <: DeclarationMapper]]](
         "Class implementing 'DeclarationMapper' to customize the mapping (default: None)"
       )
-
-    @deprecated("Use scalatsTypeMappers", "0.5.14")
-    @inline def scalatsTypeScriptTypeMappers = scalatsTypeMappers
 
     val scalatsTypeMappers =
       settingKey[Seq[Class[_ <: TypeMapper]]](
@@ -96,30 +87,18 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
     val scalatsPrependEnclosingClassNames =
       settingKey[Boolean]("Whether to prepend enclosing class/object names")
 
-    @deprecated("Use scalatsIndent", "0.5.14")
-    @inline def scalatsTypescriptIndent = scalatsIndent
-
     val scalatsIndent = settingKey[String](
       "Characters used as TypeScript indentation (default: 2 spaces)"
     )
-
-    @deprecated("Use scalatsLineSeparator", "0.5.14")
-    @inline def scalatsTypescriptLineSeparator = scalatsLineSeparator
 
     val scalatsLineSeparator = settingKey[String](
       "Characters used as TypeScript line separator (default: ';')"
     )
 
-    @deprecated("Use scalatsTypeNaming", "0.5.14")
-    @inline def scalatsTypeScriptTypeNaming = scalatsTypeNaming
-
     val scalatsTypeNaming =
       settingKey[Class[_ <: TypeNaming]](
         "Conversions for the field names (default: Identity)"
       )
-
-    @deprecated("Use scalatsFieldMapper", "0.5.14")
-    @inline def scalatsTypeScriptFieldMapper = scalatsFieldMapper
 
     val scalatsFieldMapper =
       settingKey[Class[_ <: FieldMapper]](
@@ -131,7 +110,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
       settingKey[String]("Name for the discriminator field")
 
     val scalatsSourceIncludes = settingKey[Set[String]]( // TODO: Regex
-      "Scala sources to be included for ScalaTS (default: '.*'"
+      "Scala sources to be included for ScalaTS (default: '.*')"
     )
 
     val scalatsSourceExcludes = settingKey[Set[String]](
@@ -151,6 +130,13 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
 
     val scalatsAdditionalClasspath =
       taskKey[Classpath]("Additional classpath for Scala-TS")
+
+    val scalatsDeleteGeneratedSourceOnClean =
+      settingKey[Boolean](
+        "Whether to delete on clean the directory where ScalaTS generate sources (default: true if generated directory is within target directory, otherwise false)" // if generated is outside base directory false allow to share files generated from different modules
+      )
+
+    val scalatsClean = taskKey[Unit]("Clean files generated from ScalaTS")
 
     // ---
 
@@ -274,10 +260,39 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
       baseDirectory.value / "target" / "scala-ts.conf"
     },
     cleanFiles ++= Seq(
-      (scalatsOnCompile / sourceManaged).value,
       scalatsCompilerPluginConf.value,
       baseDirectory.value / "target" / "scala-ts-prelude.tmp"
     ),
+    scalatsDeleteGeneratedSourceOnClean := {
+      val target = baseDirectory.value / "target"
+      var deleteOnClean = false
+
+      var f = (scalatsOnCompile / sourceManaged).value
+      while (!deleteOnClean && f != null && f.isDirectory) {
+        if (f == target) {
+          deleteOnClean = true
+        } else {
+          f = f.getParentFile
+        }
+      }
+
+      deleteOnClean
+    },
+    cleanFiles ++= {
+      if (scalatsDeleteGeneratedSourceOnClean.value) {
+        Seq((scalatsOnCompile / sourceManaged).value)
+      } else {
+        Seq.empty
+      }
+    },
+    scalatsClean := Def.uncached {
+      val log = streams.value.log
+      val dir = (scalatsOnCompile / sourceManaged).value
+
+      log.info(s"Removing generated files from $dir ...")
+
+      io.IO.delete(io.IO.listFiles(dir))
+    },
     scalatsAdditionalClasspath := Def.uncached {
       val sbtScalaVer: String = {
         val props = new java.util.Properties
@@ -326,7 +341,7 @@ object ScalatsGeneratorPlugin extends AutoPlugin {
       } yield classes
 
       // sbt 2.x: target/out/jvm/scala-3.8.4/<id>-build/classes
-      val sbt2Candidates = for {
+      val sbt2Candidates = for { // TODO: Use cross-compilation
         scalaDir <- Option(
           (buildBase / "target" / "out" / "jvm").listFiles
         ).toSeq.flatten
