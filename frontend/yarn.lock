@@ -1300,10 +1300,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-dotenv@18.0.1:
-  version "18.0.1"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-18.0.1.tgz#27ad1fefc173e754a9a0a68fcd8aa71b267ed37f"
-  integrity sha512-0eR4m4D/jH5eaI3evo2ZqqMii5mrTCR12v12VChdie6O1gPHs7XAjzTep0CWc1Bd+oNx3vVfbi734dK4zghigw==
+dotenv@18.0.3:
+  version "18.0.3"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-18.0.3.tgz#b631bd444652cd971357123dc2342976589467ab"
+  integrity sha512-/8CJTyL817qPnfbQrJgOEcrU3fDrJkRIoXBE566wHuvIXKOCHUZhPqGPbCPi9SogjdGnreF0TlvnTgK6J/8zpA==
 
 emoji-regex@^10.3.0:
   version "10.3.0"
