@@ -30,14 +30,14 @@ jobs:
     - name: 'Coursier cache'
       uses: coursier/cache-action@v7
       with:
-        extraKey: coursier-${{ runner.os }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+        extraKey: coursier-${{ runner.os }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/*.scala') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Compile'
       run: 'sbt -J-Dscalafix.disable=true Test/compile'
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
-        sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
+        sbt -J-Dscalafix.disable=false ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
     - name: 'Run core tests' # single retry
       run: |
