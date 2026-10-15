@@ -2,7 +2,7 @@ ThisBuild / scalafmtOnCompile := true
 
 // Scalafix
 inThisBuild({
-  if (sys.props.get("scalafix.disable").isEmpty) {
+  if (sys.props.get("scalafix.disable").contains("true")) {
     List(
       // scalaVersion := "2.13.3",
       semanticdbEnabled := true,
