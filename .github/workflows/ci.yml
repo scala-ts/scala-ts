@@ -33,7 +33,7 @@ jobs:
         extraKey: coursier-${{ runner.os }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/*.scala') }}-${{ hashFiles('project/build.properties') }}
 
     - name: 'Compile'
-      run: 'sbt -J-Dscalafix.disable=true Test/compile'
+      run: 'sbt Test/compile'
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
@@ -112,7 +112,7 @@ jobs:
 
   python:
     name: 'Validate Python code generation'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build_n_test
 
     steps:

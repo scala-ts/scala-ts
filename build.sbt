@@ -69,6 +69,9 @@ lazy val sbtPluginCrossSettings = Seq[Setting[?]](
       case _   => scriptedSbt1Version
     }
   },
+  // Scalafix resolves SemanticDB from class directories.
+  Compile / semanticdbTargetRoot := (Compile / classDirectory).value,
+  Test / semanticdbTargetRoot := (Test / classDirectory).value,
   scalacOptions ++= {
     if (scalaBinaryVersion.value == "3") {
       // Keep shared plugin sources compiling with Setting[_] on Scala 3
@@ -125,7 +128,7 @@ lazy val core = project
 
       Seq(
         "org.slf4j" % "slf4j-api" % "1.7.36",
-        "ch.qos.logback" % "logback-classic" % "1.6.6"
+        "ch.qos.logback" % "logback-classic" % "1.6.8"
       ) ++ Seq("core", "junit").map(n =>
         ("org.specs2" %% s"specs2-${n}" % specsVer)
           .cross(CrossVersion.for3Use2_13) % Test
