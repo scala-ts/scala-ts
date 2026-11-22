@@ -69,6 +69,9 @@ lazy val sbtPluginCrossSettings = Seq[Setting[?]](
       case _   => scriptedSbt1Version
     }
   },
+  // Scalafix resolves SemanticDB from class directories.
+  Compile / semanticdbTargetRoot := (Compile / classDirectory).value,
+  Test / semanticdbTargetRoot := (Test / classDirectory).value,
   scalacOptions ++= {
     if (scalaBinaryVersion.value == "3") {
       // Keep shared plugin sources compiling with Setting[_] on Scala 3

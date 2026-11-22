@@ -13,6 +13,9 @@ object Compiler extends AutoPlugin {
   override def requires = JvmPlugin
 
   override lazy val projectSettings = Seq(
+    // Scalafix looks for SemanticDB on the classpath, not sbt 2.1's meta directories.
+    Compile / semanticdbTargetRoot := (Compile / classDirectory).value,
+    Test / semanticdbTargetRoot := (Test / classDirectory).value,
     scalaVersion := "2.12.21",
     crossScalaVersions := Seq(scalaVersion.value),
     crossVersion := CrossVersion.binary,
