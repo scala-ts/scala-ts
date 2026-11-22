@@ -37,7 +37,7 @@ jobs:
 
     - name: 'Check code quality' # TODO: Separate job
       run: |
-        sbt -J-Dscalafix.disable=false ';warn ;scalafixAll -check ;scalafmtCheckAll'
+        sbt ';warn ;scalafixAll -check ;scalafmtCheckAll'
 
     - name: 'Run core tests' # single retry
       run: |
