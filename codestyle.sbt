@@ -1,12 +1,15 @@
 ThisBuild / scalafmtOnCompile := true
 
 // Scalafix
-inThisBuild({
-  if (sys.props.get("scalafix.disable").contains("true")) {
+if (!sys.props.get("scalafix.disable").contains("true")) {
+  inThisBuild(
     List(
       // scalaVersion := "2.13.3",
       semanticdbEnabled := true,
       semanticdbVersion := scalafixSemanticdb.revision
     )
-  } else List.empty
-})
+  ) ++ Seq(
+    Compile / semanticdbTargetRoot := (Compile / classDirectory).value,
+    Test / semanticdbTargetRoot := (Test / classDirectory).value
+  )
+} else Seq.empty
