@@ -2091,10 +2091,10 @@ precinct@^12.0.2:
     postcss "^8.4.40"
     typescript "^5.5.4"
 
-prettier-plugin-svelte@4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-4.1.1.tgz#d230133b2ea3d566f21b11b763fd372fb9268958"
-  integrity sha512-wXvbXMjSvb4C9ENWTHXyd+ihakKCsJ6rJhLP6/8HFNj4GkZr48jqL9PoKsl2sk7SyCZRTnJ7O2TTowUpOxP/KA==
+prettier-plugin-svelte@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-svelte/-/prettier-plugin-svelte-4.2.0.tgz#d93aa4d043605c3bcc77223a8a70a36ca2e6c269"
+  integrity sha512-VgUFSR6+7/KLloVSIgKMwY/9OFxaixY/xsOBUCP95ZKaxSa6JBtLKzq6L1L/Tw6Jc1C7K+op7D1Yu5qD+YdPHA==
 
 prettier@3.10.1:
   version "3.10.1"
