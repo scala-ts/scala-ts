@@ -1359,10 +1359,10 @@ esprima@^4.0.0, esprima@^4.0.1:
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
-esrap@^2.3.6:
-  version "2.3.8"
-  resolved "https://registry.yarnpkg.com/esrap/-/esrap-2.3.8.tgz#a738440cb49be54c54e219b64e781dac807d652c"
-  integrity sha512-0yrRvyjiH1EWLIEPb0i26mEnOYsXgIjG77muq3LMJH/dpmp+ctFEEHF8jjGBQAdhwgrKfN74CohbJTMFIaJcMw==
+esrap@^2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/esrap/-/esrap-2.4.2.tgz#baae0503cdb94811e75221e200e7778a678b06c7"
+  integrity sha512-WpVZsWnSheHBy+fGrO/0duwnbe6ODZH1QyBbjupreSCJGojaBWRncrq+HVeIJ8eHQjEwSJg9hC4yPJyNVOrpqg==
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
@@ -2439,10 +2439,10 @@ svelte-preprocess@6.0.5:
   resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-6.0.5.tgz#2b8eb20c4ec85aa6ea4c0b193765f4c511054685"
   integrity sha512-sgwew5yV/2eMeQobIWgAxCNarKwiTUDIc3siAUbq3sp0G6ONtzk0W+wJihMdqjbYb3iGU3ubpGv0usnnuXT3qg==
 
-svelte@^5.57.3:
-  version "5.57.3"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.57.3.tgz#68cf74c2247a66d80af045ce07a20f8e04ace655"
-  integrity sha512-5mAftM3SoDV9X0zdF386F9p2pv8iKOwi/KfBS1XnBAkVCKFzVOLHUoa8iGWAt4buoicLmyWVRpuuD5wplXOQsg==
+svelte@^5.59.0:
+  version "5.59.0"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-5.59.0.tgz#bef6ed72bc718298597df0c2582cbdd10247cc50"
+  integrity sha512-D2wE/hsHvZtbitZ+2TSFsiw00ck/Y9uK4tO59f391z4bzbdyVO2tFHqwiENKc57pp51hX7klBG+EkAVyDlD4sw==
   dependencies:
     "@jridgewell/remapping" "^2.3.5"
     "@jridgewell/sourcemap-codec" "^1.6.0"
@@ -2454,7 +2454,7 @@ svelte@^5.57.3:
     clsx "^2.1.1"
     devalue "^5.9.2"
     esm-env "^1.2.1"
-    esrap "^2.3.6"
+    esrap "^2.4.2"
     is-reference "^3.0.3"
     locate-character "^3.0.0"
     magic-string "^0.30.11"
